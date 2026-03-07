@@ -76,15 +76,7 @@ async function runMigrations() {
         await addMissingColumnsToVariousTables();
         console.log('✅ Eksik kolonlar eklendi\n');
 
-        // 11. Localhost'tan plan verilerini senkronize et (opsiyonel)
-        console.log('📋 11. Plan verileri senkronize ediliyor (opsiyonel)...');
-        try {
-            const syncPlansFromLocalhost = require('./migrations/sync-plans-from-localhost');
-            await syncPlansFromLocalhost();
-            console.log('✅ Plan verileri senkronize edildi\n');
-        } catch (error) {
-            console.log('⚠️  Plan senkronizasyonu atlandı (plans-export.json bulunamadı)\n');
-        }
+        // 11. Plan sync KALDIRILDI – plan tablosuna migration dokunmaz. DB'yi sen yukleyerek yonetiyorsun.
 
         console.log('✅ Tüm migration\'lar başarıyla tamamlandı!');
         process.exit(0);

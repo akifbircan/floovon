@@ -95,13 +95,23 @@ export const PlanProvider: React.FC<PlanProviderProps> = ({ children }) => {
     fetchPlan();
   }, [fetchPlan]);
 
-  // Console'da plan değişince yansısın diye sekme tekrar odaklandığında planı yeniden çek
+  // Sekme odaklandığında planı yeniden çek (admin console'dan plan değişince yansısın)
   useEffect(() => {
     const onVisibility = () => {
       if (document.visibilityState === 'visible' && isAuthenticated && user) fetchPlan();
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [isAuthenticated, user, fetchPlan]);
+
+  // Admin plan değiştirdiğinde tenant panel güncel planı görsün: 30 saniyede bir (sadece sekme görünürken) planı yeniden çek
+  const PLAN_POLL_INTERVAL_MS = 30_000;
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') fetchPlan();
+    }, PLAN_POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
   }, [isAuthenticated, user, fetchPlan]);
 
   const value: PlanContextType = {

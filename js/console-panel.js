@@ -3125,10 +3125,8 @@ class AdminPanel {
         localStorage.removeItem('admin_user');
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_user_id');
-        localStorage.removeItem('admin_remember_me');
-        localStorage.removeItem('admin_remembered_username');
-        localStorage.removeItem('admin_remembered_password');
-        window.location.href = './console-login';
+        // "Beni Hatırla" bilgilerini SİLME – sadece girişte işareti kaldırıp kaydedince temizlensin
+        window.location.href = '/console-login';
     }
 }
 

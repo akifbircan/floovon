@@ -20,22 +20,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loginCard) loginCard.classList.add('console-login-is-visible');
     }, 100);
 
-    // "Beni Hatırla" – sayfa yüklendiğinde kaydedilmiş bilgileri yükle
-    const rememberCheckbox = document.getElementById('console-login-remember');
-    const usernameInput = document.getElementById('console-login-username');
-    const passwordInput = document.getElementById('console-login-password');
-    const rememberMe = localStorage.getItem('admin_remember_me') === 'true';
-    const rememberedUsername = localStorage.getItem('admin_remembered_username');
-    const rememberedPassword = localStorage.getItem('admin_remembered_password');
-
-    if (rememberMe && rememberedUsername && usernameInput) {
-        usernameInput.value = rememberedUsername;
+    // "Beni Hatırla" – kaydedilmiş kullanıcı adı/şifreyi yükle (tarayıcı autocomplete sonrası uygula)
+    (function restoreRemembered() {
+        var usernameInput = document.getElementById('console-login-username');
+        var passwordInput = document.getElementById('console-login-password');
+        var rememberCheckbox = document.getElementById('console-login-remember');
+        var rememberedUsername = localStorage.getItem('admin_remembered_username');
+        var rememberedPassword = localStorage.getItem('admin_remembered_password');
+        var hasStored = (rememberedUsername && rememberedUsername.length > 0) || (rememberedPassword && rememberedPassword.length > 0);
+        if (!hasStored || (!usernameInput && !passwordInput)) return;
+        if (usernameInput && rememberedUsername) usernameInput.value = rememberedUsername;
+        if (passwordInput && rememberedPassword) passwordInput.value = rememberedPassword;
         if (rememberCheckbox) rememberCheckbox.checked = true;
-    }
-    if (rememberMe && rememberedPassword && passwordInput) {
-        passwordInput.value = rememberedPassword;
-        if (rememberCheckbox) rememberCheckbox.checked = true;
-    }
+    })();
+    // Tarayıcı autocomplete bazen değerleri sonradan yazıyor; 100ms sonra tekrar uygula
+    setTimeout(function() {
+        var usernameInput = document.getElementById('console-login-username');
+        var passwordInput = document.getElementById('console-login-password');
+        var rememberCheckbox = document.getElementById('console-login-remember');
+        var rememberedUsername = localStorage.getItem('admin_remembered_username');
+        var rememberedPassword = localStorage.getItem('admin_remembered_password');
+        if ((rememberedUsername && usernameInput && usernameInput.value !== rememberedUsername) ||
+            (rememberedPassword && passwordInput && passwordInput.value !== rememberedPassword)) {
+            if (usernameInput && rememberedUsername) usernameInput.value = rememberedUsername;
+            if (passwordInput && rememberedPassword) passwordInput.value = rememberedPassword;
+            if (rememberCheckbox) rememberCheckbox.checked = true;
+        }
+    }, 100);
 
     // Form Submission Logic
     const loginForm = document.querySelector('form');

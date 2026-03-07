@@ -8332,31 +8332,60 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
 });
 
 // Admin tenants listesi – tenant panel ile aynı mantık: en son abonelik satırı (durum fark etmez)
+// CTE ile tek JOIN kullanımı – sunucuda subquery/driver farklılıklarında plan_name kaybolmasını önler
 app.get('/api/admin/tenants', requireAdmin, async (req, res) => {
     try {
-        const tenants = await query(`
-            SELECT t.id, t.name, t.tenants_no, t.status, t.is_active, t.city, t.state,
-                   (SELECT COUNT(*) FROM tenants_kullanicilar WHERE tenant_id = t.id AND is_active = 1) as user_count,
-                   (SELECT p.plan_adi FROM tenants_abonelikler a LEFT JOIN tenants_abonelik_planlari p ON p.id = a.plan_id WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as plan_name,
-                   (SELECT p.max_kullanici FROM tenants_abonelikler a LEFT JOIN tenants_abonelik_planlari p ON p.id = a.plan_id WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as max_users,
-                   (SELECT a.durum FROM tenants_abonelikler a WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as plan_durum,
-                   (SELECT a.mevcut_donem_bitis FROM tenants_abonelikler a WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as plan_end_date
-            FROM tenants t
-            ORDER BY t.id ASC
-        `);
+        let tenants;
+        try {
+            tenants = await query(`
+                WITH ranked AS (
+                    SELECT a.tenant_id, a.plan_id, a.durum, a.mevcut_donem_bitis, a.olusturma_tarihi, a.id,
+                           p.plan_adi, p.max_kullanici,
+                           ROW_NUMBER() OVER (PARTITION BY a.tenant_id ORDER BY a.olusturma_tarihi DESC, a.id DESC) AS rn
+                    FROM tenants_abonelikler a
+                    LEFT JOIN tenants_abonelik_planlari p ON p.id = a.plan_id
+                )
+                SELECT t.id, t.name, t.tenants_no, t.status, t.is_active, t.city, t.state,
+                       (SELECT COUNT(*) FROM tenants_kullanicilar WHERE tenant_id = t.id AND is_active = 1) as user_count,
+                       r.plan_adi AS plan_name,
+                       r.max_kullanici AS max_users,
+                       r.durum AS plan_durum,
+                       r.mevcut_donem_bitis AS plan_end_date
+                FROM tenants t
+                LEFT JOIN ranked r ON r.tenant_id = t.id AND r.rn = 1
+                ORDER BY t.id ASC
+            `);
+        } catch (cteErr) {
+            if (cteErr && /ROW_NUMBER|OVER|PARTITION/i.test(cteErr.message)) {
+                tenants = await query(`
+                    SELECT t.id, t.name, t.tenants_no, t.status, t.is_active, t.city, t.state,
+                           (SELECT COUNT(*) FROM tenants_kullanicilar WHERE tenant_id = t.id AND is_active = 1) as user_count,
+                           (SELECT p.plan_adi FROM tenants_abonelikler a LEFT JOIN tenants_abonelik_planlari p ON p.id = a.plan_id WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as plan_name,
+                           (SELECT p.max_kullanici FROM tenants_abonelikler a LEFT JOIN tenants_abonelik_planlari p ON p.id = a.plan_id WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as max_users,
+                           (SELECT a.durum FROM tenants_abonelikler a WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as plan_durum,
+                           (SELECT a.mevcut_donem_bitis FROM tenants_abonelikler a WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as plan_end_date
+                    FROM tenants t
+                    ORDER BY t.id ASC
+                `);
+            } else {
+                throw cteErr;
+            }
+        }
         const now = new Date();
         const data = (tenants || []).map(t => {
             const endDate = t.plan_end_date ? new Date(t.plan_end_date) : null;
             const isExpired = t.plan_durum === 'iptal' || t.plan_durum === 'iptal_console' || (endDate && endDate < now);
             const plan_status = isExpired ? 'expired' : (t.plan_durum || null);
+            const planName = (t.plan_name != null && String(t.plan_name).trim() !== '') ? String(t.plan_name).trim() : (t.plan_adi != null && String(t.plan_adi).trim() !== '') ? String(t.plan_adi).trim() : null;
             return {
                 ...t,
                 status: t.status || 'pasif',
                 plan_status,
-                plan_end_date: t.plan_end_date
+                plan_end_date: t.plan_end_date,
+                plan_name: planName
             };
         });
-        res.setHeader('X-Admin-Tenants-Version', '2'); // 2 = en son abonelik satırı (console/panel uyumlu)
+        res.setHeader('X-Admin-Tenants-Version', '3');
         res.json({ success: true, data });
     } catch (error) {
         console.error('❌ /api/admin/tenants hatası:', error);

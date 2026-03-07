@@ -479,16 +479,14 @@ function createToast(id, customMessage = null) {
   //   return;
   // }
   
-  let notifications = document.querySelector(".notifications");
+  // Console sayfalarında #console-toast-notifications kullan; yoksa .notifications veya yeni oluştur
+  let notifications = document.getElementById("console-toast-notifications") || document.querySelector("body > ul.notifications") || document.querySelector(".notifications");
   if (!notifications) {
-    // Eğer .notifications yoksa, hemen oluştur (DOMContentLoaded bekleme yok)
     notifications = document.createElement("ul");
     notifications.className = "notifications";
+    notifications.id = "console-toast-notifications";
     document.body.appendChild(notifications);
   }
-  
-  // ÖNEMLİ: .notifications her zaman body'nin direkt çocuğu olmalı
-  // Aksi halde gizli bir container içinde kalabilir ve toast görünmez
   if (notifications.parentElement !== document.body) {
     document.body.appendChild(notifications);
   }

@@ -4,9 +4,9 @@
         {
             "label": "TEK TIKLA: GitHub Push + Sunucuya Yukle",
             "type": "shell",
-            "command": "${workspaceFolder}\\github-run\\13-github-push-ve-sunucuya-yukle.bat",
+            "command": "D:\\github-run\\04-github-push-ve-sunucuya-yukle.bat",
             "windows": {
-                "command": "${workspaceFolder}\\github-run\\13-github-push-ve-sunucuya-yukle.bat"
+                "command": "D:\\github-run\\04-github-push-ve-sunucuya-yukle.bat"
             },
             "problemMatcher": [],
             "presentation": {
@@ -21,9 +21,9 @@
         {
             "label": "Sadece GitHub'a Push",
             "type": "shell",
-            "command": "${workspaceFolder}\\github-run\\02-github-push-degiskilikleri-gonder.bat",
+            "command": "D:\\github-run\\02-github-push-degiskilikleri-gonder.bat",
             "windows": {
-                "command": "${workspaceFolder}\\github-run\\02-github-push-degiskilikleri-gonder.bat"
+                "command": "D:\\github-run\\02-github-push-degiskilikleri-gonder.bat"
             },
             "problemMatcher": [],
             "presentation": {
@@ -34,9 +34,9 @@
         {
             "label": "GitHub'dan Pull",
             "type": "shell",
-            "command": "${workspaceFolder}\\github-run\\01-github-pull-degiskilikleri-cek.bat",
+            "command": "D:\\github-run\\01-github-pull-degiskilikleri-cek.bat",
             "windows": {
-                "command": "${workspaceFolder}\\github-run\\01-github-pull-degiskilikleri-cek.bat"
+                "command": "D:\\github-run\\01-github-pull-degiskilikleri-cek.bat"
             },
             "problemMatcher": [],
             "presentation": {

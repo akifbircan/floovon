@@ -1,10 +1,13 @@
 name: CI
 
+# Push/PR'da otomatik calismasin; sadece manuel tetiklenir (Actions sekmesinden Run workflow).
+# Boylece commitlerde kirmizi X cikmaz. Isterseniz asagidaki on: kismini geri acabilirsiniz.
 on:
-  push:
-    branches: [ main, staging, develop ]
-  pull_request:
-    branches: [ main, staging, develop ]
+  workflow_dispatch:
+  # push:
+  #   branches: [ main, staging, develop ]
+  # pull_request:
+  #   branches: [ main, staging, develop ]
 
 jobs:
   lint-and-build:

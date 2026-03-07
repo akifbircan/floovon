@@ -503,11 +503,11 @@ function createToast(id, customMessage = null) {
   notifications.style.setProperty('visibility', 'visible', 'important');
   notifications.style.setProperty('opacity', '1', 'important');
   
-  // Z-index ve position'ı da garanti et
+  // Z-index ve position – console overlay/modal üstünde görünsün
   notifications.style.setProperty('position', 'fixed', 'important');
   notifications.style.setProperty('top', '20px', 'important');
   notifications.style.setProperty('right', '20px', 'important');
-  notifications.style.setProperty('z-index', '999999', 'important');
+  notifications.style.setProperty('z-index', '2147483647', 'important');
 
   // Lucide Icons SVG mapping
   const iconSVGMap = {

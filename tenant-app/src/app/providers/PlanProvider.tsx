@@ -75,7 +75,8 @@ export const PlanProvider: React.FC<PlanProviderProps> = ({ children }) => {
       const data = response.data;
 
       if (data?.success && data?.data?.plan_id != null) {
-        setIsBaslangicPlan(data.data.plan_id === 1);
+        const planId = Number(data.data.plan_id);
+        setIsBaslangicPlan(planId === 1);
         const max = data?.data?.max_users ?? data?.data?.max_kullanici;
         setMaxUsers(max != null ? Number(max) : null);
       } else {

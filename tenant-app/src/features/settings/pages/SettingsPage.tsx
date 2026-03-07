@@ -829,7 +829,7 @@ export const SettingsPage: React.FC = () => {
   // Backend kolonları: urun_adi, urun_fiyati, urun_gorseli, kategori_adi
   // Bunları frontend'deki Urun tipine map ediyoruz (ad, grup, fiyat, gorsel)
   const { data: urunlerData, isLoading: urunlerLoading } = useQuery({
-    queryKey: ['urunler'],
+    queryKey: ['ayarlar', 'urunler'],
     queryFn: async () => {
       try {
         const result = await apiRequest<any[]>('/urunler/all', { method: 'GET' });
@@ -846,7 +846,7 @@ export const SettingsPage: React.FC = () => {
         return [];
       }
     },
-    enabled: activeTab === 'veri' && activeSubTab === 'urunler',
+    enabled: activeTab === 'veri',
     staleTime: 2 * 60 * 1000,
     retry: false,
   });
@@ -1665,7 +1665,7 @@ export const SettingsPage: React.FC = () => {
       }
 
       // Listeyi yenile
-      queryClient.invalidateQueries({ queryKey: ['urunler'] });
+      queryClient.invalidateQueries({ queryKey: ['ayarlar', 'urunler'] });
 
       // Formu sıfırla
       setEditingUrunId(null);
@@ -2216,7 +2216,7 @@ export const SettingsPage: React.FC = () => {
                                           `/urunler/${urun.id}`,
                                           { durum: yeniDurum },
                                         );
-                                        queryClient.invalidateQueries({ queryKey: ['urunler'] });
+                                        queryClient.invalidateQueries({ queryKey: ['ayarlar', 'urunler'] });
                                         showToast('success', yeniDurum === 1 ? 'Ürün aktif yapıldı.' : 'Ürün pasif yapıldı.');
                                       } catch (err) {
                                         const msg = (err as Error)?.message || 'Durum güncellenemedi';
@@ -2262,14 +2262,14 @@ export const SettingsPage: React.FC = () => {
                                           cancelText: 'İptal',
                                           onConfirm: async () => {
                                             try {
-                                              queryClient.setQueryData<Urun[]>(['urunler'], (old) => {
+                                              queryClient.setQueryData<Urun[]>(['ayarlar', 'urunler'], (old) => {
                                                 if (!Array.isArray(old)) return old;
                                                 return old.filter((u) => u.id !== urun.id);
                                               });
                                               await apiRequest(`/urunler/${urun.id}`, {
                                                 method: 'DELETE',
                                               });
-                                              queryClient.invalidateQueries({ queryKey: ['urunler'] });
+                                              queryClient.invalidateQueries({ queryKey: ['ayarlar', 'urunler'] });
                                               if (editingUrunId === urun.id) {
                                                 setEditingUrunId(null);
                                                 setUrunFormData({

@@ -587,7 +587,9 @@
   font-size: 0.75rem;
   color: var(--gri70);
 }
-.hidden {
+/* Sadece profil/ayarlar sayfalarında .hidden – login ve diğer sayfalardaki Tailwind .hidden / lg:block vb. ezilmesin */
+.ayarlar-page .hidden,
+.profil-page .hidden {
   display: none !important;
 }
 .profil-form-group .profil-label,

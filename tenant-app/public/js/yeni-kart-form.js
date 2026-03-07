@@ -946,7 +946,7 @@ async function loadOrganizasyonTurleri() {
             // Fallback: getFloovonApiBase() kullan
             const apiBase = (typeof window.getFloovonApiBase === 'function') 
                 ? window.getFloovonApiBase() 
-                : (window.API_BASE_URL || 'http://localhost:3001/api');
+                : (window.API_BASE_URL || (window.location.origin ? window.location.origin + '/api' : '/api'));
             const url = `${apiBase}/organizasyon-kartlar`;
             const token = localStorage.getItem('floovon_token') || localStorage.getItem('token');
             const headers = { 'Content-Type': 'application/json' };

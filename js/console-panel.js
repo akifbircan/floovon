@@ -1772,15 +1772,15 @@ class AdminPanel {
             
             const result = await response.json();
             if (result.success) {
-                // newStatus zaten "aktif" veya "pasif" string'i
+                if (typeof this.loadNotifications === 'function') {
+                    await this.loadNotifications(null, true);
+                }
                 const statusText = newStatus;
                 if (typeof createToast === 'function') {
                     createToast('success', `Tenant ${statusText} yapıldı`);
                 }
                 await this.loadTenants();
                 await this.loadStats();
-                
-                // Cross-page update için broadcast et
                 if (window.syncManager) {
                     window.syncManager.broadcast('TENANT_STATUS_CHANGED', {
                         tenantId: id,
@@ -2321,28 +2321,22 @@ class AdminPanel {
                 throw new Error(result.error || 'Tenant kaydedilemedi');
             }
     
-            // ✅ Toast göster (sadece bir kez)
+            if (typeof this.loadNotifications === 'function') {
+                await this.loadNotifications(null, true);
+            }
             if (typeof createToast === 'function') {
                 createToast('success', id ? 'Tenant güncellendi' : 'Tenant eklendi');
             }
-            
-            // ✅ Custom event dispatch et (loadTenants event listener'da çağrılacak)
-            // loadTenants'ı burada çağırma, event listener'da çağrılacak
             window.dispatchEvent(new CustomEvent('floovon:tenants-updated', {
                 detail: { tenantId: id || result.data?.id, tenantData: result.data }
             }));
-            
-            // Stats'ı güncelle (liste yenilenmeden)
             await this.loadStats();
-    
-            // Cross-page update broadcast (varsa)
             if (window.syncManager) {
                 window.syncManager.broadcast(id ? 'TENANT_UPDATED' : 'TENANT_CREATED', {
                     tenantId: id || result.data?.id,
                     tenantData: result.data
                 });
             }
-    
             return result.data;
         } catch (error) {
             console.error('Tenant kaydedilirken hata:', error);

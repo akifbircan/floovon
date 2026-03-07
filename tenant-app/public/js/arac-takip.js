@@ -127,7 +127,7 @@ function initTeslimatTakip() {
                     // Fallback: getFloovonApiBase() kullan
                     const apiBase = (typeof window.getFloovonApiBase === 'function') 
                         ? window.getFloovonApiBase() 
-                        : (window.API_BASE_URL || 'http://localhost:3001/api');
+                        : (window.API_BASE_URL || (window.location.origin ? window.location.origin + '/api' : '/api'));
                     const url = `${apiBase}/araclar?aktif_only=true`;
                     const token = localStorage.getItem('floovon_token');
                     const headers = { 'Content-Type': 'application/json' };
@@ -147,7 +147,7 @@ function initTeslimatTakip() {
                     } else {
                         const apiBase = (typeof window.getFloovonApiBase === 'function') 
                             ? window.getFloovonApiBase() 
-                            : (window.API_BASE_URL || 'http://localhost:3001/api');
+                            : (window.API_BASE_URL || (window.location.origin ? window.location.origin + '/api' : '/api'));
                         const url = `${apiBase}/araclar`;
                         const token = localStorage.getItem('floovon_token');
                         const headers = { 'Content-Type': 'application/json' };

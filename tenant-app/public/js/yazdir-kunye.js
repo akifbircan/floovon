@@ -5,34 +5,29 @@
 // Künye arka plan şablonu (public/assets/ altında)
 const FLOOVON_KUNYE_SABLON = 'sablon-siparis-kunyesi-bos.png';
 
-// Localhost kontrolü ile API base URL'ini belirle
-// ÖNEMLİ: FLOOVON_API_BASE zaten tanımlıysa tekrar tanımlama (çift yükleme önleme)
+// API/Backend base: index.html'de getFloovonApiBase/origin ayarlanır; yoksa origin + /api
 if (typeof window.FLOOVON_API_BASE === 'undefined') {
-    const hostname = window.location.hostname;
-    const port = window.location.port;
-    // Vite dev server kontrolü (port 5174, 5173, 5175) - proxy kullan
-    if ((hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') && (port === '5174' || port === '5173' || port === '5175')) {
+    var o = window.location && window.location.origin ? window.location.origin : '';
+    var port = window.location.port;
+    if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (port === '5174' || port === '5173' || port === '5175')) {
         window.FLOOVON_API_BASE = '/api';
-    } else if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') {
-        window.FLOOVON_API_BASE = 'http://localhost:3001/api';
+    } else if (typeof window.getFloovonApiBase === 'function') {
+        window.FLOOVON_API_BASE = (window.getFloovonApiBase() || (o + '/api')).replace(/\/$/, '');
     } else {
-        window.FLOOVON_API_BASE = ((typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || 'http://localhost:3001/api')).replace(/\/$/, '');
+        window.FLOOVON_API_BASE = (window.API_BASE_URL || (o ? o + '/api' : '/api')).replace(/\/$/, '');
     }
 }
 var FLOOVON_API_BASE = window.FLOOVON_API_BASE;
 
-// Localhost kontrolü ile backend base URL'ini belirle
-// ÖNEMLİ: FLOOVON_BACKEND_BASE zaten tanımlıysa tekrar tanımlama
 if (typeof window.FLOOVON_BACKEND_BASE === 'undefined') {
-    const hostname = window.location.hostname;
-    const port = window.location.port;
-    // Vite dev server kontrolü (port 5174, 5173, 5175) - proxy kullan (boş string = relative path)
-    if ((hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') && (port === '5174' || port === '5173' || port === '5175')) {
+    var o2 = window.location && window.location.origin ? window.location.origin : '';
+    var port2 = window.location.port;
+    if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (port2 === '5174' || port2 === '5173' || port2 === '5175')) {
         window.FLOOVON_BACKEND_BASE = '';
-    } else if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') {
-        window.FLOOVON_BACKEND_BASE = 'http://localhost:3001';
+    } else if (typeof window.getFloovonBackendBase === 'function') {
+        window.FLOOVON_BACKEND_BASE = window.getFloovonBackendBase() || o2;
     } else {
-        window.FLOOVON_BACKEND_BASE = FLOOVON_API_BASE.endsWith('/api') ? FLOOVON_API_BASE.slice(0, -4) : FLOOVON_API_BASE;
+        window.FLOOVON_BACKEND_BASE = window.BACKEND_BASE_URL || (FLOOVON_API_BASE.endsWith('/api') ? FLOOVON_API_BASE.slice(0, -4) : FLOOVON_API_BASE) || o2;
     }
 }
 var FLOOVON_BACKEND_BASE = window.FLOOVON_BACKEND_BASE;
@@ -779,20 +774,9 @@ async function yazdirSiparisKunyeToplu(anaKart) {
   <script>
     // Yeni pencerede çalışması için gerekli değişkenler ve fonksiyonlar
     (function() {
-      const hostname = window.location.hostname;
-      let FLOOVON_API_BASE;
-      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') {
-        FLOOVON_API_BASE = 'http://localhost:3001/api';
-      } else {
-        FLOOVON_API_BASE = ((typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || 'http://localhost:3001/api')).replace(/\/$/, '');
-      }
-      
-      let FLOOVON_BACKEND_BASE;
-      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') {
-        FLOOVON_BACKEND_BASE = 'http://localhost:3001';
-      } else {
-        FLOOVON_BACKEND_BASE = FLOOVON_API_BASE.endsWith('/api') ? FLOOVON_API_BASE.slice(0, -4) : FLOOVON_API_BASE;
-      }
+      var o = window.location.origin || '';
+      let FLOOVON_API_BASE = (typeof window.getFloovonApiBase === 'function' ? window.getFloovonApiBase() : (window.API_BASE_URL || (o + '/api'))).replace(/\/$/, '');
+      let FLOOVON_BACKEND_BASE = (typeof window.getFloovonBackendBase === 'function' ? window.getFloovonBackendBase() : (window.BACKEND_BASE_URL || (FLOOVON_API_BASE.endsWith('/api') ? FLOOVON_API_BASE.slice(0, -4) : FLOOVON_API_BASE) || o));
       
       window.FLOOVON_API_BASE = FLOOVON_API_BASE;
       window.FLOOVON_BACKEND_BASE = FLOOVON_BACKEND_BASE;

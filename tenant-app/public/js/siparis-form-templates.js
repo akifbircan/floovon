@@ -1512,7 +1512,7 @@ function renderSiparisForm(formType, container) {
             
             if (isletmeAdiElement) {
                 // Backend'den ayarlar_genel_isletme_ayarlari tablosundan isletme_adi alanını çek
-                const apiBase = (typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || 'http://localhost:3001/api');
+                const apiBase = (typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || (window.location.origin ? window.location.origin + '/api' : '/api'));
                 fetch(`${apiBase}/ayarlar/isletme`)
                     .then(response => response.json())
                     .then(data => {

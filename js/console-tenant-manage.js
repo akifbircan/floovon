@@ -1472,12 +1472,11 @@ class TenantManage {
             
             const result = await response.json();
             if (result.success) {
-                // Kullanıcı listesini yeniden yükle (hemen, silinen kullanıcı tablodan kaybolsun)
+                if (typeof this.loadNotifications === 'function') {
+                    await this.loadNotifications(null, true);
+                }
                 await this.loadUsers();
-                
-                // Aktivite loglarını da yenile
                 await this.loadActivityLogs();
-                
                 if (typeof createToast === 'function') {
                     createToast('success', 'Kullanıcı başarıyla silindi');
                 }
@@ -2483,11 +2482,13 @@ class TenantManage {
             
             const result = await response.json();
             if (result.success) {
-                // Backend'den gelen güncellenmiş kullanıcı bilgilerini this.users array'ine ekle/güncelle
+                // Badge hemen güncellensin (toast'tan önce)
+                if (typeof this.loadNotifications === 'function') {
+                    await this.loadNotifications(null, true);
+                }
                 if (result.data) {
                     const updatedUser = result.data;
                     if (this.currentEditingUser) {
-                        // Güncelleme: mevcut kullanıcıyı bul ve güncelle
                         const index = this.users.findIndex(u => {
                             const uId = typeof u.id === 'string' ? parseInt(u.id) : u.id;
                             const userId = typeof updatedUser.id === 'string' ? parseInt(updatedUser.id) : updatedUser.id;
@@ -2497,33 +2498,13 @@ class TenantManage {
                             this.users[index] = updatedUser;
                         }
                     } else {
-                        // Yeni ekleme: array'e ekle
                         this.users.push(updatedUser);
                     }
                 }
-                
-                // Kullanıcı listesini yenile (tabloyu güncelle) - ÖNCE loadUsers çağrılmalı
                 await this.loadUsers();
-                
                 if (typeof createToast === 'function') {
                     createToast('success', this.currentEditingUser ? 'Kullanıcı güncellendi' : 'Kullanıcı eklendi');
                 }
-                
-                // Backend'den bildirim oluşturuldu mu kontrol et
-                if (result.notificationCreated) {
-                    // Badge'i anında güncelle
-                    if (typeof this.updateNotificationBadge === 'function') {
-                        await this.updateNotificationBadge();
-                    }
-                    
-                    // Bildirim sayısını güncelle (BroadcastChannel) - diğer sayfalar için
-                    if (this.notificationChannel) {
-                        this.notificationChannel.postMessage({
-                            type: 'notification-updated'
-                        });
-                    }
-                }
-                
                 if (this.closeModalWithCheck) {
                     this.closeModalWithCheck(true); // force close after save
         } else {
@@ -2594,10 +2575,12 @@ class TenantManage {
             
             const result = await response.json();
             if (result.success) {
+                if (typeof this.loadNotifications === 'function') {
+                    await this.loadNotifications(null, true);
+                }
                 if (typeof createToast === 'function') {
                     createToast('success', 'Şifre değiştirildi');
                 }
-                // Form değişiklik takibini sıfırla ve modalı kapat
                 this.passwordFormHasChanges = false;
                 this.passwordFormOriginalValues = {
                     newPassword: '',
@@ -4445,10 +4428,10 @@ class TenantManage {
             
             const result = await response.json();
             if (result.success) {
-                // Tenant verisini güncelle - backend'den gelen tüm verileri al
+                if (typeof this.loadNotifications === 'function') {
+                    await this.loadNotifications(null, true);
+                }
                 this.tenant = { ...this.tenant, ...result.data };
-                
-                // Tenant verisini tam olarak yeniden yükle (tenants_no dahil tüm alanlar için)
                 await this.loadTenant();
                 
                 // Tüm ilgili alanları güncelle

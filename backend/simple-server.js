@@ -4103,7 +4103,7 @@ async function getTenantPlanId(tenantId) {
                 FROM tenants_abonelikler a
                 LEFT JOIN tenants_abonelik_planlari p ON a.plan_id = p.id
                 WHERE a.tenant_id = ?
-                ORDER BY a.olusturma_tarihi DESC
+                ORDER BY a.olusturma_tarihi DESC, a.id DESC
                 LIMIT 1
             `, [tenantId], (err, row) => {
                 if (err) reject(err);
@@ -8255,6 +8255,39 @@ function requireAdmin(req, res, next) {
     return res.status(401).json({ success: false, error: 'Admin oturumu gerekli' });
 }
 
+// Admin bildirim tablosu yoksa oluştur ve bildirim ekle (console bildirim listesine yansır)
+async function ensureAdminBildirimlerTable() {
+    const exists = await query("SELECT name FROM sqlite_master WHERE type='table' AND name='admin_bildirimler'", [], null);
+    if (exists && exists.length > 0) return;
+    await run(`
+        CREATE TABLE IF NOT EXISTS admin_bildirimler (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type TEXT NOT NULL DEFAULT 'info',
+            category TEXT NOT NULL DEFAULT 'system',
+            title TEXT,
+            message TEXT,
+            tenant_id INTEGER,
+            created_by_user INTEGER,
+            is_read INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            read_at DATETIME
+        )
+    `, [], null);
+}
+
+async function addAdminNotification(adminUserId, { type = 'info', category = 'system', title = '', message = '', tenant_id = null }) {
+    try {
+        await ensureAdminBildirimlerTable();
+        await run(
+            `INSERT INTO admin_bildirimler (type, category, title, message, tenant_id, created_by_user, is_read) VALUES (?, ?, ?, ?, ?, ?, 0)`,
+            [type, category, title || '', message || '', tenant_id || null, adminUserId || null],
+            null
+        );
+    } catch (e) {
+        console.error('❌ addAdminNotification:', e?.message || e);
+    }
+}
+
 // Admin stats
 app.get('/api/admin/stats', requireAdmin, async (req, res) => {
     try {
@@ -8400,8 +8433,19 @@ app.post('/api/admin/tenants/:tenantId/users', requireAdmin, async (req, res) =>
             [tenantId],
             null
         );
-
-        return res.json({ success: true, data: users?.[0] || null });
+        const newUser = users?.[0] || null;
+        if (newUser) {
+            const tenantRow = await query('SELECT name, tenants_no FROM tenants WHERE id = ?', [tenantId], null).then(r => r?.[0]);
+            const tenantName = (tenantRow?.name || tenantRow?.tenants_no || `Tenant #${tenantId}`).toString();
+            await addAdminNotification(req.adminUserId, {
+                type: 'info',
+                category: 'user',
+                title: 'Kullanıcı eklendi',
+                message: `${tenantName}: ${(newUser.name || '')} ${(newUser.surname || '')} (${newUser.username || newUser.email}) eklendi.`,
+                tenant_id: tenantId
+            });
+        }
+        return res.json({ success: true, data: newUser, notificationCreated: true });
     } catch (error) {
         console.error('❌ /api/admin/tenants/:tenantId/users (POST) hatası:', error);
         res.status(500).json({ success: false, error: error.message || 'Kullanıcı oluşturulamadı' });
@@ -8495,8 +8539,30 @@ app.put('/api/admin/tenants/:tenantId/users/:userId', requireAdmin, async (req, 
             [userId, tenantId],
             null
         );
-
-        return res.json({ success: true, data: users?.[0] || null });
+        const updatedUser = users?.[0] || null;
+        if (updatedUser) {
+            const tenantRow = await query('SELECT name, tenants_no FROM tenants WHERE id = ?', [tenantId], null).then(r => r?.[0]);
+            const tenantName = (tenantRow?.name || tenantRow?.tenants_no || `Tenant #${tenantId}`).toString();
+            const userName = `${(updatedUser.name || '')} ${(updatedUser.surname || '')}`.trim() || (updatedUser.username || updatedUser.email);
+            if (typeof is_active !== 'undefined' && !is_active) {
+                await addAdminNotification(req.adminUserId, {
+                    type: 'warning',
+                    category: 'user',
+                    title: 'Kullanıcı silindi',
+                    message: `${tenantName}: ${userName} kullanıcısı kaldırıldı.`,
+                    tenant_id: tenantId
+                });
+            } else {
+                await addAdminNotification(req.adminUserId, {
+                    type: 'info',
+                    category: 'user',
+                    title: 'Kullanıcı güncellendi',
+                    message: `${tenantName}: ${userName} bilgileri güncellendi.`,
+                    tenant_id: tenantId
+                });
+            }
+        }
+        return res.json({ success: true, data: updatedUser, notificationCreated: true });
     } catch (error) {
         console.error('❌ /api/admin/tenants/:tenantId/users/:userId (PUT) hatası:', error);
         res.status(500).json({ success: false, error: error.message || 'Kullanıcı güncellenemedi' });
@@ -8521,7 +8587,18 @@ app.put('/api/admin/tenants/:id/users/:userId/password', requireAdmin, async (re
         }
         const hashedPassword = await bcrypt.hash(password.trim(), 10);
         await run('UPDATE tenants_kullanicilar SET password = ?, updated_at = datetime(\'now\') WHERE id = ? AND tenant_id = ?', [hashedPassword, userId, tenantId], null);
-        return res.json({ success: true, message: 'Şifre güncellendi' });
+        const tenantRow = await query('SELECT name, tenants_no FROM tenants WHERE id = ?', [tenantId], null).then(r => r?.[0]);
+        const userRow = await query('SELECT name, surname, username FROM tenants_kullanicilar WHERE id = ? AND tenant_id = ?', [userId, tenantId], null).then(r => r?.[0]);
+        const tenantName = (tenantRow?.name || tenantRow?.tenants_no || `Tenant #${tenantId}`).toString();
+        const userName = (userRow ? `${(userRow.name || '')} ${(userRow.surname || '')}`.trim() || userRow.username : 'Kullanıcı').toString();
+        await addAdminNotification(req.adminUserId, {
+            type: 'info',
+            category: 'user',
+            title: 'Şifre değiştirildi',
+            message: `${tenantName}: ${userName} şifresi güncellendi.`,
+            tenant_id: tenantId
+        });
+        return res.json({ success: true, message: 'Şifre güncellendi', notificationCreated: true });
     } catch (error) {
         console.error('❌ /api/admin/tenants/:id/users/:userId/password hatası:', error);
         res.status(500).json({ success: false, error: error.message || 'Şifre güncellenemedi' });
@@ -8878,7 +8955,16 @@ app.put('/api/admin/tenants/:id', requireAdmin, async (req, res) => {
 
         const selectPhone = hasPhone ? 'phone as phone' : 'NULL as phone';
         const updated = await query(`SELECT id, name, tenants_no, status, email, ${selectPhone}, city, state FROM tenants WHERE id = ?`, [id], null);
-        res.json({ success: true, data: updated?.[0] || {} });
+        const tenant = updated?.[0] || {};
+        const tenantName = tenant.name || tenant.tenants_no || `Tenant #${id}`;
+        await addAdminNotification(req.adminUserId, {
+            type: 'info',
+            category: 'tenant',
+            title: 'Tenant güncellendi',
+            message: `${tenantName} bilgileri güncellendi.`,
+            tenant_id: id
+        });
+        res.json({ success: true, data: tenant, notificationCreated: true });
     } catch (error) {
         console.error('❌ /api/admin/tenants/:id hatası:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -9021,6 +9107,7 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
 // Admin notifications
 app.get('/api/admin/notifications', requireAdmin, async (req, res) => {
     try {
+        await ensureAdminBildirimlerTable();
         const limit = Math.min(parseInt(req.query.limit, 10) || 50, 1000);
         const unreadOnly = req.query.unread_only === 'true' || req.query.unread_only === '1';
         let sql = 'SELECT id, type, category, title, message, tenant_id, is_read, created_at, read_at FROM admin_bildirimler';
@@ -9075,12 +9162,12 @@ app.get('/api/public/subscription', async (req, res) => {
         }
         const row = await new Promise((resolve, reject) => {
             db.get(`
-                SELECT a.plan_id, a.durum, a.mevcut_donem_bitis, a.mevcut_donem_baslangic, a.fatura_dongusu, a.aylik_ucret, a.max_kullanici,
+                SELECT a.id, a.plan_id, a.durum, a.mevcut_donem_bitis, a.mevcut_donem_baslangic, a.fatura_dongusu, a.aylik_ucret, a.max_kullanici,
                        p.plan_adi, p.aylik_ucret as plan_aylik_ucret, p.yillik_ucret, p.max_kullanici as plan_max_kullanici
                 FROM tenants_abonelikler a
                 LEFT JOIN tenants_abonelik_planlari p ON a.plan_id = p.id
                 WHERE a.tenant_id = ?
-                ORDER BY a.olusturma_tarihi DESC
+                ORDER BY a.olusturma_tarihi DESC, a.id DESC
                 LIMIT 1
             `, [tenantId], (err, r) => { if (err) reject(err); else resolve(r); });
         });
@@ -9090,10 +9177,11 @@ app.get('/api/public/subscription', async (req, res) => {
         const monthlyPrice = row.aylik_ucret ?? row.plan_aylik_ucret ?? 0;
         const yearlyPrice = row.yillik_ucret ?? (monthlyPrice * 12);
         const maxUsers = row.max_kullanici != null ? row.max_kullanici : (row.plan_max_kullanici != null ? row.plan_max_kullanici : null);
+        const planId = row.plan_id != null ? parseInt(row.plan_id, 10) : null;
         res.json({
             success: true,
             data: {
-                plan_id: row.plan_id,
+                plan_id: planId,
                 durum: row.durum,
                 plan_name: row.plan_adi,
                 plan_adi: row.plan_adi,

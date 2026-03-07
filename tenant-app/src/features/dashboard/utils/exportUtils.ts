@@ -822,8 +822,7 @@ async function resolvePrintLogoUrl(pathOrUrl: string): Promise<string> {
   const { getApiBaseUrl } = await import('../../../lib/runtime');
   let backendBase = getApiBaseUrl().replace(/\/api\/?$/, '');
   if (!backendBase && typeof window !== 'undefined') {
-    const port = localStorage.getItem('backend_port') || '3001';
-    backendBase = `${window.location.protocol}//${window.location.hostname}:${port}`;
+    backendBase = window.location.origin;
   }
   const tenantId = getTenantId();
   if (PRINT_LOGO_DEBUG) console.log('[PrintLogo] resolvePrintLogoUrl:', { raw, backendBase, tenantId });

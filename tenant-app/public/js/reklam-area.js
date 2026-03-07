@@ -174,9 +174,7 @@ async function checkBaslangicPlan() {
         const isFileProtocol = window.location.protocol === 'file:';
         const hostname = window.location.hostname || '';
         const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '' || isFileProtocol;
-        const apiBase = isLocalhost 
-            ? `http://localhost:${localStorage.getItem('backend_port') || '3001'}/api`
-            : '/api';
+        const apiBase = (typeof window.getFloovonApiBase === 'function' ? window.getFloovonApiBase() : null) || window.API_BASE_URL || (window.location.origin ? window.location.origin + '/api' : '/api');
         
         let tenantCode = localStorage.getItem('tenant_code') || 
                         localStorage.getItem('remembered_tenant_code') ||

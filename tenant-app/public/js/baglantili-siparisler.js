@@ -30,7 +30,7 @@ async function baglantiliSiparisleriHesapla() {
             // Fallback: Manuel fetch
             const apiBase = (typeof window.getFloovonApiBase === 'function') 
                 ? await window.getFloovonApiBase() 
-                : (window.API_BASE_URL || 'http://localhost:3001/api');
+                : (window.API_BASE_URL || (window.location.origin ? window.location.origin + '/api' : '/api'));
             const token = localStorage.getItem('floovon_token') || localStorage.getItem('token');
             const headers = { 'Content-Type': 'application/json' };
             if (token) headers['Authorization'] = `Bearer ${token}`;

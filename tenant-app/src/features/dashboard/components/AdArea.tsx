@@ -10,8 +10,8 @@ export const AdArea: React.FC = () => {
   const navigate = useNavigate();
 
   const handleUpgrade = () => {
-    // Paket yükseltme sayfasına git - tam URL kullan
-    window.location.href = 'http://localhost:3001/landing/dashboard';
+    const base = typeof window !== 'undefined' ? window.location.origin : '';
+    window.location.href = base ? `${base}/landing/dashboard` : '/landing/dashboard';
   };
 
   return (

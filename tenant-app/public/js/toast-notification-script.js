@@ -161,7 +161,7 @@ document.addEventListener("click", function (e) {
 
       const apiBase = typeof window.getFloovonApiBase === 'function'
         ? window.getFloovonApiBase()
-        : ((typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || 'http://localhost:3001/api'));
+        : ((typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || (window.location.origin ? window.location.origin + '/api' : '/api')));
 
       createToastInteractive({
         message: 'Bu tahsilatı silmek istediğinize emin misiniz?',

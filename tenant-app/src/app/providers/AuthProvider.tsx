@@ -148,26 +148,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Initialize: Check if user is already authenticated
+  // Initialize: Token varsa önce backend ile doğrula; doğrulama yoksa login göster
   useEffect(() => {
     const checkAuth = async () => {
-      if (isAuthenticated()) {
-        const storedUser = getUser();
-        if (storedUser) {
-          setUser(storedUser);
-          // Backend'den güncel bilgileri çek - users tablosundan
-          if (storedUser.id) {
-            try {
-              const freshUser = await fetchUserProfile(storedUser.id);
-              if (freshUser) {
-                setUser(freshUser);
-                saveUser(freshUser);
-              }
-            } catch (error) {
-              console.error('Kullanıcı bilgileri güncellenemedi:', error);
-            }
-          }
+      if (!isAuthenticated()) {
+        setIsLoading(false);
+        return;
+      }
+      const storedUser = getUser();
+      if (!storedUser?.id) {
+        clearAuth();
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const freshUser = await fetchUserProfile(storedUser.id);
+        if (freshUser) {
+          setUser(freshUser);
+          saveUser(freshUser);
+        } else {
+          clearAuth();
+          setUser(null);
         }
+      } catch {
+        // 401 vb.: api interceptor login'e yönlendirir; yine de state temizle
+        clearAuth();
+        setUser(null);
       }
       setIsLoading(false);
     };

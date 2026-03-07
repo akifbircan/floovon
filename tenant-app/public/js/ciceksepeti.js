@@ -623,7 +623,7 @@ class CiceksepetiFloovonIntegration {
             };
             
             // 1. Adım: Siparişi ciceksepeti_orders tablosuna kaydet
-            const apiBase = (typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || 'http://localhost:3001/api');
+            const apiBase = (typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || (window.location.origin ? window.location.origin + '/api' : '/api'));
             const testResponse = await fetch(`${apiBase}/ciceksepeti/test-order`, {
                 method: 'POST',
                 headers: {
@@ -1038,7 +1038,7 @@ class CiceksepetiFloovonIntegration {
             
             try {
                 // Backend'den bu tarihe ait Çiçek Sepeti organizasyon kartını bul
-                const apiBase = (typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || 'http://localhost:3001/api');
+                const apiBase = (typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || (window.location.origin ? window.location.origin + '/api' : '/api'));
                 const url = `${apiBase}/organizasyon-kartlar/by-date?tarih=${encodeURIComponent(tarihParse)}&kart_tur=${encodeURIComponent('Çiçek Sepeti')}`;
                 console.log('🔍 Organizasyon kartı aranıyor:', url);
                 
@@ -1100,7 +1100,7 @@ class CiceksepetiFloovonIntegration {
             const sebepTurkce = (typeof getSebepText === 'function' && sebep) ? getSebepText(sebep) : sebep;
             
             // API base URL'i al
-            const apiBase = (typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || 'http://localhost:3001/api');
+            const apiBase = (typeof window.getFloovonApiBase === 'function') ? window.getFloovonApiBase() : (window.API_BASE_URL || (window.location.origin ? window.location.origin + '/api' : '/api'));
             
             console.log('🔄 Çiçek Sepeti kartı arşivleniyor:', { organizasyonId, sebepTurkce, apiBase });
             
@@ -1484,7 +1484,7 @@ playReminderSound() {
     }
     
     getProductImage(urunAdi) {
-        const backendBase = (typeof window.getFloovonBackendBase === 'function') ? window.getFloovonBackendBase() : (window.BACKEND_BASE_URL || 'http://localhost:3001');
+        const backendBase = (typeof window.getFloovonBackendBase === 'function') ? window.getFloovonBackendBase() : (window.BACKEND_BASE_URL || (window.location.origin || ''));
         // getFloovonUploadUrl otomatik olarak eski path'leri tenant-based yapıya çevirir
         const productImages = {
             'Gül Buketi': window.getFloovonUploadUrl ? window.getFloovonUploadUrl('/uploads/tenants/' + (window.userManager?.getUser()?.tenant_id || window.userSession?.getTenantId() || '1') + '/products/sp-urun-cicek-buket.png') : `${backendBase}/uploads/tenants/${window.userManager?.getUser()?.tenant_id || window.userSession?.getTenantId() || '1'}/products/sp-urun-cicek-buket.png`,

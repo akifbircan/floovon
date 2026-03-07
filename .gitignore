@@ -34,8 +34,10 @@ Thumbs.db
 *.temp
 ~$*
 
-# Backend session files (WhatsApp auth)
+# Backend session files (WhatsApp auth - kilitli dosyalar repo'da olmasin)
 backend/.wwebjs_auth/
+backend/.wwebjs_auth_tenant_*/
+backend/.wwebjs_cache/
 
 # Environment files (hassas bilgiler içerir)
 .env

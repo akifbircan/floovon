@@ -8331,6 +8331,23 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
     }
 });
 
+// Admin debug: Process'in okudugu DB yolu ve plan/abonelik verisi (console "Abonelik yok" teshisi)
+app.get('/api/admin/debug-plan-data', requireAdmin, async (req, res) => {
+    try {
+        const plans = await query('SELECT id, plan_adi, plan_kodu FROM tenants_abonelik_planlari ORDER BY id');
+        const abonelikler = await query('SELECT tenant_id, plan_id, durum FROM tenants_abonelikler ORDER BY tenant_id LIMIT 20');
+        res.setHeader('Cache-Control', 'no-store');
+        res.json({
+            success: true,
+            dbPath: path.resolve(__dirname, 'floovon_professional.db'),
+            plans: plans || [],
+            abonelikler: abonelikler || []
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: (e && e.message) || String(e) });
+    }
+});
+
 // Admin tenants listesi – tenant panel ile aynı mantık: en son abonelik satırı (durum fark etmez)
 // CTE ile tek JOIN kullanımı – sunucuda subquery/driver farklılıklarında plan_name kaybolmasını önler
 app.get('/api/admin/tenants', requireAdmin, async (req, res) => {

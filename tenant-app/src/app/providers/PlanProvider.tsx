@@ -95,6 +95,15 @@ export const PlanProvider: React.FC<PlanProviderProps> = ({ children }) => {
     fetchPlan();
   }, [fetchPlan]);
 
+  // Console'da plan değişince yansısın diye sekme tekrar odaklandığında planı yeniden çek
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && isAuthenticated && user) fetchPlan();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [isAuthenticated, user, fetchPlan]);
+
   const value: PlanContextType = {
     isBaslangicPlan,
     maxUsers,

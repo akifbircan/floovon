@@ -4034,6 +4034,7 @@ async function getTenantIdInternal(req) {
     const isPublicEndpoint = req.path && (
         req.path.includes('/whatsapp/') ||
         req.path.includes('/api/auth/login') ||
+        req.path.includes('/api/auth/logout') ||
         req.path.includes('/api/auth/register') ||
         req.path.includes('/api/auth/forgot-password') ||
         req.path.includes('/api/auth/reset-password') ||
@@ -5911,6 +5912,18 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
     }
 });
 
+// Tenant panel çıkış – cookie'leri temizle (tüm sekmelerde oturum kapansın)
+app.post('/api/auth/logout', (req, res) => {
+    const cookieOptions = { path: '/', httpOnly: true, sameSite: 'lax' };
+    const isPanelDomain = req.get('X-Frontend-Origin') && String(req.get('X-Frontend-Origin')).includes('panel.floovon.com');
+    if (isPanelDomain) {
+        cookieOptions.domain = 'panel.floovon.com';
+    }
+    res.clearCookie('floovon_token', cookieOptions);
+    res.clearCookie('floovon_user_id', cookieOptions);
+    res.json({ success: true, message: 'Çıkış yapıldı' });
+});
+
 // Session check - tenant/abonelik geçerliliği (periyodik kontrol için)
 app.get('/api/auth/session-check', async (req, res) => {
     try {
@@ -7726,12 +7739,14 @@ app.get('/api/users', async (req, res) => {
         const colNames = (columns || []).map(c => c.name);
         const hasTenantId = colNames.includes('tenant_id');
         const hasStatus = colNames.includes('status');
+        const hasIsAdmin = colNames.includes('is_admin');
         const profileCol = colNames.includes('profile_image') ? 'profile_image' : (colNames.includes('profil_resmi') ? 'profil_resmi' : null);
         const profileSelect = profileCol ? (profileCol === 'profile_image' ? 'profile_image' : `${profileCol} as profile_image`) : 'NULL as profile_image';
         const statusSelect = hasStatus ? 'status' : 'NULL as status';
+        const isAdminSelect = hasIsAdmin ? 'is_admin' : '0 as is_admin';
         const sql = hasTenantId
-            ? `SELECT id, email, name, surname, username, phone, role, is_active, ${statusSelect}, ${profileSelect}, tenant_id, last_login, created_at FROM tenants_kullanicilar WHERE tenant_id = ? AND is_active = 1 ORDER BY name, surname`
-            : `SELECT id, email, name, surname, username, phone, role, is_active, ${statusSelect}, ${profileSelect}, last_login, created_at FROM tenants_kullanicilar WHERE is_active = 1 ORDER BY name, surname`;
+            ? `SELECT id, email, name, surname, username, phone, role, is_active, ${statusSelect}, ${profileSelect}, ${isAdminSelect}, tenant_id, last_login, created_at FROM tenants_kullanicilar WHERE tenant_id = ? AND is_active = 1 ORDER BY name, surname`
+            : `SELECT id, email, name, surname, username, phone, role, is_active, ${statusSelect}, ${profileSelect}, ${isAdminSelect}, last_login, created_at FROM tenants_kullanicilar WHERE is_active = 1 ORDER BY name, surname`;
         const rows = await query(sql, hasTenantId ? [tenantId] : [], null);
         const users = (rows || []).map(u => {
             const durumVal = (hasStatus && (u.status === 'pasif' || u.status === 'aktif')) ? u.status : (u.is_active === 1 ? 'aktif' : 'pasif');
@@ -7749,6 +7764,7 @@ app.get('/api/users', async (req, res) => {
                 role: u.role,
                 yetkilendirme: u.role,
                 is_active: u.is_active,
+                is_admin: (hasIsAdmin && (u.is_admin === 1 || u.is_admin === '1')) ? 1 : 0,
                 durum: durumVal,
                 profile_image: u.profile_image,
                 profil_resmi: u.profile_image,
@@ -7885,11 +7901,16 @@ app.put('/api/users/:id', async (req, res) => {
             await run('ALTER TABLE tenants_kullanicilar ADD COLUMN status TEXT DEFAULT \'aktif\'');
         }
         const hasTenantId = colNames.includes('tenant_id');
+        const hasIsAdmin = colNames.includes('is_admin');
         const userCheck = hasTenantId
-            ? await query('SELECT id FROM tenants_kullanicilar WHERE id = ? AND tenant_id = ? AND is_active = 1', [id, tenantId])
-            : await query('SELECT id FROM tenants_kullanicilar WHERE id = ? AND is_active = 1', [id]);
+            ? await query(hasIsAdmin ? 'SELECT id, is_admin FROM tenants_kullanicilar WHERE id = ? AND tenant_id = ? AND is_active = 1' : 'SELECT id FROM tenants_kullanicilar WHERE id = ? AND tenant_id = ? AND is_active = 1', [id, tenantId])
+            : await query(hasIsAdmin ? 'SELECT id, is_admin FROM tenants_kullanicilar WHERE id = ? AND is_active = 1' : 'SELECT id FROM tenants_kullanicilar WHERE id = ? AND is_active = 1', [id]);
         if (!userCheck || userCheck.length === 0) {
             return res.status(404).json({ success: false, message: 'Kullanıcı bulunamadı.' });
+        }
+        const isAdmin = hasIsAdmin && (userCheck[0].is_admin === 1 || userCheck[0].is_admin === '1');
+        if (isAdmin) {
+            return res.status(403).json({ success: false, message: 'Bu kullanıcı varsayılan/ana kullanıcı olduğu için durumu değiştirilemez.' });
         }
         if (hasTenantId) {
             await run('UPDATE tenants_kullanicilar SET status = ?, updated_at = datetime(\'now\') WHERE id = ? AND tenant_id = ?', [durumStr, id, tenantId]);
@@ -8310,24 +8331,31 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
     }
 });
 
-// Admin tenants listesi
+// Admin tenants listesi – tenant panel ile aynı mantık: en son abonelik satırı (durum fark etmez)
 app.get('/api/admin/tenants', requireAdmin, async (req, res) => {
     try {
         const tenants = await query(`
             SELECT t.id, t.name, t.tenants_no, t.status, t.is_active, t.city, t.state,
                    (SELECT COUNT(*) FROM tenants_kullanicilar WHERE tenant_id = t.id AND is_active = 1) as user_count,
-                   p.plan_adi as plan_name, p.max_kullanici as max_users,
-                   a.durum as plan_status, a.mevcut_donem_bitis as plan_end_date
+                   (SELECT p.plan_adi FROM tenants_abonelikler a LEFT JOIN tenants_abonelik_planlari p ON p.id = a.plan_id WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as plan_name,
+                   (SELECT p.max_kullanici FROM tenants_abonelikler a LEFT JOIN tenants_abonelik_planlari p ON p.id = a.plan_id WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as max_users,
+                   (SELECT a.durum FROM tenants_abonelikler a WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as plan_durum,
+                   (SELECT a.mevcut_donem_bitis FROM tenants_abonelikler a WHERE a.tenant_id = t.id ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1) as plan_end_date
             FROM tenants t
-            LEFT JOIN tenants_abonelikler a ON a.tenant_id = t.id AND a.durum = 'aktif'
-            LEFT JOIN tenants_abonelik_planlari p ON p.id = a.plan_id
             ORDER BY t.id ASC
         `);
-        const data = (tenants || []).map(t => ({
-            ...t,
-            status: t.status || 'pasif',
-            plan_status: t.plan_status || (t.plan_end_date ? (new Date(t.plan_end_date) < new Date() ? 'expired' : 'aktif') : null)
-        }));
+        const now = new Date();
+        const data = (tenants || []).map(t => {
+            const endDate = t.plan_end_date ? new Date(t.plan_end_date) : null;
+            const isExpired = t.plan_durum === 'iptal' || t.plan_durum === 'iptal_console' || (endDate && endDate < now);
+            const plan_status = isExpired ? 'expired' : (t.plan_durum || null);
+            return {
+                ...t,
+                status: t.status || 'pasif',
+                plan_status,
+                plan_end_date: t.plan_end_date
+            };
+        });
         res.json({ success: true, data });
     } catch (error) {
         console.error('❌ /api/admin/tenants hatası:', error);
@@ -9432,7 +9460,7 @@ app.post('/api/public/change-plan', async (req, res) => {
             SELECT a.*, p.aylik_ucret as plan_aylik
             FROM tenants_abonelikler a
             LEFT JOIN tenants_abonelik_planlari p ON a.plan_id = p.id
-            WHERE a.tenant_id = ? ORDER BY a.olusturma_tarihi DESC LIMIT 1
+            WHERE a.tenant_id = ? ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1
         `, [tenantId], null);
         const current = currentSub?.[0] || null;
 
@@ -9583,7 +9611,7 @@ app.post('/api/admin/tenants/:tenantId/abonelik/upgrade', requireAdmin, async (r
             SELECT a.*, p.aylik_ucret as plan_aylik
             FROM tenants_abonelikler a
             LEFT JOIN tenants_abonelik_planlari p ON a.plan_id = p.id
-            WHERE a.tenant_id = ? ORDER BY a.olusturma_tarihi DESC LIMIT 1
+            WHERE a.tenant_id = ? ORDER BY a.olusturma_tarihi DESC, a.id DESC LIMIT 1
         `, [tenantId], null);
         const current = currentSub?.[0] || null;
 

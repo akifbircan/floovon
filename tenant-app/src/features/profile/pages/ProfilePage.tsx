@@ -31,6 +31,7 @@ interface UserListItem {
   profile_image?: string;
   durum?: 'aktif' | 'pasif';
   is_active?: number;
+  is_admin?: number | string;
   son_etkinlik?: string;
 }
 
@@ -930,9 +931,13 @@ export const ProfilePage: React.FC = () => {
                             <td data-label="Durum">
                               <button
                                 type="button"
-                                className={`durum-badge ${durum === 'aktif' ? 'durum-badge-aktif' : 'durum-badge-pasif'}`}
-                                title="Durumu değiştirmek için tıklayın"
+                                className={`durum-badge ${durum === 'aktif' ? 'durum-badge-aktif' : 'durum-badge-pasif'} ${(user.is_admin === 1 || user.is_admin === '1') ? 'durum-badge-admin' : ''}`}
+                                title={(user.is_admin === 1 || user.is_admin === '1') ? 'Bu kullanıcı varsayılan/ana kullanıcı olduğu için durumu değiştirilemez' : 'Durumu değiştirmek için tıklayın'}
                                 onClick={async () => {
+                                  if (user.is_admin === 1 || user.is_admin === '1') {
+                                    showToast('warning', 'Bu kullanıcı varsayılan/ana kullanıcı olduğu için durumu değiştirilemez.');
+                                    return;
+                                  }
                                   try {
                                     const yeniDurum = durum === 'aktif' ? 'pasif' : 'aktif';
                                     await apiRequest(`/users/${user.id}`, {

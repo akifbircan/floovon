@@ -182,6 +182,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
 
+  // Başka bir sekmede çıkış yapıldığında bu sekmeyi de login'e at
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return;
+    const ch = new BroadcastChannel('floovon-logout');
+    const onMessage = () => {
+      clearAuth();
+      setUser(null);
+      window.location.href = '/login';
+    };
+    ch.addEventListener('message', onMessage);
+    return () => {
+      ch.removeEventListener('message', onMessage);
+      ch.close();
+    };
+  }, []);
+
   // Kullanıcı bilgilerini yenile
   const refreshUser = async () => {
     if (isAuthenticated()) {
@@ -222,10 +238,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await apiRequest('/auth/logout', { method: 'POST' });
+    } catch (_) {
+      // Sunucu yanıt vermese bile yerel oturumu temizle
+    }
     clearAuth();
     setUser(null);
-    navigate('/login');
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const ch = new BroadcastChannel('floovon-logout');
+        ch.postMessage({ type: 'logout' });
+        ch.close();
+      } catch (_) {}
+    }
+    window.location.href = '/login';
   };
 
   const value: AuthContextType = {

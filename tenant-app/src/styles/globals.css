@@ -277,8 +277,12 @@
   color: var(--yesil-color-1);
 }
 .durum-badge-pasif {
-  background-color: var(--gray-light-f2);
-  color: var(--gri70);
+  background-color: var(--kirmizi-soft-bg, #ffebee);
+  color: var(--kirmizi-canli);
+}
+.durum-badge-admin {
+  opacity: 0.85;
+  cursor: not-allowed;
 }
 
 /* Araç Takip – Teslimata Çıktım / Teslimatı Sonlandır / Kapat (primary-style) */

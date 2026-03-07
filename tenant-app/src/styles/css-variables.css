@@ -131,6 +131,7 @@
   --red-warm: #ea2121;
   --kirmizi-canli: #ff3f3f;
   --kirmizi-sicak: #e95252;
+  --kirmizi-soft-bg: #ffebee;
   --popup-saatkalan-sure-uyari: #ff0900;
   --mint-orange: #ffdbb6;
   --orange-bright: #ff9100;
@@ -573,6 +574,7 @@ html.dark-mode {
   --yesil-dogal: #44d46b;
   --kirmizi-canli: #ff6666;
   --kirmizi-sicak: #ff7777;
+  --kirmizi-soft-bg: rgba(255, 80, 80, 0.18);
   --yesil-destek: #44d46b;
   --yesil-color-1: #44d46b;
   --yesil-color-1-soft: #1a3d2e;

@@ -70,7 +70,7 @@ export const TeknikDestekModal: React.FC<TeknikDestekModalProps> = ({
     setLoading(true);
 
     try {
-      const response = await apiRequest('/teknik-destek', {
+      const response = await apiRequest<{ success?: boolean; message?: string }>('/teknik-destek', {
         method: 'POST',
         data: {
           konu: formData.konu,
@@ -91,9 +91,10 @@ export const TeknikDestekModal: React.FC<TeknikDestekModalProps> = ({
       } else {
         throw new Error(response?.message || 'Destek talebi gönderilemedi');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Destek talebi gönderme hatası:', error);
-      const errorMessage = error?.response?.data?.error || error?.response?.data?.message || error?.message || 'Destek talebi gönderilemedi';
+      const err = error as { response?: { data?: { error?: string; message?: string } }; message?: string };
+      const errorMessage = err?.response?.data?.error || err?.response?.data?.message || err?.message || 'Destek talebi gönderilemedi';
       showToast('error', errorMessage);
     } finally {
       setLoading(false);

@@ -219,7 +219,7 @@ function formatTeslimTarihDisplay(dateStr: string | undefined | null): string {
 
 /** Sipariş detay popup: durum metni */
 function formatSiparisDurumDisplay(s: Siparis): string {
-  if (s.arsivli === 1 || s.arsivli === '1' || s.arsivli === true) return 'Arşivlendi';
+  if (s.arsivli === 1 || String(s.arsivli) === '1' || s.arsivli === true) return 'Arşivlendi';
   const status = (s.status ?? s.durum ?? '').toString().toLowerCase();
   if (status === 'teslim' || status === 'teslim_edildi') return 'Teslim Edildi';
   if (status === 'beklemede') return 'Beklemede';
@@ -1346,7 +1346,7 @@ export const OrderDetailPage: React.FC = () => {
                                 download={getFileNameFromPath(s.secilen_urun_yazi_dosyasi) || s.secilen_urun_yazi_dosyasi}
                                 title="Ürün yazısı dosyasını indir"
                                 className="siparis-detay-urun-yazi-dosya-link"
-                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); triggerDownload(dosyaUrl, getFileNameFromPath(s.secilen_urun_yazi_dosyasi) || s.secilen_urun_yazi_dosyasi); }}
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); triggerDownload(dosyaUrl, getFileNameFromPath(s.secilen_urun_yazi_dosyasi) || s.secilen_urun_yazi_dosyasi || ''); }}
                               >{getFileNameFromPath(s.secilen_urun_yazi_dosyasi) || s.secilen_urun_yazi_dosyasi}</a>
                             </span>
                           ) : (

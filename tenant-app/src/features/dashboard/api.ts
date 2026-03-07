@@ -208,7 +208,7 @@ function mapOrganizasyonKart(backend: BackendOrganizasyonKart): OrganizasyonKart
     // İlçe/il bilgileri
     organizasyon_ilce: backend.organizasyon_ilce || backend.ilce,
     organizasyon_il: backend.organizasyon_il || backend.il,
-    organizasyon_teslimat_konumu: backend.organizasyon_teslimat_konumu || backend.teslimat_konumu,
+    organizasyon_teslimat_konumu: (backend.organizasyon_teslimat_konumu || backend.teslimat_konumu) as string | undefined,
   };
 }
 

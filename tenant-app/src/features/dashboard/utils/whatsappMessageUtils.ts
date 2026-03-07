@@ -324,6 +324,7 @@ export function createTeslimEdildiMessage(data: {
   teslim_acik_adres?: string;
   organizasyon_acik_adres?: string;
   org_acik_adres?: string;
+  adres?: string;
   organizasyon_teslimat_konumu?: string;
   teslimat_konumu?: string;
 }): string {

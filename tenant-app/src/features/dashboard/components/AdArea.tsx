@@ -4,10 +4,8 @@
  */
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export const AdArea: React.FC = () => {
-  const navigate = useNavigate();
 
   const handleUpgrade = () => {
     const base = typeof window !== 'undefined' ? window.location.origin : '';

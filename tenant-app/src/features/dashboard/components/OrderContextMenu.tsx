@@ -3,10 +3,10 @@ import { createPortal } from 'react-dom';
 import { ChevronRight } from 'lucide-react';
 import type { Order, OrganizasyonKart as OrganizasyonKartType } from '../types';
 
-// ✅ KRİTİK: moment CDN'den yükleniyor, window.moment kullan
+// ✅ KRİTİK: moment CDN'den yükleniyor, window.moment kullan (moment paketi yok, tip tanımı)
 declare global {
   interface Window {
-    moment: typeof import('moment');
+    moment?: (value: string | Date) => { format: (fmt: string) => string };
   }
 }
 
@@ -176,7 +176,7 @@ export const OrderContextMenu: React.FC<OrderContextMenuProps> = ({
 
   const handleMove = async (targetKartId: number) => {
     try {
-      await onMove(order.id, targetKartId);
+      await onMove(Number(order.id), targetKartId);
       onClose();
     } catch (error) {
       console.error('Kart taşıma hatası:', error);

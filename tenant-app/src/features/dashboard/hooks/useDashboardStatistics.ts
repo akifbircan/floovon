@@ -11,7 +11,7 @@ export function useDashboardStatistics(
   selectedWeek: string | null | undefined,
   isLoading?: boolean
 ) {
-  const { weekDates } = useWeekDates(selectedWeek);
+  const { weekDates } = useWeekDates(selectedWeek ?? undefined);
   
   // ✅ DÜZELTME: Eski istatistikleri koru - ilk yüklemede 0 görünmesin
   const previousStatisticsRef = useRef<{

@@ -454,7 +454,7 @@ function YazdirmaAyarlariForm() {
     e.preventDefault();
     try {
       await apiClient.put('/ayarlar/yazdirma', { is_active: isActive });
-      queryClient.setQueryData(['ayarlar-yazdirma'], (prev: Record<string, unknown> | undefined) => ({ ...prev, is_active }));
+      queryClient.setQueryData(['ayarlar-yazdirma'], (prev: Record<string, unknown> | undefined) => ({ ...prev, is_active: isActive }));
       queryClient.invalidateQueries({ queryKey: ['ayarlar-yazdirma'] });
       showToast('success', 'Yazdırma ayarları kaydedildi.');
     } catch (err: unknown) {
@@ -527,12 +527,13 @@ function GonderimAyarlariTab() {
     staleTime: 60 * 1000,
   });
 
+  type WpKisi = { ad?: string; isim?: string; tel?: string; telefon?: string };
   const wpListe = (() => {
     const raw = gonderimData?.data?.siparis_listesi_whatsapp;
-    if (!raw) return {} as Record<string, { ad: string; tel: string }>;
+    if (!raw) return {} as Record<string, WpKisi>;
     try {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+      return (typeof parsed === 'object' && parsed !== null ? parsed : {}) as Record<string, WpKisi>;
     } catch {
       return {};
     }
@@ -1910,7 +1911,7 @@ export const SettingsPage: React.FC = () => {
                             <>
                               <img src={urunGorselPreview} alt="Ürün görseli" className="davetiye-preview-img" />
                               <span className="secilen-dosya-metin">
-                                Seçilen dosya: {urunFormData.gorsel.name}
+                                Seçilen dosya: {urunFormData.gorsel?.name}
                               </span>
                               <button
                                 type="button"
@@ -3003,7 +3004,7 @@ export const SettingsPage: React.FC = () => {
                   {araclarLoading ? (
                     <div className="ayarlar-loading"><LoadingSpinner size="md" /></div>
                   ) : araclar.length === 0 ? (
-                    <EmptyState message="Henüz araç eklenmemiş. Sol taraftan yeni araç ekleyebilirsiniz." />
+                    <EmptyState title="Henüz araç eklenmemiş" description="Sol taraftan yeni araç ekleyebilirsiniz." />
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full ayarlar-tablosu">

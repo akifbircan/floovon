@@ -4,7 +4,7 @@
  * yoksa login sonrası "useAuth must be used within AuthProvider" hatası oluşur.
  */
 
-import React, { createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
 import type { User } from '../../lib/auth';
 
 export interface AuthContextType {

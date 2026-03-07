@@ -760,7 +760,8 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, organizasyonKartTur
               <ul className="urun-yazisi-popup-list">
                 {musteriDosyaListesi.map((f) => {
                   const baseUrl = getApiBaseUrl().replace(/\/api\/?$/, '') || getApiBaseUrl().split('/api')[0];
-                  const downloadUrl = (f.path || f.url) ? `${baseUrl}${(f.path || f.url).startsWith('/') ? '' : '/'}${f.path || f.url}` : null;
+                  const pathOrUrl = f.path || f.url;
+                  const downloadUrl = pathOrUrl ? `${baseUrl}${pathOrUrl.startsWith('/') ? '' : '/'}${pathOrUrl}` : null;
                   const isSecili = secilenDosyaAdi === f.name;
                   return (
                     <li key={f.name} className={isSecili ? 'secili' : ''}>

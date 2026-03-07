@@ -235,7 +235,6 @@ export interface SiparisFormData {
   teslim_saat?: string;
   notes?: string;
   musteri_id?: number | string;
-  siparis_urun_aciklama?: string;
   secilen_urun_yazi_dosyasi?: File | string;
 }
 

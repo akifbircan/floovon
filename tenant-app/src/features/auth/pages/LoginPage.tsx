@@ -84,9 +84,11 @@ export const LoginPage: React.FC = () => {
       const { token, user, tenant_id } = result.data;
 
       // Beni hatırla: ÖNCE kaydet (login() state güncelleyince yönlendirme olabilir, sonraki satırlar çalışmayabilir)
-      const shouldRemember = data.remember_tenant === true ||
-        data.remember_tenant === 'on' ||
-        Boolean(data.remember_tenant);
+      const rememberVal = data.remember_tenant;
+      const shouldRemember = rememberVal === true ||
+        String(rememberVal) === 'on' ||
+        String(rememberVal) === 'true' ||
+        Boolean(rememberVal);
 
       // Tenant kodunu her zaman kaydet (giriş başarılı ve dolu ise) - checkbox bazen formda gelmeyebiliyor
       if (data.tenant_code?.trim()) {

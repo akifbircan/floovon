@@ -5,17 +5,6 @@ import { usePagePermissions } from '../providers/PagePermissionsProvider';
 import { usePlan } from '../providers/PlanProvider';
 import { getPageIdFromPath } from '../utils/pagePermissions';
 
-function isSystemAdmin(role: string | undefined): boolean {
-  if (!role) return false;
-  const r = role.toLowerCase().trim();
-  return (
-    r === 'sistem yöneticisi' ||
-    r === 'sistem-yoneticisi' ||
-    r === 'sistem_yoneticisi' ||
-    r === 'admin'
-  );
-}
-
 interface ProtectedRouteProps {
   children: ReactNode;
   requiredRole?: string;

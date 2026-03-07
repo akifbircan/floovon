@@ -49,6 +49,11 @@ export interface Order {
   teslimIl?: string;
   /** Müşteri ürün yazı dosyasından seçilen dosya adı (siparişte kayıtlı) */
   secilenUrunYaziDosyasi?: string;
+  /** Arşivlendi mi (backend: 0/1 veya boolean) */
+  arsivli?: number | boolean;
+  /** Arşiv sebebi (örn. teslim-edildi) */
+  arsiv_sebep?: string;
+  [key: string]: unknown;
 }
 
 export interface OrganizasyonKart {
@@ -70,10 +75,15 @@ export interface OrganizasyonKart {
   // İlçe/il bilgileri
   organizasyon_ilce?: string;
   organizasyon_il?: string;
+  /** Eski/alternatif alan adları (backend uyumluluk) */
+  teslim_ilce?: string;
+  teslim_il?: string;
+  organizasyon_davetiye_gorsel?: string;
   /** Teslimat konumu seçilmişse kartta konum alanında bu gösterilir; açık adresin önüne mahalle eklenir */
   organizasyon_teslimat_konumu?: string;
   // İç siparişler (lazy load edilebilir)
   siparisler?: Order[];
+  [key: string]: unknown;
 }
 
 /**

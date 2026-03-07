@@ -89,7 +89,8 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
         const res = await apiClient.get('/whatsapp/status');
         const data = res.data;
         // Uçuşta olan poll: cevap geldiği anda başka poll "Bağlantı başarılı" göstermiş olabilir – bir daha hiçbir şey güncelleme
-        if (displayPhaseRef.current === 'success' || callbackExecutedRef.current) return;
+        const phaseNow = displayPhaseRef.current as 'loading' | 'qr' | 'pairing' | 'success';
+        if (phaseNow === 'success' || callbackExecutedRef.current) return;
 
         const st = (data.status === 'ready' || (data.isReady && data.isAuthenticated)) ? 'ready' : data.status || (data.isAuthenticated && !data.isReady ? 'pairing' : data.hasQRCode ? 'qr' : 'uninitialized');
         const qr = data.qrCode || data.qr || null;
@@ -122,7 +123,8 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
         }
 
         if (st === 'pairing') {
-          if (displayPhaseRef.current !== 'success') setPhase('pairing');
+          const p = displayPhaseRef.current as 'loading' | 'qr' | 'pairing' | 'success';
+          if (p !== 'success') setPhase('pairing');
           return;
         }
 

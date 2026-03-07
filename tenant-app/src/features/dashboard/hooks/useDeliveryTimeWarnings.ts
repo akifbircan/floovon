@@ -1,3 +1,5 @@
+import type { OrganizasyonKart } from '../types';
+
 /**
  * Teslim saati uyarılarını yöneten hook
  * ✅ REACT: Artık kullanılmıyor - her component kendi useDeliveryTimeWarning hook'unu kullanıyor

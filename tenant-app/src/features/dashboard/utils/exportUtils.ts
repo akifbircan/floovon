@@ -318,18 +318,18 @@ ${yazdirmaTarihi}
     }
     
     const teslimSaat = (siparis.teslimSaati || kart.teslim_saat || '').replace('Saat', '').trim();
-    const kartTur = getKartTurDisplay(kart.kart_tur, kart.kart_tur_display);
-    const kartTurCellHtml = getKartTurCellContentForPrint(kart.kart_tur, kart.kart_tur_display);
+    const kartTur = getKartTurDisplay(kart.kart_tur ?? '', kart.kart_tur_display);
+    const kartTurCellHtml = getKartTurCellContentForPrint(kart.kart_tur ?? '', kart.kart_tur_display);
     const teslimKisisi = kart.teslim_kisisi || siparis.teslimKisisi || '';
     const teslimTelefonRaw = kart.teslim_kisisi_telefon || siparis.teslimKisisiTelefon || '';
-    const teslimTelefon = formatPhoneNumber(teslimTelefonRaw); // ✅ Telefon numarasını formatla
+    const teslimTelefon = formatPhoneNumber(teslimTelefonRaw ?? ''); // ✅ Telefon numarasını formatla
     const siparisVeren = siparis.musteriAdi || '';
     const urun = siparis.urun || '';
     const urunYazisi = siparis.urunYazisi || siparis.notes || '';
     const ilce = (kart as any).organizasyon_ilce || (siparis as any).teslimIlce;
     const il = (kart as any).organizasyon_il || (siparis as any).teslimIl;
     const acikAdresRaw = kart.acik_adres || siparis.acikAdres || '';
-    const adresWithIlceIl = appendIlceIlToAddress(acikAdresRaw, ilce, il);
+    const adresWithIlceIl = appendIlceIlToAddress(acikAdresRaw, ilce ?? undefined, il ?? undefined);
     const isOrgWithKonum = isOrganizasyon && teslimatKonumu;
     const mahalleDisplay = isOrgWithKonum ? teslimatKonumu : (kart.mahalle || (siparis as any).mahalle || '');
     const adres = isOrgWithKonum && (mahalle || adresWithIlceIl)
@@ -1336,10 +1336,10 @@ export async function exportToExcel(
     const data = filteredOrders.map(({ kart, siparis }, index) => {
     const tarih = formatOrderDate(kart.teslim_tarih || '');
     const teslimSaat = siparis.teslimSaati || kart.teslim_saat || '';
-    const kartTur = getKartTurDisplay(kart.kart_tur, kart.kart_tur_display);
+    const kartTur = getKartTurDisplay(kart.kart_tur ?? '', kart.kart_tur_display);
     const teslimKisisi = kart.teslim_kisisi || siparis.teslimKisisi || '';
     const teslimTelefonRaw = kart.teslim_kisisi_telefon || siparis.teslimKisisiTelefon || '';
-    const teslimTelefon = formatPhoneNumber(teslimTelefonRaw);
+    const teslimTelefon = formatPhoneNumber(teslimTelefonRaw ?? '');
     const siparisVeren = siparis.musteriAdi || '';
     const urun = siparis.urun || '';
     const urunYazisi = siparis.urunYazisi || siparis.notes || '';

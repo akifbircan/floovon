@@ -1,10 +1,8 @@
 import React, { useState, useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { isAuthenticated, getUser, clearAuth, setUser as saveUser, type User } from '../../lib/auth';
 import { apiRequest } from '../../lib/api';
-import { getApiBaseUrl } from '../../lib/runtime';
 import { getUploadUrl } from '../../shared/utils/urlUtils';
-import { AuthContext } from './authContext';
+import { AuthContext, type AuthContextType } from './authContext';
 
 // Re-export so existing imports from AuthProvider keep working
 export { useAuth } from './authContext';
@@ -18,7 +16,6 @@ const AuthContextProvider = AuthContext.Provider;
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
 
   // Backend'den kullanıcı bilgilerini çek - /api/auth/me endpoint'ini kullan (eski yapıyla uyumlu)
   const fetchUserProfile = async (userId?: number): Promise<User | null> => {
@@ -80,39 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               return imagePath;
             }
             
-            // getUploadUrl kullan - otomatik olarak doğru backend base URL'i ekler
             return getUploadUrl(imagePath);
-            
-            // Eğer path zaten /uploads ile başlıyorsa, direkt backend base'e ekle
-            if (imagePath.startsWith('/uploads')) {
-              const timestamp = Date.now();
-              return `${backendBase}${imagePath}${imagePath.includes('?') ? '&' : '?'}t=${timestamp}`;
-            }
-            
-            // Eğer tenant_id varsa ve path sadece dosya adı gibi görünüyorsa, tenant-based path oluştur
-            if (tenantId && imagePath) {
-              // Path'ten sadece dosya adını al (eğer tam path ise)
-              // Örnek: "profiles/filename.jpg" -> "filename.jpg" veya "uploads/tenants/1/profiles/filename.jpg" -> "filename.jpg"
-              let filename = imagePath;
-              if (imagePath.includes('/')) {
-                // Eğer path içinde "profiles/" varsa, ondan sonrasını al
-                const profilesIndex = imagePath.indexOf('profiles/');
-                if (profilesIndex !== -1) {
-                  filename = imagePath.substring(profilesIndex + 'profiles/'.length);
-                } else {
-                  // Sadece son kısmı al
-                  filename = imagePath.split('/').pop() || imagePath;
-                }
-              }
-              
-              // Cache busting için timestamp ekle
-              const timestamp = Date.now();
-              return `${backendBase}/uploads/tenants/${tenantId}/profiles/${filename}?t=${timestamp}`;
-            }
-            
-            // Fallback: Direkt backend base'e ekle
-            const timestamp = Date.now();
-            return `${backendBase}${imagePath.startsWith('/') ? imagePath : '/' + imagePath}?t=${timestamp}`;
           })(),
           // Eski yapıyla uyumluluk için - backend'den gelen alanları map et
           isim: profileData.isim || profileData.name, // name -> isim

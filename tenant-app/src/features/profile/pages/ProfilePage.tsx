@@ -1338,7 +1338,7 @@ export const ProfilePage: React.FC = () => {
                     <div className="profil-resim-preview profil-resim-preview-sm">
                       {editUserPreviewUrl ? (
                         <img src={editUserPreviewUrl} alt="Profil" />
-                      ) : (editingUser.profil_resmi ?? editingUser.profile_image) && !editUserImgError ? (
+                      ) : editingUser && (editingUser.profil_resmi ?? editingUser.profile_image) && !editUserImgError ? (
                         <img
                           src={getProfileImageUrl(editingUser)}
                           alt="Profil"

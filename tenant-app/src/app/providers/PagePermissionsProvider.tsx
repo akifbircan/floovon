@@ -62,7 +62,7 @@ export const PagePermissionsProvider: React.FC<PagePermissionsProviderProps> = (
       if (Array.isArray(data)) {
         data.forEach((p) => {
           const v = p.has_access;
-          map[p.page_id] = v === true || v === 1 || v === '1' || v === 'true';
+          map[p.page_id] = v === true || v === 1 || String(v) === '1' || String(v) === 'true';
         });
       }
       setPermissions(map);

@@ -10,6 +10,7 @@ export interface User {
   surname?: string; // DB: surname
   ad?: string; // Türkçe ad alanı (isim)
   telefon?: string; // DB: phone
+  phone?: string; // Alternatif alan adı (API uyumluluk)
   role?: string; // DB: role
   tenant_id: number;
   profil_resmi?: string; // Profil resmi URL'i (DB: profile_image)

@@ -17,6 +17,8 @@ import {
   getTeslimatKonumlari,
   type OrganizasyonKartFormData,
   type TeslimatKonumuItem,
+  type OrganizasyonTuru,
+  type OrganizasyonEtiketi,
 } from '../api/formActions';
 import { getUploadUrl } from '../../../shared/utils/urlUtils';
 import { getOrganizasyonKartDetay } from '../api/kartActions';
@@ -64,15 +66,15 @@ export const EditKartModal: React.FC<EditKartModalProps> = ({
   const [activeTab, setActiveTab] = useState<string>('organizasyon');
 
   // Organizasyon türleri ve etiketleri
-  const { data: organizasyonTurleri = [], refetch: refetchTurler } = useQuery({
+  const { data: organizasyonTurleri = [], refetch: refetchTurler } = useQuery<OrganizasyonTuru[]>({
     queryKey: ['organizasyon-turleri'],
-    queryFn: getOrganizasyonTurleri,
+    queryFn: () => getOrganizasyonTurleri(),
     enabled: isOpen,
   });
 
-  const { data: organizasyonEtiketleri = [], refetch: refetchEtiketler } = useQuery({
+  const { data: organizasyonEtiketleri = [], refetch: refetchEtiketler } = useQuery<OrganizasyonEtiketi[]>({
     queryKey: ['organizasyon-etiketleri'],
-    queryFn: getOrganizasyonEtiketleri,
+    queryFn: () => getOrganizasyonEtiketleri(),
     enabled: isOpen,
   });
 
@@ -99,14 +101,14 @@ export const EditKartModal: React.FC<EditKartModalProps> = ({
   const ozelGunGrupId = getGrupIdForTab('ozelgun');
   const ozelSiparisGrupId = getGrupIdForTab('ozelsiparis');
   const aracSuslemeGrupId = getGrupIdForTab('aracsusleme');
-  const turleriOrganizasyon = organizasyonTurleri.filter((t: { grup_id?: number }) => t.grup_id === organizasyonGrupId || (organizasyonGrupId == null && (t.grup_id == null || t.grup_id === 0)));
-  const turleriOzelGun = organizasyonTurleri.filter((t: { grup_id?: number }) => t.grup_id === ozelGunGrupId);
-  const turleriOzelSiparis = organizasyonTurleri.filter((t: { grup_id?: number }) => t.grup_id === ozelSiparisGrupId);
-  const turleriAracSusleme = organizasyonTurleri.filter((t: { grup_id?: number }) => t.grup_id === aracSuslemeGrupId);
-  const etiketleriOrganizasyon = organizasyonEtiketleri.filter((e: { grup_id?: number }) => e.grup_id === organizasyonGrupId || (organizasyonGrupId == null && (e.grup_id == null || e.grup_id === 0)));
-  const etiketleriAracSusleme = organizasyonEtiketleri.filter((e: { grup_id?: number }) => e.grup_id === aracSuslemeGrupId);
-  const etiketleriOzelSiparis = organizasyonEtiketleri.filter((e: { grup_id?: number }) => e.grup_id === ozelSiparisGrupId);
-  const etiketleriOzelGun = organizasyonEtiketleri.filter((e: { grup_id?: number }) => e.grup_id === ozelGunGrupId);
+  const turleriOrganizasyon = organizasyonTurleri.filter((t) => t.grup_id === organizasyonGrupId || (organizasyonGrupId == null && (t.grup_id == null || t.grup_id === 0)));
+  const turleriOzelGun = organizasyonTurleri.filter((t) => t.grup_id === ozelGunGrupId);
+  const turleriOzelSiparis = organizasyonTurleri.filter((t) => t.grup_id === ozelSiparisGrupId);
+  const turleriAracSusleme = organizasyonTurleri.filter((t) => t.grup_id === aracSuslemeGrupId);
+  const etiketleriOrganizasyon = organizasyonEtiketleri.filter((e) => e.grup_id === organizasyonGrupId || (organizasyonGrupId == null && (e.grup_id == null || e.grup_id === 0)));
+  const etiketleriAracSusleme = organizasyonEtiketleri.filter((e) => e.grup_id === aracSuslemeGrupId);
+  const etiketleriOzelSiparis = organizasyonEtiketleri.filter((e) => e.grup_id === ozelSiparisGrupId);
+  const etiketleriOzelGun = organizasyonEtiketleri.filter((e) => e.grup_id === ozelGunGrupId);
 
   // Form state - Organizasyon kartı için
   const [orgTur, setOrgTur] = useState<string>('');

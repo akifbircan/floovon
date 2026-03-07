@@ -572,7 +572,7 @@ export const OrdersPage: React.FC = () => {
                                             <td data-label="Organizasyon">
                                               {(() => {
                                                 const parts = getOrganizasyonDisplayParts(o);
-                                                if (!parts.length) return maybeEmpty(null);
+                                                if (!parts.length) return maybeEmpty('');
                                                 return (
                                                   <div className="arsiv-org-hucre">
                                                     {parts.map((p, i) => (

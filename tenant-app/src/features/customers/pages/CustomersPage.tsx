@@ -689,7 +689,7 @@ export const CustomersPage: React.FC = () => {
                     <div className="customers-detail-cari-cell">
                       <span className="customers-detail-label">Toplam Sipariş</span>
                       <span className="customers-detail-value">
-                        {cariOzet?.siparis_sayisi ?? cariOzet?.toplam_siparis_sayisi ?? selectedCustomer.toplam_siparis ?? selectedCustomer.orderCount ?? 0}
+                        {cariOzet?.toplam_siparis_sayisi ?? selectedCustomer.toplam_siparis ?? selectedCustomer.orderCount ?? 0}
                       </span>
                     </div>
                     <div className="customers-detail-cari-cell">

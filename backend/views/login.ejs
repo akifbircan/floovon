@@ -1,0 +1,45 @@
+<!-- Login Sayfası İçeriği -->
+<div class="login-container">
+    <div class="login-form-wrapper">
+        <div class="login-header">
+            <img src="/assets/logo-floovon-light.svg" alt="Floovon Logo" class="login-logo">
+            <h1>Floovon™</h1>
+            <p>Sipariş Yönetim Sistemi</p>
+        </div>
+        
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="username">Kullanıcı Adı</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Şifre</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="login-btn">Giriş Yap</button>
+            
+            <div class="login-links">
+                <a href="login-sifremi-unuttum.html" class="forgot-password">Şifremi Unuttum</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sayfa Özel Script'leri -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Login sayfası yüklendi');
+        
+        // Login form handler
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Login form submitted');
+                // Login logic buraya gelecek
+            });
+        }
+    });
+</script>

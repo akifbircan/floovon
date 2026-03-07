@@ -1,0 +1,258 @@
+/**
+ * Potansiyel Partnerler sayfası
+ * Arşiv Siparişler / Müşteriler ile aynı yapı
+ */
+
+/* İşlemler kolonu - dikey ortalama */
+.potansiyel-partnerler-page table th.text-right,
+.potansiyel-partnerler-page table td.text-right {
+  vertical-align: middle !important;
+}
+
+/* Filtre alanı - label ve input yan yana, search sağda */
+.potansiyel-baslik-alan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--overlay-gray-medium, var(--border-renk));
+}
+
+.potansiyel-filtreler {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.potansiyel-filtre-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.potansiyel-filtre-item label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ana-renk);
+  white-space: nowrap;
+}
+
+.potansiyel-filtre-item select,
+.potansiyel-filtre-item input[type="text"] {
+  height: 40px;
+  min-width: 160px;
+  padding: 0 12px;
+  border: 1px solid var(--filter-input-border, var(--border-renk));
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--ana-renk);
+  background-color: var(--white);
+}
+
+.potansiyel-filtre-item input:focus,
+.potansiyel-filtre-item select:focus {
+  outline: none;
+  border-color: var(--mor-primary);
+  box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.15);
+}
+
+.potansiyel-btn-filtre-reset {
+  background-color: var(--mor-primary);
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--white-only);
+  cursor: pointer;
+  border: none;
+  height: 40px;
+}
+
+.potansiyel-btn-filtre-reset:hover {
+  opacity: 0.9;
+}
+
+.potansiyel-sag-alan {
+  margin-left: auto;
+}
+
+.potansiyel-search-wrapper {
+  min-width: 400px;
+  max-width: 520px;
+  flex: 1;
+}
+
+/* İstatistik kartları */
+.potansiyel-istatistik-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.potansiyel-istatistik-kart {
+  background-color: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--border-renk);
+  padding: 20px;
+}
+
+.potansiyel-istatistik-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.potansiyel-istatistik-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background-color: var(--mor-primary-light, rgba(109, 40, 217, 0.12));
+  color: var(--mor-primary);
+}
+
+.potansiyel-istatistik-kart .potansiyel-istatistik-sayi {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ana-renk);
+}
+
+.potansiyel-istatistik-kart .potansiyel-istatistik-label {
+  font-size: 13px;
+  color: var(--gri70);
+  margin-top: 2px;
+}
+
+/* Tablo wrapper - partners-table ile uyumlu */
+.potansiyel-table-wrapper {
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--border-renk);
+  background: var(--white);
+}
+
+.potansiyel-table-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 380px);
+}
+
+.potansiyel-tablosu {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.potansiyel-tablosu thead {
+  background-color: var(--ikincil-renk);
+}
+
+.potansiyel-tablosu thead th {
+  /* Ortak stil: dashboard-cards.css "Ortak tablo thead th stili" */
+  white-space: nowrap;
+}
+
+.potansiyel-tablosu tbody td {
+  padding: 1rem 1.5rem;
+  vertical-align: middle;
+  color: var(--ana-renk);
+  border-bottom: 1px solid var(--border-renk);
+}
+
+.potansiyel-tablosu .potansiyel-table-row {
+  cursor: default;
+  transition: background-color 0.15s;
+}
+
+.potansiyel-tablosu .potansiyel-table-row:hover {
+  background-color: var(--tablo-satir-hover, rgba(109, 40, 217, 0.06));
+}
+
+.potansiyel-td-logo {
+  width: 48px;
+  min-width: 48px;
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.potansiyel-table-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.potansiyel-link {
+  color: var(--mor-primary-text);
+  text-decoration: none;
+}
+
+.potansiyel-link:hover {
+  text-decoration: underline;
+}
+
+.potansiyel-tablosu .td-empty {
+  color: var(--gri70);
+}
+
+.potansiyel-firma-adi {
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.potansiyel-th-islem,
+.potansiyel-td-islem {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.potansiyel-tablosu thead th.potansiyel-th-islem {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* İşlem ikonları dashboard-cards.css table .islem-ikonlar ile ortak stil */
+
+/* Dark tema */
+body.dark-mode .potansiyel-istatistik-kart,
+html.dark-mode .potansiyel-istatistik-kart {
+  background-color: var(--form-dark-bg, var(--box-bg-light));
+  border-color: var(--border-renk);
+}
+
+body.dark-mode .potansiyel-istatistik-kart .potansiyel-istatistik-icon,
+html.dark-mode .potansiyel-istatistik-kart .potansiyel-istatistik-icon {
+  background-color: var(--mor-primary);
+  color: var(--white-only);
+}
+
+body.dark-mode .potansiyel-istatistik-kart .potansiyel-istatistik-icon svg,
+html.dark-mode .potansiyel-istatistik-kart .potansiyel-istatistik-icon svg {
+  color: var(--white-only);
+}
+
+body.dark-mode .potansiyel-istatistik-kart .potansiyel-istatistik-sayi,
+html.dark-mode .potansiyel-istatistik-kart .potansiyel-istatistik-sayi {
+  color: var(--ana-renk);
+}
+
+body.dark-mode .potansiyel-table-wrapper,
+html.dark-mode .potansiyel-table-wrapper {
+  background-color: var(--white);
+  border-color: var(--border-renk);
+}
+
+/* Sorgu bilgisi */
+.potansiyel-sorgu-bilgi {
+  font-size: 13px;
+  color: var(--gri70);
+  margin-bottom: 16px;
+}

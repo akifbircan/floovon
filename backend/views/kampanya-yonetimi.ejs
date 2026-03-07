@@ -1,0 +1,27 @@
+<!-- Kampanya Yönetimi Sayfası İçeriği -->
+<div id="app">
+    <div id="sidebar-component"></div>
+    <div id="header-component"></div>
+    <div id="mobile-header-component"></div>
+    <div id="landscape-overlay-component"></div>
+    
+    <main class="main-content">
+        <div class="content-wrapper">
+            <div class="page-header">
+                <h1>Kampanya Yönetimi</h1>
+            </div>
+            <div class="page-content">
+                <p>Kampanya yönetim sistemi</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Kampanya Yönetimi sayfası yüklendi');
+        if (window.ComponentManager) {
+            window.ComponentManager.init();
+        }
+    });
+</script>

@@ -1,0 +1,1297 @@
+/* Right Panel (Sag Panel) Styles - Eski style.css'den alındı */
+
+.sag-panel {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--white);
+    position: relative;
+    background: var(--white);
+    padding: 0 24px;
+    overflow: hidden;
+    max-width: 345px;
+    min-width: 345px;
+    padding-bottom: 20px;
+    height: 100vh;
+    height: 100dvh;
+    height: 100%;
+    z-index: 1;
+}
+
+.sag-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--gray-zero-alpha), var(--gray-light-ce));
+    border-radius: 4px;
+}
+
+.sag-panel .sag-panel-icerik {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+    gap: 14px;
+    flex: 1;
+    min-height: 0; /* ✅ DÜZELTME: Vehicle list scroll için gerekli */
+}
+
+.sag-panel .sag-panel-icerik .takvim-imaj {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* margin-bottom: 14px; */
+}
+
+.sag-panel .sag-panel-icerik .takvim-imaj img {
+    user-select: none;
+    max-width: 100%;
+    height: auto;
+}
+
+.sag-panel .sag-panel-icerik .gorsel img {
+    padding-bottom: 22px;
+    padding-top: 5px;
+}
+
+.sag-panel .sag-panel-icerik .gorsel-baslik {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ana-renk);
+    padding-bottom: 14px;
+    user-select: none;
+}
+
+.sag-panel .sag-panel-icerik .gorsel-baslik span {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gri70);
+    padding-top: 5px;
+    color: var(--ikincil-renk);
+}
+
+.sag-panel .sag-panel-icerik .panel-merged {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 0;
+    /* min-height: 0; */
+    /* ✅ KRİTİK: Varsayılan olarak görünür - GSAP animasyonu sadece ilk yüklemede çalışacak */
+    /* GSAP usePageAnimations.ts'de sessionStorage ile kontrol ediyor */
+    /* Eğer animasyon yapılmayacaksa direkt görünür olmalı */
+    opacity: 1;
+    /* ✅ KRİTİK: GSAP animasyonu için transform'u kaldır, GSAP kendi yönetecek */
+    /* transform: translateX(0); */
+}
+
+.sag-panel-icerik .panel-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 0;
+    flex: 1;
+    /* Kalan alanı doldursun */
+    min-height: 0;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta {
+    padding: 0;
+    margin: 0;
+    height: fit-content;
+    width: 100%;
+    /* EKLE: */
+    flex-shrink: 0;
+    /* ✅ REVIZE-18: Week input takvim popup'ı için overflow visible */
+    overflow: visible !important;
+    display: flex;
+    flex-direction: column;
+    /* margin-bottom: 20px; */
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta input[type="week"] {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ana-renk);
+    cursor: pointer;
+    border: none;
+    outline: none;
+    position: relative;
+    padding: 0;
+    width: 100%;
+    background-color: var(--white);
+    pointer-events: auto;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    z-index: 1;
+}
+
+.sag-panel input[type="week"]::-webkit-calendar-picker-indicator {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+.sag-panel .week-wrapper {
+    position: relative !important;
+    display: inline-block;
+    width: 100%;
+    overflow: visible !important;
+    z-index: 1000;
+    isolation: isolate;
+}
+
+.sag-panel .label-container {
+    display: flex;
+    align-items: center;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .label-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 5px 0;
+    width: 100%;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .takvim-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .year-month-label {
+    font-size: 16px;
+    font-weight: 600;
+    cursor: default;
+    color: var(--ana-renk);
+    user-select: none;
+    text-transform: uppercase;
+    text-align: center;
+    /* width: 100%; */
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .baslik-ve-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .baslik-ve-nav .nav {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 30px;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .baslik-ve-nav .nav button {
+    background-color: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    outline: none !important;
+    cursor: pointer !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .baslik-ve-nav .nav i {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 10px !important;
+    border: 1px solid var(--gri70) !important;
+    border-radius: 50% !important;
+    height: 30px !important;
+    width: 30px !important;
+    color: var(--gri70) !important;
+    cursor: pointer !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .baslik-ve-nav .nav i:hover {
+    background-color: var(--gray-light-f2);
+    color: var(--white);
+}
+
+.sag-panel .week-wrapper .input-kapsayici {
+    position: relative !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible !important;
+    z-index: 1001;
+    isolation: isolate;
+    width: 100%;
+}
+
+.sag-panel .week-wrapper .icon-input-week-indicator {
+    font-family: 'floovon-dashboard';
+    font-size: 9px;
+    color: var(--gri70);
+    position: absolute;
+    right: 35%;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    z-index: 2;
+    pointer-events: auto;
+}
+
+.sag-panel .week-wrapper .icon-input-week-indicator:before {
+    content: '\e807';
+}
+
+
+.sag-panel .sag-panel-icerik .takvim-hafta .clickable-day-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: default;
+    width: 100%;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .clickable-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ikincil-renk);
+    margin-bottom: 10px;
+    text-align: center;
+    border-radius: 10px;
+    width: 36px;
+    height: 51px;
+    padding: 10px;
+    border-radius: 3px;
+    border: none;
+    background: transparent;
+    transition: background-color 0.2s;
+}
+
+.sag-panel .clickable-day:hover {
+    background: var(--gray-light-ec);
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .day-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 800;
+    width: 32px;
+    height: 51px;
+    /* padding: 2px; */
+    border-radius: 3px;
+    cursor: default;
+    color: var(--ikincil-renk);
+    border-radius: 8px;
+    user-select: none;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .day-name {
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: -2px;
+}
+
+/* ✅ KRİTİK: Bugünün günü - Her zaman görünür olmalı */
+.sag-panel .clickable-day.today {
+    background: var(--highlight-button-pink) !important;
+    border-radius: 6px !important;
+}
+
+.sag-panel .clickable-day.today .day-name,
+.sag-panel .clickable-day.today .day-number {
+    color: var(--white) !important;
+}
+
+/* ✅ KRİTİK: Seçili gün */
+.sag-panel .clickable-day.secili {
+    background: var(--highlight-button-pink) !important;
+    border-radius: 6px !important;
+}
+
+.sag-panel .clickable-day.secili .day-name,
+.sag-panel .clickable-day.secili .day-number {
+    color: var(--white) !important;
+}
+
+/* ✅ KRİTİK: Bugünün günü VE seçili ise (aynı stil) */
+.sag-panel .clickable-day.today.secili {
+    background: var(--highlight-button-pink) !important;
+    border-radius: 6px !important;
+}
+
+.sag-panel .clickable-day.today.secili .day-name,
+.sag-panel .clickable-day.today.secili .day-number {
+    color: var(--white) !important;
+}
+
+/* ✅ KRİTİK: Başka bir gün seçiliyse bugünün stili görünmesin */
+.sag-panel .clickable-day.today.today-hidden {
+    background: transparent !important;
+}
+
+.sag-panel .clickable-day.today.today-hidden .day-name,
+.sag-panel .clickable-day.today.today-hidden .day-number {
+    color: var(--ikincil-renk) !important;
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .buHaftaButton {
+    background-color: var(--border-renk);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px;
+    border-radius: 5px;
+    width: 100%;
+    color: var(--ana-renk);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    /* margin-top: 12px; */
+}
+
+.sag-panel .sag-panel-icerik .takvim-hafta .buHaftaButton:hover {
+    background-color: var(--gray-light-ec);
+    opacity: 0.9;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart {
+    /* ✅ DÜZELTME: Varsayılan olarak görünür - GSAP animasyonu usePageAnimations.ts'de yapılıyor */
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--gray-light-comon);
+    border-radius: 12px;
+    padding: 10px 14px 10px 14px;
+    color: var(--ikincil-renk);
+    cursor: default;
+    width: 100%;
+    user-select: none;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .baslik {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .baslik span {
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--gri70);
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-organizasyon-adet-alan {
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+    text-align: center;
+    width: 100%;
+    gap: 4px;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-organizasyon-adet-alan span {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 18px;
+    padding: 0;
+    margin: 0;
+    /* text-wrap: nowrap; */
+    /* color: var(--gri70); */
+    /* margin-top: 4px; */
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-organizasyon-sayisi {
+    font-size: 54px;
+    font-weight: 500;
+    /* color: var(--ana-renk); */
+    line-height: 1;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .vr {
+    border: 1px solid var(--mid-gray);
+    opacity: 0.4;
+    height: 83%;
+    margin-top: 13px;
+    display: flex;
+    align-items: center;
+    width: 1px;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    font-size: 40px;
+    font-weight: 500;
+    width: 100%;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan span {
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+    text-wrap: nowrap;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan .siparis-adet-kapsayici {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 8px;
+    height: fit-content;
+    color: var(--ikincil-renk);
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan .siparis-adet-kapsayici i {
+    font-size: 18px;
+    /* margin-bottom: 10px; */
+    /* color: var(--ana-renk); */
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan .siparis-adet-kapsayici i::before {
+    width: 100%;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan .siparis-adet-kapsayici .icon-org-line {
+    font-family: 'floovon-dashboard';
+    font-size: 18px;
+    color: var(--ana-renk);
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan .siparis-adet-kapsayici .icon-org-line:before {
+    content: '\e833';
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan .toplam-siparis-sayisi {
+    font-size: 40px;
+    font-weight: 500;
+    /* color: var(--ana-renk); */
+    line-height: 1;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan .toplam-teslim-edilen-siparisler-kapsayici {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 400;
+    margin-top: 10px;
+    color: var(--ana-renk);
+    background-color: var(--mint-green);
+    text-align: center;
+    padding: 5px 8px;
+    border-radius: 5px;
+    width: 100%;
+    gap: 5px;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan .toplam-teslim-edilen-siparisler-kapsayici .text {
+    font-size: 12px;
+}
+
+.sag-panel-icerik .toplam-siparis-bilgi-kart .siparis-toplamlar-kart .toplam-siparis-adet-alan .toplam-teslim-edilen-siparisler-kapsayici .toplam-teslim-edilen-sayisi {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ana-renk);
+}
+
+/* Toggle Button ve Overlay */
+.sag-panel-toggle-btn {
+    display: none;
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001;
+    background-color: var(--white);
+    border: 1px solid var(--gray-light-comon);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.sag-panel-toggle-btn:hover {
+    background-color: var(--gray-ultra-light);
+}
+
+.sag-panel-toggle-btn i {
+    font-size: 16px;
+    color: var(--ana-renk);
+}
+
+.sag-panel-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--overlay-bg-black);
+    z-index: 999;
+}
+
+.sag-panel-overlay.active {
+    display: block;
+}
+
+/* Tablet görünümünde sağ panel - slide-out sadece 768–1023px; 1024px+ web görünümde her zaman görünsün */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .sag-panel {
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 300px;
+        max-width: 300px;
+        min-width: 300px;
+        height: 100vh;
+        padding: 0 16px;
+        z-index: 1000;
+        transition: transform 0.3s ease-in-out;
+        transform: translateX(100%);
+    }
+
+    .sag-panel.tablet-hidden {
+        display: block;
+        transform: translateX(100%);
+    }
+
+    .sag-panel.tablet-open {
+        transform: translateX(0) !important;
+    }
+
+    .sag-panel-toggle-btn {
+        display: flex;
+    }
+}
+
+/* Masaüstü (1024px+): sağ panel her zaman akışta görünsün, slide-out olmasın */
+@media (min-width: 1024px) {
+    .sag-panel {
+        position: relative !important;
+        transform: none !important;
+        width: 345px;
+        min-width: 345px;
+        max-width: 345px;
+        height: 100%;
+    }
+    .sag-panel-toggle-btn {
+        display: none !important;
+    }
+}
+
+/* Primary Feature Container */
+#primaryFeatureContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    visibility: visible;
+    /* ✅ DÜZELTME: Varsayılan olarak görünür, GSAP animasyonu override edecek */
+    opacity: 1 !important;
+    transform: translateX(0);
+    flex: 1;
+    min-height: 0; /* ✅ DÜZELTME: Scroll için gerekli */
+}
+
+/* ✅ DÜZELTME: data-vehicle-section için görünürlük garantisi */
+[data-vehicle-section] {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden; /* ✅ KRİTİK: Parent overflow hidden, child scroll yapacak */
+}
+
+/* Multi Vehicle Wrapper (Araç Takip) */
+.sag-panel .multi-arac-wrapper {
+    display: flex;
+    flex-direction: column;
+    color: var(--ana-renk);
+    width: 100%;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-renk);
+    position: relative;
+    overflow: hidden; /* ✅ KRİTİK: Parent overflow hidden, child scroll yapacak */
+    flex: 1;
+    min-height: 0;
+    max-height: 100%;
+    height: 100%; /* ✅ DÜZELTME: Yükseklik garantisi */
+}
+
+.sag-panel .multi-arac-wrapper.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+}
+
+.sag-panel .multi-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-renk);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.sag-panel .multi-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sag-panel .multi-title-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: var(--border-renk);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sag-panel .multi-title-icon i,
+.sag-panel .multi-title-icon .vehicle-tracking-lucide-icon {
+    font-size: 20px;
+    color: var(--ana-renk);
+}
+.sag-panel .multi-title-icon .vehicle-tracking-lucide-icon {
+    flex-shrink: 0;
+}
+
+.sag-panel .multi-title-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sag-panel .multi-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ana-renk);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.sag-panel .multi-title-count {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gri70);
+    margin: 0;
+}
+
+.sag-panel .active-vehicles-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background-color: rgba(156, 163, 175, 0.15);
+    padding: 6px 12px;
+    border-radius: 20px;
+    user-select: none;
+}
+
+.sag-panel .active-vehicles-info .active-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.sag-panel .active-vehicles-info .active-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #9ca3af;
+}
+
+.sag-panel .active-vehicles-info.has-active .active-text {
+    color: #48bb78;
+}
+
+.sag-panel .active-vehicles-info.has-active .active-dot {
+    background-color: #48bb78;
+}
+
+.sag-panel .active-vehicles-info.has-active {
+    background-color: rgba(72, 187, 120, 0.15);
+}
+
+.sag-panel .vehicle-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+    max-height: 100%; /* ✅ DÜZELTME: Parent'ın yüksekliğini kullan */
+    height: 0; /* ✅ KRİTİK: Flexbox overflow için gerekli - flex: 1 ile birlikte çalışır */
+    -webkit-overflow-scrolling: touch; /* ✅ DÜZELTME: iOS için smooth scroll */
+    padding-right: 4px; /* ✅ DÜZELTME: Scrollbar için padding */
+}
+
+/* ✅ DÜZELTME: Scrollbar stilini iyileştir */
+.sag-panel .vehicle-list::-webkit-scrollbar {
+    width: 6px !important;
+}
+
+.sag-panel .vehicle-list::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.sag-panel .vehicle-list::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.3);
+    border-radius: 3px;
+}
+
+.sag-panel .vehicle-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.5);
+}
+
+.sag-panel .vehicle-item {
+    background-color: var(--arac-takip-vehicle-item-bg, var(--white));
+    border-radius: 8px;
+    padding: 10px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.sag-panel .vehicle-item:hover {
+    background-color: var(--arac-takip-vehicle-item-bg-hover, var(--gray-ultra-light));
+}
+
+.sag-panel .vehicle-main-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.sag-panel .vehicle-plate {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sag-panel .plate-icon {
+    /* width: 16px; */
+    /* height: 16px; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sag-panel .plate-icon i {
+    font-size: 12px;
+    color: var(--ana-renk);
+}
+
+.dark-mode .sag-panel .plate-icon i {
+    color: var(--ana-renk);
+}
+
+.sag-panel .plate-number {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ana-renk);
+}
+
+.sag-panel .vehicle-status {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.sag-panel .status-active {
+    background-color: rgba(72, 187, 120, 0.2);
+    color: var(--green-secondary, #48bb78);
+}
+
+.sag-panel .status-inactive {
+    /* background-color: rgba(156, 163, 175, 0.2); */
+    /* color: var(--gri70); */
+    background-color: var(--white);
+    color: var(--red-warm);
+}
+
+.sag-panel .vehicle-driver {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gri70);
+    /* margin-bottom: 4px; */
+}
+
+.sag-panel .vehicle-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--gri70);
+}
+.sag-panel .vehicle-location .vehicle-location-icon {
+    flex-shrink: 0;
+    color: var(--gri70);
+}
+/* .dark-mode .sag-panel .vehicle-location .vehicle-location-icon {
+    color: var(--gray-classic);
+} */
+.sag-panel .vehicle-location span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Başlangıç Paketi Reklam Alanı */
+.sag-panel .baslangic-paket-reklam {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-renk);
+    background: linear-gradient(135deg, rgba(246, 71, 152, 0.05) 0%, rgba(235, 94, 145, 0.05) 100%);
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.sag-panel .baslangic-paket-reklam.baslangic-paket-reklam-hidden {
+    display: none !important;
+}
+
+#baslangicPaketReklam[data-force-show="true"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    padding: 16px !important;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    flex: 1;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ana-renk);
+    margin: 0;
+    margin-bottom: 6px;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-subtitle {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gri70);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-features {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-feature-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    background: linear-gradient(135deg, rgba(246, 71, 152, 0.1) 0%, rgba(235, 94, 145, 0.1) 100%);
+    border: 1px solid rgba(246, 71, 152, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(246, 71, 152, 1);
+    flex-shrink: 0;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-feature-icon i {
+    font-size: 14px;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-feature-icon .fa-whatsapp {
+    font-size: 16px;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-feature-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-feature-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ana-renk);
+    margin: 0;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-feature-desc {
+    font-size: 11px;
+    color: var(--gri70);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-button {
+    margin-top: 0;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, rgba(246, 71, 152, 1) 0%, rgba(235, 94, 145, 1) 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    align-self: stretch;
+    flex-shrink: 0;
+}
+
+.sag-panel .baslangic-paket-reklam .reklam-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(246, 71, 152, 0.3);
+    background: linear-gradient(135deg, rgba(246, 71, 152, 0.9) 0%, rgba(235, 94, 145, 0.9) 100%);
+}
+
+/* #region Araç Detay Popup (vehicle-item tıklanınca) */
+.overlay-arac-takip-detay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--overlay-bg-black);
+    backdrop-filter: blur(6px);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: vehicleDetailFadeIn 0.25s ease;
+}
+.overlay-arac-takip-detay.active {
+    display: flex !important;
+}
+@keyframes vehicleDetailFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.vehicle-detail-overlay .vehicle-detail-modal.detail-modal {
+    background: var(--white);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+    animation: vehicleDetailSlideUp 0.3s ease;
+}
+@keyframes vehicleDetailSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.vehicle-detail-modal-header.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    background: var(--arac-takip-main-logo-bg, var(--mor-primary));
+    color: var(--white-only);
+    border-radius: 16px 16px 0 0;
+}
+.vehicle-detail-modal-title.modal-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.vehicle-detail-modal-title .vehicle-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+.vehicle-detail-modal-title .title-vehicle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.vehicle-detail-plate {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white-only);
+    line-height: 1.2;
+}
+.vehicle-detail-plate small {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+.vehicle-detail-driver {
+    font-size: 13px;
+    opacity: 0.95;
+}
+.vehicle-detail-modal-header .close-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--white-only);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: background 0.2s;
+}
+.vehicle-detail-modal-header .close-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+.vehicle-detail-modal-header .icon-btn-kapat::before {
+    content: "×";
+    font-size: 24px;
+    line-height: 1;
+}
+
+.vehicle-detail-modal-content.modal-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+.vehicle-detail-loading,
+.vehicle-detail-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 32px 16px;
+    color: var(--ana-renk);
+    font-size: 14px;
+}
+.vehicle-detail-error {
+    color: var(--red-warm, #c53030);
+}
+.vehicle-detail-map-section.map-section {
+    margin-bottom: 16px;
+}
+.vehicle-detail-map-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ana-renk);
+    margin-bottom: 8px;
+}
+.vehicle-detail-map-container.map-container {
+    width: 100%;
+    height: 220px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+.vehicle-detail-map-container .leaflet-container {
+    font-family: inherit;
+}
+.vehicle-detail-marker {
+    border: none !important;
+    background: transparent !important;
+}
+.vehicle-detail-map-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--arac-takip-vehicle-item-bg, #f1f3f7);
+    color: var(--gray-classic);
+    font-size: 14px;
+}
+.vehicle-detail-map-placeholder i {
+    font-size: 28px;
+    opacity: 0.5;
+}
+.vehicle-detail-location-section.location-section {
+    margin-bottom: 16px;
+}
+.vehicle-detail-location-section .location-header {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ana-renk);
+    margin-bottom: 8px;
+}
+.vehicle-detail-location-section .vr {
+    height: 1px;
+    background: var(--border-color);
+    margin-bottom: 10px;
+}
+.vehicle-detail-location-section .location-address {
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--ana-renk);
+}
+.vehicle-detail-location-section .location-coords {
+    font-size: 12px;
+    color: var(--gray-classic);
+    margin-top: 4px;
+}
+.vehicle-detail-info-grid.detail-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.vehicle-detail-info-grid .detail-info-card {
+    background: var(--arac-takip-vehicle-item-bg, #f1f3f7);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+}
+.vehicle-detail-info-grid .detail-info-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--gray-classic);
+    margin-bottom: 4px;
+}
+.vehicle-detail-info-grid .detail-info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ana-renk);
+}
+.vehicle-detail-info-grid .detail-info-value.status-active-detail {
+    color: var(--green-secondary, #48bb78);
+}
+.vehicle-detail-info-grid .info-icon {
+    font-size: 14px;
+    color: var(--mor-primary, #6D28D9);
+    margin-bottom: 4px;
+}
+.vehicle-detail-actions.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.vehicle-detail-actions .action-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s, color 0.2s;
+}
+.vehicle-detail-actions .action-btn.btn-secondary {
+    background: var(--arac-takip-vehicle-item-bg);
+    color: var(--ana-renk);
+}
+.vehicle-detail-actions .action-btn.btn-secondary:hover {
+    background: var(--arac-takip-vehicle-item-bg-hover);
+}
+/* #endregion Araç Detay Popup */
+

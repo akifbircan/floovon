@@ -1,0 +1,695 @@
+/**
+ * Mobil index sayfası stilleri
+ * Eski sistem (index.html + style.css) ile uyumlu: header band toggle, mobil navbar, QR buton
+ */
+
+@media (max-width: 767px) {
+  /* Sidebar (sol menü) mobilde tamamen gizli */
+  nav[data-sidebar],
+  .sidebar-desktop {
+    display: none !important;
+  }
+
+  /* Ana içerik alanı: sidebar gizli olduğu için soldan margin yok */
+  .min-h-screen.flex.overflow-hidden > .flex-1.flex.flex-col.overflow-hidden {
+    margin-left: 0 !important;
+  }
+
+  /* Main + üst container: yükseklik her zaman viewport - navbar (64px); toggle'da da yeniden hesaplansın */
+  .min-h-screen.flex.overflow-hidden > .flex-1.flex.flex-col.overflow-hidden {
+    max-height: calc(100vh - 64px);
+  }
+  main[data-main-content] {
+    background: var(--white);
+    padding-bottom: 0 !important;
+    min-height: 0;
+  }
+
+  /* Sağ panel (takvim) mobilde kesinlikle gizli */
+  .dashboard-right-panel-wrapper,
+  .sag-panel,
+  .flex.sag-panel,
+  [data-main-content] .sag-panel,
+  .bg-alan + div .sag-panel {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Ana alan: genişlik ve taşma; yükseklik flex zinciri + main padding-bottom ile (navbar altına girmez) */
+  .bg-alan {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0;
+    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden !important;
+  }
+
+  .dashboard-container-wrapper,
+  .dashboard-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Mobilde border-radius üst kapsayıcıda (toggle'da kaybolmasın) */
+  .dashboard-container-wrapper {
+    border-radius: 15px 15px 0 0;
+    overflow: hidden;
+  }
+  .dashboard-container {
+    border-radius: 0;
+  }
+
+  /* Dashboard üst bar: Sıcak Satış / Kartları Sırala / Dışa Aktar ve baslik alanı mobilde gizli */
+  .dashboard-header-mobile .butonlar,
+  .dashboard-header-mobile .baslik-alan {
+    display: none !important;
+  }
+
+  /* Kart filtreler (sekme listesi) mobilde gizli */
+  .kart-filtreler {
+    display: none !important;
+  }
+
+  /* Web dashboard-header (sadece kart-filtreler sarmalayan ikinci .dashboard-header) mobilde tamamen gizle */
+  .dashboard-container > .dashboard-header + .dashboard-header {
+    display: none !important;
+  }
+
+  /* Mobil navbar: sadece ikonlar, yazı asla görünmesin */
+  .mobile-navbar .menu-ikon span,
+  .mobile-navbar .menu-ikon .text-xs,
+  .mobile-navbar a span,
+  .mobile-navbar [class*="label"] {
+    display: none !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .mobile-navbar .menu-ikon {
+    flex-direction: row !important;
+  }
+
+  .mobile-navbar .menu-ikon i {
+    margin: 0 !important;
+  }
+
+  /* Header: mobilde tüm sayfalarda column layout, taşma yok */
+  .main--content .header,
+  [data-main-content] ~ .header,
+  body .header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .header .h-sol {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  /* Mobil header logo bandı - logo + araç takip + profil */
+  .mobile-header-logo-band {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    width: 100%;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .mobile-header-logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .mobile-header-logo-img {
+    height: 30px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  /* Sayfa başlığı mobil bar'da gizli – tüm sayfalarda band index ile aynı (SPA) */
+  .mobile-header-page-title {
+    display: none !important;
+  }
+
+  .mobile-header-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-header-right-actions .mobile-arac-takip-btn-wrapper {
+    display: flex;
+  }
+
+  .mobile-header-right-actions .mobile-arac-takip-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--arac-takip-teslimat-kenarlık);
+    background: var(--arac-takip-vehicle-item-bg);
+    color: var(--ana-renk);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .mobile-header-right-actions .mobile-arac-takip-btn:hover {
+    background: var(--arac-takip-vehicle-item-bg-hover);
+  }
+
+  /* Teslimatta: yeşil vurgu (mobil araç ikonu) */
+  .mobile-header-right-actions .mobile-arac-takip-btn.mobile-arac-takip-btn--active,
+  .mobile-header-right-actions .mobile-arac-takip-btn-wrapper.mobile-arac-takip-btn-wrapper--active .mobile-arac-takip-btn {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: var(--success, #22c55e);
+    color: var(--success, #22c55e);
+  }
+  .mobile-header-right-actions .mobile-arac-takip-btn.mobile-arac-takip-btn--active i,
+  .mobile-header-right-actions .mobile-arac-takip-btn-wrapper.mobile-arac-takip-btn-wrapper--active .mobile-arac-takip-btn i {
+    color: var(--success, #22c55e);
+  }
+
+  /* Mobil header tema butonu - araç takip butonu ile aynı yuvarlak ve boyut (40px) */
+  .mobile-header-right-actions .theme-mode .btn-theme-mode {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--arac-takip-teslimat-kenarlık);
+    background: var(--arac-takip-vehicle-item-bg);
+    color: var(--ana-renk);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .mobile-header-right-actions .theme-mode .btn-theme-mode:hover {
+    background: var(--arac-takip-vehicle-item-bg-hover);
+  }
+
+  .mobile-header-right-actions .profil {
+    position: relative;
+  }
+
+  .mobile-header-right-actions .profil .kullanici-alan-wrapper {
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+
+  .mobile-header-right-actions .profil .header-avatar-wrapper {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  /* Mobil profil resmi ve placeholder – tüm stiller burada, inline yok */
+  .mobile-header-right-actions .profil .header-avatar-wrapper img.profil-resmi {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .mobile-header-right-actions .profil .header-avatar-wrapper .header-avatar-placeholder {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gri70);
+    background-color: var(--gray-light-f2);
+  }
+
+  .mobile-header-right-actions .profil .header-avatar-wrapper.has-avatar-image .header-avatar-placeholder {
+    display: none;
+  }
+
+  .mobile-header-right-actions .profil .header-avatar-wrapper.avatar-load-error img.profil-resmi {
+    display: none;
+  }
+
+  .mobile-header-right-actions .profil .header-avatar-wrapper.avatar-load-error .header-avatar-placeholder {
+    display: flex;
+  }
+
+  /* Mobilde isim/rol alanı şimdilik gizli */
+  .mobile-header-right-actions .profil .mobile-header-kullanici-alan {
+    display: none !important;
+  }
+
+  /* Mobil header tema butonu - index headerdaki gibi */
+  .mobile-header-right-actions .profil .kullanici-alan-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .mobile-header-right-actions .profil .menu-ok {
+    display: none;
+  }
+
+  .mobile-header-right-actions .clickdropdown-content {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    z-index: 1000;
+  }
+
+  .empty-message {
+    margin: 20px;
+  }
+
+  .empty-message .message {
+    width: 80% !important;
+  }
+
+  /* Mobilde arama + butonlar dashboard içindeki aynı kapsayıcıda (mobile-search-ve-baslik-wrapper) olduğu için header'daki bandı gizle */
+  .header-search-ve-butonlar-mobile {
+    display: none !important;
+  }
+
+  /* Eski collapsible band (artık kullanılmıyor, yukarıda none yapıldı) */
+  body.header-hidden .header-search-ve-butonlar-mobile {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-12px);
+    pointer-events: none;
+    padding: 0;
+    margin: 0;
+    transition:
+      max-height 0.4s ease,
+      opacity 0.3s ease,
+      transform 0.3s ease;
+  }
+
+  /* Navbar toggle: body.header-hidden iken arama + baslik alanı gizlenir; boşluk kalmasın */
+  body.header-hidden .dashboard-header-mobile .mobile-search-ve-baslik-wrapper {
+    max-height: 0 !important;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transform: translateY(-8px);
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none;
+    min-height: 0 !important;
+  }
+
+  /* Toggle: sadece mobile-search-ve-baslik-wrapper gizlensin; logo bandı (mobile-header-logo-band) hep görünsün */
+  /* Dashboard üst bandı (arama + tarih) gizlenince boşluk bırakmasın */
+  body.header-hidden .dashboard-header-mobile {
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden;
+  }
+
+  .header-search-ve-butonlar-mobile .web-search {
+    width: 100%;
+  }
+
+  .header-search-ve-butonlar-mobile .olustur-butonlar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Header band gizlenince sadece geçiş; yükseklik flex ile otomatik (band max-height:0 olunca grid büyür) */
+  .bg-alan {
+    transition: min-height 0.4s ease;
+  }
+
+  /* Header band gizlenince items container aşağıya uzasın; alttaki 64px şerit navbar ile aynı renkte (birleşik görünsün) */
+  .dashboard-container-wrapper {
+    min-height: 0;
+    background: var(--white);
+  }
+
+  .dashboard-container-wrapper .dashboard-container {
+    flex-shrink: 0;
+  }
+
+  /* Grid: max-height yok; margin-bottom ile navbar (64px) yeri sabit kalır, toggle'da da yükseklik otomatik oturur */
+  .dashboard-container-wrapper .grid-container {
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--border-renk);
+  }
+
+  .dashboard-container-wrapper .grid-container .grid-item.main {
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 64px;
+  }
+
+  .dashboard-container-wrapper .grid-container .grid-item.main .items {
+    flex: 1 1 0%;
+    min-height: 0;
+    margin: 0;
+    margin-top: 10px;
+    margin-left: 0;
+    padding-bottom: 24px !important;
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+    overflow-y: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb-color, #999) var(--scroll-track-color, #eee);
+    width: 100%;
+  }
+  /* Index sipariş alanı: yatay scroll çubuğu görünür (kartlar yatay kaydırılır) */
+  .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar {
+    height: 8px;
+  }
+  .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-track {
+    background: var(--scroll-track-color, #f1f1f1);
+    border-radius: 4px;
+  }
+  .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb-color, #999);
+    border-radius: 4px;
+  }
+  .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-thumb-color-hover, #777);
+  }
+
+  /* Mobilde ana kolon alanı kartlardan biraz ayrı dursun (margin korundu) */
+  .grid-item.main .items {
+    margin-top: 20px;
+  }
+
+  /* Dashboard header taşmasın */
+  .dashboard-header-mobile {
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  /* Aynı kapsayıcı: search + butonlar (üst) + mobile-baslik-alan (alt), taşma yok */
+  .dashboard-header-mobile .mobile-search-ve-baslik-wrapper {
+    /* width: 100%;
+    max-width: 100%;
+    min-width: 0; */
+    max-height: 320px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* padding: 10px 20px; */
+    padding: 14px;
+    /* padding-bottom: 0; */
+    box-sizing: border-box;
+    transition:
+      max-height 0.4s ease,
+      opacity 0.3s ease,
+      transform 0.3s ease,
+      padding 0.4s ease,
+      margin 0.4s ease;
+    background: var(--white);
+    margin: 0 10px;
+    margin-top: 10px;
+      border-radius: 15px;
+  }
+
+  .dashboard-header-mobile .mobile-search-ve-butonlar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard-header-mobile .mobile-search-ve-butonlar .web-search {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dashboard-header-mobile .mobile-search-ve-butonlar .web-search .search-box-title {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .dashboard-header-mobile .mobile-search-ve-butonlar .web-search .search-box-title .icon-search {
+    position: absolute;
+    left: 12px;
+    color: var(--gray-soft-dark);
+    font-size: 14px;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .dashboard-header-mobile .mobile-search-ve-butonlar .web-search .web-search-input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 0 12px 0 40px;
+    font-size: 13px;
+    color: var(--ana-renk);
+    background-color: var(--white);
+    border: 1px solid var(--gray-ultra-light);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+    height: 40px;
+  }
+
+  .dashboard-header-mobile .mobile-search-ve-butonlar .web-search .web-search-input::placeholder {
+    color: var(--gray-soft-dark);
+  }
+
+  .dashboard-header-mobile .mobile-search-ve-butonlar .web-search .web-search-input:focus {
+    border-color: var(--ana-renk);
+    background-color: var(--white);
+  }
+
+  .dashboard-header-mobile .mobile-search-ve-butonlar .olustur-butonlar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  /* Mobil searchbox yanındaki butonlar: web header ile aynı stil */
+  .dashboard-header-mobile .mobile-search-ve-butonlar .olustur-butonlar button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background-color: var(--border-renk);
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 5px;
+    color: var(--ikincil-renk);
+    height: 40px;
+    min-width: 40px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .dashboard-header-mobile .mobile-search-ve-butonlar .olustur-butonlar button:hover {
+    background-color: var(--light-bg);
+  }
+
+  .dashboard-header-mobile .mobile-search-ve-butonlar .olustur-butonlar button i {
+    font-size: 16px;
+  }
+
+  /* Mobil başlık alanı: ay + hafta ilk/son gün + takvim ileri/geri */
+  .dashboard-header-mobile .mobile-baslik-alan {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  
+    margin-top: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .mobile-baslik-alan .mobile-baslik-metin {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .mobile-baslik-alan .mobile-baslik-metin-ikon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--gray-light-f2);
+    color: var(--ana-renk);
+    flex-shrink: 0;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .mobile-baslik-alan .mobile-baslik-metin-tarihler {
+    display: flex;
+    flex-direction: column;
+    /* gap: 2px; */
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .mobile-baslik-alan .mobile-baslik-hafta-ilk,
+  .mobile-baslik-alan .mobile-baslik-hafta-son {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-baslik-alan .mobile-baslik-ay {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ana-renk);
+  }
+
+  .mobile-baslik-alan .mobile-baslik-hafta-ilk,
+  .mobile-baslik-alan .mobile-baslik-hafta-son {
+    font-size: 0.8rem;
+    color: var(--text-secondary, var(--gri70));
+  }
+
+  .mobile-baslik-alan .mobile-baslik-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .mobile-baslik-alan .mobile-baslik-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border-renk);
+    background: var(--white);
+    color: var(--ana-renk);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .mobile-baslik-alan .mobile-baslik-nav-btn:hover {
+    background: var(--gray-light-f2);
+  }
+
+  /* Gizle/Göster butonu - mobil navbar'da */
+  .gizle-goster-buton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    min-width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background-color: var(--white);
+    color: var(--ikincil-renk, #6366f1);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .gizle-goster-buton:hover {
+    background-color: var(--gray-light-f2, #f3f4f6);
+  }
+
+  .gizle-goster-buton i {
+    font-size: 14px;
+    transition: transform 0.3s ease;
+  }
+
+  /* Mobil navbar wrapper - renkler variable ile (tema uyumlu) */
+  .mobile-navbar-wrapper {
+    background: var(--white);
+    border-radius: 10px 10px 0 0;
+    border-top: 1px solid var(--border-renk);
+    transition: transform 0.3s ease;
+    z-index: 999;
+  }
+
+  .mobile-navbar {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-navbar .menu-ikon {
+    min-width: 0;
+  }
+
+  /* QR FAB - sadece mobilde, navbar (64px) üstünde */
+  .qr-fab-index {
+    bottom: 80px !important;
+    right: 20px !important;
+    width: 72px !important;
+    height: 72px !important;
+    z-index: 100;
+    border-radius: 50%;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+  }
+
+  .qr-fab-index svg {
+    width: 36px;
+    height: 36px;
+  }
+
+}

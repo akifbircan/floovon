@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Unicons — tek sürümde sabitle (4.0.8) -->
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css" />
+    <!-- Toast Notification Styles -->
+    <link rel="stylesheet" href="/css/toast-notification-style.css" />
+    <!-- Moment.js - Takvim sistemi için gerekli -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js" data-cfasync="false"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/tr.min.js" data-cfasync="false"></script>
+    <!-- html5-qrcode - QR Scanner için -->
+    <script src="https://unpkg.com/html5-qrcode" data-cfasync="false"></script>
+    <!-- Unified Tooltip System -->
+    <script src="/js/tooltip-system.js" data-cfasync="false"></script>
+    <!-- Türkiye Adres (İl/İlçe/Mahalle) - Müşteri/Adres formları için -->
+    <script src="/js/turkiye-adres.bundle.js" data-cfasync="false"></script>
+    <script src="/js/turkiye-adres.runtime.js" data-cfasync="false"></script>
+    <!-- Toast Notification System - React için gerekli -->
+    <script src="/js/toast-notification-script.js" data-cfasync="false"></script>
+    <!-- Çiçek Sepeti: sayfa açılır açılmaz yükle; popup, tıklama, ses ve periyodik bildirim buna bağlı -->
+    <!-- XLSX - Excel dışa aktarım (eski sistemle aynı, global window.XLSX) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" data-cfasync="false"></script>
+    <!-- Yazdırma fonksiyonları -->
+    <script src="/js/yazdir-kunye.js" data-cfasync="false"></script>
+    <title>Floovon™</title>
+  </head>
+  <body>
+    <!-- Geliştirmede Vite/React konsol loglarını gizle (modül yüklenmeden önce çalışmalı) -->
+    <script>
+      (function() {
+        if (typeof window === 'undefined') return;
+        var origLog = console.log;
+        var origInfo = console.info;
+        function filter(args) {
+          var str = Array.prototype.map.call(args, function(a) { return typeof a === 'string' ? a : String(a); }).join(' ');
+          return /\[vite\]/i.test(str) || str.indexOf('React DevTools') !== -1
+            || /Pending orders sayısı|updateToast çağrıldı|Toast DOM'a eklendi|Ses bildirimi çalınıyor|Toast show class eklendi|ciceksepetiToastContainer bulunamadı/i.test(str);
+        }
+        console.log = function() { if (!filter(arguments)) origLog.apply(console, arguments); };
+        console.info = function() { if (!filter(arguments)) origInfo.apply(console, arguments); };
+      })();
+    </script>
+    <div id="root"></div>
+    <script src="/js/ciceksepeti.js"></script>
+    <!-- Kopyalama bildirimi (ürün yazısı / yazı not tıklanınca showCopyAlert ile gösterilir) -->
+    <div class="urunyazisi-alert" id="urunyazisiAlert" style="display: none;">
+      <span class="alert-message" id="alertMessage">Ürün yazısı panoya kopyalandı!</span>
+      <div class="copied-text-wrapper">
+        <i class="fa-regular fa-circle-check alert-icon"></i>
+        <span class="copied-text" id="copiedText"></span>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,1249 @@
+/**
+ * Sipariş Kart Detay sayfası – eski siparis-kart-detay.html tasarımına uyum
+ * Mevcut css-variables ile uyumlu
+ */
+
+/* Layout */
+.kart-detay-bg-alan {
+  height: 100%;
+  margin-right: 24px;
+}
+
+.kart-detay-container {
+  height: 100%;
+  background-color: var(--border-renk);
+  border-radius: 15px 15px 0 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Header alanı – inline stiller burada */
+/* .kart-detay-container .dashboard-header {
+  padding: 16px 20px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-border);
+} */
+
+.kart-detay-container .dashboard-header .baslik-alan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: none;
+  height: auto;
+  padding: 12px 20px;
+}
+
+.kart-detay-container .dashboard-header .baslik-alan .geri-don a {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ikincil-renk);
+  gap: 5px;
+  text-decoration: none;
+}
+
+.kart-detay-container .dashboard-header .baslik-alan .geri-don a:hover {
+  color: var(--mor-primary);
+}
+
+.kart-detay-container .dashboard-header .butonlar {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  gap: 10px;
+}
+
+.kart-detay-container .organizasyon-detaylar {
+  padding: 20px;
+  padding-top: 0;
+  padding-bottom: 48px;
+  border-radius: 10px;
+  color: var(--ana-renk);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 0;
+  gap: 12px;
+  display: grid;
+  grid-template-columns: 30% calc(70% - 12px);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .kart-detay-container .organizasyon-detaylar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sol alan – butonlar */
+.kart-detay-container .sol-detay-alan {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.kart-detay-container .sol-detay-alan .buton-alan {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: nowrap;
+  width: 100%;
+  background-color: transparent;
+  border-radius: 12px;
+  gap: 10px;
+}
+
+.kart-detay-container .sol-detay-alan .buton-alan .sp-kart-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  outline: none;
+  border: none;
+  background-color: var(--white);
+  width: 100%;
+  min-height: 96px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ana-renk);
+  border-radius: 12px;
+  cursor: pointer;
+  padding: 20px;
+  transition: background-color 0.2s;
+}
+
+.kart-detay-container .sol-detay-alan .buton-alan .sp-kart-btn:hover {
+  background-color: var(--extra-light-bg);
+}
+
+/* .kart-detay-container .sol-detay-alan .buton-alan .sp-kart-btn.sp-kart-btn-primary {
+  background-color: var(--mor-primary);
+  color: var(--white-only);
+  font-weight: 500;
+} */
+
+/* .kart-detay-container .sol-detay-alan .buton-alan .sp-kart-btn.sp-kart-btn-primary:hover {
+  filter: brightness(1.08);
+  color: var(--white);
+} */
+
+.kart-detay-container .sol-detay-alan .buton-alan .sp-kart-btn span {
+  font-size: 12px;
+}
+
+.kart-detay-container .sol-detay-alan .buton-alan .sp-kart-btn i,
+.kart-detay-container .sol-detay-alan .buton-alan .sp-kart-btn svg {
+  font-size: 24px;
+  padding-bottom: 10px;
+  flex-shrink: 0;
+}
+
+/* Organizasyon kutusu - eski sipariş detay yapısı */
+.kart-detay-container .sol-detay-alan .organizasyon-kutu {
+  display: flex;
+  background-color: var(--white);
+  border-radius: 10px;
+  padding: 20px;
+  width: 100%;
+  gap: 20px;
+  color: var(--ana-renk);
+  flex-direction: column;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .organizasyon-bilgileri {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .organizasyon-bilgileri .wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .organizasyon-bilgileri .org-bilgiler-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+/* Kart türü / alt tür / etiket – index orgkart ile aynı sınıflar ve stiller */
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-header-turler {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-header-turler .kart-tur {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.organizasyon .kart-header-turler .kart-tur {
+  background-color: var(--karttur-bg-organizasyon);
+  color: var(--karttur-bg-organizasyon-text);
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.aracsusleme .kart-header-turler .kart-tur {
+  background-color: var(--karttur-bg-aracsusleme);
+  color: var(--karttur-bg-aracsusleme-text);
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.ozelgun .kart-header-turler .kart-tur {
+  background-color: var(--karttur-bg-ozelgun);
+  color: var(--karttur-bg-ozelgun-text);
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.ozelsiparis .kart-header-turler .kart-tur {
+  background-color: var(--karttur-bg-ozelsiparis);
+  color: var(--karttur-bg-ozelsiparis-text);
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-header-turler .kart-alt-tur {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.organizasyon .kart-header-turler .kart-alt-tur {
+  background: var(--karttur-bg-organizasyon-text);
+  color: var(--white);
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.aracsusleme .kart-header-turler .kart-alt-tur {
+  background: var(--karttur-bg-aracsusleme-text);
+  color: var(--white);
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.ozelsiparis .kart-header-turler .kart-alt-tur {
+  background: var(--karttur-bg-ozelsiparis-text);
+  color: var(--white);
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.ozelgun .kart-header-turler .kart-alt-tur {
+  background: var(--karttur-bg-ozelgun-text);
+  color: var(--white);
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-header-turler .kart-etiket {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid var(--mid-gray);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ana-renk);
+  border-radius: 5px;
+  padding: 5px 8px;
+  cursor: default;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-header-turler .kart-etiket .kart-etiket-icon {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  color: currentColor;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .org-adres-bilgileri .konum {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ana-renk);
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .org-adres-bilgileri .acik-adres,
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .org-adres-bilgileri .ilce-il {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gri70);
+}
+
+/* Araç süsleme, özel sipariş, özel gün: org-adres yerine kart-aciklama */
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .org-bilgiler-wrapper .kart-aciklama {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gri70);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .org-bilgiler-wrapper .kart-aciklama span {
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-gorsel img {
+  border-radius: 5px;
+  cursor: pointer;
+  height: 115px;
+  width: auto;
+  max-width: 100%;
+  object-fit: cover;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  border-top: 1px solid var(--overlay-gray-light);
+  padding-top: 12px;
+  gap: 16px;
+}
+
+/* Araç süsleme, özel sipariş, özel gün: sadece teslim-zaman (organizasyon-sahibi yok) */
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.aracsusleme .sahip-ve-zaman,
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.ozelsiparis .sahip-ve-zaman,
+.kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.ozelgun .sahip-ve-zaman {
+  grid-template-columns: 1fr;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .ikon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  min-height: 40px;
+  height: 40px;
+  background-color: var(--overlay-gray-light, #f1f1f1);
+  border-radius: 8px;
+  font-size: 18px;
+  color: var(--ana-renk);
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .organizasyon-sahibi,
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .teslim-zaman {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .baslik {
+  font-size: 11px;
+  color: var(--gri70);
+  padding: 0;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .isim-soyisim {
+  color: var(--ana-renk);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .siparis-veren-telefon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 4px 8px;
+  border: 1px solid var(--overlay-gray-medium);
+  border-radius: 5px;
+  color: var(--ana-renk);
+  background-color: var(--white);
+  width: fit-content;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .siparis-veren-telefon a {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .tarih {
+  color: var(--ana-renk);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Saat başlığı ve değer aynı badge içinde; soft zemin + border */
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .saat-icerik {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background-color: var(--overlay-gray-light, rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--gray-border, rgba(0, 0, 0, 0.12));
+  border-radius: 8px;
+  color: var(--ana-renk);
+  font-size: 13px;
+  font-weight: 500;
+  height: 28px;
+}
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .saat-icerik .saat-etiket,
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .saat-icerik .saat-veri {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ana-renk);
+}
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .saat-icerik .saat-veri {
+  min-width: 4ch;
+}
+
+/* Foto galeri – sayfanın altına kadar uzanır, içerik fazlaysa scroll; altta belirgin boşluk */
+.sol-detay-alan .galeri-container {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.sol-detay-alan .galeri-container .teslim-edilen-siparis-foto-galeri {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  background-color: var(--white);
+  border-radius: 10px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.sol-detay-alan .galeri-container .teslim-edilen-siparis-foto-galeri .headerbox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.sol-detay-alan .galeri-container .teslim-edilen-siparis-foto-galeri .headerbox .title {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ana-renk);
+  gap: 5px;
+}
+
+.sol-detay-alan .galeri-container .teslim-edilen-siparis-foto-galeri .headerbox .btn-yeni-resim-ekle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--white-only);
+  background-color: var(--mor-primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  user-select: none;
+}
+.sol-detay-alan .galeri-container .teslim-edilen-siparis-foto-galeri .headerbox .btn-yeni-resim-ekle:hover {
+  opacity: 0.9;
+}
+
+.sol-detay-alan .galeri-container .teslim-edilen-siparis-foto-galeri .galeri-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  flex: 1 1 0;
+  padding-right: 6px;
+  align-content: start;
+}
+
+.galeri-container .galeri-grid img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.galeri-container .galeri-grid img:hover {
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+/* Sağ alan – sipariş listesi */
+.kart-detay-container .organizasyon-detaylar .sag-detay-alan {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sag-detay-alan .siparis-listesi {
+  background-color: var(--white);
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin-bottom: 32px;
+}
+
+.sag-detay-alan .siparis-listesi .header {
+  display: flex;
+  height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  color: var(--ikincil-renk);
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.sag-detay-alan .siparis-listesi .title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ana-renk);
+}
+
+/* Sipariş listesi içerik alanı – boş/loading durumunda ortalanmış mesaj */
+.sag-detay-alan .siparis-listesi .siparis-listesi-icerik {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+/* .sag-detay-alan .siparis-listesi .siparis-listesi-empty {
+  padding: 24px;
+} */
+
+.sag-detay-alan .siparis-listesi .sag-butonlar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sag-detay-alan .siparis-listesi .sag-butonlar .tumu-teslim-edildi {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--overlay-gray-light);
+  border: none;
+  border-radius: 5px;
+  padding: 0 12px;
+  font-size: 12px;
+  height: 36px;
+  font-weight: 500;
+  color: var(--ana-renk);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.sag-detay-alan .siparis-listesi .sag-butonlar .tumu-teslim-edildi:hover:not(:disabled) {
+  background-color: var(--success-green);
+  color: var(--white);
+}
+
+.sag-detay-alan .siparis-listesi .sag-butonlar .tumu-teslim-edildi:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sag-detay-alan .siparis-listesi .sag-butonlar .toplam-siparis {
+  display: flex;
+  align-items: center;
+  background-color: var(--success-green);
+  border-radius: 5px;
+  padding: 9px 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--white);
+  gap: 5px;
+  height: 36px;
+  cursor: default;
+}
+
+.kart-detay-container .organizasyon-detaylar .sag-detay-alan .siparisler-tablo-alan {
+  width: 100%;
+  flex: 1 1 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  min-height: 0;
+  max-height: calc(100% - 64px);
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+}
+
+.sag-detay-alan .siparis-listesi table {
+  border-collapse: separate;
+  font-size: 12px;
+  border-spacing: 0 4px;
+  width: 100%;
+  table-layout: auto;
+}
+
+.sag-detay-alan .siparis-listesi table #tablo-basliklar {
+  margin-bottom: 10px;
+}
+
+.sag-detay-alan .siparis-listesi td,
+.sag-detay-alan .siparis-listesi th {
+  border: 1px solid var(--gray-basic);
+  text-align: left;
+  padding: 10px 12px;
+}
+
+.sag-detay-alan .siparis-listesi table th {
+  border: none;
+  font-size: 10px;
+  font-weight: 500;
+  padding-bottom: 10px;
+  color: var(--gray-basic);
+  text-transform: uppercase;
+}
+
+.sag-detay-alan .siparis-listesi table td {
+  border: none;
+}
+
+/* Sipariş ürün kolonu: görsel + isim + fiyat */
+.sag-detay-alan .siparis-listesi .td-siparis-urun .siparis-urun-hucre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sag-detay-alan .siparis-listesi .td-siparis-urun .siparis-urun-gorsel {
+  flex-shrink: 0;
+}
+
+.sag-detay-alan .siparis-listesi .td-siparis-urun .siparis-urun-gorsel img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.sag-detay-alan .siparis-listesi .td-siparis-urun .siparis-urun-bilgi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sag-detay-alan .siparis-listesi .td-siparis-urun .siparis-urun-adi {
+  font-size: 12px;
+  color: var(--ana-renk);
+  font-weight: 500;
+}
+
+.sag-detay-alan .siparis-listesi .td-siparis-urun .siparis-urun-fiyat {
+  font-size: 11px;
+  color: var(--gri70);
+  font-weight: 600;
+}
+
+.sag-detay-alan .siparis-listesi .td-musteri-ve-urun-yazisi .siparis-musteri-adi {
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.sag-detay-alan .siparis-listesi .td-musteri-ve-urun-yazisi .siparis-musteri-telefon {
+  font-size: 11px;
+  color: var(--gray-basic, #666);
+}
+
+.sag-detay-alan .siparis-listesi .td-musteri-ve-urun-yazisi .siparis-urun-yazisi {
+  font-size: 11px;
+  color: var(--gri70);
+}
+
+.sag-detay-alan .siparis-listesi table .tablo-satir {
+  background-color: var(--siparis-detay-tablo-satir);
+  border: none;
+  box-shadow: none;
+  cursor: default;
+}
+
+.sag-detay-alan .siparis-listesi table .tablo-satir:hover {
+  background-color: var(--tablo-satir-hover);
+}
+
+.sag-detay-alan .siparis-listesi table .th-sp-no,
+.sag-detay-alan .siparis-listesi table .th-odeme,
+.sag-detay-alan .siparis-listesi table .th-teslim-saati,
+.sag-detay-alan .siparis-listesi table .th-randevu-saati,
+.sag-detay-alan .siparis-listesi table .th-teslim-durum,
+.sag-detay-alan .siparis-listesi table .th-islem { text-align: center !important; }
+.sag-detay-alan .siparis-listesi table .th-teslim-kisisi,
+.sag-detay-alan .siparis-listesi table .th-arac-bilgileri { text-align: left !important; }
+.sag-detay-alan .siparis-listesi table .th-islem { width: 150px; }
+
+.sag-detay-alan .siparis-listesi table .td-sp-no,
+.sag-detay-alan .siparis-listesi table .td-odeme,
+.sag-detay-alan .siparis-listesi table .td-teslim-saati,
+.sag-detay-alan .siparis-listesi table .td-randevu-saati,
+.sag-detay-alan .siparis-listesi table .td-teslim-durum { text-align: center !important; }
+.sag-detay-alan .siparis-listesi table .td-teslim-kisisi,
+.sag-detay-alan .siparis-listesi table .td-arac-bilgileri { text-align: left !important; }
+.sag-detay-alan .siparis-listesi table .td-sp-no { font-size: 14px; font-weight: 600; }
+.sag-detay-alan .siparis-listesi table .td-teslim-saati,
+.sag-detay-alan .siparis-listesi table .td-randevu-saati {
+  font-size: 15px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.sag-detay-alan .siparis-listesi table .td-odeme {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.sag-detay-alan .siparis-listesi table .th-randevu-saati {
+  vertical-align: middle;
+}
+
+/* Partner siparişi hücre – index kartlarındaki gibi verilen / alınan rengi */
+.sag-detay-alan .siparis-listesi .partner-verilen-siparisi {
+  display: flex;
+  flex-direction: column;
+  /* gap: 2px; */
+  color: var(--partner-siparis-verilen);
+  font-size: 11px;
+  font-weight: 500;
+}
+.sag-detay-alan .siparis-listesi .partner-verilen-siparisi .partner-firma { font-weight: 600; }
+.sag-detay-alan .siparis-listesi .partner-verilen-siparisi .partner-tur {
+  font-size: 10px;
+  opacity: 0.9;
+}
+.sag-detay-alan .siparis-listesi .partner-alinan-siparisi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--partner-siparis-alinan);
+  font-size: 11px;
+  font-weight: 500;
+}
+.sag-detay-alan .siparis-listesi .partner-alinan-siparisi .partner-firma { font-weight: 600; }
+.sag-detay-alan .siparis-listesi .partner-alinan-siparisi .partner-tur {
+  font-size: 10px;
+  opacity: 0.9;
+}
+
+/* Partner siparişi olmayan hücre – "Yok" bilinçli boş değer, veri gelmemiş izlenimi vermesin */
+.sag-detay-alan .siparis-listesi .td-partner .partner-yok {
+  color: var(--gri70, #888);
+  font-size: 10px;
+  font-style: normal;
+}
+
+.sag-detay-alan .siparis-listesi .siparis-teslim-kisi-hucre {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  justify-content: center;
+  font-size: 12px;
+  text-align: left;
+}
+.sag-detay-alan .siparis-listesi .siparis-teslim-kisi-adi {
+  font-weight: 600;
+  color: var(--ana-renk);
+}
+.sag-detay-alan .siparis-listesi .siparis-teslim-kisi-telefon {
+  font-size: 11px;
+  color: var(--gray-basic, #666);
+}
+
+.sag-detay-alan .siparis-listesi .siparis-arac-bilgileri-hucre {
+  display: flex;
+  flex-direction: column;
+  /* gap: 4px; */
+  align-items: flex-start;
+  text-align: left;
+  font-size: 12px;
+}
+.sag-detay-alan .siparis-listesi .siparis-arac-bilgileri-hucre .siparis-arac-plaka,
+.sag-detay-alan .siparis-listesi .siparis-arac-bilgileri-hucre .siparis-arac-marka-model,
+.sag-detay-alan .siparis-listesi .siparis-arac-bilgileri-hucre .siparis-arac-renk {
+  display: block;
+  color: var(--ana-renk);
+}
+.sag-detay-alan .siparis-listesi .siparis-arac-bilgileri-hucre .siparis-arac-plaka { font-weight: 600; }
+
+.sag-detay-alan .siparis-listesi .siparis-urun-yazi-dosya-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.sag-detay-alan .siparis-listesi .siparis-urun-yazi-dosya-ikon {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.sag-detay-alan .siparis-listesi .siparis-urun-yazi-dosyasi .siparis-urun-yazi-dosya-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sag-detay-alan .siparis-listesi table .teslim-durum-box,
+.sag-detay-alan .siparis-listesi table .teslim-edildi-durum-box {
+  display: inline-block;
+  background-color: var(--success-green);
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.sag-detay-alan .siparis-listesi table .beklemede-durum-box {
+  display: inline-block;
+  background-color: var(--white);
+  color: var(--gray-basic);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid var(--mid-gray);
+  text-align: center;
+}
+
+.sag-detay-alan .siparis-listesi table .aktif-durum-box {
+  display: inline-block;
+  background-color: var(--success-green, #2e7d32);
+  color: var(--white-only, #fff);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.sag-detay-alan .siparis-listesi .td-islem {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Sadece bu sayfa: işlem ikonları zemin rengi */
+.sag-detay-alan .siparis-listesi .td-islem .islem-ikon {
+  background-color: #e4e4e4;
+}
+
+/* İşlem ikonları – sadece bu sayfa: ikon rengi tablo satırına göre biraz daha koyu gri (hover renkleri dashboard-cards.css ortak stilde) */
+.sag-detay-alan .siparis-listesi .td-islem .islem-ikon i,
+.sag-detay-alan .siparis-listesi .td-islem .islem-ikon svg {
+  color: var(--gray-basic, #555);
+}
+
+.sag-detay-alan .siparis-listesi .td-islem .islem-link {
+  margin: 0 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sag-detay-alan .siparis-listesi .td-islem .teslim-edildi-bilgi-mesaji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  color: var(--ana-renk);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: center;
+  max-width: 100%;
+}
+
+.sag-detay-alan .siparis-listesi .td-islem .teslim-edildi-bilgi-mesaji i {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.sag-detay-alan .siparis-listesi .sag-butonlar .toplam-siparis i {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* ========== Sipariş Detayları Popup (eski siparis-kart-detay popup yapısı) ========== */
+/* Portal ile body’de render edilir; header/sidebar’ın üstünde kalması için yüksek z-index */
+.siparis-detay-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.siparis-detay-popup {
+  background-color: var(--white);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.siparis-detay-header {
+  padding: 20px 24px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-renk, #e0e0e0);
+  flex-shrink: 0;
+}
+
+.siparis-detay-header .siparis-detay-title {
+  color: var(--ana-renk);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.siparis-detay-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--ana-renk);
+}
+
+.siparis-detay-close:hover {
+  background-color: var(--light-gray, rgba(0, 0, 0, 0.06));
+}
+
+.siparis-detay-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.siparis-detay-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 0;
+}
+
+.siparis-detay-left {
+  background-color: var(--extra-light-bg, #f8f9fa);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.siparis-detay-right {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.siparis-detay-siparis-no {
+  font-size: 14px;
+}
+
+.siparis-detay-siparis-no span {
+  color: var(--gray-popup-secondary, #666);
+  margin-right: 6px;
+}
+
+.siparis-detay-siparis-no strong {
+  color: var(--ana-renk);
+  font-weight: 600;
+}
+
+.siparis-detay-teslim-zaman {
+  background: rgba(46, 125, 50, 0.08);
+  border: 1px solid var(--success-green, #2e7d32);
+  border-radius: 8px;
+  padding: 14px 16px;
+  color: var(--ana-renk);
+}
+
+.siparis-detay-teslim-zaman .teslim-zaman-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.siparis-detay-teslim-zaman .teslim-zaman-info .teslim-zaman-label {
+  font-size: 12px;
+  color: var(--gray-popup-secondary, #666);
+}
+
+.siparis-detay-teslim-zaman .teslim-zaman-info .teslim-tarih {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.siparis-detay-urun-section {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  background-color: var(--white);
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid var(--border-renk, #e0e0e0);
+}
+
+.siparis-detay-urun-section .urun-image {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--extra-light-bg, #f0f0f0);
+}
+
+.siparis-detay-urun-section .urun-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.siparis-detay-urun-section .urun-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.siparis-detay-urun-section .urun-name {
+  font-weight: 600;
+  color: var(--ana-renk);
+  font-size: 15px;
+}
+
+.siparis-detay-urun-section .urun-price span {
+  color: var(--gray-popup-secondary, #666);
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.siparis-detay-urun-section .urun-price strong {
+  color: var(--ana-renk);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.siparis-detay-left .siparis-detay-info-section,
+.siparis-detay-right .siparis-detay-info-section {
+  border: 1px solid var(--border-renk, #e0e0e0);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.siparis-detay-info-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-popup-secondary, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.siparis-detay-info-section .info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  font-size: 13px;
+  gap: 12px;
+}
+
+.siparis-detay-info-section .info-row:last-child {
+  margin-bottom: 0;
+}
+
+.siparis-detay-info-section .info-row.full-width {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.siparis-detay-info-section .info-label {
+  color: var(--gray-popup-secondary, #666);
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.siparis-detay-info-section .info-value {
+  color: var(--ana-renk);
+  font-weight: 500;
+  text-align: right;
+  /* flex: 1; */
+  word-break: break-word;
+}
+
+.siparis-detay-info-section .info-row.full-width .info-value {
+  text-align: left;
+  font-size: 13px;
+}
+
+.siparis-detay-urun-yazi-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.siparis-detay-urun-yazi-dosya-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mor-primary, #6b21a8);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.siparis-detay-urun-yazi-dosya-link:hover {
+  text-decoration: underline;
+}
+
+.siparis-detay-urun-yazi-icon {
+  flex-shrink: 0;
+  color: var(--mor-primary, #6b21a8);
+}
+
+.siparis-detay-urun-yazi-dosya-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  color: var(--gray-popup-secondary, #666);
+}
+.siparis-detay-urun-yazi-dosya-label .siparis-detay-urun-yazi-icon {
+  flex-shrink: 0;
+}
+
+.siparis-detay-info-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.siparis-detay-right .teslimat-wrapper {
+  background: rgba(46, 125, 50, 0.06);
+  border-color: var(--success-green, #2e7d32);
+}
+
+.siparis-detay-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-renk, #e0e0e0);
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.siparis-detay-btn-close {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background-color: var(--neutral-gray-b1, #555);
+  color: var(--white);
+}
+
+.siparis-detay-btn-close:hover {
+  background-color: var(--gri70, #444);
+}
+
+@media (max-width: 640px) {
+  .siparis-detay-main {
+    grid-template-columns: 1fr;
+  }
+  .siparis-detay-left,
+  .siparis-detay-right {
+    padding: 16px;
+  }
+  .siparis-detay-info-section .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .siparis-detay-info-section .info-label {
+    min-width: auto;
+  }
+  .siparis-detay-popup {
+    max-height: 95vh;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

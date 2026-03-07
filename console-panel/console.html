@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Admin Panel | Floovon™</title>
+  
+  <!-- Tema Kontrolü - CSS yüklenmeden önce çalışır (beyaz flash'ı önlemek için) -->
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+          // HTML ve body'ye class ekle (CSS yüklenmeden önce çalışır)
+          document.documentElement.classList.add('dark-mode');
+          // Body henüz yoksa, DOMContentLoaded'da tekrar dene
+          if (document.body) {
+            document.body.classList.add('dark-mode');
+          } else {
+            document.addEventListener('DOMContentLoaded', function() {
+              document.body.classList.add('dark-mode');
+            });
+          }
+        }
+      } catch(e) {
+        // localStorage erişilemiyorsa sessizce devam et
+      }
+    })();
+  </script>
+  
+  <!-- Session Check - Cookie ve localStorage kontrolü (sayfa render edilmeden önce) -->
+  <script>
+    (function() {
+      // Cookie kontrolü için helper fonksiyon
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+      }
+      
+      // Admin token kontrolü (hem localStorage hem cookie)
+      let adminToken = localStorage.getItem('admin_token');
+      if (!adminToken) {
+        adminToken = getCookie('floovon_admin_token');
+      }
+      
+      // Admin user ID kontrolü
+      const adminUserId = localStorage.getItem('admin_user_id');
+      
+      // Eğer token veya user ID yoksa hemen redirect et (sayfa render edilmeden)
+      if (!adminToken || !adminUserId) {
+        window.location.replace('/console-login');
+        // Sayfanın render edilmesini engelle
+        document.documentElement.style.display = 'none';
+        return;
+      }
+    })();
+  </script>
+  
+  <!-- Geist Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Admin Panel CSS -->
+  <link rel="stylesheet" href="../css/console-theme.css" />
+  <link rel="stylesheet" href="../css/console-shared.css" />
+  <link rel="stylesheet" href="../css/console-panel.css" />
+  <link rel="stylesheet" href="../css/console-panel-fixes.css" />
+  <link rel="stylesheet" href="../css/console-input-validation.css" />
+  <link rel="stylesheet" href="../css/console-toast-notification-style.css" />
+  <link rel="stylesheet" href="../css/console-tenant-manage.css" />
+  
+  <!-- Faviconlar -->
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
+  <link rel="manifest" href="../favicon/site.webmanifest">
+  <link rel="icon" href="../favicon/favicon.ico?v=2" type="image/x-icon">
+
+  <!-- Toast Notification Script -->
+  <script src="../js/toast-notification-script.js"></script>
+  
+  <!-- Production/Development Config -->
+  <script src="../js/config.js"></script>
+  
+  <!-- Backend API Client -->
+  <script src="../js/api-client-professional.js"></script>
+  
+  <!-- Location Data (Türkiye İl-İlçe) - turkiye-adres.bundle.js kullan -->
+  <script src="../js/turkiye-adres.bundle.js"></script>
+  
+  <!-- Phone Utils (E.164 Standard) -->
+  <script src="../js/utils/phone-utils.js"></script>
+  
+  <!-- Phone Formatter -->
+  <script src="../js/utils/phone-formatter.js"></script>
+  
+  <!-- Input Validation -->
+  <script src="../js/utils/input-validation.js"></script>
+  
+  <!-- Console Panel Components -->
+  <script src="../js/console-panel-components.js"></script>
+  
+  <!-- Console Panel JavaScript -->
+  <script src="../js/console-panel.js"></script>
+
+</head>
+
+<body class="console-panel-body">
+  
+  <div id="admin-dashboard-root">
+    <!-- Top Navigation -->
+    <header class="console-panel-header">
+      <div class="console-panel-header-container">
+        <div class="console-panel-header-left">
+          <div class="console-panel-header-logo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="console-panel-header-logo-svg"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
+          </div>
+          <h1 class="console-panel-header-title admin-title-letter-spacing">
+            Floovon™ Yönetim Paneli
+          </h1>
+        </div>
+
+        <div class="header-right">
+          <!-- ✅ REVIZE-9: Tema geçiş butonu -->
+          <button class="theme-toggle-btn" id="header-theme-toggle" title="Tema değiştir">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon theme-icon-sun">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2"></path>
+              <path d="M12 20v2"></path>
+              <path d="m4.93 4.93 1.41 1.41"></path>
+              <path d="m17.66 17.66 1.41 1.41"></path>
+              <path d="M2 12h2"></path>
+              <path d="M20 12h2"></path>
+              <path d="m6.34 17.66-1.41 1.41"></path>
+              <path d="m19.07 4.93-1.41 1.41"></path>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon theme-icon-moon">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+            </svg>
+          </button>
+          <!-- <div class="header-divider"></div> -->
+          <div class="notification-wrapper">
+            <button class="notification-btn" id="notification-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="notification-icon"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              <span class="notification-dot" id="notification-dot"></span>
+            </button>
+            <div id="notification-dropdown" class="notification-dropdown" style="display: none;">
+              <div class="notification-header">
+                <h3>Bildirimler</h3>
+                <button id="notification-close" class="notification-close">&times;</button>
+              </div>
+              <div class="notification-filters">
+                <button class="notification-filter active" data-filter="all">Tümü</button>
+                <button class="notification-filter" data-filter="critical">Kritik</button>
+                <button class="notification-filter" data-filter="warning">Uyarı</button>
+                <button class="notification-filter" data-filter="info">Bilgi</button>
+                <button class="notification-filter" data-filter="system">Sistem</button>
+              </div>
+              <div class="notification-content">
+                <div id="notification-list" class="notification-list">
+                  <div class="notification-empty">Henüz bildirim yok.</div>
+                </div>
+              </div>
+              <div id="notification-footer" class="notification-footer" style="display: none;">
+                <button id="notification-read-all" class="notification-read-all">Tümünü Okundu İşaretle</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="header-divider"></div>
+          
+          <div class="user-menu">
+            <button id="user-menu-trigger" class="user-menu-btn">
+              <div class="user-avatar">
+                <img src="" alt="Avatar" class="user-avatar-img hidden" id="user-avatar-img">
+                <span id="user-avatar-fallback">MA</span>
+              </div>
+              <div class="user-info">
+                <span class="user-name" id="user-name">Admin</span>
+                <span class="user-role">SÜPER ADMIN</span>
+              </div>
+            </button>
+            <div id="user-menu" class="user-menu-dropdown hidden">
+              <div class="user-menu-label">Hesabım</div>
+              <div class="user-menu-separator"></div>
+              <button id="btn-profile" class="user-menu-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                Profil
+              </button>
+              <button id="btn-settings" class="user-menu-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path></svg>
+                Ayarlar
+              </button>
+              <div class="user-menu-separator"></div>
+              <!-- ✅ REVIZE-8: Kullanıcılar menu item -->
+              <button id="btn-admin-users" class="user-menu-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>
+                Kullanıcılar
+              </button>
+              <div class="user-menu-separator"></div>
+              <button id="btn-logout" class="user-menu-item user-menu-item-logout">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Çıkış Yap
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="console-panel-main">
+      <!-- Welcome Section -->
+      <div class="console-panel-welcome-section">
+        <div class="console-panel-welcome-content">
+          <h2 class="console-panel-welcome-title admin-title-letter-spacing" id="console-welcome-title">Hoş Geldiniz 👋</h2>
+          <p class="console-panel-welcome-subtitle">
+            Sistem genelindeki organizasyonları ve kullanıcıları buradan yönetebilirsiniz.
+          </p>
+        </div>
+        <button 
+          id="btn-add-tenant"
+          class="console-panel-add-tenant-btn"
+        >
+          <svg class="console-panel-add-tenant-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Yeni Tenant Ekle
+        </button>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="console-panel-stats-grid" id="stats-grid">
+        <!-- Stats will be loaded here -->
+      </div>
+
+      <!-- Content Section -->
+      <div>
+        <div class="console-panel-tenant-card console-tenant-list-card">
+          <div class="console-panel-tenant-card-header">
+            <div class="console-panel-tenant-card-header-content">
+              <div class="console-panel-tenant-card-title-section">
+                <h3 class="console-panel-tenant-card-title admin-title-letter-spacing">Tenant Listesi</h3>
+                <p class="console-panel-tenant-card-subtitle">Sistemdeki tüm kayıtlı organizasyonlar ve durumları.</p>
+              </div>
+              <div class="console-panel-tenant-card-search-wrapper">
+                <div class="console-panel-tenant-card-search-container">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="console-panel-tenant-card-search-icon"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                  <input 
+                    id="search-tenants"
+                    placeholder="Tenant ara..." 
+                    class="console-panel-tenant-card-search-input"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="console-tenant-table-container">
+            <div class="console-panel-table-wrapper">
+              <table class="console-panel-table console-panel-table-desktop">
+                <thead>
+                  <tr class="console-panel-table-header-row">
+                    <th class="console-panel-table-header-cell console-panel-table-header-id admin-title-letter-spacing">ID</th>
+                    <th class="console-panel-table-header-cell console-panel-table-header-code admin-title-letter-spacing">Tenant Kodu</th>
+                    <th class="console-panel-table-header-cell admin-title-letter-spacing">Organizasyon Adı</th>
+                    <th class="console-panel-table-header-cell admin-title-letter-spacing">İl / İlçe</th>
+                    <th class="console-panel-table-header-cell admin-title-letter-spacing">Kullanıcı Sayısı</th>
+                    <th class="console-panel-table-header-cell admin-title-letter-spacing">Abonelik Paketi</th>
+                    <th class="console-panel-table-header-cell admin-title-letter-spacing">Durum</th>
+                    <th class="console-panel-table-header-cell console-panel-table-header-actions admin-title-letter-spacing" style="text-align: center;">İşlemler</th>
+                  </tr>
+                </thead>
+                <tbody id="tenants-tbody">
+                  <tr>
+                    <td colspan="8" class="console-panel-table-loading">Yükleniyor...</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div id="tenants-tbody-mobile" class="console-tenant-cards-grid console-panel-table-mobile">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Sheets and Dialogs will be added dynamically via JavaScript -->
+
+</body>
+</html>
+

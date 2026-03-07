@@ -1,0 +1,813 @@
+/* Dashboard Custom Styles - Eski HTML'den uyarlanmış */
+
+.dashboard-container {
+  background-color: var(--border-renk);
+  border-radius: 15px 15px 0 0;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.dashboard-header,
+.dashboard-header-mobile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.dashboard-header .baslik-alan,
+.dashboard-header-mobile .baslik-alan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--overlay-gray-medium);
+  padding: 12px 20px;
+  height: 60px;
+}
+
+.dashboard-header .baslik-alan .baslik-tarih-ve-aciklama,
+.dashboard-header-mobile .baslik-alan .baslik-tarih-ve-aciklama {
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-header .baslik-alan .baslik-tarih,
+.dashboard-header-mobile .baslik-alan .baslik-tarih {
+  font-weight: 500;
+  background-color: var(--white);
+  border-radius: 5px;
+  padding: 5px 10px;
+  color: var(--ikincil-renk);
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.dashboard-header .baslik-alan .baslik-tarih-aciklama,
+.dashboard-header-mobile .baslik-alan .baslik-tarih-aciklama {
+  font-weight: 400;
+  margin-left: 5px;
+  color: var(--ikincil-renk);
+  margin-top: -2px;
+  cursor: default;
+}
+
+.dashboard-container .dashboard-header .butonlar,
+.dashboard-container .dashboard-header-mobile .butonlar {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  gap: 10px;
+}
+
+/* Sıcak Satış Butonu */
+.btn-sicak-satis-button {
+  background: linear-gradient(135deg, #eb5e91, #eb5e5e);
+  color: var(--white-only);
+  border: none;
+  padding: 12px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  height: 40px;
+  white-space: nowrap;
+}
+
+.btn-sicak-satis-button:hover {
+  opacity: 0.8;
+}
+
+.btn-sicak-satis-button:active {
+  transform: translateY(0);
+}
+
+/* Empty Message - .grid-item.main içinde, .items DIŞINDA olmalı (eski index.html yapısına göre) */
+.empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: calc(100% - 130px);
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--gray-subtle-dark);
+    height: 100%;
+    border-radius: 20px;
+    background: repeating-linear-gradient(-45deg, var(--pattern-bg-light-1), var(--pattern-bg-light-2) 5px, transparent 5px, transparent 10px);
+    margin-left: 24px;
+}
+
+/* Empty message hidden class override - JavaScript ile kontrol ediliyor */
+.empty-message.hidden {
+    display: none !important;
+}
+
+.empty-message i {
+    font-size: 48px !important;
+    color: var(--gray-classic);
+    margin-bottom: 14px;
+}
+
+.empty-message .message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    gap: 5px;
+    width: 100%;
+}
+
+.empty-message .message span {
+    font-weight: 300;
+}
+
+/* Empty Search Message */
+.empty-search-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: calc(100% - 130px);
+    height: 100%;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--gray-subtle-dark);
+    border-radius: 20px;
+    background: repeating-linear-gradient(-45deg, var(--pattern-bg-light-1), var(--pattern-bg-light-2) 5px, transparent 5px, transparent 10px);
+    margin-right: 24px;
+}
+
+.empty-search-message i {
+    font-size: 48px !important;
+    color: var(--gray-classic);
+    margin-bottom: 14px;
+}
+
+.empty-search-message .message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    gap: 5px;
+    width: 100%;
+}
+
+.empty-search-message .message span {
+    font-weight: 300;
+}
+
+/* Kartları Sırala Butonu */
+.dashboard-container .dashboard-header .butonlar .buton-sirala,
+.dashboard-container .dashboard-header-mobile .butonlar .buton-sirala {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--white);
+  border-radius: 5px;
+  padding: 12px 24px;
+  gap: 5px;
+  cursor: pointer;
+  color: var(--ikincil-renk);
+  white-space: nowrap;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  position: relative;
+}
+
+.dashboard-container .dashboard-header .butonlar .buton-sirala:hover,
+.dashboard-container .dashboard-header-mobile .butonlar .buton-sirala:hover {
+  opacity: 0.8;
+}
+
+/* ✅ KRİTİK: Dropdown açıkken (dropdown-open class'ı varken) butonun hover efektini devre dışı bırak */
+.clickdropdown.dropdown-open .buton-sirala:hover,
+.clickdropdown.dropdown-open:hover .buton-sirala {
+  opacity: 1 !important;
+}
+
+/* ✅ KRİTİK: Dropdown'ın kendisi her durumda opacity korunmalı */
+.siparis-sirala,
+.siparis-sirala:hover,
+.clickdropdown:hover .siparis-sirala,
+.clickdropdown .siparis-sirala,
+.clickdropdown.dropdown-open .siparis-sirala,
+.clickdropdown.dropdown-open:hover .siparis-sirala {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: var(--white) !important;
+}
+
+/* Sırala Dropdown */
+.siparis-sirala {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: var(--white);
+  border: 1px solid var(--border-renk);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 99999 !important;
+  min-width: 200px;
+  padding: 8px 0;
+  opacity: 1 !important;
+  visibility: visible !important;
+  /* ✅ DÜZELTME: Hover durumunda da opacity korunmalı */
+  pointer-events: auto;
+}
+
+.siparis-sirala .liste-baslik {
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ana-renk);
+  border-bottom: 1px solid var(--border-renk);
+}
+
+/* hr elementleri kaldırıldı */
+
+.siparis-sirala span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ana-renk);
+  padding: 9px 20px;
+  text-decoration: none;
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.siparis-sirala span:hover {
+  background-color: var(--light-gray);
+}
+
+/* Dışa Aktar Butonu */
+.buton-disa-aktar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--export-button-blue);
+  color: var(--white);
+  font-weight: 300;
+  border-radius: 5px;
+  padding: 0 4px 0 14px;
+  height: 40px;
+  width: 180px;
+  gap: 12px;
+  cursor: pointer;
+  position: relative;
+}
+
+.buton-disa-aktar .dosya-tur {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--ikincil-renk);
+  font-weight: 500;
+  border-radius: 5px;
+  background-color: var(--white);
+  padding: 7px 12px;
+  height: 30px;
+  width: 64px;
+  font-size: 13px;
+  position: relative;
+}
+
+.buton-disa-aktar .dosya-tur i {
+  /* font-size: 8px; */
+  color: var(--ikincil-renk);
+}
+
+.buton-disa-aktar .btn-baslik {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  gap: 5px;
+  color: var(--export-button-text);
+}
+
+.buton-disa-aktar .btn-baslik i {
+  font-size: 12px;
+}
+
+/* Dışa Aktar Dropdown */
+.dosya-tur-content {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: var(--white);
+  border: 1px solid var(--border-renk);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 9999 !important;
+  min-width: 220px;
+  padding: 8px 0;
+}
+
+.dosya-tur-content .liste-baslik {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--gray-classic);
+  border-bottom: 1px solid var(--border-renk);
+}
+
+/* hr elementleri kaldırıldı */
+
+.dosya-tur-content button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--ana-renk);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: none;
+}
+
+.dosya-tur-content button:hover {
+  background-color: var(--light-gray);
+}
+
+.dosya-tur-content button i {
+  font-size: 16px;
+}
+
+/* Çiçek Sepeti Butonu */
+.dashboard-container .dashboard-header .butonlar .ciceksepeti-integration-btn,
+.dashboard-container .dashboard-header-mobile .butonlar .ciceksepeti-integration-btn {
+  display: none; /* Varsayılan olarak gizli */
+  align-items: center;
+  justify-content: center;
+  background-color: var(--yesil-canli);
+  border-radius: 5px;
+  padding: 12px;
+  gap: 5px;
+  cursor: pointer;
+  color: var(--white-only);
+  white-space: nowrap;
+  border: none;
+  height: 40px;
+}
+
+.dashboard-container .dashboard-header .butonlar .ciceksepeti-integration-btn.show,
+.dashboard-container .dashboard-header-mobile .butonlar .ciceksepeti-integration-btn.show {
+  display: flex;
+}
+
+/* Kart Filtreler (Tab'lar) */
+/* #region Index Header - "kart-filtreler" Kart Filtreler */
+.dashboard-container .dashboard-header .kart-filtreler {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 10px 24px;
+    user-select: none;
+}
+
+.dashboard-container .dashboard-header .kart-filtreler .tum-siparisleri-goster {
+    font-weight: 600;
+}
+
+.dashboard-container .dashboard-header .kart-filtreler ul {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    gap: 15px;
+}
+
+.dashboard-container .dashboard-header .kart-filtreler li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    list-style: none;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border-renk);
+    cursor: pointer;
+    color: var(--ana-renk);
+    height: 28px;
+    text-transform: uppercase; /* ✅ DÜZELTME: Büyük harfle yazılması için */
+}
+
+.dashboard-container .dashboard-header .kart-filtreler li:hover {
+    border-bottom: 1px solid var(--ikincil-renk);
+    color: var(--ikincil-renk);
+}
+
+.dashboard-container .dashboard-header .kart-filtreler .filtre-secili {
+    border-bottom: 1px solid var(--ikincil-renk);
+    color: var(--ikincil-renk);
+    transition: all 0.3s ease;
+}
+
+.dashboard-container .dashboard-header .kart-filtreler .kartin-tur-adi .kart-sayisi {
+    margin-left: 5px;
+    transition: all 0.3s ease;
+}
+
+.dashboard-container .dashboard-header .kart-filtreler .kartin-tur-adi::after {
+  content: attr(data-kart-adeti);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid var(--ana-renk);
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    height: 12px;
+    width: 12px;
+    padding: 10px;
+    margin-left: 5px;
+    transition: all 0.3s ease;
+}
+
+.dashboard-container .dashboard-header .kart-filtreler .filtre-pasif:after {
+  border: 1px solid var(--gray-surface-light) !important;
+}
+.dashboard-container .dashboard-header .kart-filtreler .filtre-pasif {
+  pointer-events: none !important;
+  color: var(--gray-surface-light) !important;
+  transition: all 0.3s ease;
+}
+
+.dashboard-container .dashboard-header .kart-filtreler .filtre-aktif {
+    pointer-events: auto !important;
+    color: var(--ana-renk) !important;
+    transition: all 0.3s ease;
+}
+
+/* .dashboard-container .dashboard-header .kart-filtreler .filtre-pasif:after {
+    border: 1px solid var(--gray-surface-light) !important;
+} */
+
+.dashboard-container .dashboard-header .tum-siparisleri-goster.filtre-pasif {
+    pointer-events: none;
+    color: var(--gray-surface-light) !important;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.dashboard-container .dashboard-header .tum-siparisleri-goster.filtre-aktif {
+    pointer-events: auto;
+    color: var(--ana-renk) !important;
+    transition: all 0.3s ease;
+}
+/* #endregion Index Header - "kart-filtreler" Kart Filtreler */
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-header .baslik-alan,
+  .dashboard-header-mobile .baslik-alan {
+    flex-direction: column;
+    height: auto;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .dashboard-container .dashboard-header .butonlar,
+  .dashboard-container .dashboard-header-mobile .butonlar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .buton-disa-aktar {
+    width: auto;
+    min-width: 140px;
+  }
+}
+
+/* Masaüstünde mobil kapsayıcı (search + butonlar + baslik) gizli */
+@media (min-width: 768px) {
+  .dashboard-container .dashboard-header .mobile-search-ve-baslik-wrapper,
+  .dashboard-container .dashboard-header-mobile .mobile-search-ve-baslik-wrapper {
+    display: none !important;
+  }
+}
+
+/* ✅ KRİTİK: Dashboard header'daki mobil butonları (Yeni Kart ve Müşteri Ekle) sadece mobilde görünsün, web'de gizli */
+/* NOT: Header component'indeki butonlar görünür kalmalı, sadece dashboard header'daki butonlar gizlenmeli */
+@media (min-width: 769px) {
+  /* Index sayfasındaki dashboard header'daki butonlar div'i içindeki mobil butonları gizle */
+  .dashboard-container .dashboard-header .butonlar .btn-yeni-kart-ekle,
+  .dashboard-container .dashboard-header .butonlar .btn-yeni-musteri-ekle,
+  .dashboard-container .dashboard-header-mobile .butonlar .btn-yeni-kart-ekle,
+  .dashboard-container .dashboard-header-mobile .butonlar .btn-yeni-musteri-ekle {
+    display: none !important;
+  }
+  
+  /* top-tooltip wrapper'larını da gizle (sadece dashboard header içindeki) */
+  .dashboard-container .dashboard-header .butonlar .top-tooltip:has(.btn-yeni-kart-ekle),
+  .dashboard-container .dashboard-header .butonlar .top-tooltip:has(.btn-yeni-musteri-ekle),
+  .dashboard-container .dashboard-header-mobile .butonlar .top-tooltip:has(.btn-yeni-kart-ekle),
+  .dashboard-container .dashboard-header-mobile .butonlar .top-tooltip:has(.btn-yeni-musteri-ekle) {
+    display: none !important;
+  }
+}
+
+/* Müşteriler ve Partner Firmalar Sayfaları - Genişlik Düzenlemeleri */
+@media (min-width: 1024px) {
+  .lg\:w-2\/5 {
+    width: 74% !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:w-3\/5 {
+    width: 26% !important;
+  }
+}
+
+/* Kampanya Yönetimi, Raporlar, Arşiv Siparişler, Ayarlar, Potansiyel Partnerler ve Profil Ayarları Sayfaları - Tam Genişlik */
+.max-w-7xl {
+  max-width: 100% !important;
+}
+
+/* #region Sipariş Kartları Sağa Tıkla "Sipariş Kartını Taşı" Listesi - Custom Context Menü */
+.siparis-tasi-menu {
+    position: absolute;
+    z-index: 99999;
+    display: block;
+    background: var(--kart-menu-content);
+    border: 1px solid var(--mid-gray);
+    box-shadow: 0 1px 10px 0 var(--black-alpha-25);
+    border-radius: 6px;
+    min-width: 200px;
+    font-size: 13px;
+    color: var(--ana-renk);
+}
+
+.siparis-tasi-menu .liste-baslik {
+    color: var(--subtle-gray);
+    font-size: 14px;
+    font-weight: 500;
+    padding-left: 20px;
+    padding-top: 16px;
+}
+
+.siparis-tasi-menu hr {
+    border: 1px solid var(--input-border-gray);
+    opacity: .2;
+    width: 100%;
+    margin: 0;
+    margin-top: 10px;
+}
+
+.siparis-tasi-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+}
+
+.siparis-tasi-menu ul li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 10px 16px;
+    cursor: pointer;
+    position: relative;
+}
+
+.siparis-tasi-menu ul li i {
+    font-size: 9px;
+}
+
+.siparis-tasi-menu ul li:hover {
+    background-color: var(--light-gray);
+}
+
+.siparis-tasi-menu .not-alan {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--gray-basic);
+    padding: 10px 0 10px 16px;
+    max-width: 200px;
+    gap: 8px;
+    cursor: default;
+}
+
+.siparis-tasi-menu .not {
+    border-left: 1px solid var(--border-renk);
+    padding-left: 10px;
+}
+
+.siparis-tasi-menu .not-alan i {
+    font-size: 18px;
+    height: 100%;
+}
+
+/* ✅ DİNAMİK SUBMENU POZİSYONLAMA */
+.siparis-tasi-submenu {
+    position: absolute;
+    top: 0;
+    display: block;
+    background: var(--kart-menu-content);
+    border: 1px solid var(--mid-gray);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: max-content;
+    min-width: 240px;
+    max-width: 480px;
+    z-index: 100001;
+    /* Varsayılan olarak sağa açıl */
+    left: 100%;
+    margin-left: -4px;
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+}
+
+/* ✅ SOLA AÇILAN SUBMENU (Sağdan taştığında) */
+.siparis-tasi-submenu.open-left {
+    left: auto;
+    right: 100%;
+    margin-left: 0;
+    margin-right: -4px;
+}
+
+/* ✅ YUKARI AÇILAN SUBMENU (Aşağıdan taştığında) */
+.siparis-tasi-submenu.open-up {
+    top: auto;
+    bottom: 0;
+}
+
+.siparis-tasi-submenu li {
+    padding: 10px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.siparis-tasi-submenu .siparis-tasi-li-content {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    gap: 0;
+}
+
+.siparis-tasi-submenu .siparis-tasi-sep {
+    flex-shrink: 0;
+    margin: 0 2px;
+    opacity: 0.6;
+}
+
+.siparis-tasi-submenu .siparis-tasi-label-bold {
+    font-weight: 600;
+}
+
+.siparis-tasi-submenu li:hover {
+    background-color: var(--light-gray);
+}
+
+/* ✅ PULSE HIGHLIGHT ANIMATION - Sipariş taşındığında karta vurgu efekti */
+@keyframes pulseHighlight {
+    0%,
+    100% {
+        scale: 0.95;
+        transition: .3s all ease-in-out;
+    }
+    
+    50% {
+        scale: 1;
+        transition: .3s all ease-in-out;
+    }
+}
+
+/* Ana kart için transform origin */
+.ana-kart {
+    transform-origin: center center;
+}
+
+/* ✅ ORDER LIST CONTAINER - Inline stiller CSS'e taşındı */
+.order-list-container {
+    display: flex;
+    flex-direction: column;
+    /* gap: 12px; */
+    width: 100%;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* ✅ DRAG & DROP STYLES - Sipariş kartları için */
+.siparis-kart.dragging {
+    opacity: 0.5;
+    cursor: move !important;
+}
+
+.siparis-kart.over {
+    border-top: 3px solid var(--birincil-renk, #007bff);
+    margin-top: -3px;
+}
+
+.siparis-kart {
+    cursor: move;
+    transition: opacity 0.2s ease;
+}
+
+.siparis-tasi-submenu .submenu-uyari {
+    color: var(--gray-basic);
+    padding: 6px 12px;
+}
+
+/* ✅ UYARI LİSTE İÇİ STILI */
+.uyari-liste-ici {
+    color: var(--gray-basic) !important;
+    cursor: default !important;
+}
+
+.uyari-liste-ici:hover {
+    background-color: transparent !important;
+}
+/* #endregion Sipariş Kartları Sağa Tıkla "Sipariş Kartını Taşı" Listesi - Custom Context Menü */
+
+/* Backend Error Message */
+.backend-error-message-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    height: 100%;
+    background-color: var(--body-bg);
+    padding: 20px;
+}
+
+.backend-error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+}
+
+.backend-error-message__icon {
+    margin-bottom: 16px;
+    color: var(--danger-pink);
+    width: 48px;
+    height: 48px;
+}
+
+.backend-error-message__icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.backend-error-message__title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ana-renk);
+    margin-bottom: 8px;
+}
+
+.backend-error-message__text {
+    font-size: 14px;
+    color: var(--gray-subtle-dark);
+    margin-bottom: 16px;
+    max-width: 600px;
+    line-height: 1.5;
+}
+
+.backend-error-message__action {
+    margin-top: 8px;
+}
+
+/* Dark Mode Support */
+body.dark-mode .backend-error-message-wrapper {
+    background-color: var(--body-bg);
+}
+
+body.dark-mode .backend-error-message__title {
+    color: var(--ana-renk);
+}
+
+body.dark-mode .backend-error-message__text {
+    color: var(--gray-subtle-dark);
+}
+

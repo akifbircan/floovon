@@ -1,0 +1,1600 @@
+/* Shared Console Styles - Ortak buton ve form stilleri */
+
+/* NOT: Renk tanımları artık css/console-theme.css dosyasında */
+
+/* Button Styles - Ortak buton stilleri */
+.btn-cancel,
+.btn-save {
+  flex: 1;
+  height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--console-border-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
+.btn-cancel {
+  background-color: var(--console-bg-secondary);
+  color: var(--console-text-muted);
+  border-color: var(--console-border-primary);
+}
+
+.btn-cancel:hover {
+  background-color: var(--console-bg-hover);
+  border-color: var(--console-border-hover);
+}
+
+.btn-save {
+  background-color: var(--console-primary);
+  color: var(--console-text-inverse);
+  border-color: var(--console-primary);
+  white-space: nowrap;
+}
+
+.btn-save:hover {
+  background-color: var(--console-primary-hover);
+  border-color: var(--console-primary-hover);
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Sheet Footer Buttons */
+.sheet-footer .btn-cancel,
+.sheet-footer .btn-save {
+  flex: 1;
+  height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--console-border-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
+.sheet-footer .btn-cancel {
+  background-color: var(--console-bg-secondary);
+  color: var(--console-text-muted);
+  border-color: var(--console-border-primary);
+}
+
+.sheet-footer .btn-cancel:hover {
+  background-color: var(--console-bg-hover);
+  border-color: var(--console-border-hover);
+}
+
+.sheet-footer .btn-save {
+  background-color: var(--console-primary);
+  color: var(--console-text-inverse);
+  border-color: var(--console-primary);
+}
+
+.sheet-footer .btn-save:hover {
+  background-color: var(--console-primary-hover);
+  border-color: var(--console-primary-hover);
+}
+
+.sheet-footer .btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Modal Footer Buttons */
+.modal-footer .btn-cancel,
+.modal-footer .btn-save {
+  flex: 1;
+  height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--console-border-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
+.modal-footer .btn-save {
+  background-color: var(--console-primary);
+  color: var(--console-text-inverse);
+  border-color: var(--console-primary);
+}
+
+.modal-footer .btn-save:hover {
+  background-color: var(--console-primary-hover);
+  border-color: var(--console-primary-hover);
+}
+
+/* Form Input Styles - Ortak form input stilleri */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  border-radius: 0.5rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-radius: 0.5rem;
+}
+
+/* ========================================================================
+   ORTAK HEADER STİLLERİ - Bildirimler ve Profil Bilgileri
+   ======================================================================== */
+
+/* Header Right - Ortak */
+/* Header Right - Birleştirilmiş */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+/* Header Divider - Birleştirilmiş */
+.header-divider {
+  width: 1px;
+  height: 1.5rem;
+  background-color: var(--console-border-primary);
+  margin: 0 0.25rem;
+  flex-shrink: 0;
+}
+
+/* ✅ REVIZE-9: Tema geçiş butonu */
+.theme-toggle-btn {
+  position: relative;
+  border-radius: 9999px;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 200ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--console-bg-tertiary);
+}
+
+.theme-toggle-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--console-text-muted);
+  flex-shrink: 0;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.theme-toggle-icon.theme-icon-sun {
+  position: absolute;
+}
+
+.theme-toggle-icon.theme-icon-moon {
+  position: absolute;
+}
+
+/* Dark mode'da güneş ikonunu gizle, ay ikonunu göster */
+body.dark-mode .theme-toggle-icon.theme-icon-sun {
+  display: none !important;
+}
+
+body.dark-mode .theme-toggle-icon.theme-icon-moon {
+  display: block !important;
+}
+
+/* Light mode'da ay ikonunu gizle, güneş ikonunu göster */
+body:not(.dark-mode) .theme-toggle-icon.theme-icon-sun {
+  display: block !important;
+}
+
+body:not(.dark-mode) .theme-toggle-icon.theme-icon-moon {
+  display: none !important;
+}
+
+/* Notification Wrapper - Birleştirilmiş */
+.notification-wrapper {
+  position: relative;
+}
+
+/* Notification Button - Birleştirilmiş */
+.notification-btn {
+  position: relative;
+  border-radius: 9999px;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 200ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.notification-wrapper {
+  margin-right: 5px;
+}
+
+.notification-btn:hover {
+  background-color: var(--console-bg-tertiary);
+}
+
+.notification-icon,
+.notification-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--console-text-muted);
+  flex-shrink: 0;
+}
+
+/* Notification Badge - Birleştirilmiş */
+.notification-dot,
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 20px;
+  height: 20px;
+  padding: 4px;
+  background-color: var(--console-error);
+  border-radius: 9999px;
+  border: 2px solid var(--console-bg-backdrop-light);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--console-notification-badge-text);
+  line-height: 1;
+  transform: translate(25%, -25%);
+}
+
+/* User Menu - Birleştirilmiş */
+.user-menu {
+  position: relative;
+}
+
+.user-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.user-menu-btn:hover {
+  background-color: var(--console-bg-tertiary);
+}
+
+/* User Avatar - Birleştirilmiş */
+.user-avatar {
+  height: 2rem;
+  width: 2rem;
+  border-radius: 9999px;
+  background-color: var(--console-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--console-text-inverse);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 2px solid var(--console-bg-secondary);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9999px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.user-avatar-img.hidden {
+  display: none;
+}
+
+#admin-tenant-user-avatar-fallback,
+#user-avatar-fallback {
+  position: relative;
+  z-index: 0;
+}
+
+/* User Info - Birleştirilmiş */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 0.75rem;
+}
+
+.user-name {
+  font-weight: 600;
+  line-height: 1;
+  color: var(--console-text-primary);
+  letter-spacing: -0.025em;
+}
+
+.user-role {
+  color: var(--console-text-secondary);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 0.125rem;
+  line-height: normal;
+}
+
+/* User Menu Dropdown - Birleştirilmiş */
+.user-menu-dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 14rem;
+  background-color: var(--console-bg-secondary);
+  border-radius: 0.375rem;
+  border: 1px solid var(--console-border-tertiary);
+  box-shadow: var(--console-shadow-lg);
+  z-index: 50;
+  padding: 0.25rem;
+}
+
+.user-menu-dropdown.hidden {
+  display: none !important;
+}
+
+.user-menu-label {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--console-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.user-menu-separator {
+  height: 1px;
+  background-color: var(--console-border-tertiary);
+  margin: 0.25rem 0;
+}
+
+.user-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--console-text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-radius: 0.25rem;
+  text-align: left;
+}
+
+.user-menu-item:hover {
+  background-color: var(--console-bg-hover);
+}
+
+.user-menu-item svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--console-text-tertiary);
+  flex-shrink: 0;
+}
+
+.user-menu-item-logout {
+  color: var(--console-error);
+}
+
+.user-menu-item-logout:hover {
+  background-color: var(--console-error-lighter);
+}
+
+.user-menu-item-logout svg {
+  color: var(--console-error);
+}
+
+/* Notification Dropdown - Birleştirilmiş */
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 400px;
+  max-height: 600px;
+  background: var(--console-bg-secondary);
+  border: 1px solid var(--console-border-primary);
+  border-radius: 0.5rem;
+  box-shadow: var(--console-shadow-xl);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.notification-dropdown.hidden {
+  display: none;
+}
+
+/* Notification Header - Birleştirilmiş */
+.notification-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid var(--console-border-primary);
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--console-text-primary);
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: var(--console-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.notification-close:hover {
+  background: var(--console-bg-tertiary);
+  color: var(--console-text-primary);
+}
+
+/* Notification Filters - Birleştirilmiş */
+.notification-filters {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--console-border-primary);
+  overflow-x: auto;
+}
+
+.notification-filter {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--console-border-primary);
+  border-radius: 0.375rem;
+  background: var(--console-bg-secondary);
+  color: var(--console-text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.notification-filter:hover {
+  background: var(--console-bg-hover);
+  border-color: var(--console-border-hover);
+}
+
+.notification-filter.active {
+  background: var(--console-primary);
+  color: var(--console-text-inverse);
+  border-color: var(--console-primary);
+}
+
+/* Notification List - Birleştirilmiş */
+.notification-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.notification-loading,
+.notification-empty,
+.notification-error {
+  padding: 2rem;
+  text-align: center;
+  color: var(--console-text-secondary);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 200px;
+}
+
+.notification-empty p {
+  margin: 0;
+  color: var(--console-text-secondary);
+}
+
+.notification-error {
+  color: var(--console-error);
+}
+
+/* Notification Item - Birleştirilmiş */
+.notification-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--console-border-primary);
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+}
+
+.notification-item:hover {
+  background: var(--console-bg-active);
+}
+
+.notification-item.unread {
+  background: var(--console-bg-secondary);
+}
+
+.notification-item.unread:hover {
+  background: var(--console-bg-active);
+}
+
+.notification-item-icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--console-text-inverse);
+}
+
+.notification-item-icon.critical {
+  background: var(--console-error);
+}
+
+.notification-item-icon.warning {
+  background: var(--console-warning);
+}
+
+.notification-item-icon.info {
+  background: var(--console-success);
+}
+
+.notification-item-icon.system {
+  background: var(--console-info);
+}
+
+.notification-item-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.notification-item-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--console-text-primary);
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.notification-item-message {
+  font-size: 0.8125rem;
+  color: var(--console-text-secondary);
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.notification-item-time {
+  font-size: 0.75rem;
+  color: var(--console-text-tertiary);
+  line-height: 1.4;
+}
+
+.notification-item-dot {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--console-primary);
+}
+
+/* Notification Footer - Birleştirilmiş */
+.notification-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--console-border-primary);
+  background: var(--console-bg-primary);
+}
+
+.notification-read-all {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--console-border-secondary);
+  border-radius: 0.375rem;
+  background: var(--console-bg-secondary);
+  color: var(--console-text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.notification-read-all:hover {
+  background: var(--console-bg-tertiary);
+  border-color: var(--console-text-tertiary);
+  color: var(--console-text-primary);
+}
+
+/* Notification Content - Birleştirilmiş */
+.notification-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar stilleri - Birleştirilmiş */
+.notification-content::-webkit-scrollbar,
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-content::-webkit-scrollbar-track,
+.notification-list::-webkit-scrollbar-track {
+  background: var(--console-bg-tertiary);
+  border-radius: 3px;
+}
+
+.notification-content::-webkit-scrollbar-thumb,
+.notification-list::-webkit-scrollbar-thumb {
+  background: var(--console-border-secondary);
+  border-radius: 3px;
+}
+
+.notification-content::-webkit-scrollbar-thumb:hover,
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: var(--console-text-tertiary);
+}
+
+/* ============================================
+   RESPONSIVE STYLES - Dropdowns
+   ============================================ */
+
+/* Mobile - max-width: 640px */
+@media (max-width: 640px) {
+  /* Header Right - Mobil görünüm */
+  .header-right {
+    flex: 1 1 100% !important;
+    order: 2 !important;
+    justify-content: flex-end !important;
+    gap: 1rem !important;
+  }
+  
+  /* Notification Dropdown Responsive */
+  .notification-dropdown {
+    width: calc(100vw - 2rem) !important;
+    max-width: calc(100vw - 2rem) !important;
+    right: 1rem !important;
+    left: auto !important;
+    top: calc(100% + 0.5rem) !important;
+    max-height: calc(100vh - 6rem) !important;
+    position: fixed !important;
+    z-index: 99999 !important;
+  }
+  
+  .notification-header {
+    padding: 0.75rem !important;
+  }
+  
+  .notification-header h3 {
+    font-size: 0.875rem !important;
+  }
+  
+  .notification-filters {
+    padding: 0.5rem 0.75rem !important;
+    gap: 0.375rem !important;
+  }
+  
+  .notification-filter {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .notification-item {
+    padding: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+  
+  .notification-item-icon {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+  
+  .notification-item-title {
+    font-size: 0.8125rem !important;
+  }
+  
+  .notification-item-message {
+    font-size: 0.75rem !important;
+  }
+  
+  .notification-item-time {
+    font-size: 0.6875rem !important;
+  }
+  
+  .notification-footer {
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  .notification-read-all {
+    padding: 0.5rem !important;
+    font-size: 0.8125rem !important;
+  }
+  
+  /* User Menu Dropdown Responsive */
+  .user-menu-dropdown {
+    width: calc(100vw - 2rem) !important;
+    max-width: 14rem !important;
+    right: 0 !important;
+    left: auto !important;
+  }
+  
+  .user-menu-label {
+    padding: 0.5rem !important;
+    font-size: 0.6875rem !important;
+  }
+  
+  .user-menu-item {
+    padding: 0.5rem !important;
+    font-size: 0.8125rem !important;
+    gap: 0.5rem !important;
+  }
+  
+  .user-menu-item svg {
+    width: 0.875rem !important;
+    height: 0.875rem !important;
+  }
+}
+
+/* Very Small Mobile - max-width: 375px */
+@media (max-width: 375px) {
+  .notification-dropdown {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+  
+  .user-menu-dropdown {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+}
+
+/* ========================================================================
+   MODAL STİLLERİ - Ortak Modal Yapısı ve Form Elementleri
+   ======================================================================== */
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 99999 !important;
+  background-color: var(--console-bg-overlay) !important;
+  background: var(--console-bg-overlay) !important;
+  display: none;
+  align-items: flex-start !important;
+  justify-content: flex-end !important;
+  overflow-y: auto;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-overlay.active {
+  display: flex !important;
+  opacity: 1 !important;
+}
+
+/* Modal açıkken html ve body scroll engelle - Yatay scroll önleme */
+html:has(.modal-overlay.active),
+body:has(.modal-overlay.active),
+body.console-tenant-manage-body:has(.modal-overlay.active) {
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+}
+
+body:has(.modal-overlay.active),
+body.console-tenant-manage-body:has(.modal-overlay.active) {
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+}
+
+/* Modal Container */
+.modal-overlay .modal {
+  position: relative;
+  z-index: 100000;
+  max-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
+  margin: 0 !important;
+  width: 100%;
+  max-width: 28rem;
+  border-radius: 0;
+  box-shadow: var(--console-shadow-modal);
+  animation: slideInRight 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  background-color: var(--console-bg-secondary);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid var(--console-border-tertiary);
+  background-color: var(--console-bg-primary);
+}
+
+.modal-header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.modal-header-icon {
+  padding: 0.5rem;
+  background-color: var(--console-primary);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modal-header-icon-amber {
+  background-color: var(--console-warning);
+}
+
+.modal-header-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--console-text-inverse);
+}
+
+.modal-header-text {
+  flex: 1;
+}
+
+.modal-header h2 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--console-text-primary);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.modal-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--console-text-secondary);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--console-text-tertiary);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background-color: var(--console-bg-tertiary);
+  color: var(--console-text-primary);
+}
+
+/* Modal Form - Ensure form is flex container for proper footer positioning */
+.modal > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Modal Body */
+.modal-body {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.modal-body .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.modal-body .form-group-row {
+  margin-bottom: 20px;
+}
+
+.modal-body .form-group-row .form-group {
+  margin-bottom: 0;
+}
+
+.modal-body .form-group:last-child,
+.modal-body .form-switch-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Modal Footer */
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--console-border-tertiary);
+  background-color: var(--console-bg-primary);
+  flex-shrink: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  width: 100%;
+}
+
+.modal > form + .modal-footer {
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+/* Modal Profile Section */
+.modal-profile-section {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem;
+  background-color: var(--console-bg-primary);
+  border-radius: 1rem;
+  border: 1px solid var(--console-border-primary);
+  margin-bottom: 24px;
+}
+
+.modal-profile-avatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--console-text-inverse);
+  font-size: 1.5rem;
+  font-weight: 700;
+  border: 4px solid var(--console-bg-secondary);
+  box-shadow: var(--console-shadow-xl);
+  background-color: var(--console-border-primary);
+  color: var(--console-text-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-profile-avatar img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9999px;
+  z-index: 2;
+  display: block;
+}
+
+.modal-profile-avatar img.hidden {
+  display: none !important;
+}
+
+.modal-profile-avatar > div {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.modal-profile-name {
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.modal-profile-badge {
+  display: inline-block;
+  margin-top: 0.25rem;
+  background-color: var(--console-primary-light);
+  color: var(--console-primary-text);
+  border: none;
+  font-weight: 700;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* Modal Settings Info */
+.modal-settings-info {
+  padding: 1rem;
+  background-color: var(--console-bg-primary);
+  border-radius: 0.75rem;
+}
+
+.modal-settings-info-text {
+  font-size: 0.875rem;
+  color: var(--console-text-secondary);
+  margin: 0;
+}
+
+/* Modal Form Label Wrapper */
+.modal-form-label-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* margin-bottom: 0.5rem; */
+}
+
+.modal-form-label-wrapper svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--console-text-tertiary);
+  flex-shrink: 0;
+}
+
+.modal-form-label-wrapper label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--console-text-primary);
+  margin: 0;
+}
+
+/* Modal Settings Description Text */
+.modal .text-xs.text-slate-500,
+.modal p.text-xs.text-slate-500,
+.modal-settings-description {
+  font-size: 14px !important;
+  color: var(--console-text-secondary) !important;
+  margin: 0.25rem 0 0 0 !important;
+  line-height: 1.4 !important;
+}
+
+/* Modal Settings Container */
+.modal-settings-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: var(--console-bg-primary);
+  border-radius: 0.75rem;
+}
+
+.modal-settings-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.modal-settings-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Modal Form Elements */
+.modal label {
+  display: block !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--console-text-primary) !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+}
+
+/* Modal Input and Select Styles */
+.modal input,
+.modal .form-input,
+.modal .form-group input,
+.modal .form-group select,
+.modal select.form-input {
+  width: 100% !important;
+  height: 2.75rem !important;
+  padding: 0 0.75rem !important;
+  border: 1px solid var(--console-border-primary) !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.875rem !important;
+  color: var(--console-text-primary) !important;
+  background-color: var(--console-bg-secondary) !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+  box-sizing: border-box !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+}
+
+/* Select input'lar için özel stiller */
+.modal select,
+.modal .form-group select,
+.modal select.form-input {
+  padding: 0 2.5rem 0 0.75rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23718096' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 12px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  cursor: pointer !important;
+}
+
+/* Textarea için özel stiller - arrow ikonu olmamalı */
+.modal textarea,
+.modal .form-group textarea,
+.modal textarea.form-input {
+  width: 100% !important;
+  padding: 0.75rem !important;
+  border: 1px solid var(--console-border-primary) !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.875rem !important;
+  color: var(--console-text-primary) !important;
+  background-color: var(--console-bg-secondary) !important;
+  background-image: none !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+  box-sizing: border-box !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  resize: vertical !important;
+  min-height: 2.75rem !important;
+  line-height: 1.5 !important;
+}
+
+#edit-plan-ozellikler {
+  min-height: 130px !important;
+}
+
+/* Modal input hover ve focus stilleri */
+.modal .form-input:hover,
+.modal .form-group input:hover,
+.modal .form-group select:hover,
+.modal .form-group textarea:hover,
+.modal input:hover,
+.modal select:hover,
+.modal textarea:hover {
+  border-color: var(--console-border-secondary) !important;
+}
+
+.modal .form-input:focus,
+.modal .form-group input:focus,
+.modal .form-group select:focus,
+.modal .form-group textarea:focus,
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus {
+  outline: none !important;
+  border-color: var(--console-primary) !important;
+  box-shadow: 0 0 0 3px var(--console-primary-shadow-light) !important;
+}
+
+/* Modal Space Utilities */
+.modal .space-y-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modal .space-y-5 {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.modal .space-y-6 {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ========================================================================
+   FORM ELEMENT STİLLERİ - Ortak Form Yapısı
+   ======================================================================== */
+
+/* Form Group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--console-text-primary);
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
+/* Form Input and Select - Base Styles */
+.form-input, 
+.form-group input, 
+.form-group select, 
+select.form-input {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 2.5rem 0 0.75rem;
+  border: 1px solid var(--console-border-primary);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--console-text-primary);
+  background-color: var(--console-bg-secondary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23718096' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
+/* Text input'lar için background-image ve padding düzeltmesi */
+.form-group input:not(select),
+.form-input[type="text"],
+.form-input[type="email"],
+.form-input[type="password"],
+.form-input[type="tel"],
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="tel"] {
+  padding: 0 0.75rem;
+  background-image: none;
+}
+
+/* Form Input Hover and Focus */
+.form-input:hover,
+.form-group input:hover,
+.form-group select:hover,
+select.form-input:hover {
+  border-color: var(--console-border-secondary);
+}
+
+.form-input:focus,
+.form-group input:focus,
+.form-group select:focus,
+select.form-input:focus {
+  outline: none;
+  border-color: var(--console-primary);
+  box-shadow: 0 0 0 3px var(--console-primary-shadow-light);
+}
+
+/* Form Group Row - Yan yana alanlar için */
+.form-group-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0;
+}
+
+.form-group-half {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-half label {
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--console-text-muted);
+}
+
+/* Input with Prefix */
+.input-with-prefix {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--console-text-secondary);
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 10;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  user-select: none;
+  padding-right: 0.5rem;
+}
+
+.input-with-prefix input[type="text"], 
+.input-with-prefix input[type="email"], 
+.input-with-prefix input[type="password"], 
+.input-with-prefix input {
+  padding-left: 2.25rem !important;
+  padding-right: 0.75rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Input with Suffix */
+.input-with-suffix {
+  position: relative;
+}
+
+.input-suffix-btn {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--console-text-secondary);
+  transition: color 0.2s;
+}
+
+.input-suffix-btn:hover {
+  color: var(--console-text-primary);
+}
+
+.input-with-suffix input[type="text"], 
+.input-with-suffix input[type="email"], 
+.input-with-suffix input[type="password"], 
+.input-with-suffix input {
+  padding-right: 2.5rem !important;
+}
+
+/* Form Switch Styles */
+.form-switch-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1.25rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--console-border-tertiary);
+}
+
+.form-switch-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: var(--console-bg-primary);
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
+  transition: background-color 0.2s;
+}
+
+.form-switch-content {
+  flex: 1;
+}
+
+.form-switch-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--console-text-primary);
+  margin-bottom: 0.125rem;
+  cursor: pointer;
+}
+
+.form-switch-description {
+  font-size: 0.75rem;
+  color: var(--console-text-secondary);
+  margin: 0;
+}
+
+.form-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.form-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.form-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--console-border-secondary);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.form-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--console-bg-secondary);
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.form-switch input:checked + .form-switch-slider {
+  background-color: var(--console-primary);
+}
+
+.form-switch input:checked + .form-switch-slider:before {
+  transform: translateX(20px);
+}
+
+/* ========================================================================
+   MODAL RESPONSIVE STYLES
+   ======================================================================== */
+
+/* Mobile - max-width: 640px */
+@media (max-width: 640px) {
+  .modal-overlay {
+    z-index: 99999 !important;
+  }
+  
+  .modal-overlay .modal {
+    z-index: 100000 !important;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 24px 24px 16px 24px;
+  }
+  
+  .modal-header-content {
+    gap: 0.75rem;
+  }
+  
+  .modal-header-icon {
+    padding: 0.5rem;
+    width: auto;
+    height: auto;
+  }
+  
+  .modal-header-text h2 {
+    font-size: 1.25rem;
+  }
+  
+  .modal-description {
+    font-size: 0.875rem;
+  }
+  
+  .modal-body {
+    padding: 24px;
+  }
+  
+  .modal-footer {
+    padding: 1.5rem;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+  
+  .modal-footer .btn-cancel,
+  .modal-footer .btn-save {
+    width: 100%;
+    height: 2.75rem !important;
+    padding: 0 1.5rem !important;
+    border-radius: 0.5rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    border: 1px solid var(--console-border-primary) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    font-family: 'Geist', system-ui, sans-serif !important;
+  }
+  
+  .form-group-row {
+    flex-direction: column;
+  }
+  
+  .form-group-half {
+    width: 100%;
+  }
+}

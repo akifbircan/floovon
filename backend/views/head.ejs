@@ -1,0 +1,58 @@
+<!-- Dinamik Head Template -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title><%= title %> | Floovon™</title>
+
+<!-- Meta Tags -->
+<meta name="description" content="<%= description %>">
+<meta name="keywords" content="<%= keywords %>">
+<meta name="author" content="Floovon Development Team">
+
+<!-- Faviconlar -->
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+<link rel="manifest" href="/favicon/site.webmanifest">
+<link rel="icon" href="/favicon/favicon.ico?v=2" type="image/x-icon">
+
+<!-- CSS Dosyaları -->
+<link rel="stylesheet" href="/css/fonts.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/toast-notification-style.css" />
+<% if (cssFiles && cssFiles.length > 0) { %>
+    <% cssFiles.forEach(function(cssFile) { %>
+<link rel="stylesheet" href="/css/<%= cssFile %>" />
+    <% }); %>
+<% } %>
+
+<!-- JavaScript Kütüphaneleri -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<% if (jsLibraries && jsLibraries.length > 0) { %>
+    <% jsLibraries.forEach(function(jsLib) { %>
+<script src="<%= jsLib %>"></script>
+    <% }); %>
+<% } %>
+
+<!-- Professional Backend API Client -->
+<script>
+    // Backend port'unu ayarla
+    localStorage.setItem('backend_port', '<%= backendPort %>');
+</script>
+<!-- Production/Development Config - Diğer script'lerden ÖNCE yüklenmeli -->
+<script src="/js/config.js"></script>
+<script src="/js/api-client-professional.js"></script>
+<script src="/js/floovon-data-manager-professional.js"></script>
+
+<!-- Sayfa Özel JavaScript Dosyaları -->
+<% if (jsFiles && jsFiles.length > 0) { %>
+    <% jsFiles.forEach(function(jsFile) { %>
+<script src="/js/<%= jsFile %>" defer></script>
+    <% }); %>
+<% } %>
+
+<!-- Sayfa Özel Script Bloğu -->
+<% if (customScript) { %>
+<script>
+<%= customScript %>
+</script>
+<% } %>

@@ -1,0 +1,375 @@
+/**
+ * Çiçek Sepeti test sipariş bildirimi toast – index/dashboard sayfasında kullanılır.
+ * Eski yapıdaki ciceksepeti-toast-container ile aynı görünüm.
+ */
+
+/* Sadece anasayfada (index) gösterilir; script tarafında display: flex yapılır */
+.ciceksepeti-toast-container {
+  position: fixed;
+  top: 64px;
+  right: 20px;
+  z-index: 10001;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 310px;
+}
+
+/* Mobil: popup dikeyde ortalı, üst tarafa yakın (header altında rahat görünsün) */
+@media (max-width: 768px) {
+  .ciceksepeti-toast-container {
+    position: fixed !important;
+    top: 0 !important;
+    right: 12px !important;
+    bottom: 0 !important;
+    left: 12px !important;
+    margin: 0 !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    max-width: none !important;
+    width: auto !important;
+    /* display: script tarafından index sayfasında flex, diğer sayfalarda none atanır; !important koymuyoruz ki sayfa değişince gizlenebilsin */
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding-top: 7vh !important;
+    padding-right: calc(12px + env(safe-area-inset-right, 0));
+    padding-left: calc(12px + env(safe-area-inset-left, 0));
+    z-index: 10002;
+    pointer-events: none;
+  }
+  .ciceksepeti-toast-container .ciceksepeti-toast {
+    pointer-events: auto;
+    max-width: 300px;
+    width: 100%;
+  }
+}
+
+.ciceksepeti-toast {
+  background: linear-gradient(135deg, #0012c8, #00a53e);
+  color: var(--white, #fff);
+  border-radius: 12px;
+  padding: 16px;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+.ciceksepeti-toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.ciceksepeti-toast.hide {
+  transform: translateX(100%);
+  opacity: 0;
+  margin-bottom: -100px;
+}
+
+.ciceksepeti-toast-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ciceksepeti-toast-header .ciceksepeti-toast-logo {
+  width: 110px;
+  filter: brightness(0) invert(1);
+}
+
+.ciceksepeti-toast-header .ciceksepeti-toast-close {
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  background: transparent;
+  color: inherit;
+}
+
+.ciceksepeti-toast-header .ciceksepeti-toast-close i {
+  color: var(--white-only, #fff);
+  font-size: 9px;
+}
+
+.ciceksepeti-toast-header .ciceksepeti-toast-close:hover {
+  opacity: 0.8;
+}
+
+.ciceksepeti-toast-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--white-only, #fff);
+}
+
+.ciceksepeti-toast-subtitle {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 12px;
+  color: var(--white-only, #fff);
+}
+
+.ciceksepeti-toast-orders {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 235px;
+  overflow-y: auto;
+  padding-right: 4px;
+  padding-top: 2px;
+}
+
+.ciceksepeti-toast-orders::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ciceksepeti-toast-orders::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+}
+
+.ciceksepeti-toast-orders::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.ciceksepeti-toast-order-item {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all ease-in-out 0.2s;
+  position: relative;
+  color: #2c3e50;
+  border-left: 3px solid #00C851;
+}
+
+.ciceksepeti-toast-order-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+}
+
+.ciceksepeti-order-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ciceksepeti-order-title {
+  font-weight: 500;
+  font-size: 15px;
+  color: #00C851;
+  margin-bottom: 4px;
+}
+
+.ciceksepeti-order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ciceksepeti-order-info .info-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ciceksepeti-order-info .info-label {
+  color: #6c757d;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.ciceksepeti-order-info .info-value {
+  color: #212529;
+  font-weight: 500;
+}
+
+.ciceksepeti-status-indicator {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 10px;
+  height: 10px;
+  background: #00C851;
+  border-radius: 50%;
+  animation: ciceksepetiPulse 2s infinite;
+}
+
+@keyframes ciceksepetiPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 200, 81, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 200, 81, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 200, 81, 0);
+  }
+}
+
+/* Sipariş kontrol ediliyor / yok toast (ciceksepeti.js) */
+.ciceksepeti-checking-toast .ciceksepeti-checking-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.ciceksepeti-checking-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid var(--white-only, #fff);
+  border-radius: 50%;
+  animation: ciceksepetiCheckingSpin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ciceksepetiCheckingSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.ciceksepeti-checking-text .checking-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--white-only, #fff);
+}
+
+.ciceksepeti-checking-text .checking-subtitle {
+  font-size: 12px;
+  opacity: 0.9;
+  color: var(--white-only, #fff);
+}
+
+.ciceksepeti-no-orders-toast .ciceksepeti-no-orders-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.ciceksepeti-no-orders-toast .no-orders-icon {
+  color: var(--white-only, #fff);
+  font-size: 24px;
+}
+
+.ciceksepeti-no-orders-toast .no-orders-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--white-only, #fff);
+}
+
+.ciceksepeti-no-orders-toast .no-orders-subtitle {
+  font-size: 12px;
+  color: var(--white-only, #fff);
+}
+
+/* Çiçek Sepeti sonuç toast'ları (Reddet / Onayla / Hata) – sabit sağ üst, stilli */
+.ciceksepeti-result-toasts {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10015;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 360px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 260px;
+  max-width: 360px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background: var(--white, #fff);
+  color: var(--cckspt-primary-text, #1f2937);
+  font-size: 14px;
+  line-height: 1.4;
+  border-left: 4px solid #6c757d;
+  animation: ciceksepeti-toast-in 0.35s ease;
+}
+
+@keyframes ciceksepeti-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast .ciceksepeti-result-toast-column {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast .ciceksepeti-result-toast-column i {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-reject {
+  border-left-color: #dc3545;
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-reject .ciceksepeti-result-toast-column i {
+  color: #dc3545;
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-approve {
+  border-left-color: #28a745;
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-approve .ciceksepeti-result-toast-column i {
+  color: #28a745;
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-error {
+  border-left-color: #dc3545;
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-error .ciceksepeti-result-toast-column i {
+  color: #dc3545;
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast .ciceksepeti-result-toast-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.ciceksepeti-result-toasts .ciceksepeti-result-toast .ciceksepeti-result-toast-close:hover {
+  color: #1f2937;
+}

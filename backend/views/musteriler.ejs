@@ -1,0 +1,59 @@
+<!-- Müşteriler Sayfası İçeriği -->
+<div id="app">
+    <!-- Sidebar Component -->
+    <div id="sidebar-component"></div>
+    
+    <!-- Header Component -->
+    <div id="header-component"></div>
+    
+    <!-- Mobile Header Component -->
+    <div id="mobile-header-component"></div>
+    
+    <!-- Landscape Overlay Component -->
+    <div id="landscape-overlay-component"></div>
+    
+    <!-- Ana İçerik -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <div class="page-header">
+                <h1>Müşteriler</h1>
+                <button class="btn btn-primary" id="addCustomerBtn">Yeni Müşteri</button>
+            </div>
+            
+            <div class="page-content">
+                <div class="search-filters">
+                    <input type="text" id="customerSearch" placeholder="Müşteri ara...">
+                    <select id="customerFilter">
+                        <option value="">Tüm Müşteriler</option>
+                        <option value="active">Aktif Müşteriler</option>
+                        <option value="inactive">Pasif Müşteriler</option>
+                    </select>
+                </div>
+                
+                <div class="customer-list" id="customerList">
+                    <!-- Müşteri listesi buraya gelecek -->
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Sayfa Özel Script'leri -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Müşteriler sayfası yüklendi');
+        
+        // Component'leri başlat
+        if (window.ComponentManager) {
+            window.ComponentManager.init();
+        }
+        
+        // Müşteri listesini yükle
+        loadCustomers();
+    });
+    
+    function loadCustomers() {
+        console.log('Müşteriler yükleniyor...');
+        // Müşteri yükleme logic'i buraya gelecek
+    }
+</script>

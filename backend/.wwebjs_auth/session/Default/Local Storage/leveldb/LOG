@@ -1,0 +1,4 @@
+2026/01/26-14:16:29.438 143a8 Creating DB D:\FLOOVON\backend\.wwebjs_auth\session\Default\Local Storage\leveldb since it was missing.
+2026/01/26-14:16:29.559 143a8 Reusing MANIFEST D:\FLOOVON\backend\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2026/01/26-14:16:29.559 143a8 Recovering log #3
+2026/01/26-14:16:29.560 143a8 Reusing old log D:\FLOOVON\backend\.wwebjs_auth\session\Default\Local Storage\leveldb/000003.log 

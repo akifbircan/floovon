@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Floovon</title>
+      <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon/favicon-16x16.png">
+    <link rel="manifest" href="../favicon/site.webmanifest">
+    <link rel="stylesheet" href="../css/landing-styles.css">
+  <link rel="stylesheet" href="../css/landing-dashboard.css">
+  <link rel="stylesheet" href="../css/toast-notification-style.css">
+  </head>
+<body>
+  <div class="dashboard-page">
+    <header class="dashboard-header">
+      <div class="dashboard-header-container">
+        <a href="landing.html" class="dashboard-logo">
+          <img src="../assets/landing/logo-floovon-dark.svg" alt="Floovon" width="140" height="32">
+        </a>
+          <div class="dashboard-header-actions">
+              <button id="logout-btn" class="logout-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+              <span class="logout-text">Çıkış Yap</span>
+            </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+          <div class="sidebar-profile">
+            <div class="profile-avatar" id="profile-avatar" style="display: none;">
+              <img id="profile-avatar-img" src="" alt="Logo">
+            </div>
+            <h3 class="profile-name" id="business-name"></h3>
+            <span class="profile-tenant" id="tenant-code"></span>
+          </div>
+
+          <nav class="sidebar-nav">
+            <button type="button" class="sidebar-nav-item active" data-tab="profile">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+              <span>İşletme & Profil Bilgileri</span>
+              <svg class="nav-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+            <button type="button" class="sidebar-nav-item" data-tab="subscription">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+              <span>Plan & Abonelik</span>
+              <svg class="nav-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </nav>
+
+          <div class="sidebar-footer">
+            <a href="landing.html" class="back-to-home">Ana Sayfaya Dön</a>
+          </div>
+        </aside>
+
+        <div class="dashboard-content">
+          <!-- Profile Tab -->
+          <div id="profile-tab" class="content-section profile-tab-scroll">
+            <div class="section-header">
+              <h2 class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+                İşletme & Profil Bilgileri
+              </h2>
+              <button class="edit-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                Düzenle
+              </button>
+            </div>
+
+            <!-- Profil Başlık Kartı -->
+            <div class="profile-header-card">
+              <div class="profile-header-content">
+                <div class="profile-header-main">
+                  <h3 class="profile-business-name" id="info-business-name-header"></h3>
+                  <div class="profile-meta">
+                    <div class="profile-meta-item">
+                      <span class="profile-meta-label">Tenant Kodu</span>
+                      <div class="profile-meta-value-group">
+                        <span class="profile-meta-value" id="info-tenant-code-header"></span>
+                        <button class="copy-btn" data-copy="tenant-code" title="Kopyala">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="profile-meta-item">
+                      <span class="profile-meta-label">Kayıt Tarihi</span>
+                      <span class="profile-meta-value" id="info-register-date"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- İşletme ve Hesap Bilgileri Grid -->
+            <div class="info-sections-grid">
+              <!-- İşletme Bilgileri -->
+              <div class="business-info-section">
+                <h3 class="section-subtitle">İşletme Bilgileri</h3>
+                <div class="info-cards-grid">
+                  <div class="info-card-modern">
+                    <div class="info-item-modern">
+                      <div class="info-item-label-modern">Mağaza/İş Yeri Adı</div>
+                      <div class="info-item-value-modern" id="info-business-name"></div>
+                    </div>
+                  </div>
+                  <div class="info-card-modern">
+                    <div class="info-item-modern">
+                      <div class="info-item-label-modern">Yetkili Kişi</div>
+                      <div class="info-item-value-modern" id="info-fullname"></div>
+                    </div>
+                  </div>
+                  <div class="info-card-modern">
+                    <div class="info-item-modern">
+                      <div class="info-item-label-modern">Telefon</div>
+                      <div class="info-item-value-modern">
+                        <a href="#" class="info-value-link" id="info-phone-link">
+                          <span id="info-phone"></span>
+                        </a>
+                        <button class="copy-btn-small" data-copy="phone" title="Kopyala">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="info-card-modern">
+                    <div class="info-item-modern">
+                      <div class="info-item-label-modern">E-posta</div>
+                      <div class="info-item-value-modern">
+                        <a href="#" class="info-value-link" id="info-email-link">
+                          <span id="info-email"></span>
+                        </a>
+                        <button class="copy-btn-small" data-copy="email" title="Kopyala">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="info-card-modern">
+                    <div class="info-item-modern">
+                      <div class="info-item-label-modern">İl / İlçe</div>
+                      <div class="info-item-value-modern" id="info-city-state"></div>
+                    </div>
+                  </div>
+                  <div class="info-card-modern">
+                    <div class="info-item-modern">
+                      <div class="info-item-label-modern">Adres</div>
+                      <div class="info-item-value-modern" id="info-address"></div>
+                    </div>
+                  </div>
+                  <div class="info-card-modern">
+                    <div class="info-item-modern">
+                      <div class="info-item-label-modern">Vergi Dairesi</div>
+                      <div class="info-item-value-modern" id="info-tax-office"></div>
+                    </div>
+                  </div>
+                  <div class="info-card-modern">
+                    <div class="info-item-modern">
+                      <div class="info-item-label-modern">Vergi No</div>
+                      <div class="info-item-value-modern" id="info-tax-number"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hesap Sahibi Bilgileri -->
+              <div class="account-info-section">
+                <h3 class="section-subtitle">Hesap Sahibi Bilgileri</h3>
+                <div class="info-cards-grid">
+                  <div class="info-card-modern">
+                    <div class="info-item-modern">
+                      <div class="info-item-label-modern">Kullanıcı Adı</div>
+                      <div class="info-item-value-modern" id="info-username"></div>
+                    </div>
+                  </div>
+                  <div class="info-card-modern">
+                    <div class="info-item-modern">
+                      <div class="info-item-label-modern">E-posta</div>
+                      <div class="info-item-value-modern" id="info-user-email"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="account-info-note">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="info-icon">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                  <span>Kullanıcı adı ve şifrenizi sipariş panelindeki profil ayarlarından değiştirebilirsiniz.</span>
+                </div>
+                <a href="/login" class="login-panel-btn" id="login-panel-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                  Şimdi Giriş Yap
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subscription Tab -->
+          <div id="subscription-tab" class="content-section" style="display: none;">
+            <div class="section-header">
+              <h2 class="section-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                Plan & Abonelik Detayları
+              </h2>
+            </div>
+
+            <div class="subscription-grid">
+              <div class="subscription-card">
+                <div class="subscription-header">
+                  <div class="plan-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
+                    <span id="plan-name-text"></span>
+                  </div>
+                  <div class="plan-status active">
+                    <span class="status-dot"></span>
+                    <span id="plan-status-text"></span>
+                  </div>
+                </div>
+
+                <div class="subscription-price">
+                  <span class="price-amount"></span>
+                  <span class="price-period"></span>
+                </div>
+
+                <div class="subscription-dates">
+                  <div class="date-item">
+                    <span class="date-label">Başlangıç Tarihi</span>
+                    <span class="date-value"></span>
+                  </div>
+                  <div class="date-item">
+                    <span class="date-label">Sonraki Fatura</span>
+                    <span class="date-value"></span>
+                  </div>
+                </div>
+
+                <div class="subscription-features">
+                  <h4>Plan Özellikleri</h4>
+                  <ul class="features-list" id="plan-features-list">
+                    <!-- Dinamik olarak yüklenecek -->
+                  </ul>
+                </div>
+
+                <div class="subscription-actions">
+                  <button class="upgrade-button" id="upgrade-plan-btn">Planı Değiştir</button>
+                  <button class="manage-button" id="cancel-plan-btn">Aboneliği İptal Et</button>
+                </div>
+              </div>
+
+              <div class="payment-method-card">
+              <div class="payment-method-header">
+                <h3 class="payment-method-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                  Ödeme Yöntemi
+                </h3>
+                <button class="payment-edit-btn" id="edit-payment-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                  Düzenle
+                </button>
+              </div>
+
+<div id="payment-display" class="credit-card-display">
+                  <div class="credit-card">
+                    <div class="card-chip"></div>
+                    <div class="card-number">
+                      <span>••••</span>
+                      <span>••••</span>
+                      <span>••••</span>
+                      <span>4242</span>
+                    </div>
+                    <div class="card-bottom">
+                      <div class="card-holder">
+                        <span class="card-label">Kart Sahibi</span>
+                        <span class="card-value" id="card-holder-name"></span>
+                      </div>
+                      <div class="card-expiry">
+                        <span class="card-label">SKT Tarihi</span>
+                        <span class="card-value" id="card-expiry-value"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              <div id="payment-edit-form" class="payment-edit-form" style="display: none;">
+                <div class="form-row">
+                  <div class="landing-form-group">
+                    <label>Kart Numarası</label>
+                    <input type="text" placeholder="•••• •••• •••• ••••" maxlength="19" class="landing-form-input" id="edit-card-number">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="landing-form-group">
+                    <label>Kart Sahibi</label>
+                    <input type="text" class="landing-form-input" id="edit-card-holder" placeholder="Kart sahibi adı">
+                  </div>
+                </div>
+                <div class="form-row two-col">
+                  <div class="landing-form-group">
+                    <label>Son Kullanma Tarihi</label>
+                    <div class="expiry-inputs">
+                      <input type="text" placeholder="AA" maxlength="2" class="landing-form-input" id="edit-expiry-month">
+                      <span>/</span>
+                      <input type="text" placeholder="YY" maxlength="2" class="landing-form-input" id="edit-expiry-year">
+                    </div>
+                  </div>
+                  <div class="landing-form-group">
+                    <label>CVV</label>
+                    <input type="text" placeholder="•••" maxlength="4" class="landing-form-input" id="edit-cvv">
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button class="save-btn" id="save-payment-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Kaydet
+                  </button>
+                  <button class="cancel-btn" id="cancel-payment-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+                    İptal
+                  </button>
+                </div>
+              </div>
+              </div>
+            </div>
+
+            <div class="billing-history">
+              <h3 class="billing-title">Fatura Geçmişi</h3>
+              <div class="billing-list">
+                <!-- Dinamik olarak yüklenecek -->
+              </div>
+            </div>
+          </div>
+        </div>
+</div>
+      </main>
+
+    <!-- Side Modal Overlay -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+
+    <!-- Profile Edit Modal -->
+    <div class="side-modal" id="profile-edit-modal">
+      <div class="side-modal-header">
+        <h3>İşletme & Profil Bilgilerini Düzenle</h3>
+        <button class="modal-close-btn" data-close-modal>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+        </button>
+      </div>
+<div class="side-modal-body">
+          <div class="modal-form-group">
+            <label>Mağaza/İş Yeri Adı</label>
+            <input type="text" class="modal-input" id="modal-business-name" value="">
+          </div>
+          <div class="modal-form-group">
+            <label>İsim Soyisim</label>
+            <input type="text" class="modal-input" id="modal-fullname" value="">
+          </div>
+          <div class="modal-form-group">
+            <label>E-posta</label>
+            <input type="email" class="modal-input" id="modal-email" value="">
+          </div>
+          <div class="modal-form-group">
+<label>Telefon</label>
+              <input type="tel" class="modal-input" id="modal-phone" value="">
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-form-group">
+              <label>İl</label>
+              <input type="text" class="modal-input" id="modal-city" value="">
+            </div>
+            <div class="modal-form-group">
+              <label>İlçe</label>
+              <input type="text" class="modal-input" id="modal-district" value="">
+            </div>
+          </div>
+          <div class="modal-form-group">
+            <label>Adres</label>
+            <input type="text" class="modal-input" id="modal-address" value="">
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-form-group">
+              <label>Vergi Dairesi</label>
+              <input type="text" class="modal-input" id="modal-tax-office" value="">
+            </div>
+            <div class="modal-form-group">
+              <label>Vergi No</label>
+              <input type="text" class="modal-input" id="modal-tax-number" value="">
+            </div>
+          </div>
+        </div>
+      <div class="side-modal-footer">
+        <button class="modal-btn modal-btn-secondary" data-close-modal>İptal</button>
+        <button class="modal-btn modal-btn-primary" id="save-profile-btn">Kaydet</button>
+      </div>
+    </div>
+
+    <!-- Upgrade Plan Modal -->
+    <div class="side-modal" id="upgrade-plan-modal">
+      <div class="side-modal-header">
+        <h3>Plan Değiştir</h3>
+        <button class="modal-close-btn" data-close-modal>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="side-modal-body">
+        <p class="modal-info-text">Mevcut planınız: <strong id="current-plan-name-modal"></strong></p>
+        
+        <div class="landing-pricing-toggle" style="margin-bottom: 24px;">
+          <button class="landing-toggle-btn active" id="dashboard-toggle-monthly" onclick="toggleDashboardPricing('monthly')">Aylık</button>
+          <button class="landing-toggle-btn" id="dashboard-toggle-yearly" onclick="toggleDashboardPricing('yearly')">Yıllık <span class="landing-toggle-discount">%20 İndirim</span></button>
+        </div>
+        
+        <div id="plans-list-container">
+          <!-- Dinamik olarak yüklenecek -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Cancel Plan Modal -->
+    <div class="side-modal" id="cancel-plan-modal">
+      <div class="side-modal-header">
+        <h3>Aboneliği İptal Et</h3>
+        <button class="modal-close-btn" data-close-modal>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="side-modal-body">
+        <div class="cancel-warning">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          <h4>Emin misiniz?</h4>
+          <p>Aboneliğinizi iptal etmek üzeresiniz. İptal işlemi sonrası:</p>
+        </div>
+        <ul class="cancel-consequences">
+          <li>Mevcut fatura döneminin sonuna kadar erişiminiz devam edecek</li>
+          <li>Dilerseniz daha sonra yeni abonelik paketi satın alabilir ve sipariş panelinize erişim sağlayabilirsiniz</li>
+          <li>3 ay içerisinde yeni abonelik paketi satın almazsanız verileriniz kalıcı olarak silinecektir.</li>
+        </ul>
+        <div class="modal-form-group">
+          <label>İptal nedeniniz *</label>
+          <textarea class="modal-textarea" id="cancel-reason" rows="3" placeholder="Lütfen iptal nedeninizi belirtin..." required></textarea>
+        </div>
+      </div>
+      <div class="side-modal-footer">
+        <button class="modal-btn modal-btn-secondary" data-close-modal>Vazgeç</button>
+        <button class="modal-btn modal-btn-danger" id="confirm-cancel-btn">Aboneliği İptal Et</button>
+      </div>
+    </div>
+
+    <!-- Payment Edit Modal -->
+    <div class="side-modal" id="payment-edit-modal">
+      <div class="side-modal-header">
+        <h3>Ödeme Yöntemini Düzenle</h3>
+        <button class="modal-close-btn" data-close-modal>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="side-modal-body">
+        <div class="modal-form-group">
+          <label>Kart Numarası</label>
+          <input type="text" class="modal-input" id="modal-card-number" placeholder="•••• •••• •••• ••••" maxlength="19">
+        </div>
+        <div class="modal-form-group">
+          <label>Kart Sahibi</label>
+          <input type="text" class="modal-input" id="modal-card-holder" placeholder="Kart sahibi adı">
+        </div>
+        <div class="modal-form-row">
+          <div class="modal-form-group">
+            <label>Son Kullanma Tarihi</label>
+            <div class="modal-expiry-inputs">
+              <input type="text" class="modal-input" id="modal-expiry-month" placeholder="AA" maxlength="2">
+              <span>/</span>
+              <input type="text" class="modal-input" id="modal-expiry-year" placeholder="YY" maxlength="2">
+            </div>
+          </div>
+          <div class="modal-form-group">
+            <label>CVV</label>
+            <input type="text" class="modal-input" id="modal-cvv" placeholder="•••" maxlength="4">
+          </div>
+        </div>
+      </div>
+      <div class="side-modal-footer">
+        <button class="modal-btn modal-btn-secondary" data-close-modal>İptal</button>
+        <button class="modal-btn modal-btn-primary" id="save-payment-modal-btn">Kaydet</button>
+      </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/toast-notification-script.js"></script>
+    <script src="../js/landing-dashboard.js"></script>
+  <!-- Loading Overlay -->
+  <div id="subscription-loading-overlay" class="subscription-loading-overlay" style="display: none;">
+    <div class="subscription-loading-content">
+      <div class="subscription-loading-spinner"></div>
+      <p class="subscription-loading-text">İşleminiz gerçekleştiriliyor, lütfen bekleyin...</p>
+    </div>
+  </div>
+</body>
+</html>

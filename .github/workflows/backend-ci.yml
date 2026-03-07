@@ -1,0 +1,88 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, staging, develop ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ main, staging, develop ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    strategy:
+      matrix:
+        node-version: [22.20.0]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: Verify Node.js and npm versions
+      run: |
+        echo "Node.js version: $(node -v)"
+        echo "npm version (before): $(npm -v)"
+
+    - name: Install exact npm version (10.9.3)
+      run: |
+        npm install -g npm@10.9.3
+        echo "npm version (after): $(npm -v)"
+
+    - name: Install dependencies (exact from lockfile)
+      run: npm ci
+
+    - name: Run linter
+      run: npm run lint
+      continue-on-error: true
+
+    - name: Run build
+      run: npm run build
+
+    - name: Check server syntax
+      run: node -c simple-server.js
+
+    - name: Start server for smoke test
+      run: |
+        node simple-server.js &
+        echo $! > server.pid
+        echo "Server started with PID: $(cat server.pid)"
+      env:
+        PORT: 3001
+        NODE_ENV: test
+
+    - name: Run smoke tests (waits for health endpoint 200)
+      run: npm run smoke-test
+      env:
+        SMOKE_TEST_URL: http://localhost:3001
+      timeout-minutes: 2
+
+    - name: Stop server
+      if: always()
+      run: |
+        if [ -f server.pid ]; then
+          PID=$(cat server.pid)
+          echo "Stopping server with PID: $PID"
+          kill $PID 2>/dev/null || true
+          sleep 1
+          kill -9 $PID 2>/dev/null || true
+          rm server.pid
+        fi
+        # Port'u temizle (gerekirse)
+        pkill -f "node simple-server.js" || true

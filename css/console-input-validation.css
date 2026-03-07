@@ -1,0 +1,100 @@
+/* Input Validation Tooltip Styles */
+
+.input-error-tooltip {
+    position: absolute;
+    z-index: 9998;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0f172a !important;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 200ms ease, transform 200ms ease;
+    font-family: 'Geist', system-ui, sans-serif;
+}
+
+/* Modal açıkken tooltip'leri gizle - SADECE MODAL DIŞINDAKİ TOOLTIP'LER İÇİN */
+body:has(.modal-overlay.active) .input-error-tooltip:not(.modal-overlay .input-error-tooltip),
+body.console-panel-body:has(.modal-overlay.active) .input-error-tooltip:not(.modal-overlay .input-error-tooltip) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Modal içindeki tooltip'ler görünmeli - z-index artırıldı */
+.modal-overlay .input-error-tooltip {
+    z-index: 100001 !important;
+}
+
+.input-error-tooltip.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.input-error-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 20px;
+    width: 12px;
+    height: 12px;
+    background-color: #ffffff !important;
+    border-left: 1px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+    transform: rotate(45deg);
+    margin-bottom: -6px;
+}
+
+.input-error-tooltip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: #f59e0b;
+    border-radius: 4px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.input-error-tooltip-icon svg {
+    width: 14px;
+    height: 14px;
+    color: #ffffff;
+}
+
+.input-error-tooltip-text {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Input error state */
+input.input-error,
+textarea.input-error,
+select.input-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+input.input-error:focus,
+textarea.input-error:focus,
+select.input-error:focus {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Form group wrapper for relative positioning */
+.form-group {
+    position: relative;
+}
+
+.form-group-half {
+    position: relative;
+}
+

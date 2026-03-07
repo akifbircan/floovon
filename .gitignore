@@ -1,0 +1,50 @@
+# Node modules
+node_modules/
+backend/node_modules/
+
+# Database files (veritabanı dosyaları GitHub'a yüklenmeyecek)
+# Her bilgisayarda ayrı veritabanı dosyası kullanılacak
+*.db
+*.db-shm
+*.db-wal
+
+# Log files
+*.log
+logs/
+
+# Uploads (büyük dosyalar) - ARTIK GITHUB'A EKLENIYOR
+# uploads/
+# backend/uploads/
+
+# Yedekler klasörü
+yedekler/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+# NOT: .vscode/tasks.json GitHub'a eklenecek (proje için gerekli)
+!.vscode/tasks.json
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# Backend session files (WhatsApp auth)
+backend/.wwebjs_auth/
+
+# Environment files (hassas bilgiler içerir)
+.env
+backend/.env
+**/.env
+
+# GitHub run config files (güvenlik - hassas bilgiler içerir)
+github-run/sunucu-config.txt
+**/sunucu-config.txt
+github-run/*putty*.txt
+**/*putty*.txt
+

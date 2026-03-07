@@ -1,0 +1,457 @@
+:root {
+  /* ... mevcut değişkenler ... */
+}
+
+/* Araç Takip – Teslimata Çıktım butonu (React modal) – form içi */
+.btn-teslimata-ciktim {
+  font-size: 14px;
+  /* line-height: 1.2; */
+  height: 48px;
+  padding-inline: 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--ana-renk);
+  color: var(--white-only);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-teslimata-ciktim:hover:not(:disabled) {
+  background: var(--mavi-renk-hover, #2563eb);
+}
+
+.btn-teslimata-ciktim:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Araç takip info-popup – özel butonlar (formdakinden tamamen bağımsız) */
+.btn-teslimata-sonlandir {
+  width: 100%;
+  font-size: 14px;
+  height: 48px;
+  padding-inline: 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--kirmizi-canli);
+  color: var(--white-only);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.btn-teslimata-sonlandir:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-teslimata-kapat {
+  width: 100%;
+  font-size: 14px;
+  height: 48px;
+  padding-inline: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border-renk);
+  background: var(--light-gray);
+  color: var(--ana-renk);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.btn-teslimata-kapat:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+/**
+ * Global Styles - Minimum Tailwind base
+ * Component-first yaklaşım: Stil çakışmalarını önlemek için minimum global stil
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background-color: var(--white);
+    height: 100%;
+  }
+  
+  body {
+    background-color: var(--white);
+    color: var(--ana-renk);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100vh;
+    height: 100%;
+    overflow-x: hidden;
+  }
+
+  #root {
+    min-height: 100vh;
+    height: 100%;
+    background-color: var(--white);
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden;
+    /* Layout (header/sidebar) modallerin altında kalsın diye root z-index sabit */
+    position: relative;
+    z-index: 0;
+  }
+
+  /* Tüm tam ekran overlay/modaller header ve sidebar'ın üstünde */
+  .lightbox-overlay,
+  .confirm-modal-overlay,
+  .cari-drawer-overlay {
+    z-index: 100000 !important;
+  }
+  
+  [data-main-content] {
+    background-color: var(--white);
+  }
+
+  /* Tüm elementlerde Inter font'u kullan */
+  * {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  }
+
+  /* Select ok stili select-arrow-global.css'te (en son yüklenir, tüm select’lere uygulanır) */
+}
+
+@layer utilities {
+  /* Custom utilities if needed */
+  
+  /* Global Scrollbar - eski index (css/style.css) ile aynı davranış */
+  *::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background-color: transparent !important; /* Light & Dark temada tam şeffaf */
+  }
+  *::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+    background-color: transparent;
+  }
+  /* Index (dashboard) sayfasında scrollbar 16px kalsın */
+  main[data-main-content]:has(.dashboard-container-wrapper) *::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+  }
+  /* Küçük ok butonlarını tamamen gizle (hem yatay hem dikey) */
+  *::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    cursor: default;
+    background-clip: padding-box;
+    border: 4px solid transparent;
+    background-color: var(--scroll-thumb-color);
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scroll-thumb-color-hover);
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb-color) var(--scroll-track-color);
+  }
+
+  /* Tüm tablolar: thead th imleci varsayılan */
+  table thead th {
+    cursor: default;
+  }
+
+  /* Tablo "İŞLEM" ve "DURUM" kolonları için ortak hizalama */
+  .table-col-islem,
+  .table-col-durum {
+    text-align: right !important;
+    vertical-align: middle !important;
+    white-space: nowrap;
+  }
+
+  .table-col-islem > * ,
+  .table-col-durum > * {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+  }
+
+  /* Ürün görseli kolonu – başlık + hücre dikey/horizontal ortalı, sığdığı kadar genişlikte */
+  .table-col-gorsel {
+    text-align: center !important;
+    vertical-align: middle !important;
+    white-space: nowrap;
+    width: 1%;
+  }
+
+  .table-col-gorsel > * {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  /* Ayarlar sayfası tablolarında DURUM/İŞLEM kolonları: mümkün olan en dar genişlikte (sığdığı kadar) ve sağda */
+  .ayarlar-page .table-col-islem,
+  .ayarlar-page .table-col-durum {
+    width: 1%;
+  }
+
+  /* EmptyState - tema variable renkleri (arama sonucu bulunamadı vb.) */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    gap: 5px;
+    background-color: var(--gray-light-f2);
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+  }
+  .empty-state--soft .empty-state-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--gri70);
+  }
+  .empty-state--soft .empty-state-icon {
+    opacity: 0.85;
+    margin-bottom: .5rem;
+  }
+  .empty-state-icon {
+    /* margin-bottom: 1rem; */
+    color: var(--gri70);
+  }
+  .empty-state-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--ana-renk);
+    /* margin-bottom: 0.5rem; */
+  }
+  .empty-state-description {
+    font-size: 0.875rem;
+    color: var(--gri70);
+    text-align: center;
+    /* margin-bottom: 1rem; */
+  }
+  .empty-state-action {
+    margin-top: 0;
+  }
+}
+
+/* Ortak durum badge (AKTİF/PASİF) – tüm sayfalarda aynı görünüm */
+.durum-badge {
+  display: inline-block;
+  padding: 0.25rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  transition: background-color 0.15s, color 0.15s;
+  text-transform: uppercase;
+}
+.durum-badge-aktif {
+  background-color: var(--yesil-color-1-soft);
+  color: var(--yesil-color-1);
+}
+.durum-badge-pasif {
+  background-color: var(--gray-light-f2);
+  color: var(--gri70);
+}
+
+/* Araç Takip – Teslimata Çıktım / Teslimatı Sonlandır / Kapat (primary-style) */
+.btn-teslimata-ciktim {
+  font-size: 14px;
+  /* line-height: 1.2; */
+  height: 48px;
+  padding-inline: 16px;
+  border-radius: 10px;
+  border: none;
+  /* background: var(--mavi-renk); */
+  color: var(--white-only);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.2s ease;
+}
+
+.btn-teslimata-ciktim:hover:not(:disabled) {
+  background: var(--mavi-renk-hover);
+}
+
+.btn-teslimata-ciktim:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Tablo hücre badge: organizasyon türü, ürün kategorisi vb. – soft gri, koyu border, küçük büyük harf */
+.cell-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 4px;
+  /* background-color: var(--gray-light-f2); */
+  color: var(--ana-renk);
+  border: 1px solid var(--mid-gray);
+  cursor: default;
+}
+
+.cell-badge-with-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cell-badge-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* LoadingSpinner – flex içinde ezilmesin, her zaman yuvarlak görünsün */
+@keyframes loading-spinner-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ========== İşlem ikonları hover – proje genelinde (table içi/dışı tüm sayfalar) ========== */
+.islem-ikon:hover {
+  background-color: var(--light-gray) !important;
+}
+.islem-ikon:hover i,
+.islem-ikon:hover svg {
+  color: var(--ana-renk) !important;
+}
+.islem-ikon.duzenle-ikon:hover {
+  background-color: var(--yesil-canli, #16a34a) !important;
+  border-color: var(--yesil-canli, #16a34a) !important;
+}
+.islem-ikon.duzenle-ikon:hover i,
+.islem-ikon.duzenle-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+.islem-ikon.sil-ikon:hover {
+  background-color: var(--kirmizi-canli) !important;
+  border-color: var(--kirmizi-canli) !important;
+}
+.islem-ikon.sil-ikon:hover i,
+.islem-ikon.sil-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+.islem-ikon.iptal-ikon:hover {
+  background-color: var(--kirmizi-canli) !important;
+  border-color: var(--kirmizi-canli) !important;
+}
+.islem-ikon.iptal-ikon:hover i,
+.islem-ikon.iptal-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+.islem-ikon.detay-ikon:hover {
+  background-color: var(--action-blue, #2196f3) !important;
+  border-color: var(--action-blue, #2196f3) !important;
+}
+.islem-ikon.detay-ikon:hover i,
+.islem-ikon.detay-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+.islem-ikon.teslimedildi-ikon:hover {
+  background-color: var(--success-green, #2e7d32) !important;
+  border-color: var(--success-green, #2e7d32) !important;
+}
+.islem-ikon.teslimedildi-ikon:hover i,
+.islem-ikon.teslimedildi-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+.islem-ikon.arsivle-ikon:hover {
+  background-color: var(--orange-bright, #f59e0b) !important;
+  border-color: var(--orange-bright, #f59e0b) !important;
+}
+.islem-ikon.arsivle-ikon:hover i,
+.islem-ikon.arsivle-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+
+/* Tablo içi ikonlarda da aynı hover – bazı sayfalarda table .islem-ikon daha spesifik olduğu için tekrarlıyoruz */
+table .islem-ikon:hover {
+  background-color: var(--light-gray) !important;
+}
+table .islem-ikon:hover i,
+table .islem-ikon:hover svg {
+  color: var(--ana-renk) !important;
+}
+table .islem-ikon.duzenle-ikon:hover {
+  background-color: var(--yesil-canli, #16a34a) !important;
+  border-color: var(--yesil-canli, #16a34a) !important;
+}
+table .islem-ikon.duzenle-ikon:hover i,
+table .islem-ikon.duzenle-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+table .islem-ikon.sil-ikon:hover {
+  background-color: var(--kirmizi-canli) !important;
+  border-color: var(--kirmizi-canli) !important;
+}
+table .islem-ikon.sil-ikon:hover i,
+table .islem-ikon.sil-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+table .islem-ikon.iptal-ikon:hover {
+  background-color: var(--kirmizi-canli) !important;
+  border-color: var(--kirmizi-canli) !important;
+}
+table .islem-ikon.iptal-ikon:hover i,
+table .islem-ikon.iptal-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+table .islem-ikon.detay-ikon:hover {
+  background-color: var(--action-blue, #2196f3) !important;
+  border-color: var(--action-blue, #2196f3) !important;
+}
+table .islem-ikon.detay-ikon:hover i,
+table .islem-ikon.detay-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+table .islem-ikon.teslimedildi-ikon:hover {
+  background-color: var(--success-green, #2e7d32) !important;
+  border-color: var(--success-green, #2e7d32) !important;
+}
+table .islem-ikon.teslimedildi-ikon:hover i,
+table .islem-ikon.teslimedildi-ikon:hover svg {
+  color: var(--white-only) !important;
+}
+table .islem-ikon.arsivle-ikon:hover {
+  background-color: var(--orange-bright, #f59e0b) !important;
+  border-color: var(--orange-bright, #f59e0b) !important;
+}
+table .islem-ikon.arsivle-ikon:hover i,
+table .islem-ikon.arsivle-ikon:hover svg {
+  color: var(--white-only) !important;
+}

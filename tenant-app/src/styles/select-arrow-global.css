@@ -1,0 +1,110 @@
+/**
+ * Tüm select'lerde Lucide tarzı aşağı ok (chevron-down).
+ * Bu dosya main.tsx'te en son import edilmeli ki diğer stilleri override etsin.
+ * Katmansız (unlayered) yazıldı – @layer kullanılmadı.
+ *
+ * body select: Modallar createPortal ile body altına render edildiği için
+ * #root dışındaki modal select'leri de kapsar.
+ *
+ * Modal stillerde background: var(--white) shorthand kullanıldığı için
+ * background-image sıfırlanıyor; modal select'ler için aynı ok + background-color
+ * tekrar veriliyor (daha spesifik selector ile).
+ */
+
+/* Genel: sayfa + modal select'ler */
+html body #root select,
+body #root select,
+#root select,
+body select {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  padding-right: 2.25rem !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.5rem center !important;
+  background-size: 1rem 1rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+}
+
+/* Select focus: input'larla aynı (outline kaldır, mor border) */
+html body #root select:focus,
+html body #root select:focus-visible,
+body #root select:focus,
+body #root select:focus-visible,
+#root select:focus,
+#root select:focus-visible,
+body select:focus,
+body select:focus-visible,
+body .overlay-yeni-kart-container .yeni-kart-container select:focus,
+body .overlay-yeni-kart-container .yeni-kart-container select:focus-visible,
+body .overlay-yeni-musteri-container .yeni-musteri-container select:focus,
+body .overlay-yeni-musteri-container .yeni-musteri-container select:focus-visible,
+body .overlay-yeni-siparis-container .yeni-siparis-container select:focus,
+body .overlay-yeni-siparis-container .yeni-siparis-container select:focus-visible,
+body .cari-drawer select:focus,
+body .cari-drawer select:focus-visible,
+body .sicak-satis-popup select:focus,
+body .sicak-satis-popup select:focus-visible,
+body .modal-react-teknik-destek-form-group select:focus,
+body .modal-react-teknik-destek-form-group select:focus-visible,
+body select.modal-react-arac-takip-select:focus,
+body select.modal-react-arac-takip-select:focus-visible {
+  outline: none !important;
+  border-color: var(--mor-primary) !important;
+}
+
+/* Modal select'ler: background shorthand ok'u sildiği için background-color + ok tekrar */
+body .overlay-yeni-kart-container .yeni-kart-container select,
+body .overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup select,
+body .overlay-yeni-musteri-container .yeni-musteri-container select,
+body .overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup select,
+body .overlay-yeni-siparis-container .yeni-siparis-container select,
+body .overlay-yeni-siparis-container .yeni-siparis-container select.odeme-yontemi-select,
+body .overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup select,
+body .yeni-kart-container select,
+body .yeni-musteri-container select,
+body .yeni-siparis-container select,
+body .cari-drawer select,
+body .sicak-satis-popup select,
+body .modal-react-teknik-destek-form-group select,
+body select.modal-react-arac-takip-select {
+  background-color: var(--white) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.5rem center !important;
+  background-size: 1rem 1rem !important;
+}
+
+/* Ödeme yöntemi select (ucret-tip): diğer stiller padding'i ezdiği için chevron alanı */
+body .overlay-yeni-siparis-container .yeni-siparis-container select.odeme-yontemi-select {
+  padding: 0 2.25rem 0 10px !important;
+}
+
+body.dark-mode #root select,
+html.dark-mode #root select,
+body.dark-mode select,
+html.dark-mode select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+}
+
+/* Dark tema: modal select'lerde de ok rengi + arka plan */
+body.dark-mode .overlay-yeni-kart-container .yeni-kart-container select,
+body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup select,
+body.dark-mode .overlay-yeni-musteri-container .yeni-musteri-container select,
+body.dark-mode .overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup select,
+body.dark-mode .overlay-yeni-siparis-container .yeni-siparis-container select,
+body.dark-mode .overlay-yeni-siparis-container .yeni-siparis-container select.odeme-yontemi-select,
+body.dark-mode .overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup select,
+body.dark-mode .cari-drawer select,
+body.dark-mode .sicak-satis-popup select,
+body.dark-mode .modal-react-teknik-destek-form-group select,
+body.dark-mode select.modal-react-arac-takip-select,
+html.dark-mode .overlay-yeni-kart-container .yeni-kart-container select,
+html.dark-mode .overlay-yeni-musteri-container .yeni-musteri-container select,
+html.dark-mode .overlay-yeni-siparis-container .yeni-siparis-container select,
+html.dark-mode .overlay-yeni-siparis-container .yeni-siparis-container select.odeme-yontemi-select,
+html.dark-mode .cari-drawer select,
+html.dark-mode .sicak-satis-popup select,
+html.dark-mode .modal-react-teknik-destek-form-group select {
+  background-color: var(--white) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+}

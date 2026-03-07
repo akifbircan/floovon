@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="tr" class="console-tenant-manage-page">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Tenant Yönetimi | Floovon™</title>
+
+  <!-- Tema Kontrolü - CSS yüklenmeden önce çalışır (beyaz flash'ı önlemek için) -->
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+          // HTML ve body'ye class ekle (CSS yüklenmeden önce çalışır)
+          document.documentElement.classList.add('dark-mode');
+          // Body henüz yoksa, DOMContentLoaded'da tekrar dene
+          if (document.body) {
+            document.body.classList.add('dark-mode');
+          } else {
+            document.addEventListener('DOMContentLoaded', function() {
+              document.body.classList.add('dark-mode');
+            });
+          }
+        }
+      } catch(e) {
+        // localStorage erişilemiyorsa sessizce devam et
+      }
+    })();
+  </script>
+  
+  <!-- Session Check - Cookie ve localStorage kontrolü (sayfa render edilmeden önce) -->
+  <script>
+    (function() {
+      // Cookie kontrolü için helper fonksiyon
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+      }
+      
+      // Admin token kontrolü (hem localStorage hem cookie)
+      let adminToken = localStorage.getItem('admin_token');
+      if (!adminToken) {
+        adminToken = getCookie('floovon_admin_token');
+      }
+      
+      // Admin user ID kontrolü
+      const adminUserId = localStorage.getItem('admin_user_id');
+      
+      // Eğer token veya user ID yoksa hemen redirect et (sayfa render edilmeden)
+      if (!adminToken || !adminUserId) {
+        window.location.replace('/console-login');
+        // Sayfanın render edilmesini engelle
+        document.documentElement.style.display = 'none';
+        return;
+      }
+    })();
+  </script>
+
+  <!-- Geist Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+
+
+  <!-- CSS yüklendiğinde css-loaded class'ını ekle -->
+  <script>
+      (function() {
+          function addCssLoadedClass() {
+              if (document.body) {
+                  document.body.classList.add('css-loaded');
+              }
+          }
+          
+          const cssFiles = document.querySelectorAll('link[rel="stylesheet"]');
+          let loadedCount = 0;
+          const totalCssFiles = cssFiles.length;
+          
+          if (totalCssFiles === 0) {
+              if (document.body) {
+                  addCssLoadedClass();
+              } else {
+                  if (document.readyState === 'loading') {
+                      document.addEventListener('DOMContentLoaded', addCssLoadedClass);
+                  } else {
+                      addCssLoadedClass();
+                  }
+              }
+          } else {
+              cssFiles.forEach(function(link) {
+                  if (link.sheet) {
+                      loadedCount++;
+                      if (loadedCount === totalCssFiles) {
+                          addCssLoadedClass();
+                      }
+                  } else {
+                      link.onload = function() {
+                          loadedCount++;
+                          if (loadedCount === totalCssFiles) {
+                              addCssLoadedClass();
+                          }
+                      };
+                      link.onerror = function() {
+                          loadedCount++;
+                          if (loadedCount === totalCssFiles) {
+                              addCssLoadedClass();
+                          }
+                      };
+                  }
+              });
+              
+              // Fallback timeout - reduced to 500ms for faster loading
+              setTimeout(function() {
+                  if (document.body && !document.body.classList.contains('css-loaded')) {
+                      addCssLoadedClass();
+                  }
+              }, 500);
+          }
+      })();
+  </script>
+
+  <!-- Faviconlar -->
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
+  <link rel="manifest" href="../favicon/site.webmanifest">
+  <link rel="icon" href="../favicon/favicon.ico?v=2" type="image/x-icon">
+
+  <!-- CSS Dosyaları -->
+  <!-- fonts.css (bircan-dashboard) sadece tenant-app’te floovon-dashboard kullanılıyor; console’da kullanılmıyor -->
+  <!-- <link rel="stylesheet" href="../css/fonts.css" /> -->
+  <link rel="stylesheet" href="../css/console-theme.css" />
+  <link rel="stylesheet" href="../css/console-shared.css" />
+  <link rel="stylesheet" href="../css/console-toast-notification-style.css" />
+  <link rel="stylesheet" href="../css/animation.css" />
+  <link rel="stylesheet" href="../css/console-panel.css" />
+  <link rel="stylesheet" href="../css/console-input-validation.css" />
+  <link rel="stylesheet" href="../css/console-tenant-manage.css" />
+
+  <!-- Toast Notification Script -->
+  <script src="../js/toast-notification-script.js"></script>
+  
+  <!-- Production/Development Config -->
+  <script src="../js/config.js"></script>
+  
+  <!-- Backend API Client -->
+  <script src="../js/api-client-professional.js"></script>
+  
+  <!-- Admin Panel Components (for Sheet components) -->
+  <!-- Location Data (Türkiye İl-İlçe) - turkiye-adres.bundle.js kullan -->
+  <script src="../js/turkiye-adres.bundle.js"></script>
+  
+  <!-- Phone Formatter -->
+  <script src="../js/utils/phone-formatter.js"></script>
+  
+  <!-- Input Validation -->
+  <script src="../js/utils/input-validation.js"></script>
+  
+  <script src="../js/console-panel-components.js"></script>
+  
+  <!-- Dışa Aktar Handler (Export/Print functionality) -->
+  <script src="../js/disa-aktar-handler.js"></script>
+  
+  <!-- Console Panel JavaScript (AdminPanel için) -->
+  <script src="../js/console-panel.js"></script>
+  
+  <!-- Admin Tenant Management JavaScript -->
+  <script src="../js/console-tenant-manage.js"></script>
+
+</head>
+
+<body class="min-h-screen text-slate-900 font-sans selection:bg-blue-100 antialiased">
+
+  <!-- Top Navigation - Orchids Style -->
+  <header class="admin-tenant-header">
+    <div class="admin-tenant-header-content">
+      <div class="admin-tenant-header-left">
+        <button id="btn-back" class="admin-tenant-back-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+        </button>
+        <div class="admin-tenant-header-divider"></div>
+        <div class="admin-tenant-header-title-group">
+          <div class="admin-tenant-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+          </div>
+          <div class="admin-tenant-header-text">
+            <h1 id="tenant-name-header" class="admin-tenant-name-title">Tenant Yönetimi</h1>
+            <span class="admin-tenant-subtitle">TENANT YÖNETİMİ</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <!-- ✅ REVIZE-9: Tema geçiş butonu -->
+        <button class="theme-toggle-btn" id="header-theme-toggle" title="Tema değiştir">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon theme-icon-sun">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41 1.41"></path>
+            <path d="m19.07 4.93-1.41 1.41"></path>
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon theme-icon-moon">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        </button>
+        <!-- <div class="header-divider"></div> -->
+        <div class="notification-wrapper">
+          <button class="notification-btn" id="notification-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="notification-icon"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notification-dot" id="notification-dot"></span>
+          </button>
+          <div id="notification-dropdown" class="notification-dropdown" style="display: none;">
+            <div class="notification-header">
+              <h3>Bildirimler</h3>
+              <button id="notification-close" class="notification-close">&times;</button>
+            </div>
+            <div class="notification-filters">
+              <button class="notification-filter active" data-filter="all">Tümü</button>
+              <button class="notification-filter" data-filter="critical">Kritik</button>
+              <button class="notification-filter" data-filter="warning">Uyarı</button>
+              <button class="notification-filter" data-filter="info">Bilgi</button>
+              <button class="notification-filter" data-filter="system">Sistem</button>
+            </div>
+            <div class="notification-content">
+              <div id="notification-list" class="notification-list">
+                <div class="notification-empty">Henüz bildirim yok.</div>
+              </div>
+            </div>
+            <div id="notification-footer" class="notification-footer" style="display: none;">
+              <button id="notification-read-all" class="notification-read-all">Tümünü Okundu İşaretle</button>
+            </div>
+          </div>
+        </div>
+        <div class="header-divider"></div>
+        <div class="user-menu">
+          <button id="admin-tenant-user-menu-trigger" class="user-menu-btn">
+            <div class="user-avatar">
+              <img src="" alt="Avatar" class="user-avatar-img hidden" id="admin-tenant-user-avatar-img">
+              <span id="admin-tenant-user-avatar-fallback">MA</span>
+            </div>
+            <div class="user-info">
+              <span id="admin-user-name" class="user-name">Admin</span>
+              <span class="user-role">SÜPER ADMIN</span>
+            </div>
+          </button>
+          <div id="admin-tenant-user-menu-dropdown" class="user-menu-dropdown hidden">
+            <div class="user-menu-label">Hesabım</div>
+            <div class="user-menu-separator"></div>
+            <button id="btn-profile" class="user-menu-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              Profil
+            </button>
+            <button id="btn-settings" class="user-menu-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path></svg>
+              Ayarlar
+            </button>
+            <div class="user-menu-separator"></div>
+            <!-- ✅ REVIZE-8: Kullanıcılar menu item -->
+            <button id="btn-admin-users" class="user-menu-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>
+              Kullanıcılar
+            </button>
+            <div class="user-menu-separator"></div>
+            <button id="btn-logout" class="user-menu-item user-menu-item-logout">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              Çıkış Yap
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-tenant-main">
+    <!-- Tenant Info Section - Orchids Style -->
+    <div class="admin-tenant-info-section">
+      <div class="admin-tenant-info-left">
+        <div class="admin-tenant-avatar-wrapper">
+          <div id="admin-tenant-avatar" class="admin-tenant-avatar">BI</div>
+          <div class="admin-tenant-status-indicator">
+            <div id="admin-tenant-status-dot" class="admin-tenant-status-dot active"></div>
+          </div>
+        </div>
+        <div class="admin-tenant-info-details">
+          <div class="admin-tenant-info-header">
+            <div class="console-flex-center-gap flex-wrap">
+              <span id="tenant-code" class="admin-tenant-code-badge">-</span>
+              <h2 id="tenant-name-display" class="admin-tenant-info-name">Tenant Adı</h2>
+            </div>
+            <span id="tenant-status" class="admin-tenant-status-badge active">Aktif</span>
+          </div>
+          <div class="admin-tenant-info-meta">
+            <div class="admin-tenant-info-meta-item" id="tenant-location-icon" data-tooltip="-">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            </div>
+            <div class="admin-tenant-info-meta-item" id="tenant-email-icon" data-tooltip="-">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+            </div>
+            <div class="admin-tenant-info-meta-item" id="tenant-phone-icon" data-tooltip="-">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </div>
+            <div class="admin-tenant-info-meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span id="tenant-register-date">Kayıt: -</span>
+            </div>
+           
+            <div class="admin-tenant-info-meta-item admin-tenant-info-plan">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span id="tenant-plan-name">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-tenant-info-actions">
+        <button id="btn-disable-tenant" class="admin-tenant-action-btn admin-tenant-action-btn-disable">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+          Devre Dışı Bırak
+        </button>
+        <button id="btn-edit-tenant" class="admin-tenant-action-btn admin-tenant-action-btn-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          Bilgileri Düzenle
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation - Orchids Style -->
+    <div class="admin-tenant-tabs-wrapper">
+      <div class="admin-tenant-tabs">
+        <button class="admin-tenant-tab active" data-tab="users">Kullanıcılar</button>
+        <button class="admin-tenant-tab" data-tab="settings">Ayarlar</button>
+        <button class="admin-tenant-tab" data-tab="billing">Abonelik & Ödeme</button>
+        <button class="admin-tenant-tab" data-tab="logs">Aktivite Kayıtları</button>
+      </div>
+    </div>
+
+    <!-- Tab Content: Users -->
+    <div id="tab-content-users" class="admin-tenant-tab-content active">
+      <div class="admin-tenant-card admin-tenant-card-scrollable">
+        <div class="admin-tenant-card-header">
+          <div>
+            <h3 class="admin-tenant-card-title">Organizasyon Kullanıcıları</h3>
+            <p class="admin-tenant-card-description">Bu tenant'a bağlı tüm kullanıcı hesapları ve yetkileri.</p>
+          </div>
+          <div class="admin-tenant-card-actions">
+            <div class="admin-tenant-search-wrapper">
+              <svg class="console-panel-tenant-card-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+              <input id="search-users" type="text" placeholder="Kullanıcı ara..." class="admin-tenant-search-input">
+            </div>
+            <button id="btn-add-user" class="admin-tenant-add-user-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Yeni Kullanıcı Ekle
+            </button>
+          </div>
+        </div>
+        <div class="admin-tenant-card-content">
+          <div class="admin-tenant-users-table-wrapper">
+          <table class="admin-tenant-users-table">
+            <thead>
+              <tr>
+                <th>Kullanıcı</th>
+                <th>E-Posta ve Telefon</th>
+                <th>Yetki</th>
+                <th>Durum</th>
+                <th>Son Etkinlik</th>
+                <th style="text-align: center;">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr>
+                <td colspan="6" class="admin-tenant-loading">Yükleniyor...</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Settings -->
+    <div id="tab-content-settings" class="admin-tenant-tab-content">
+      <div class="admin-tenant-settings-grid">
+        <div class="admin-tenant-card admin-tenant-card-main">
+          <div class="admin-tenant-card-header">
+            <div>
+              <h3 class="admin-tenant-card-title">Genel Ayarlar</h3>
+              <p class="admin-tenant-card-description">Organizasyonun temel bilgilerini güncelleyin.</p>
+            </div>
+          </div>
+          <div class="admin-tenant-card-content">
+            <div class="admin-tenant-settings-form">
+              <div class="form-group">
+                <label for="settings-name">Organizasyon Adı</label>
+                <input type="text" id="settings-name" name="name" placeholder="bircancicekcilik">
+              </div>
+              <div class="form-group form-group-row">
+                <div class="form-group-half">
+                  <label for="settings-email">E-posta</label>
+                  <input type="email" id="settings-email" name="email" placeholder="info@bircancicek.com">
+                </div>
+                <div class="form-group-half">
+                  <label for="settings-phone">Telefon</label>
+                  <input type="tel" id="settings-phone" name="phone" class="telefon-input" data-phone-input="standard">
+                </div>
+              </div>
+              <div class="form-group form-group-row">
+                <div class="form-group-half">
+                  <label for="settings-city">İl</label>
+                  <select id="settings-city" name="city">
+                    <option value="">İl Seçiniz</option>
+                  </select>
+                </div>
+                <div class="form-group-half">
+                  <label for="settings-state">İlçe</label>
+                  <select id="settings-state" name="state">
+                    <option value="">İlçe Seçiniz</option>
+                  </select>
+                </div>
+              </div>
+              <div class="admin-tenant-settings-actions">
+                <div id="settings-success-message" class="settings-success-message hidden">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                  Değişiklikler kaydedildi!
+                </div>
+                <div class="admin-tenant-settings-buttons">
+                  <button type="button" class="btn-cancel" id="btn-cancel-settings">İptal</button>
+                  <button type="button" class="btn-save" id="btn-save-settings">Değişiklikleri Kaydet</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="admin-tenant-card admin-tenant-card-danger">
+          <div class="admin-tenant-card-header">
+            <h3 class="admin-tenant-card-title admin-tenant-card-title-danger">Riskli Bölge</h3>
+          </div>
+          <div class="admin-tenant-card-content delete-tenant-wrapper">
+            <p class="admin-tenant-danger-description">Bu işlemler geri alınamaz. Lütfen dikkatli olun.</p>
+            <button type="button" class="admin-tenant-danger-btn" id="btn-delete-tenant">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+              Tenant'ı Tamamen Sil
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Billing -->
+    <div id="tab-content-billing" class="admin-tenant-tab-content">
+      <div class="admin-tenant-billing-grid">
+        <!-- Mevcut Abonelik -->
+        <div class="admin-tenant-card admin-tenant-billing-current">
+          <div class="admin-tenant-card-header">
+            <div class="admin-tenant-billing-header">
+              <div>
+                <h3 class="admin-tenant-card-title">Mevcut Abonelik</h3>
+                <p class="admin-tenant-card-description">Abonelik planınız ve kullanım detayları</p>
+              </div>
+              <span class="admin-tenant-plan-badge" id="plan-badge-display">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                -
+              </span>
+            </div>
+          </div>
+          <div class="admin-tenant-card-content">
+            <div class="admin-tenant-billing-stats">
+              <div class="admin-tenant-billing-stat">
+                <div class="admin-tenant-billing-stat-header">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                  KULLANICILAR
+                </div>
+                <p class="admin-tenant-billing-stat-value"><span id="billing-users-count">0</span> <span class="admin-tenant-billing-stat-limit">/ <span id="billing-users-limit">0</span></span></p>
+                <div class="admin-tenant-billing-progress">
+                  <div class="admin-tenant-billing-progress-bar" id="billing-users-progress"></div>
+                </div>
+              </div>
+              <div class="admin-tenant-billing-stat">
+                <div class="admin-tenant-billing-stat-header">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                  DEPOLAMA
+                </div>
+                <p class="admin-tenant-billing-stat-value"><span id="billing-storage-used">0</span><span id="billing-storage-used-unit"> MB</span> <span class="admin-tenant-billing-stat-limit">/ <span id="billing-storage-limit">0</span><span id="billing-storage-limit-unit"> MB</span></span></p>
+                <div class="admin-tenant-billing-progress">
+                  <div class="admin-tenant-billing-progress-bar" id="billing-storage-progress"></div>
+                </div>
+              </div>
+              <div class="admin-tenant-billing-stat">
+                <div class="admin-tenant-billing-stat-header">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  SONRAKİ ÖDEME
+                </div>
+                <p class="admin-tenant-billing-stat-value" id="billing-next-payment-date">-</p>
+                <p class="admin-tenant-billing-stat-subtext" id="billing-next-payment-days">-</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Plan Detayları -->
+        <div class="admin-tenant-card admin-tenant-billing-plan">
+          <div class="admin-tenant-card-content">
+            <div class="admin-tenant-plan-header">
+              <div class="admin-tenant-plan-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              </div>
+              <div>
+                <h3 class="admin-tenant-plan-title">Plan Detayları</h3>
+                <p class="admin-tenant-plan-subtitle">Mevcut özellikler ve limitler</p>
+              </div>
+            </div>
+            <div class="admin-tenant-plan-details">
+              <div class="admin-tenant-plan-label">MEVCUT PLAN</div>
+              <p class="admin-tenant-plan-name" id="plan-name-display">-</p>
+              <div class="admin-tenant-plan-progress">
+                <div class="admin-tenant-plan-progress-bar" id="plan-progress-bar-display"></div>
+              </div>
+              <div class="admin-tenant-plan-stats">
+                <span id="plan-stats-storage">0 / 0 MB</span>
+                <span id="plan-stats-percent">0%</span>
+              </div>
+              <div class="admin-tenant-plan-features" id="plan-features-display">
+                <!-- Plan özellikleri buraya eklenecek -->
+              </div>
+            </div>
+            <div class="admin-tenant-plan-actions">
+              <button type="button" class="admin-tenant-plan-upgrade-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                Planı Yükselt
+              </button>
+              <button type="button" class="admin-tenant-plan-cancel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                Aboneliği İptal Et
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Ödeme Yöntemi & Fatura Özeti -->
+        <div class="admin-tenant-billing-sidebar">
+          <div class="admin-tenant-card">
+            <div class="admin-tenant-card-content">
+              <div class="admin-tenant-payment-header">
+                <div class="admin-tenant-payment-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                </div>
+                <h3 class="admin-tenant-payment-title">Ödeme Yöntemi</h3>
+              </div>
+              <div class="admin-tenant-payment-info">
+                <div class="admin-tenant-payment-details">
+                  <p class="admin-tenant-payment-card" id="payment-card-display">-</p>
+                  <p class="admin-tenant-payment-expiry" id="payment-expiry-display">-</p>
+                </div>
+                <button type="button" class="admin-tenant-payment-edit-btn" id="btn-edit-payment">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="admin-tenant-card admin-tenant-invoice-summary">
+            <div class="admin-tenant-card-content">
+              <div class="admin-tenant-invoice-header">
+                <div class="admin-tenant-invoice-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M16 13H8"></path><path d="M16 17H8"></path><path d="M10 9H8"></path></svg>
+                </div>
+                <h3 class="admin-tenant-invoice-title">Fatura Özeti</h3>
+              </div>
+              <div class="admin-tenant-invoice-items">
+                <div class="admin-tenant-invoice-item">
+                  <span>Plan Ücreti</span>
+                  <span id="invoice-plan-price">₺0 / ay</span>
+                </div>
+                <div class="admin-tenant-invoice-item">
+                  <span>KDV (%20)</span>
+                  <span id="invoice-tax">₺0</span>
+                </div>
+                <div class="admin-tenant-invoice-total">
+                  <span>Toplam</span>
+                  <span id="invoice-total-price">₺0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Fatura Geçmişi -->
+      <div class="admin-tenant-card admin-tenant-invoices-table">
+        <div class="admin-tenant-card-header">
+          <div class="admin-tenant-invoices-header">
+            <div>
+              <h3 class="admin-tenant-card-title">Fatura Geçmişi</h3>
+              <p class="admin-tenant-card-description">Geçmiş faturalarınızı görüntüleyin ve indirin.</p>
+            </div>
+            <div class="admin-tenant-search-wrapper">
+              <svg class="console-panel-tenant-card-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+              <input id="search-invoices" type="text" placeholder="Fatura ara..." class="admin-tenant-search-input">
+            </div>
+          </div>
+        </div>
+        <div class="admin-tenant-card-content">
+          <div class="admin-tenant-users-table-wrapper">
+          <table class="admin-tenant-users-table">
+            <thead>
+              <tr>
+                <th>Fatura No</th>
+                <th>Tarih</th>
+                <th>Plan</th>
+                <th>Ödeme Dönemi</th>
+                <th>Tutar</th>
+                <th>Durum</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="invoices-tbody">
+              <!-- Faturalar JavaScript ile doldurulacak -->
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Logs -->
+    <div id="tab-content-logs" class="admin-tenant-tab-content">
+      <div class="admin-tenant-card admin-tenant-card-scrollable">
+        <div class="admin-tenant-card-header">
+          <div class="admin-tenant-logs-header">
+            <div>
+              <h3 class="admin-tenant-card-title">Aktivite Kayıtları</h3>
+              <p class="admin-tenant-card-description">Tenant üzerindeki tüm işlem ve değişiklik kayıtları.</p>
+            </div>
+            <div class="admin-tenant-logs-actions">
+              <select id="activity-filter" class="admin-tenant-activity-filter">
+                <option value="all">Tüm Aktiviteler</option>
+                <option value="siparis">Sipariş İşlemleri</option>
+                <option value="musteri">Müşteri İşlemleri</option>
+                <option value="urun">Ürün İşlemleri</option>
+                <option value="fatura">Fatura İşlemleri</option>
+                <option value="file">Dosya İşlemleri</option>
+                <option value="kullanici">Kullanıcı İşlemleri</option>
+                <option value="genel">Genel İşlemler</option>
+              </select>
+              <button type="button" class="admin-tenant-action-btn-small" id="btn-refresh-logs">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 1 1 3.2 7.3M22 12.5a10 10 0 1 1-3.2-7.3"></path></svg>
+                Yenile
+              </button>
+              <button type="button" class="admin-tenant-action-btn-small" id="btn-export-logs">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Dışa Aktar
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="admin-tenant-card-content">
+          <div class="admin-tenant-activity-logs" id="activity-logs-list">
+            <!-- Activity logs will be rendered here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal - Kullanıcı Ekle/Düzenle -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <div class="modal-header-icon" id="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <div class="modal-header-text">
+        <h2 id="modal-title">Yeni Kullanıcı Ekle</h2>
+            <p class="modal-description" id="modal-description">Yeni bir kullanıcı hesabı oluşturun.</p>
+          </div>
+        </div>
+        <button id="modal-close" class="modal-close">&times;</button>
+      </div>
+      <form id="user-form">
+        <div class="modal-body">
+          <div class="form-group-row">
+            <div class="form-group">
+              <label for="user-firstname">Ad <span class="text-red-500">*</span></label>
+              <input type="text" id="user-firstname" name="firstname" placeholder="Kullanıcının Adı" required>
+            </div>
+            <div class="form-group">
+              <label for="user-lastname">Soyad <span class="text-red-500">*</span></label>
+              <input type="text" id="user-lastname" name="lastname" placeholder="Kullanıcının Soyadı" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="user-kullaniciadi">Kullanıcı Adı <span class="text-red-500">*</span></label>
+            <div class="input-with-prefix">
+              <span class="input-prefix">@</span>
+              <input type="text" id="user-kullaniciadi" name="kullaniciadi" placeholder="kullanıcıadı" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="user-email">E-posta <span class="text-red-500">*</span></label>
+            <input type="email" id="user-email" name="email" placeholder="ornek@email.com" autocomplete="username" required>
+          </div>
+          <div class="form-group">
+            <label for="user-phone">Telefon</label>
+            <input type="tel" id="user-phone" name="phone" class="telefon-input" data-phone-input="standard" autocomplete="tel">
+          </div>
+          <div class="form-group" id="password-group">
+            <label for="user-password">Şifre <span class="text-red-500">*</span></label>
+            <div class="input-with-suffix">
+              <input type="password" id="user-password" name="password" placeholder="••••••••" autocomplete="new-password" required>
+              <button type="button" class="input-suffix-btn" id="toggle-password" onclick="tenantManage.togglePasswordVisibility('user-password', 'toggle-password')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-off-icon hidden"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="user-role">Rol</label>
+            <select id="user-role" name="role" class="form-select">
+              <option value="Sistem Yöneticisi">Sistem Yöneticisi</option>
+              <option value="Sipariş Operatörü">Sipariş Operatörü</option>
+              <option value="Sipariş Sorumlusu">Sipariş Sorumlusu</option>
+            </select>
+          </div>
+          <div class="form-switch-group">
+            <div class="form-switch-item">
+              <div class="form-switch-content">
+                <label for="user-active" class="form-switch-label">Aktif</label>
+                <p class="form-switch-description">Kullanıcı sisteme giriş yapabilir</p>
+              </div>
+              <label class="form-switch">
+                <input type="checkbox" id="user-active" name="is_active" checked>
+                <span class="form-switch-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="tenantManage.closeModal()">İptal</button>
+        <button type="button" class="btn-save" id="btn-save">Kaydet</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Modal - Şifre Değiştir -->
+  <div id="modal-password-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <div class="modal-header-icon modal-header-icon-amber">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+          </div>
+          <div class="modal-header-text">
+            <h2>Şifre Değiştir</h2>
+            <p class="modal-description" id="password-modal-description">Kullanıcı için yeni şifre belirleyin.</p>
+          </div>
+        </div>
+        <button id="modal-password-close" class="modal-close">&times;</button>
+      </div>
+      <form id="password-form">
+        <div class="modal-body">
+          <!-- Hidden username field for accessibility -->
+          <input type="text" name="username" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true">
+          <div class="form-group">
+            <label for="new-password">Yeni Şifre <span class="text-red-500">*</span></label>
+            <div class="input-with-suffix">
+              <input type="password" id="new-password" name="password" placeholder="••••••••" autocomplete="new-password" required>
+              <button type="button" class="input-suffix-btn" id="toggle-new-password" onclick="tenantManage.togglePasswordVisibility('new-password', 'toggle-new-password')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-off-icon hidden"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="confirm-password">Şifre Tekrar <span class="text-red-500">*</span></label>
+            <input type="password" id="confirm-password" name="confirm_password" placeholder="••••••••" autocomplete="new-password" required>
+            <p id="password-match-error" class="password-error hidden">Şifreler eşleşmiyor</p>
+          </div>
+        </div>
+      </form>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="tenantManage.closePasswordModal()">İptal</button>
+        <button type="button" class="btn-save admin-tenant-password-save-btn" id="btn-save-password">Şifreyi Değiştir</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Modal - Tenant Bilgileri Düzenle -->
+  <div id="modal-tenant-edit-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <div class="modal-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          </div>
+          <div class="modal-header-text">
+            <h2>Tenant Düzenle</h2>
+            <p class="modal-description">Organizasyon bilgilerini güncelleyin.</p>
+          </div>
+        </div>
+        <button id="modal-tenant-edit-close" class="modal-close">&times;</button>
+      </div>
+      <form id="tenant-edit-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="tenant-edit-name">Organizasyon Adı <span class="text-red-500">*</span></label>
+            <input type="text" id="tenant-edit-name" name="name" placeholder="bircancicekcilik" required>
+          </div>
+          <div class="form-group">
+            <label for="tenant-edit-email">E-posta <span class="text-red-500">*</span></label>
+            <input type="email" id="tenant-edit-email" name="email" placeholder="info@bircancicek.com" required>
+          </div>
+          <div class="form-group">
+            <label for="tenant-edit-phone">Telefon</label>
+            <input type="tel" id="tenant-edit-phone" name="phone" placeholder="+90 (5XX) XXX XX XX">
+          </div>
+          <div class="form-group">
+            <label for="tenant-edit-city">İl</label>
+            <select id="tenant-edit-city" name="city" class="form-input">
+              <option value="">İl Seçiniz</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tenant-edit-state">İlçe</label>
+            <select id="tenant-edit-state" name="state" class="form-input">
+              <option value="">İlçe Seçiniz</option>
+            </select>
+          </div>
+        </div>
+      </form>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="tenantManage.closeTenantEditModal()">İptal</button>
+        <button type="button" class="btn-save" id="btn-save-tenant-edit">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
+

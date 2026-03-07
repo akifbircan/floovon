@@ -1,0 +1,34 @@
+---
+description: Yedekleme – sadece kullanıcı isterse, sadece dosya kopyala, README/rapor yok
+alwaysApply: true
+---
+
+# Yedekleme kuralı
+
+## Ne zaman yedek alınır
+
+**Yalnızca kullanıcı açıkça "yedek al" (veya eşanlamlı) dediğinde** yedek alınır. Kendiliğinden veya "bu arada yedekleyelim" diye yedek alınmaz.
+
+## Nereye
+
+Tüm yedekler **yalnızca** şu yapıda alınır:
+
+```
+D:\FLOOVON-CURSOR-YEDEKLER\<YYYY-MM-DD>\<revize-konusu>\
+```
+
+**tenant-app yedekleri** için özel konum:
+
+```
+D:\FLOOVON-CURSOR-YEDEKLER\tenant-app-ydekleri-2026\<SS>-<revize-konusu>\
+```
+
+- **Sıra numarası:** Klasördeki mevcut dizinlere bak (`01-...`, `02-...` vb.), **kaldığı yerden devam et** (örn. 02 varsa yeni yedek `03-<revize-konusu>`).
+- **Tek klasör:** İlgili tüm dosyalar bu tek revize konusu klasörünün içine kopyalanır; ayrı ayrı numaralı alt klasörler açılmaz.
+
+Başka konuma (proje içi `backup/`, farklı sürücü vb.) yedek alınmaz.
+
+## Ne yedeklenir
+
+- **Sadece güncel / revize edilmiş dosyalar** kopyalanır.
+- **README, CHANGELOG, RAPOR veya başka hiçbir .md dosyası oluşturulmaz.** Klasöre sadece yedeklenen kaynak dosyalar konur.

@@ -1,0 +1,442 @@
+/* Login Sayfası Özel Stilleri - Eski CSS'e göre uyumlu */
+
+/* Container - Grid Yapısı */
+.container-login {
+  display: grid;
+  grid-template-columns: 40% 60%;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Sol Alan - Grid kolonu otomatik 60% */
+.sol-alan {
+  position: relative;
+}
+
+/* Sağ Alan - Grid kolonu otomatik 40% */
+.sag-alan {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--white);
+  position: relative;
+}
+
+.sag-alan .form-alan {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+}
+
+/* Görsel Alan */
+.gorsel-alan {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.image-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-wrapper .black-mask {
+  position: absolute;
+  inset: 0;
+  background-color: var(--img-mask);
+  z-index: 2;
+}
+
+.gorsel-yazi {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  color: var(--white);
+  padding: 150px 100px 24px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.gorsel-yazi .ust-yazi {
+  font-size: 24px;
+  font-weight: 300;
+  width: 70%;
+  color: var(--login-text);
+}
+
+.gorsel-yazi .ust-yazi span {
+  font-weight: 500;
+}
+
+.gorsel-yazi .alt-yazi {
+  color: var(--login-text);
+  font-size: 12px;
+  font-weight: 300;
+}
+
+/* Form Alanı */
+.form-alan {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.form-alan .input-alan {
+  display: flex;
+  flex-direction: column;
+  padding: 36px;
+  border-radius: 10px;
+  gap: 16px;
+  width: 420px;
+  background-color: var(--login-form-bg);
+}
+
+.form-alan .input-alan .logo {
+  width: 150px;
+  height: auto;
+  margin-bottom: 0;
+  align-self: flex-start;
+}
+
+.baslik {
+  font-size: 24px;
+  font-weight: 500;
+  padding: 20px 0 0 0;
+  color: var(--ana-renk);
+  margin: 0;
+}
+
+.baslik span {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  padding-top: 10px;
+  color: var(--ana-renk);
+  opacity: 0.8;
+}
+
+.input-alan .input-label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+  color: var(--ana-renk);
+}
+
+.input-label label {
+  font-size: 13px;
+}
+
+.input-label input {
+  height: 48px;
+  width: 100%;
+  border: 1px solid var(--auto-color-35-8376cd);
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 400;
+  padding: 0 14px 0 40px;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--white);
+  color: var(--ana-renk);
+}
+
+.input-label input:hover {
+  border: 1px solid var(--auto-color-35-8376cd);
+}
+
+.input-label input:focus {
+  outline: none;
+  border: 1px solid var(--highlight-button-pink);
+  color: var(--ana-renk);
+}
+
+/* Autofill (otomatik doldurma) için özel stil */
+.input-label input:-webkit-autofill,
+.input-label input:-webkit-autofill:hover,
+.input-label input:-webkit-autofill:focus,
+.input-label input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--white) inset !important;
+  -webkit-text-fill-color: var(--ana-renk) !important;
+  background-color: var(--white) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Chrome internal autofill */
+.input-label input:-internal-autofill-selected {
+  appearance: menulist-button !important;
+  background-image: none !important;
+  background-color: var(--white) !important;
+  color: var(--ana-renk) !important;
+}
+
+/* Input İkonları - Tüm ikonlar için ortak stil */
+.input-label i {
+  position: absolute;
+  left: 16px;
+  top: 56%;
+  z-index: 9999;
+  color: var(--ana-renk-only);
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+}
+
+/* Şifremi Unuttum Linki */
+.sifremi-unuttum {
+  position: absolute;
+  top: 67%;
+  transform: translateY(-50%);
+  right: 16px;
+  font-size: 12px;
+  color: var(--mavi-renk-only);
+}
+
+.sifremi-unuttum a {
+  color: var(--mavi-renk-only);
+  text-decoration: none;
+}
+
+.sifremi-unuttum:hover,
+.sifremi-unuttum a:hover {
+  opacity: 0.9;
+  text-decoration: underline;
+}
+
+/* Beni Hatırla Checkbox */
+.beni-hatirla-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.beni-hatirla-wrapper input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--mor-primary);
+}
+
+.beni-hatirla-wrapper label {
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+  color: var(--ana-renk);
+  font-family: 'Inter', sans-serif;
+}
+
+.beni-hatirla-wrapper label:hover {
+  color: var(--mor-primary);
+}
+
+.beni-hatirla-wrapper input[type="checkbox"]:checked + label {
+  color: var(--mor-primary);
+  font-weight: 500;
+}
+
+/* Giriş Butonu – sadece login formu; modal’daki .btn-yeni-ekle vb. hariç */
+.form-alan .input-alan button:not(.btn-yeni-ekle):not(.remove-button):not(.searchable-select-trigger) {
+  height: 48px;
+  border-radius: 5px;
+  background-color: var(--primary-pink);
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 24px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  border: none;
+}
+
+.form-alan .input-alan button:not(.btn-yeni-ekle):not(.remove-button):not(.searchable-select-trigger):hover {
+  opacity: 0.9;
+}
+
+.form-alan .input-alan button:not(.btn-yeni-ekle):not(.remove-button):not(.searchable-select-trigger):disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* İPTAL Butonu */
+#btn-iptal {
+  background-color: var(--placeholder);
+  margin-top: 12px;
+}
+
+#btn-iptal:hover {
+  opacity: 0.9;
+}
+
+/* veya GİRİŞ YAP Butonu */
+#btn-veya-giris-yap {
+  background-color: transparent;
+  color: var(--ana-renk);
+  padding: 0;
+  height: auto;
+  font-size: 14px;
+  margin-top: 12px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+#btn-veya-giris-yap:hover {
+  text-decoration: underline;
+}
+
+/* Yardım Butonu */
+.yardim-butonu {
+  display: flex;
+  align-self: flex-end;
+  padding: 20px 20px 0 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.btn-yardim {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--auto-color-38-a2437e);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px;
+  border-radius: 10px;
+  gap: 5px;
+  cursor: pointer;
+  color: var(--ana-renk);
+}
+
+.btn-yardim i {
+  font-size: 16px;
+}
+
+.btn-yardim a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.btn-yardim:hover {
+  opacity: 0.85;
+}
+
+/* Loading Animation */
+#loading {
+  display: none;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--overlay-bg-black);
+  z-index: 9999;
+  text-align: center;
+}
+
+.loading-icon {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--box-shadow-light);
+  border-top: 4px solid var(--primary-pink);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.text-yukleniyor {
+  color: var(--white) !important;
+}
+
+/* Mobil Görünüm */
+@media only screen and (max-width: 600px) {
+  .container-login {
+    grid-template-columns: 1fr;
+    grid-template-rows: 40% 60%;
+  }
+
+  .sol-alan {
+    height: 100%;
+  }
+
+  .sag-alan {
+    height: 100%;
+    border-radius: 16px 16px 0 0;
+    background-color: transparent;
+  }
+  
+  .black-mask {
+    background-color: var(--black-alpha-25);
+  }
+
+  .form-alan {
+    padding: 0 24px;
+  }
+
+  .form-alan .input-alan {
+    width: 100%;
+    padding: 24px;
+  }
+
+  .yardim-butonu {
+    display: none;
+  }
+
+  .gorsel-yazi {
+    padding: 50px 20px 60px 20px;
+    text-align: center;
+  }
+
+  .gorsel-yazi .ust-yazi {
+    font-size: 16px;
+    width: 100%;
+  }
+
+  .black-mask {
+    background-color: var(--black-alpha-25);
+  }
+
+  .web-link {
+    display: block;
+  }
+  
+  .mobile-icon {
+    display: none;
+  }
+}
+

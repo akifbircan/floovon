@@ -1,0 +1,136 @@
+/* Layout Custom Styles - Sidebar ve Right Panel için */
+
+/* Main Layout Container - Sidebar ve Header yan yana */
+.min-h-screen.flex.overflow-hidden {
+  display: flex;
+  height: 100vh;
+  overflow-x: visible; /* sidebar tooltip'lerin görünmesi için */
+  overflow-y: hidden;
+}
+
+/* Sidebar - Sol tarafta, sayfanın başından sonuna kadar (fixed) */
+nav[data-sidebar] {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60; /* header (30) üstünde, tooltip'ler içerik üstünde görünsün */
+  width: 4rem; /* 64px = w-16 */
+  overflow: visible; /* tooltip'lerin görünmesi için */
+}
+
+/* Masaüstünde sidebar her zaman görünsün (Tailwind hidden / başka kurallar üzerine yazılsın) */
+@media (min-width: 768px) {
+  nav[data-sidebar] {
+    display: flex !important;
+    visibility: visible !important;
+  }
+}
+
+/* Modal/overlay açıkken sidebar her zaman overlay'ın altında kalmalı – tek kural, tüm overlay/dialog sınıfları */
+body:has(.overlay-yeni-kart-container.show) nav[data-sidebar],
+body:has(.overlay-yeni-musteri-container.show) nav[data-sidebar],
+body:has(.overlay-yeni-siparis-container.show) nav[data-sidebar],
+body:has(.overlay-yeni-etiket-popup-overlay) nav[data-sidebar],
+body:has(.arsiv-sebep-overlay.show) nav[data-sidebar],
+body:has(.overlay-whatsapp-info-container.show) nav[data-sidebar],
+body:has(.sicak-satis-overlay.show) nav[data-sidebar],
+body:has(.lightbox-overlay) nav[data-sidebar],
+body:has(.modal-react-teslim-foto-overlay) nav[data-sidebar],
+body:has(.modal-react-imza-overlay) nav[data-sidebar],
+body:has(.modal-react-arsiv-sebep-overlay.show) nav[data-sidebar],
+body:has(.modal-react-arsiv-sebep-overlay) nav[data-sidebar],
+body:has(.modal-react-sicak-satis-overlay.show) nav[data-sidebar],
+body:has(.modal-react-arac-takip-overlay) nav[data-sidebar],
+body:has(.modal-react-whatsapp-qr-overlay) nav[data-sidebar],
+body:has(.modal-react-whatsapp-info-overlay.show) nav[data-sidebar],
+body:has(.modal-react-whatsapp-phone-overlay) nav[data-sidebar],
+body:has(.modal-react-qr-scanner-overlay) nav[data-sidebar],
+body:has(.modal-react-order-action-overlay) nav[data-sidebar],
+body:has(.modal-react-teknik-destek-overlay) nav[data-sidebar],
+body:has(.confirm-modal-overlay) nav[data-sidebar],
+body:has(.rapor-detay-overlay) nav[data-sidebar],
+body:has(.siparis-detay-overlay) nav[data-sidebar],
+body:has(.cari-drawer-overlay) nav[data-sidebar] {
+  z-index: 0 !important;
+  isolation: auto !important;
+}
+
+/* Modal/overlay açıkken header da overlay'ın altında (sadece tam ekran overlay'lar; genel [role="dialog"] sidebar'ı gizlemesin) */
+body:has(.cari-drawer-overlay) .header {
+  z-index: 0 !important;
+}
+
+/* Sağ taraf container - Header ve Main Content için (sadece MainLayout'taki doğrudan child) */
+.min-h-screen.flex.overflow-hidden > .flex-1.flex.flex-col.overflow-hidden {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  overflow: hidden;
+  margin-left: 4rem; /* Sidebar genişliği kadar margin */
+  min-width: 0;
+  min-height: 0;
+  height: 100vh;
+  max-height: 100vh;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Header - Sidebar'ın yanında, tam genişlikte */
+.header {
+  position: relative;
+  z-index: 30;
+}
+
+/* Main Content Area - Header'ın altında */
+main[data-main-content] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  height: calc(100vh - var(--header-height, 64px));
+  /* max-height: calc(100vh - var(--header-height, 64px)); */
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Right Panel - Butonların solunda, butonların altından başlayarak sayfanın sonuna kadar */
+.w-80.h-full {
+  width: 20rem; /* 320px = w-80 */
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* Dashboard Page Container */
+.dashboard-container {
+  flex-shrink: 0;
+}
+
+/* Flex container for main content and right panel */
+.flex-1.flex.overflow-hidden {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Main content için right panel genişliği kadar margin */
+main[data-main-content] > div[style*="marginRight"] {
+  margin-right: 20rem !important; /* Right panel genişliği */
+}
+
+/* Mobil: sidebar yok, ana içerik soldan margin almamalı (modal açık olsa da) */
+@media (max-width: 767px) {
+  .min-h-screen.flex.overflow-hidden > .flex-1.flex.flex-col.overflow-hidden {
+    margin-left: 0 !important;
+  }
+}
+

@@ -1,0 +1,134 @@
+# Nginx Configuration for panel.floovon.com
+# Backend Port: 3002
+# Bu dosyayı /etc/nginx/sites-available/panel.floovon.com olarak kaydedin
+# Sonra: sudo ln -s /etc/nginx/sites-available/panel.floovon.com /etc/nginx/sites-enabled/
+# Sonra: sudo nginx -t && sudo systemctl reload nginx
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name panel.floovon.com;
+    
+    # HTTP'den HTTPS'e yönlendirme (SSL sertifikası kurulduktan sonra)
+    # return 301 https://$server_name$request_uri;
+    
+    # SSL sertifikası kurulduktan sonra bu blokları aktif edin:
+    # listen 443 ssl http2;
+    # listen [::]:443 ssl http2;
+    # ssl_certificate /etc/letsencrypt/live/panel.floovon.com/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/panel.floovon.com/privkey.pem;
+    # ssl_protocols TLSv1.2 TLSv1.3;
+    # ssl_ciphers HIGH:!aNULL:!MD5;
+    
+    # Root directory (frontend dosyaları)
+    # NOT: Sunucuda doğru path'i kontrol et (muhtemelen /home/floovon/htdocs/panel.floovon.com)
+    root /home/floovon/htdocs/panel.floovon.com;
+    # Alternatif: root /home/floovon/htdocs/panel.floovon.com;
+    index index.html admin.html admin-login.html;
+    
+    # Log dosyaları
+    access_log /var/log/nginx/panel.floovon.com.access.log;
+    error_log /var/log/nginx/panel.floovon.com.error.log;
+    
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
+    
+    # API Reverse Proxy - Backend'e yönlendirme
+    location /api/ {
+        proxy_pass http://127.0.0.1:3002/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+        
+        # Timeout ayarları
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+        
+        # Buffer ayarları
+        proxy_buffering off;
+        proxy_request_buffering off;
+    }
+    
+    # Uploads Reverse Proxy - Backend'den dosya servisi
+    location /uploads/ {
+        proxy_pass http://127.0.0.1:3002/uploads/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Cache ayarları
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+    
+    # ========================================
+    # REACT PILOT ROUTES (/app/*)
+    # ========================================
+    # React Pilot Routes - SPA fallback ile
+    location /app/ {
+        alias /home/floovon/htdocs/panel.floovon.com/app/;
+        try_files $uri $uri/ /app/index.html;
+    }
+    
+    # React Static Assets - Cache ile
+    location /app/assets/ {
+        alias /home/floovon/htdocs/panel.floovon.com/app/assets/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+    # ========================================
+    
+    # Admin paneli için özel route
+    location /admin {
+        try_files $uri $uri/ /admin.html;
+    }
+    
+    # Admin login için özel route
+    location /admin-login {
+        try_files $uri $uri/ /admin-login.html;
+    }
+    
+    # Console (Super Admin) paneli için özel route'lar
+    # Not: Console sayfaları `console-panel/` altında duruyor
+    location /console-login {
+        try_files $uri $uri/ /console-panel/console-login.html;
+    }
+
+    location /console {
+        try_files $uri $uri/ /console-panel/console.html;
+    }
+
+    location /console-tenant-manage {
+        try_files $uri $uri/ /console-panel/console-tenant-manage.html;
+    }
+
+    # Landing sayfaları için özel route
+    location /landing {
+        try_files $uri $uri/ /landing/landing.html;
+    }
+    
+    # Static dosyalar
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+    }
+    
+    # Ana sayfa ve diğer sayfalar
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    # 404 handling
+    error_page 404 /index.html;
+}
+

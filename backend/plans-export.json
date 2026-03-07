@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "plan_adi": "Başlangıç",
+    "plan_kodu": "baslangic",
+    "aylik_ucret": 150000,
+    "yillik_ucret": 1500000,
+    "max_kullanici": 10,
+    "max_depolama_gb": 1,
+    "ozellikler": "[\"Sipariş ve müşteri yönetimi\",\"Günlük / haftalık sipariş takibi\",\"Sipariş kayıtlarını arşivleme\",\"Sayfa raporları ve yazdırma\",\"Kampanya Yönetimi\",\"WhatsApp ile otomatik sipariş bildirimi\",\"Araç Takip\",\"Teknik destek\"]",
+    "aktif_mi": 1,
+    "olusturma_tarihi": "2026-01-03 23:56:18",
+    "guncelleme_tarihi": "2026-01-26 20:41:46"
+  },
+  {
+    "id": 2,
+    "plan_adi": "Profesyonel",
+    "plan_kodu": "profesyonel",
+    "aylik_ucret": 270000,
+    "yillik_ucret": 2700000,
+    "max_kullanici": 50,
+    "max_depolama_gb": 5,
+    "ozellikler": "[\"Sipariş ve müşteri yönetimi\",\"Günlük / haftalık sipariş takibi\",\"Sipariş kayıtlarını arşivleme\",\"Sayfa raporları ve yazdırma\",\"Kampanya Yönetimi\",\"WhatsApp ile otomatik sipariş bildirimi\",\"Araç Takip\",\"Öncelikli teknik destek\"]",
+    "aktif_mi": 1,
+    "olusturma_tarihi": "2026-01-03 23:56:18",
+    "guncelleme_tarihi": "2026-01-26 19:21:13"
+  }
+]

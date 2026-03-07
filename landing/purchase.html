@@ -1,0 +1,323 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon/favicon-16x16.png">
+    <link rel="manifest" href="../favicon/site.webmanifest">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <title>Satın Al - Floovon</title>
+  <link rel="stylesheet" href="../css/landing-styles.css">
+  <link rel="stylesheet" href="../css/landing-pages.css">
+  </head>
+<body>
+    <header class="purchase-header">
+        <div class="purchase-container">
+            <a href="landing.html" class="purchase-logo">
+                <img src="../assets/landing/logo-floovon-dark.svg" alt="Floovon" width="140" height="32">
+            </a>
+            <div class="purchase-secure-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+                <span>Güvenli Ödeme</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="landing-purchase-main">
+      <div class="landing-purchase-container">
+        <div class="landing-purchase-grid">
+          <div class="landing-purchase-form-section">
+            <div class="landing-purchase-form-card">
+              <div class="landing-purchase-steps">
+                <div class="landing-step-item active" id="landing-step-1">
+                  <span class="landing-step-number">1</span>
+                  <span class="landing-step-label">Paket</span>
+                </div>
+                <div class="landing-step-divider"></div>
+                <div class="landing-step-item" id="landing-step-2">
+                  <span class="landing-step-number">2</span>
+                  <span class="landing-step-label">Bilgiler</span>
+                </div>
+                <div class="landing-step-divider"></div>
+                <div class="landing-step-item" id="landing-step-3">
+                  <span class="landing-step-number">3</span>
+                  <span class="landing-step-label">Ödeme</span>
+                </div>
+                <div class="landing-step-divider"></div>
+                <div class="landing-step-item" id="landing-step-4">
+                  <span class="landing-step-number">4</span>
+                  <span class="landing-step-label">Onay</span>
+                </div>
+              </div>
+
+              <div class="landing-purchase-form-content">
+                <div id="landing-form-step-1" class="landing-form-step">
+                  <h2>Paketinizi Seçin</h2>
+                  <p class="landing-form-step-desc">İhtiyacınıza uygun paketi seçin, çiçekçinizi hemen dijitale taşıyın!</p>
+                  
+                  <div class="landing-pricing-toggle" style="margin-bottom: 32px;">
+                    <button class="landing-toggle-btn" id="purchase-toggle-monthly" onclick="togglePurchasePricing('monthly')">Aylık</button>
+                    <button class="landing-toggle-btn" id="purchase-toggle-yearly" onclick="togglePurchasePricing('yearly')">Yıllık <span class="landing-toggle-discount">%20 İndirim</span></button>
+                  </div>
+                  
+                  <div class="landing-plan-options" id="landing-plans-grid">
+                    <div class="landing-purchase-pricing-loading">Paketler yükleniyor...</div>
+                  </div>
+
+                  <div class="landing-form-actions">
+                    <div></div>
+                    <button onclick="nextStep()" class="landing-btn-primary">
+                      Devam Et
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div id="landing-form-step-2" class="landing-form-step" style="display: none;">
+                  <h2>Şirket Bilgileri</h2>
+                  <p class="landing-form-step-desc">Hesabınız için gerekli bilgileri girin.</p>
+                  
+                  <form id="company-form" class="landing-form-fields">
+                    <div class="landing-form-field">
+                      <label>Mağaza/İş Yeri Adı *</label>
+                      <input type="text" id="companyName" placeholder="Mağaza/İş Yeri Adını Yazın" required>
+                    </div>
+                    <div class="landing-form-field">
+                      <label>Yetkili Kişi *</label>
+                      <input type="text" id="fullName" placeholder="Yetkili İsim Soyisim Yazın" required>
+                    </div>
+                    <div class="landing-form-field">
+                      <label>Kullanıcı Adı *</label>
+                      <input type="text" id="username" placeholder="Kullanıcı Adı Yazın" required>
+                      <span class="landing-field-hint">Bu kullanıcı adı yönetici kullanıcı olarak kullanılacaktır.</span>
+                    </div>
+                    <div class="landing-form-field-row">
+                      <div class="landing-form-field">
+                        <label>E-posta Adresi *</label>
+                        <input type="email" id="email" placeholder="E-posta Adresi Yazın" required autocomplete="email">
+                        <span id="email-error" class="landing-form-error" style="display: none; color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;"></span>
+                      </div>
+                      <div class="landing-form-field">
+                        <label>Telefon *</label>
+                        <input type="tel" id="phone" placeholder="Telefon Numarası Yazın" required>
+                        <span id="phone-error" class="landing-form-error" style="display: none; color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;"></span>
+                      </div>
+                    </div>
+                    <div class="landing-form-field-row">
+                      <div class="landing-form-field">
+                        <label>İl *</label>
+                        <input type="text" id="city" placeholder="İl Yazın" required>
+                      </div>
+                      <div class="landing-form-field">
+                        <label>İlçe *</label>
+                        <input type="text" id="state" placeholder="İlçe Yazın" required>
+                      </div>
+                    </div>
+                    <div class="landing-form-field">
+                      <label>Adres *</label>
+                      <input type="text" id="address" placeholder="Adres Yazın" required>
+                    </div>
+                    <div class="landing-form-field-row">
+                      <div class="landing-form-field">
+                        <label>Vergi Dairesi *</label>
+                        <input type="text" id="vergiDairesi" placeholder="Vergi Dairesi Yazın" required>
+                      </div>
+                      <div class="landing-form-field">
+                        <label>Vergi Numarası *</label>
+                        <input type="text" id="vergiNumarasi" placeholder="Vergi Numarası Yazın" required>
+                      </div>
+                    </div>
+                    <div class="landing-form-field-row">
+                      <div class="landing-form-field">
+                        <label>Şifre *</label>
+                        <input type="password" id="password" placeholder="Şifre Yazın" required autocomplete="new-password">
+                        <span class="landing-field-hint">Admin hesabınız için şifre (en az 8 karakter)</span>
+                        <span id="password-error" class="landing-form-error" style="display: none; color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;"></span>
+                      </div>
+                      <div class="landing-form-field">
+                        <label>Şifre Tekrar *</label>
+                        <input type="password" id="passwordConfirm" placeholder="Şifre Tekrar Yazın" required autocomplete="new-password">
+                        <span id="password-confirm-error" class="landing-form-error" style="display: none; color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem;"></span>
+                      </div>
+                    </div>
+                  </form>
+
+                  <div class="landing-form-actions">
+                    <button onclick="prevStep()" class="landing-btn-secondary">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                      Geri
+                    </button>
+                    <button onclick="nextStep()" class="landing-btn-primary">
+                      Devam Et
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div id="landing-form-step-3" class="landing-form-step" style="display: none;">
+                  <h2>Ödeme Bilgileri</h2>
+                  <p class="landing-form-step-desc">Kredi kartı bilgilerinizi girin.</p>
+
+                  <div id="card-fields" class="landing-form-fields">
+                    <div class="landing-form-field">
+                      <label>Kart Numarası *</label>
+                      <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    <div class="landing-form-field-row">
+                      <div class="landing-form-field">
+                        <label>Son Kullanma Tarihi *</label>
+                        <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5">
+                      </div>
+                      <div class="landing-form-field">
+                        <label>CVV *</label>
+                        <input type="text" id="cardCvv" placeholder="123" maxlength="3">
+                      </div>
+                    </div>
+                    <div class="landing-form-field">
+                      <label>Kart Üzerindeki İsim *</label>
+                      <input type="text" id="cardName" placeholder="Ad Soyad">
+                    </div>
+                  </div>
+
+                  <div class="landing-form-actions">
+                    <button onclick="prevStep()" class="landing-btn-secondary">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                      Geri
+                    </button>
+                    <button onclick="nextStep()" class="landing-btn-primary">
+                      Devam Et
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div id="landing-form-step-4" class="landing-form-step" style="display: none;">
+                  <h2>Sipariş Özeti</h2>
+                  <p class="landing-form-step-desc">Lütfen bilgilerinizi kontrol edin.</p>
+
+                  <div class="landing-order-summary-card">
+                    <h3>Paket Bilgileri</h3>
+                    <div class="landing-summary-row">
+                      <div>
+                        <div class="landing-summary-label" id="summary-plan">Profesyonel</div>
+                        <div class="landing-summary-sublabel">Aylık abonelik</div>
+                      </div>
+                      <div class="landing-summary-value" id="summary-base-price">₺499</div>
+                    </div>
+
+                    <div class="landing-summary-divider"></div>
+                    
+                    <h4>Şirket Bilgileri</h4>
+                      <div class="landing-summary-info-row">
+                        <span>Şirket:</span>
+                        <span id="summary-company">-</span>
+                      </div>
+                      <div class="landing-summary-info-row">
+                        <span>İsim Soyisim:</span>
+                        <span id="summary-name">-</span>
+                      </div>
+                      <div class="landing-summary-info-row">
+                        <span>Kullanıcı Adı:</span>
+                        <span id="summary-username">-</span>
+                      </div>
+                    <div class="landing-summary-info-row">
+                      <span>E-posta:</span>
+                      <span id="summary-email">-</span>
+                    </div>
+
+                    <div class="landing-summary-divider"></div>
+
+                    <div class="landing-summary-info-row">
+                      <span>Ödeme Yöntemi:</span>
+                      <span id="summary-payment">Kredi/Banka Kartı</span>
+                    </div>
+
+                    <div class="landing-summary-divider"></div>
+
+                    <div class="landing-summary-info-row">
+                      <span>Ara Toplam</span>
+                      <span id="summary-subtotal">₺499</span>
+                    </div>
+                    <div class="landing-summary-info-row">
+                      <span>KDV (%20)</span>
+                      <span id="summary-tax">₺100</span>
+                    </div>
+
+                    <div class="landing-summary-total">
+                      <span>Toplam</span>
+                      <span id="summary-total">₺599</span>
+                    </div>
+                  </div>
+
+                  <div class="landing-form-actions">
+                    <button onclick="prevStep()" class="landing-btn-secondary">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                      Geri
+                    </button>
+                    <button onclick="completePurchase()" class="landing-btn-primary">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      Satın Al
+                    </button>
+                  </div>
+                </div>
+
+                <div id="loading-state" class="landing-purchase-loading" style="display: none;">
+                  <div class="loading-spinner"></div>
+                  <p>İşleminiz gerçekleştiriliyor...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="landing-purchase-sidebar landing-sidebar-card">
+            <h3>Sipariş Özeti</h3>
+            
+            <div class="landing-sidebar-plan">
+              <div>
+                <div class="landing-sidebar-plan-name" id="sidebar-plan-name">Profesyonel</div>
+                <div class="landing-sidebar-plan-period">Aylık abonelik</div>
+              </div>
+              <div class="landing-sidebar-plan-price" id="sidebar-base-price">₺499</div>
+            </div>
+
+            <div class="landing-sidebar-tax">
+              <span>KDV (%20)</span>
+              <span id="sidebar-tax">₺100</span>
+            </div>
+
+            <div class="landing-sidebar-benefits">
+              <div class="landing-sidebar-benefit">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>14 gün ücretsiz deneme</span>
+              </div>
+              <div class="landing-sidebar-benefit">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>İstediğiniz zaman iptal</span>
+              </div>
+              <div class="landing-sidebar-benefit">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>7/24 teknik destek</span>
+              </div>
+            </div>
+
+            <div class="landing-sidebar-total">
+              <span>Bugün ödenecek</span>
+              <span id="sidebar-total">₺599</span>
+            </div>
+
+            <div class="landing-sidebar-guarantee">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              <p>14 gün içinde memnun kalmazsanız ücret iade garantisi. Verileriniz 256-bit SSL ile korunmaktadır.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+
+  <script src="../js/purchase.js"></script>
+</body>
+</html>

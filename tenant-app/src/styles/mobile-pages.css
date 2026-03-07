@@ -1,0 +1,1067 @@
+/**
+ * Mobil görünüm – Index (dashboard) haricindeki tüm sayfalar
+ * Müşteriler, Partner, Kampanya, Raporlar, Arşiv, Sipariş Detay, Cari, Profil, Ayarlar, Potansiyel Partner
+ * @media (max-width: 767px) – mobile-index.css ile aynı breakpoint
+ */
+
+@media (max-width: 767px) {
+  /* ----- Ana içerik: tüm sayfalar mobilde – scrollbar gizli (mobil uygulama gibi) ----- */
+  main[data-main-content] {
+    padding-bottom: 64px !important; /* Mobil navbar yüksekliği */
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  main[data-main-content]::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Main'in doğrudan çocuğu taşmasın */
+  main[data-main-content] > * {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  /* Dashboard değilse: solda ve sağda 20px boşluk (padding), navbar altı boşluk, scroll – scrollbar gizli (mobil uygulama gibi) */
+  main[data-main-content]:not(:has(.bg-alan)) {
+    overflow-y: auto !important;
+    min-height: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-bottom: 64px !important; /* Navbar yüksekliği, yapışık */
+    box-sizing: border-box !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  main[data-main-content]:not(:has(.bg-alan))::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Mobilde p-4 md:p-6 alanlarında padding kaldır (Kampanya, Müşteriler, Partner sayfaları) */
+  .p-4.md\:p-6,
+  .page-wrapper .p-4.md\:p-6 {
+    padding: 0 !important;
+  }
+
+  /* ========== Ortak sayfa yapısı: page-wrapper, panel-sol, panel-sag ========== */
+  .page-wrapper {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    padding: 12px 14px 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important; /* main içinde scroll için */
+    overflow-x: hidden !important;
+    border-radius: 12px;
+    box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .page-wrapper.min-h-screen {
+    min-height: 0 !important;
+  }
+
+  .page-wrapper--full {
+    margin-right: 0 !important;
+    padding: 12px 14px 20px !important;
+  }
+
+  .page-panel-sol,
+  .page-panel-sag {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .page-panel-sol {
+    padding: 0 !important;
+  }
+
+  .page-panel-sag-inner {
+    margin: 12px 0 0 !important;
+    padding: 14px !important;
+    border-radius: 12px;
+  }
+
+  /* Başlık + butonlar: mobilde alt alta */
+  .page-title {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+
+  .page-wrapper .mb-6.flex.flex-col.sm\:flex-row {
+    gap: 12px;
+  }
+
+  .page-wrapper .flex.items-center.gap-2 {
+    flex-wrap: wrap;
+  }
+
+  /* Mobilde dışa aktar butonları gizle */
+  .buton-disa-aktar,
+  .page-export-dropdown,
+  .customers-export-dropdown,
+  .partners-export-dropdown,
+  .campaigns-export-dropdown,
+  .reports-export-dropdown,
+  .cari-export-dropdown {
+    display: none !important;
+  }
+
+  /* Tablolar: mobilde kart görünümü (data-label ile) */
+  .customers-table-wrapper,
+  .partners-table-wrapper,
+  .campaigns-table-wrapper,
+  .profil-table-wrapper {
+    overflow-x: visible;
+    margin: 0;
+  }
+
+  /* Tablo scroll kaldır: sadece sayfa scroll etsin (dashboard-cards sonradan yüklendiği için modal-styles-important.css’te tekrar override edilir) */
+  .customers-table-scroll,
+  .partners-table-scroll,
+  .campaigns-table-scroll,
+  .profil-table-scroll {
+    min-width: 0;
+    max-height: none !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+
+  .customers-table,
+  .partners-table,
+  .campaigns-table,
+  .profil-table {
+    display: block;
+    font-size: 13px;
+  }
+
+  .customers-table thead,
+  .partners-table thead,
+  .campaigns-table thead,
+  .profil-table thead {
+    display: none;
+  }
+
+  .customers-table tbody,
+  .partners-table tbody,
+  .campaigns-table tbody,
+  .profil-table tbody {
+    display: block;
+  }
+
+  .customers-table tbody tr,
+  .partners-table tbody tr,
+  .campaigns-table tbody tr,
+  .profil-table tbody tr {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .customers-table tbody td,
+  .partners-table tbody td,
+  .campaigns-table tbody td,
+  .profil-table tbody td {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0 !important;
+    border: none !important;
+  }
+  .customers-table tbody td > *,
+  .partners-table tbody td > *,
+  .campaigns-table tbody td > *,
+  .profil-table tbody td > * {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .customers-table tbody td::before,
+  .partners-table tbody td::before,
+  .campaigns-table tbody td::before,
+  .profil-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 12px;
+    order: 0;
+    text-align: left;
+  }
+  .customers-table tbody td > *,
+  .partners-table tbody td > *,
+  .campaigns-table tbody td > *,
+  .profil-table tbody td > * {
+    flex: 1;
+    min-width: 0;
+    order: 1;
+  }
+
+  .customers-table tbody td .islem-ikonlar,
+  .partners-table tbody td .islem-ikonlar,
+  .profil-table tbody td .islem-ikonlar {
+    margin-left: 0;
+  }
+
+  /* Yetkilendirme tablosu – mobilde kart görünümü */
+  .permissions-table-container {
+    overflow-x: visible;
+  }
+  .permissions-table {
+    display: block;
+    font-size: 13px;
+  }
+  .permissions-table thead {
+    display: none;
+  }
+  .permissions-table tbody {
+    display: block;
+  }
+  .permissions-table tbody tr.permission-row {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .permissions-table tbody tr.permission-row td {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0 !important;
+    border: none !important;
+  }
+  .permissions-table tbody tr.permission-row td > * {
+    flex: 1;
+    min-width: 0;
+  }
+  .permissions-table tbody tr.permission-row td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 12px;
+    order: 0;
+    text-align: left;
+  }
+  .permissions-table tbody tr.permission-row td > * {
+    flex: 1;
+    min-width: 0;
+    order: 1;
+  }
+
+  /* Kampanya tablosu da customers-table kullanıyor; kart görünümü aynı */
+  .campaigns-table-wrap .customers-table tbody tr {
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  /* Detay paneli kapat butonu */
+  .customers-close-detail.md\:hidden,
+  .partners-close-detail.md\:hidden {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border-renk);
+    background: var(--white);
+    color: var(--ana-renk);
+    cursor: pointer;
+  }
+
+  .page-empty-detail {
+    min-height: 200px;
+  }
+
+  .page-empty-detail-inner {
+    width: 85%;
+  }
+
+  /* Mobilde detay/form paneli modal olarak (Kampanya, Müşteriler, Partner) */
+  .page-detail-modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9998 !important;
+    background: var(--overlay-bg-black, rgba(0, 0, 0, 0.5)) !important;
+  }
+  .page-panel-sag--as-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9999 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: 100% !important;
+    max-height: 100vh !important;
+    background: var(--white) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 20px 80px !important;
+    box-sizing: border-box !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  .page-panel-sag--as-modal .page-panel-sag-inner {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Ayarlar: mobilde ekle/düzenle formu modal gibi (müşteri düzenle gibi) */
+  .ayarlar-form-row.ayarlar-form-active {
+    position: relative;
+  }
+  .ayarlar-form-row.ayarlar-form-active::before {
+    content: '';
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+    background: var(--overlay-bg-black, rgba(0, 0, 0, 0.5)) !important;
+    pointer-events: auto;
+  }
+  .ayarlar-form-row.ayarlar-form-active .ayarlar-sol-kolon {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10001 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: 100% !important;
+    max-height: 100vh !important;
+    background: var(--white) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 20px 80px !important;
+    box-sizing: border-box !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Cari / Partner drawer'ları: mobilde ortak modal standardı (modal-styles.css – ortadan, 16px boşluk) */
+  .cari-drawer-overlay .cari-drawer {
+    max-height: calc(100vh - 32px) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+  }
+  .cari-fatura-kes-overlay .cari-fatura-kes-modal {
+    max-height: calc(100vh - 32px) !important;
+  }
+
+  /* ========== Arşiv Siparişler ========== */
+  .arsiv-baslik-alan {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .arsiv-filtreler {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .arsiv-filtre-item {
+    width: 100%;
+  }
+
+  .arsiv-filtre-item input[type="date"],
+  .arsiv-filtre-item select {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .arsiv-sag-alan {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .arsiv-search-wrapper {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  /* Arşiv: sadece sayfa scroll etsin, tablo içi scroll yok */
+  /* Arşiv sayfası: sayfa aşağı kayabilsin (wrapper ve tablo scroll kısıtı kaldır) */
+  .page-wrapper--full.arsiv-page-wrapper,
+  body:has(.arsiv-baslik-alan) .page-wrapper--full {
+    overflow: visible !important;
+    min-height: auto !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .arsiv-table-wrapper {
+    min-height: 0 !important;
+    overflow: visible !important;
+    flex: 1 1 auto !important;
+  }
+  .arsiv-table-scroll {
+    max-height: none !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+
+  .arsiv-tablosu {
+    font-size: 13px;
+    min-width: 0;
+    display: block;
+  }
+
+  .arsiv-tablosu thead {
+    display: none;
+  }
+
+  .arsiv-tablosu tbody {
+    display: block;
+  }
+
+  .arsiv-tablosu tr.baslik-satiri {
+    display: block;
+    padding: 8px 12px;
+    margin: 8px 0 4px 0;
+    background: var(--gray-light-f2, #f2f2f2);
+    border-radius: 8px;
+    font-weight: 600;
+    color: var(--ana-renk);
+  }
+
+  .arsiv-tablosu tr.baslik-satiri .grup-baslik-inner,
+  .arsiv-tablosu tr.baslik-satiri .grup-baslik-icerik {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .arsiv-tablosu tr.grup-satir-row {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .arsiv-tablosu tr.grup-satir-row td {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0 !important;
+    border: none !important;
+  }
+  .arsiv-tablosu tr.grup-satir-row td > * {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .arsiv-tablosu tr.grup-satir-row td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 120px;
+    flex-shrink: 0;
+    font-size: 12px;
+    order: 0;
+    text-align: left;
+  }
+  .arsiv-tablosu tr.grup-satir-row td > * {
+    flex: 1;
+    min-width: 0;
+    order: 1;
+  }
+
+  .arsiv-btn-filtre-reset {
+    width: 100%;
+  }
+
+  /* ========== Raporlar ========== */
+  .reports-panel-inner {
+    padding: 14px !important;
+  }
+
+  .reports-filtreler {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .reports-filtreler input[type="date"],
+  .reports-filtreler input[type="text"],
+  .reports-filtreler select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .reports-filtreler .btn-filtre-reset {
+    width: 100%;
+  }
+
+  .reports-tabs-horizontal {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .reports-tabs-horizontal::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .reports-tab-btn {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .ayarlar-subtab-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .ayarlar-subtab-nav::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .reports-content .istatistikler {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Rapor tabloları: mobilde kart görünümü + scrollbar gizli */
+  .reports-table-wrapper {
+    overflow-x: visible;
+    margin: 0;
+  }
+  .reports-table-scroll {
+    max-height: none !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+  .reports-content table,
+  .reports-content .table-scrollbar {
+    overflow-x: auto;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .reports-content .table-scrollbar::-webkit-scrollbar,
+  .reports-content table::-webkit-scrollbar {
+    display: none !important;
+  }
+  .reports-table,
+  .reports-table.reports-table-musteri {
+    display: block;
+    font-size: 13px;
+  }
+  .reports-table thead,
+  .reports-table.reports-table-musteri thead {
+    display: none;
+  }
+  .reports-table tbody,
+  .reports-table.reports-table-musteri tbody {
+    display: block;
+  }
+  .reports-table tbody tr.reports-table-row,
+  .reports-table.reports-table-musteri tbody tr.reports-table-row {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .reports-table tbody tr.reports-table-row td,
+  .reports-table.reports-table-musteri tbody tr.reports-table-row td {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0 !important;
+    border: none !important;
+  }
+  .reports-table tbody tr.reports-table-row td > *,
+  .reports-table.reports-table-musteri tbody tr.reports-table-row td > * {
+    flex: 1;
+    min-width: 0;
+  }
+  .reports-table tbody tr.reports-table-row td::before,
+  .reports-table.reports-table-musteri tbody tr.reports-table-row td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 12px;
+    order: 0;
+    text-align: left;
+  }
+  .reports-table tbody tr.reports-table-row td > *,
+  .reports-table.reports-table-musteri tbody tr.reports-table-row td > * {
+    flex: 1;
+    min-width: 0;
+    order: 1;
+  }
+  .reports-table tbody tr.reports-table-row td .islem-ikonlar,
+  .reports-table.reports-table-musteri tbody tr.reports-table-row td .islem-ikonlar {
+    margin-left: 0;
+  }
+
+  /* ========== Sipariş Kart Detay ========== */
+  .kart-detay-bg-alan {
+    margin-right: 0 !important;
+    padding: 12px 14px 20px !important;
+    width: 100% !important;
+  }
+
+  /* Sipariş listesi tablosu: mobilde kart görünümü */
+  .siparisler-tablo-alan {
+    overflow-x: visible;
+  }
+  .siparis-kart-detay-tablosu {
+    display: block;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .siparis-kart-detay-tablosu thead {
+    display: none;
+  }
+  .siparis-kart-detay-tablosu tbody {
+    display: block;
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0 !important;
+    border: none !important;
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td > * {
+    flex: 1;
+    min-width: 0;
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 110px;
+    flex-shrink: 0;
+    font-size: 12px;
+    order: 0;
+    text-align: left;
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td > * {
+    flex: 1;
+    min-width: 0;
+    order: 1;
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-siparis-urun .siparis-urun-hucre,
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-islem .islem-ikonlar {
+    margin-left: 0;
+  }
+
+  .kart-detay-container {
+    border-radius: 12px;
+  }
+
+  .kart-detay-container .dashboard-header .baslik-alan {
+    padding: 10px 14px;
+    flex-wrap: wrap;
+  }
+
+  .kart-detay-container .organizasyon-detaylar {
+    grid-template-columns: 1fr !important;
+    padding: 14px !important;
+    padding-bottom: 24px !important;
+  }
+
+  .kart-detay-container .sol-detay-alan .buton-alan {
+    flex-wrap: wrap;
+  }
+
+  .kart-detay-container .sol-detay-alan .buton-alan .sp-kart-btn {
+    min-height: 72px;
+    padding: 12px;
+    font-size: 11px;
+  }
+
+  /* ========== Cari sayfalar (Müşteri Cari / Partner Cari) ========== */
+  .cari-page {
+    flex-direction: column;
+    min-height: 0;
+    padding: 12px 14px 20px;
+    overflow-x: hidden;
+  }
+
+  .cari-sol {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex-shrink: 0;
+  }
+
+  /* Cari sağ panel: iç scroll yok, içerik sayfa ile birlikte aksın */
+  .cari-sag {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: visible !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Cari: sadece sayfa scroll etsin, sağ panel içi scroll yok */
+  .cari-sag-inner {
+    min-height: 0;
+    overflow: visible !important;
+  }
+
+  .cari-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 4px;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .cari-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .cari-tab {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .cari-tablo-alan {
+    min-height: 0;
+    overflow: visible !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Cari tablo: sadece sayfa scroll; yatay taşma varsa overflow-x (scrollbar yine gizli) */
+  .cari-table-wrapper {
+    overflow-x: auto;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .cari-table-wrapper::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Cari tablolar: mobilde kart görünümü (data-label ile) */
+  .cari-table {
+    font-size: 12px;
+    min-width: 0;
+    display: block;
+  }
+  .cari-table thead {
+    display: none;
+  }
+  .cari-table tbody {
+    display: block;
+  }
+  .cari-table tbody tr {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .cari-table tbody td {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0 !important;
+    border: none !important;
+  }
+  .cari-table tbody td > * {
+    flex: 1;
+    min-width: 0;
+  }
+  .cari-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 12px;
+    order: 0;
+    text-align: left;
+  }
+  .cari-table tbody td > * {
+    flex: 1;
+    min-width: 0;
+    order: 1;
+  }
+  .cari-table tbody td .islem-ikonlar {
+    margin-left: 0;
+  }
+
+  .cari-ozet-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .cari-ozet-box {
+    min-width: 0;
+    flex: 1 1 120px;
+  }
+
+  /* ========== Ayarlar tabloları: mobilde kart görünümü ========== */
+  .ayarlar-page .ayarlar-tablosu,
+  .ayarlar-page table.ayarlar-tablosu {
+    display: block;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .ayarlar-page .ayarlar-tablosu thead,
+  .ayarlar-page table.ayarlar-tablosu thead {
+    display: none;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody,
+  .ayarlar-page table.ayarlar-tablosu tbody {
+    display: block;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr.ayarlar-table-row,
+  .ayarlar-page .ayarlar-tablosu tbody tr[data-table-row],
+  .ayarlar-page table.ayarlar-tablosu tbody tr {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0 !important;
+    border: none !important;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td > *,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td > * {
+    flex: 1;
+    min-width: 0;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td::before,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 12px;
+    order: 0;
+    text-align: left;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td > *,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td > * {
+    flex: 1;
+    min-width: 0;
+    order: 1;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td .islem-ikonlar {
+    margin-left: 0;
+  }
+
+  /* ========== Profil Ayarları & Ayarlar ========== */
+  .profil-page,
+  .ayarlar-page {
+    padding: 12px 14px 20px !important;
+    padding-bottom: 72px !important;
+  }
+
+  .profil-page-inner,
+  .ayarlar-page-inner {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .profil-tab-nav,
+  .ayarlar-tab-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-renk);
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .profil-tab-nav::-webkit-scrollbar,
+  .ayarlar-tab-nav::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .profil-tab-btn,
+  .ayarlar-tab-btn {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .profil-card,
+  .ayarlar-panel,
+  .ayarlar-panel-form {
+    padding: 14px !important;
+  }
+
+  /* Ayarlar: sadece sayfa (main) scroll etsin, wrapper içi scroll yok */
+  .ayarlar-page.page-wrapper {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel {
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .ayarlar-sol-kolon,
+  .ayarlar-sag-kolon {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ========== Kampanya Yönetimi: sadece sayfa scroll, tablo içi scroll yok ========== */
+  .campaigns-table-scroll {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .campaigns-table {
+    min-width: 500px;
+  }
+
+  /* ========== Potansiyel Partnerler – kart görünümü ========== */
+  .potansiyel-table-wrapper {
+    overflow-x: visible;
+  }
+
+  .potansiyel-table-scroll {
+    min-width: 0;
+    overflow-x: visible;
+  }
+
+  .potansiyel-tablosu {
+    display: block;
+  }
+
+  .potansiyel-tablosu thead {
+    display: none;
+  }
+
+  .potansiyel-tablosu tbody {
+    display: block;
+  }
+
+  .potansiyel-tablosu tr.potansiyel-table-row {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .potansiyel-tablosu tr.potansiyel-table-row td {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0 !important;
+    border: none !important;
+  }
+  .potansiyel-tablosu tr.potansiyel-table-row td > * {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .potansiyel-tablosu tr.potansiyel-table-row td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 12px;
+    order: 0;
+    text-align: left;
+  }
+  .potansiyel-tablosu tr.potansiyel-table-row td > * {
+    flex: 1;
+    min-width: 0;
+    order: 1;
+  }
+
+  .potansiyel-partnerler-page .page-wrapper,
+  [class*="potansiyel"] .page-wrapper {
+    margin-right: 0 !important;
+    padding: 12px 14px 20px !important;
+  }
+
+  /* ========== Dışa aktar dropdown + genel butonlar ========== */
+  .page-export-dropdown .dosya-tur-content.clickdropdown-content {
+    left: 0;
+    right: auto;
+    max-width: 90vw;
+  }
+
+  .buton-disa-aktar .btn-baslik {
+    font-size: 12px;
+  }
+
+  .page-btn-yeni,
+  .customers-btn-yeni,
+  .partners-btn-yeni {
+    font-size: 12px;
+    padding: 8px 12px;
+    height: 36px;
+  }
+
+  /* ========== Empty state & loading ========== */
+  .page-wrapper .flex.items-center.justify-center.min-h-screen,
+  .page-wrapper .flex.items-center.justify-center.min-h-\[400px\] {
+    min-height: 280px;
+  }
+}

@@ -1,0 +1,697 @@
+/**
+ * MODAL STYLES - OVERRIDE KORUMALI
+ * Bu dosya modal stillerinin diğer stiller tarafından override edilmesini önlemek için
+ * daha spesifik selector'lar ve !important kullanır.
+ * 
+ * NOT: Bu dosya modal-styles.css'den sonra yüklenmelidir.
+ * 
+ * KRİTİK: Bu dosya TÜM diğer CSS dosyalarından sonra yüklenmelidir!
+ */
+
+/* ========== ESKİ CSS OVERRIDE - css/style.css'deki .yeni-kart-container tanımlarını override et ========== */
+/* Eski sistemdeki .yeni-kart-container ve .yeni-musteri-container tanımlarını override et */
+/* css/style.css satır 137: .yeni-kart-container { display: none; } */
+/* css/style.css satır 160: .yeni-kart-container.show { display: block; } */
+/* Bu tanımları override etmek için daha spesifik selector kullan */
+div.yeni-kart-container,
+div.yeni-musteri-container {
+    /* Eski CSS'teki display: none tanımını override et - bizim kontrolümüzde */
+}
+
+div.yeni-kart-container.show {
+    /* Eski CSS'teki display: block tanımını override et - biz flex kullanacağız */
+    display: flex !important;
+}
+
+div.yeni-musteri-container.show {
+    /* Eski CSS'teki display: block tanımını override et - biz block kullanacağız */
+    display: block !important;
+}
+
+/* ========== OVERLAY VE CONTAINER STILLERİ - EN ÜST SEVIYE ========== */
+.overlay-yeni-kart-container,
+.overlay-yeni-musteri-container,
+.overlay-yeni-siparis-container {
+    display: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.5)) !important;
+    overflow-y: auto !important;
+}
+
+.overlay-yeni-kart-container {
+    align-items: stretch !important;
+    justify-content: flex-end !important; /* Web: form sağdan açılsın; mobilde media query ile center */
+    overflow: hidden !important;
+}
+
+.overlay-yeni-musteri-container {
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.overlay-yeni-siparis-container {
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 40px 0 !important;
+}
+
+.overlay-yeni-kart-container.show,
+.overlay-yeni-musteri-container.show,
+.overlay-yeni-siparis-container.show {
+    display: flex !important;
+}
+
+/* Container'lar için genel stiller - display kontrolü show class'ı ile yapılacak */
+/* EN SPESİFİK SELECTOR - TÜM OVERRIDE'LARI YEN */
+div.overlay-yeni-kart-container div.yeni-kart-container,
+div.overlay-yeni-musteri-container div.yeni-musteri-container,
+div.overlay-yeni-siparis-container div.yeni-siparis-container {
+    position: relative !important;
+    background: var(--white) !important;
+    color: var(--ana-renk) !important;
+    z-index: 9999 !important;
+    margin: 0 auto !important;
+    display: none !important;
+}
+
+/* Yeni kart paneli sağda açılsın – ortalamayı kaldır; taşma ve scroll */
+.overlay-yeni-kart-container .yeni-kart-container,
+body div.overlay-yeni-kart-container div.yeni-kart-container {
+    margin: 0 !important;
+    overflow: hidden !important;
+    max-width: 100vw !important;
+}
+
+/* Yeni kart: İl / İlçe yan yana */
+.overlay-yeni-kart-container .yeni-kart-container .input-grup-il-ilce {
+    display: flex !important;
+    flex-direction: row !important;
+}
+.overlay-yeni-kart-container .yeni-kart-container .input-grup-il-ilce select {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+/* Ekstra güvenlik - body ile daha spesifik */
+body div.overlay-yeni-kart-container div.yeni-kart-container,
+body div.overlay-yeni-musteri-container div.yeni-musteri-container,
+body div.overlay-yeni-siparis-container div.yeni-siparis-container {
+    display: none !important;
+}
+
+/* Show class'ı ile görünür yap - tek kural, flex column */
+div.overlay-yeni-kart-container.show div.yeni-kart-container.show,
+div.overlay-yeni-siparis-container.show div.yeni-siparis-container.show,
+body div.overlay-yeni-kart-container.show div.yeni-kart-container.show,
+body div.overlay-yeni-siparis-container.show div.yeni-siparis-container.show {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+div.overlay-yeni-musteri-container.show div.yeni-musteri-container.show {
+    display: block !important;
+}
+
+body div.overlay-yeni-musteri-container.show div.yeni-musteri-container.show {
+    display: block !important;
+}
+
+/* ========== INPUT, SELECT, TEXTAREA STILLERİ - ESKİ SİSTEMDEN SPESİFİK SELECTOR'LAR ========== */
+/* YENİ KART MODAL - EN SPESİFİK SELECTOR'LAR (ESKİ SİSTEMDEN) */
+/* Select hariç – select’te varsayılan ok görünsün */
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup input[type="text"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup input[type="email"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup input[type="tel"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup input:not([type]),
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup-column input[type="text"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup-column input[type="email"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup-column input[type="tel"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup-column input:not([type]),
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup textarea,
+.overlay-yeni-kart-container .yeni-kart-container textarea {
+    font-size: 13px !important;
+    border: 1px solid var(--input-border-gray) !important;
+    border-radius: 4px !important;
+    outline: none !important;
+    background: var(--white) !important;
+    color: var(--ana-renk) !important;
+    box-sizing: border-box !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+}
+
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup select {
+    font-size: 13px !important;
+    border: 1px solid var(--input-border-gray) !important;
+    border-radius: 4px !important;
+    outline: none !important;
+    background: var(--white) !important;
+    color: var(--ana-renk) !important;
+    box-sizing: border-box !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+    margin: 0 !important;
+}
+
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup input[type="text"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup input[type="email"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup input[type="tel"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup input:not([type]),
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup-column input[type="text"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup-column input[type="email"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup-column input[type="tel"],
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup-column input:not([type]),
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup select {
+    height: 36px !important;
+    padding: 0 8px !important;
+    line-height: 36px !important;
+}
+
+.overlay-yeni-kart-container .yeni-kart-container .input-alan .input-grup textarea,
+.overlay-yeni-kart-container .yeni-kart-container textarea {
+    padding: 10px 0 0 10px !important;
+    resize: none !important;
+}
+
+/* TARİH/SAAT INPUT'LARI - ESKİ SİSTEMDEN */
+.overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"],
+.overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"] {
+    height: 40px !important;
+    font-size: 14px !important;
+    border: 1px solid var(--gray-light-cc) !important;
+    border-radius: 4px !important;
+    appearance: auto !important;
+    -webkit-appearance: menulist !important;
+    background-color: var(--white) !important;
+    color: var(--ana-renk) !important;
+    cursor: pointer !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+    margin: 0 !important;
+}
+
+.overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
+.overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator {
+    opacity: 1 !important;
+    cursor: pointer !important;
+    filter: brightness(0) saturate(100%);
+}
+
+/* Dark tema: takvim/saat ikonları açık renk (modal en son yüklendiği için burada da override) */
+body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator,
+html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
+html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) !important;
+    opacity: 0.85 !important;
+}
+
+/* YENİ MÜŞTERİ MODAL */
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup input[type="text"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup input[type="email"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup input[type="tel"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup input:not([type]),
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup-column input[type="text"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup-column input[type="email"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup-column input[type="tel"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup-column input:not([type]),
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup select,
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup textarea,
+.overlay-yeni-musteri-container .yeni-musteri-container textarea {
+    font-size: 13px !important;
+    border: 1px solid var(--input-border-gray) !important;
+    border-radius: 4px !important;
+    outline: none !important;
+    background: var(--white) !important;
+    color: var(--ana-renk) !important;
+    box-sizing: border-box !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+}
+
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup input[type="text"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup input[type="email"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup input[type="tel"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup input:not([type]),
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup-column input[type="text"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup-column input[type="email"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup-column input[type="tel"],
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup-column input:not([type]),
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup select {
+    height: 36px !important;
+    padding: 0 8px !important;
+    line-height: 36px !important;
+}
+
+.overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup textarea,
+.overlay-yeni-musteri-container .yeni-musteri-container textarea {
+    padding: 10px 0 0 10px !important;
+    resize: none !important;
+    height: 56px !important;
+}
+
+/* YENİ SİPARİŞ MODAL */
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input[type="text"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input[type="email"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input[type="tel"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input[type="date"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input[type="time"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input:not([type]),
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup-column input[type="text"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup-column input[type="email"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup-column input[type="tel"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup-column input:not([type]),
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup select,
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup textarea,
+.overlay-yeni-siparis-container .yeni-siparis-container textarea {
+    font-size: 13px !important;
+    border: 1px solid var(--input-border-gray) !important;
+    border-radius: 4px !important;
+    outline: none !important;
+    background: var(--white) !important;
+    color: var(--ana-renk) !important;
+    box-sizing: border-box !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+}
+
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input[type="text"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input[type="email"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input[type="tel"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input[type="date"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input[type="time"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup input:not([type]),
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup-column input[type="text"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup-column input[type="email"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup-column input[type="tel"],
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup-column input:not([type]),
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup select {
+    height: 36px !important;
+    padding: 0 8px !important;
+    line-height: 36px !important;
+}
+
+.overlay-yeni-siparis-container .yeni-siparis-container .input-alan .input-grup textarea,
+.overlay-yeni-siparis-container .yeni-siparis-container textarea {
+    padding: 10px !important;
+    resize: none !important;
+}
+
+.overlay-yeni-musteri-container .yeni-musteri-container input[type="text"],
+.overlay-yeni-musteri-container .yeni-musteri-container input[type="email"],
+.overlay-yeni-musteri-container .yeni-musteri-container input[type="tel"],
+.overlay-yeni-musteri-container .yeni-musteri-container input:not([type]),
+.overlay-yeni-musteri-container .yeni-musteri-container select {
+    height: 36px !important;
+    padding: 0 8px !important;
+    line-height: 36px !important;
+}
+
+.overlay-yeni-musteri-container .yeni-musteri-container textarea {
+    padding: 10px 0 0 10px !important;
+    resize: none !important;
+    height: 56px !important;
+}
+
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="text"],
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="email"],
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="tel"],
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="date"],
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="time"],
+.overlay-yeni-siparis-container .yeni-siparis-container input:not([type]),
+.overlay-yeni-siparis-container .yeni-siparis-container select {
+    height: 36px !important;
+    padding: 0 8px !important;
+    line-height: 36px !important;
+}
+
+/* Sipariş modalı - tüm metin input/select görünür border ve arka plan */
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="text"],
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="email"],
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="tel"],
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="number"],
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="date"],
+.overlay-yeni-siparis-container .yeni-siparis-container input[type="time"],
+.overlay-yeni-siparis-container .yeni-siparis-container select,
+.overlay-yeni-siparis-container .yeni-siparis-container textarea {
+    border: 1px solid var(--input-border-gray) !important;
+    border-radius: 6px !important;
+    background: var(--white) !important;
+    color: var(--ana-renk) !important;
+    font-size: 14px !important;
+    box-sizing: border-box !important;
+}
+
+.overlay-yeni-siparis-container .yeni-siparis-container textarea {
+    padding: 10px !important;
+    resize: none !important;
+    min-height: 64px !important;
+    height: 64px !important;
+}
+
+/* ========== BUTTON STILLERİ - OVERRIDE KORUMALI ========== */
+.overlay-yeni-kart-container .yeni-kart-container button,
+.overlay-yeni-musteri-container .yeni-musteri-container button,
+.overlay-yeni-siparis-container .yeni-siparis-container button {
+    cursor: pointer !important;
+}
+
+/* Primary/Secondary butonlar modal-styles.css ortak bloktan gelir; sadece gerekirse override */
+.overlay-yeni-kart-container .yeni-kart-container .butonlar .primary-button,
+.overlay-yeni-kart-container .yeni-kart-container .butonlar .btn-kaydet {
+    color: var(--white-only) !important;
+}
+
+/* ========== LABEL STILLERİ - OVERRIDE KORUMALI ========== */
+.overlay-yeni-kart-container .yeni-kart-container label,
+.overlay-yeni-musteri-container .yeni-musteri-container label,
+.overlay-yeni-siparis-container .yeni-siparis-container label {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: var(--gri70) !important;
+}
+
+/* ========== SICAK SATIŞ MODAL - OVERRIDE KORUMALI ========== */
+.sicak-satis-overlay {
+    display: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: var(--overlay-bg-black, rgba(0, 0, 0, 0.5)) !important;
+    z-index: 9999 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0 !important;
+    transition: all 0.3s ease !important;
+}
+
+.sicak-satis-overlay.show {
+    display: flex !important;
+    opacity: 1 !important;
+}
+
+.sicak-satis-popup {
+    background: var(--white) !important;
+    border-radius: 12px !important;
+    width: 500px !important;
+    max-width: 90% !important;
+    padding: 24px !important;
+    transform: scale(0.8) translateY(20px) !important;
+    transition: all 0.3s ease !important;
+}
+
+.sicak-satis-overlay.show .sicak-satis-popup {
+    transform: scale(1) translateY(0) !important;
+}
+
+.sicak-satis-popup .tl-input {
+    width: 100% !important;
+    height: 36px !important;
+    padding: 0 8px !important;
+    font-size: 13px !important;
+    border: 1px solid var(--input-border-gray) !important;
+    border-radius: 4px !important;
+    outline: none !important;
+    background: var(--white) !important;
+    color: var(--ana-renk) !important;
+    box-sizing: border-box !important;
+}
+
+/* ========== WHATSAPP CONNECTION INFO MODAL - OVERRIDE KORUMALI ========== */
+.overlay-whatsapp-info-container {
+    display: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.7)) !important;
+    z-index: 9999 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow-y: auto !important;
+}
+
+.overlay-whatsapp-info-container.show {
+    display: flex !important;
+}
+
+.whatsapp-info-modal-content {
+    display: block !important;
+    background: var(--white) !important;
+    position: relative !important;
+    margin: 0 auto !important;
+    padding: 30px !important;
+    transition: 250ms ease 0s !important;
+    border-radius: 10px !important;
+    color: var(--ana-renk) !important;
+    width: 400px !important;
+    max-width: 400px !important;
+    min-width: 400px !important;
+    z-index: 9999 !important;
+    box-shadow: var(--modal-shadow, 0 4px 6px rgba(0, 0, 0, 0.1)) !important;
+}
+
+.whatsapp-info-modal-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: var(--ana-renk) !important;
+    margin: 0 !important;
+}
+
+.whatsapp-info-modal-title i.fa-brands.fa-whatsapp {
+    color: var(--whatsapp-green, #25D366) !important;
+    font-size: 20px !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-family: "Font Awesome 6 Brands" !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    line-height: 1 !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Font Awesome Brands için genel override */
+.whatsapp-info-modal-title .fa-brands {
+    font-family: "Font Awesome 6 Brands" !important;
+    font-weight: 400 !important;
+}
+
+/* ========== TAILWIND MODALLAR İÇİN Z-INDEX OVERRIDE ========== */
+/* AracTakipModal, QRScannerModal, OrderActionModal için */
+div[data-modal-backdrop],
+div[data-modal-content] {
+    z-index: 9999 !important;
+}
+
+/* Tailwind z-50 class'ını override et */
+.fixed.inset-0.z-50 {
+    z-index: 9999 !important;
+}
+
+/* Tailwind backdrop için */
+.fixed.inset-0.bg-gray-500 {
+    z-index: 999999998 !important;
+}
+
+/* ========== TÜM SELECT'LER: OK İKONU SAĞDAN BOŞLUKLU (portal + modal override) ========== */
+/* Body'e portal edilen modallar #root dışında olduğu için burada da aynı padding-right uygulanır */
+body .overlay-yeni-kart-container .yeni-kart-container select,
+body .overlay-yeni-musteri-container .yeni-musteri-container select,
+body .overlay-yeni-siparis-container .yeni-siparis-container select,
+body .yeni-kart-container select,
+body .yeni-musteri-container select,
+body .yeni-siparis-container select,
+body .cari-drawer select,
+body .sicak-satis-popup select,
+body .modal-react-teknik-destek-form-group select,
+body select.modal-react-arac-takip-select {
+    padding-right: 24px !important;
+}
+
+/* ========== Mobil: formlar kayar, scroll çubukları görünmez + tab column + formlar ========== */
+@media (max-width: 767px) {
+    .overlay-yeni-kart-container.show,
+    .overlay-yeni-musteri-container.show,
+    .overlay-yeni-siparis-container.show {
+        overflow-y: auto !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    .overlay-yeni-kart-container.show::-webkit-scrollbar,
+    .overlay-yeni-musteri-container.show::-webkit-scrollbar,
+    .overlay-yeni-siparis-container.show::-webkit-scrollbar {
+        display: none !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container,
+    body div.overlay-yeni-kart-container div.yeni-kart-container,
+    .overlay-yeni-musteri-container .yeni-musteri-container,
+    body div.overlay-yeni-musteri-container div.yeni-musteri-container,
+    .overlay-yeni-siparis-container .yeni-siparis-container,
+    body div.overlay-yeni-siparis-container div.yeni-siparis-container {
+        overflow: visible !important;
+        max-height: none !important;
+    }
+
+    /* Yeni Kart: yatay scroll yok, içerik kesilmesin, yatay boşluk */
+    .overlay-yeni-kart-container.show {
+        overflow-x: hidden !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container,
+    body div.overlay-yeni-kart-container div.yeni-kart-container {
+        overflow: visible !important;
+        overflow-x: hidden !important;
+        padding: 14px 20px 24px !important;
+        max-height: none !important;
+        min-height: 0 !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici {
+        flex-direction: column !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici .tab {
+        width: 100% !important;
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici .tab button.tablinks {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici .tab-content-alan {
+        width: 100% !important;
+        flex: none !important;
+        border-left: none !important;
+        border-top: 1px solid var(--border-renk, #e5e7eb) !important;
+        padding-top: 16px !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici .tabcontent,
+    .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici .tabcontent.show {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        min-width: 0 !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container .input-grup-il-ilce {
+        flex-direction: column !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container .input-grup-il-ilce select {
+        width: 100% !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container .input-form .label-kapsayici-org-tipler {
+        flex-direction: column !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container .input-form .label-kapsayici-org-tipler .radio-label {
+        width: 100% !important;
+    }
+
+    /* Tüm form modallar: input/select/textarea tam genişlik */
+    .overlay-yeni-kart-container .yeni-kart-container input,
+    .overlay-yeni-kart-container .yeni-kart-container select,
+    .overlay-yeni-kart-container .yeni-kart-container textarea,
+    .overlay-yeni-musteri-container .yeni-musteri-container input,
+    .overlay-yeni-musteri-container .yeni-musteri-container select,
+    .overlay-yeni-musteri-container .yeni-musteri-container textarea,
+    .overlay-yeni-siparis-container .yeni-siparis-container input,
+    .overlay-yeni-siparis-container .yeni-siparis-container select,
+    .overlay-yeni-siparis-container .yeni-siparis-container textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .overlay-yeni-kart-container .yeni-kart-container .input-alan,
+    .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici .tabcontent .input-alan {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .overlay-yeni-musteri-container .yeni-musteri-container .musteri-form-alan {
+        flex-direction: column !important;
+    }
+    .overlay-yeni-musteri-container .yeni-musteri-container .musteri-form-alan .sol-alan,
+    .overlay-yeni-musteri-container .yeni-musteri-container .musteri-form-alan .sag-alan {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .overlay-yeni-siparis-container .yeni-siparis-container .siparis-form-alan {
+        flex-direction: column !important;
+    }
+    .overlay-yeni-siparis-container .yeni-siparis-container .siparis-form-alan .sol-alan,
+    .overlay-yeni-siparis-container .yeni-siparis-container .siparis-form-alan .sag-alan {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ========== MOBİL: Tablo içi scroll YOK, sayfa scroll; scrollbar GİZLİ (dashboard-cards vb. override eder) ========== */
+@media (max-width: 767px) {
+    /* Tablo alanları: sadece sayfa scroll etsin, iç scroll + scrollbar yok */
+    main[data-main-content] .customers-table-scroll,
+    main[data-main-content] .partners-table-scroll,
+    main[data-main-content] .campaigns-table-scroll,
+    main[data-main-content] .reports-table-scroll,
+    main[data-main-content] .profil-table-scroll,
+    main[data-main-content] .customers-table-scroll.table-scrollbar,
+    main[data-main-content] .partners-table-scroll.table-scrollbar,
+    .page-wrapper .customers-table-scroll,
+    .page-wrapper .partners-table-scroll,
+    .page-wrapper .campaigns-table-scroll,
+    .page-wrapper .reports-table-scroll,
+    .page-wrapper .profil-table-scroll {
+        max-height: none !important;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    /* Sayfa ve ana içerikteki TÜM scroll çubukları gizli (mobil uygulama gibi) */
+    html,
+    body,
+    main[data-main-content],
+    main[data-main-content] * {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar,
+    main[data-main-content]::-webkit-scrollbar,
+    main[data-main-content] *::-webkit-scrollbar {
+        display: none !important;
+    }
+    /* İstisna: Index sipariş alanı (.items) – yatay scroll çubuğu görünür kalsın */
+    .dashboard-container-wrapper .grid-container .grid-item.main .items {
+        scrollbar-width: thin !important;
+        -ms-overflow-style: auto !important;
+    }
+    .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar {
+        display: block !important;
+        height: 8px;
+    }
+    .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-track {
+        background: var(--scroll-track-color, #f1f1f1);
+        border-radius: 4px;
+    }
+    .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-thumb {
+        background: var(--scroll-thumb-color, #999);
+        border-radius: 4px;
+    }
+}
+

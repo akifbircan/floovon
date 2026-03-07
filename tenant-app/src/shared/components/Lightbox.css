@@ -1,0 +1,9 @@
+/**
+ * Lightbox overlay – proje overlay rengi (variable)
+ * Sidebar ve header'ın altında kalması için layout-custom/header-custom'da body:has(.lightbox-overlay) ile z-index: 0 atanıyor.
+ * Lightbox her zaman en üstte olsun.
+ */
+.lightbox-overlay {
+  background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.9));
+  z-index: 2147483646 !important; /* overlay her şeyin üstünde (sidebar/header body:has ile 0 yapılıyor) */
+}

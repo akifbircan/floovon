@@ -1,0 +1,8 @@
+/**
+ * Index CSS - Entry point for styles
+ * Tailwind directives burada
+ */
+
+@import './styles/globals.css';
+@import './styles/mobile-index.css';
+@import './styles/mobile-pages.css';

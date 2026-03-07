@@ -1,0 +1,3885 @@
+/* Admin Tenant Manage - Orchids Style CSS */
+
+/* CRITICAL: Override all font declarations from fonts.css and style.css FIRST */
+/* This must be at the very top to override Euclid Circular B */
+*,
+*::before,
+*::after {
+  font-family: 'Geist', system-ui, sans-serif !important;
+}
+
+/* Plan Modal Toggle Styles - Console Manage */
+.landing-pricing-toggle {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 4px !important;
+    background: var(--console-bg-tertiary) !important;
+    padding: 4px !important;
+    border-radius: 100px !important;
+    margin-bottom: 0 !important;
+    width: fit-content !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    position: relative !important;
+}
+
+.landing-toggle-btn {
+    padding: 10px 20px !important;
+    border-radius: 100px !important;
+    border: none !important;
+    background: transparent !important;
+    color: var(--console-text-secondary) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-family: 'Geist', system-ui, sans-serif !important;
+    position: relative !important;
+    z-index: 1 !important;
+    white-space: nowrap !important;
+}
+
+.landing-toggle-btn.active {
+    background: var(--console-primary-light) !important;
+    color: var(--console-primary-text) !important;
+}
+
+.landing-toggle-btn:hover:not(.active) {
+    color: var(--console-text-primary) !important;
+    background: var(--console-bg-primary) !important;
+}
+
+
+
+.landing-toggle-discount {
+    background: var(--console-success, #10b981) !important;
+    color: white !important;
+    font-size: 11px !important;
+    padding: 2px 6px !important;
+    border-radius: 100px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    display: inline-block !important;
+}
+
+/* Plan Price Display Styles - Console Manage */
+.admin-tenant-plan-price-display,
+.admin-tenant-plan-yearly-display {
+    display: block;
+}
+
+.admin-tenant-plan-price-main {
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    color: var(--console-primary) !important;
+}
+
+.admin-tenant-plan-price-period {
+    font-size: 1rem !important;
+    color: var(--console-text-secondary) !important;
+    margin-left: 4px !important;
+}
+
+.admin-tenant-plan-billing-info {
+    font-size: 0.75rem !important;
+    color: var(--console-text-tertiary) !important;
+    margin-top: 4px !important;
+}
+
+/* Body Styles */
+.console-tenant-manage-body {
+    min-height: 100vh;
+    background-color: var(--console-bg-primary);
+    color: var(--console-text-primary);
+    font-family: 'Geist', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.console-tenant-manage-body ::selection {
+    background-color: var(--console-selection-bg);
+}
+
+/* Header Group */
+.console-tenant-manage-header-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Required Field Indicator */
+.console-tenant-manage-required {
+    color: var(--console-error);
+}
+
+/* Modal ve form stilleri console-shared.css dosyasına taşındı */
+
+/* Global Scrollbar Styles - Orchids Style (tüm sayfalarda) */
+*::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--console-border-secondary);
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--console-text-tertiary);
+  background-clip: padding-box;
+}
+
+html,
+body,
+body.console-panel-light-mode,
+body.min-h-screen,
+input,
+textarea,
+select,
+button,
+label,
+span,
+div,
+p,
+h1, h2, h3, h4, h5, h6,
+a,
+td,
+th,
+table,
+thead,
+tbody,
+tr,
+li,
+ul,
+ol,
+nav,
+header,
+footer,
+section,
+article,
+aside,
+main,
+.admin-tenant-header,
+.admin-tenant-header *,
+.admin-tenant-main,
+.admin-tenant-main *,
+.admin-tenant-card,
+.admin-tenant-card *,
+.modal,
+.modal * {
+  font-family: 'Geist', system-ui, sans-serif !important;
+}
+
+/* Reset & Base Styles */
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--console-bg-primary);
+  color: var(--console-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+body.console-panel-light-mode,
+body.min-h-screen {
+  background-color: var(--console-bg-primary);
+  color: var(--console-text-primary);
+  display: block;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Hide content until CSS is loaded */
+body:not(.css-loaded) .admin-tenant-main {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+body:not(.css-loaded) .admin-tenant-users-table tbody {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+body.css-loaded .admin-tenant-main {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transition: opacity 0.2s ease-in;
+  /* height: auto !important; */
+    padding-top: 2rem !important;
+}
+
+body.css-loaded .admin-tenant-tabs-wrapper {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transition: opacity 0.2s ease-in;
+}
+
+body.css-loaded .admin-tenant-users-table tbody {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transition: opacity 0.2s ease-in;
+}
+
+/* Modal stilleri console-shared.css dosyasına taşındı */
+
+* {
+  box-sizing: border-box;
+}
+
+/* Header Styles */
+.admin-tenant-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 100 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+  border-bottom: 1px solid var(--console-border-tertiary);
+  background-color: var(--console-bg-backdrop-light) !important;
+  /* backdrop-filter: blur(12px); */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.admin-tenant-header-content {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 1.5rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.admin-tenant-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+
+.admin-tenant-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: var(--console-text-muted);
+  flex-shrink: 0;
+}
+
+.admin-tenant-back-btn:hover {
+  background-color: var(--console-bg-tertiary);
+}
+
+.admin-tenant-back-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* Header divider stilleri console-shared.css'te */
+
+.admin-tenant-header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.admin-tenant-header-icon {
+  padding: 0.5rem;
+  background-color: var(--console-primary);
+  border-radius: 0.5rem;
+  box-shadow: var(--console-shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--console-text-inverse);
+  flex-shrink: 0;
+}
+
+.admin-tenant-header-icon svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.admin-tenant-header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-tenant-name-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--console-text-primary);
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.admin-tenant-subtitle {
+  font-size: 0.625rem;
+  color: var(--console-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  margin-top: 0.125rem;
+}
+
+/* Header right stilleri console-shared.css'te */
+
+/* Main Content */
+.admin-tenant-main {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 2rem 1.5rem 0 1.5rem !important; /* Alt padding kaldırıldı */
+  margin: 0 !important;
+  margin-top: 4rem !important; /* Header yüksekliği kadar üstten boşluk */
+  box-sizing: border-box;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  position: relative;
+  display: flex !important;
+  flex-direction: column;
+  flex: 1;
+  min-height: calc(100vh - 4rem); /* Sayfa yüksekliği - header */
+}
+
+/* Tenant Info Section */
+.admin-tenant-info-section {
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .admin-tenant-info-section {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.admin-tenant-info-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.admin-tenant-avatar-wrapper {
+  position: relative;
+}
+
+.admin-tenant-avatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 1.5rem;
+  background-color: var(--console-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--console-text-inverse);
+  font-size: 1.875rem;
+  font-weight: 700;
+  box-shadow: var(--console-shadow-xl);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.admin-tenant-avatar.inactive {
+  background-color: var(--console-text-tertiary);
+  box-shadow: var(--console-shadow-xl);
+}
+
+.admin-tenant-status-indicator {
+  position: absolute;
+  bottom: -0.25rem;
+  right: -0.25rem;
+  background-color: var(--console-bg-primary);
+  padding: 0.25rem;
+  border-radius: 9999px;
+  box-shadow: var(--console-shadow-sm);
+}
+
+.admin-tenant-status-dot {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  border: 2px solid white;
+}
+
+.admin-tenant-status-dot.active {
+  background-color: var(--console-success);
+}
+
+.admin-tenant-status-dot.inactive {
+  background-color: var(--console-error);
+}
+
+.admin-tenant-info-details {
+  flex: 1;
+}
+
+.admin-tenant-info-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.admin-tenant-info-name {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--console-text-primary);
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.admin-tenant-status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+}
+
+.admin-tenant-status-badge.active {
+  background-color: var(--console-success-light);
+  color: var(--console-success-text);
+}
+
+.admin-tenant-status-badge.inactive {
+  background-color: var(--console-error-light);
+  color: var(--console-error-text);
+}
+
+/* Tenant Code Badge - tenant-status stiline benzer */
+.admin-tenant-code-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: var(--console-primary-lighter);
+  color: var(--console-primary-text);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.05em;
+}
+
+.admin-tenant-info-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.875rem;
+  color: var(--console-text-secondary);
+}
+
+.admin-tenant-info-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  cursor: default;
+  transition: color 0.2s ease;
+}
+
+/* Tooltip için icon item'ları - mevcut tooltip sistemi kullanılıyor (script.js'deki initUnifiedTooltipSystem) */
+.admin-tenant-info-meta-item[data-tooltip] {
+  cursor: pointer;
+}
+
+.admin-tenant-info-meta-item[data-tooltip]:hover {
+  color: var(--console-primary);
+}
+
+.admin-tenant-info-meta-item[data-tooltip]:hover svg {
+  color: var(--console-primary);
+}
+
+.admin-tenant-info-plan {
+  color: var(--console-primary);
+  font-weight: 600;
+  user-select: none;
+}
+
+.admin-tenant-info-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-tenant-action-btn {
+  height: 2.75rem;
+  padding: 8px 12px;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--console-border-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--console-bg-secondary);
+  color: var(--console-text-muted);
+}
+
+.admin-tenant-action-btn:hover {
+  background-color: var(--console-bg-primary);
+}
+
+.admin-tenant-action-btn-disable {
+  border-color: var(--console-border-primary);
+}
+
+.admin-tenant-action-btn-disable:hover {
+  background-color: var(--console-error-light);
+  color: var(--console-error);
+  border-color: var(--console-error-border);
+}
+
+.admin-tenant-action-btn-activate {
+  background-color: var(--console-bg-secondary);
+  color: var(--console-success);
+  border-color: var(--console-success-border);
+}
+
+.admin-tenant-action-btn-activate:hover {
+  background-color: var(--console-success-light);
+  color: var(--console-success-dark);
+  border-color: var(--console-success-border);
+}
+
+.admin-tenant-action-btn-primary {
+  background-color: var(--console-primary);
+  color: var(--console-text-inverse);
+  /* border-color: var(--console-primary); */
+  box-shadow: var(--console-primary-shadow);
+}
+
+.admin-tenant-action-btn-primary:hover {
+  background-color: var(--console-primary-hover);
+  /* transform: scale(1.02); */
+  box-shadow: var(--console-shadow-lg);
+}
+
+/* Tabs - Orchids Style */
+.admin-tenant-tabs-wrapper {
+  /* overflow-x: auto; */
+  padding-bottom: 0.5rem;
+  margin: 0 0 1.5rem 0;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+@media (min-width: 640px) {
+  .admin-tenant-tabs-wrapper {
+    margin: 0 0 1.5rem 0;
+    padding: 0;
+    width: 100%;
+  }
+}
+
+.admin-tenant-tabs {
+  background-color: var(--console-bg-secondary) !important;
+  border: 1px solid var(--console-border-tertiary) !important;
+  padding: 0.25rem !important;
+  border-radius: 0.75rem !important;
+  width: 100% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.25rem !important;
+  box-shadow: var(--console-shadow-sm) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: auto !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+@media (min-width: 640px) {
+  .admin-tenant-tabs {
+    width: auto !important;
+  }
+}
+
+.admin-tenant-tab {
+  border-radius: 0.5rem !important;
+  padding: 0.625rem 1.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--console-text-secondary) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.375rem !important;
+  visibility: visible !important;
+  white-space: nowrap !important;
+  height: calc(100% - 1px) !important;
+  flex: 1 !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+}
+
+.admin-tenant-tab.active {
+  background-color: var(--console-primary-light) !important;
+  color: var(--console-primary-text) !important;
+  box-shadow: var(--console-shadow-sm) !important;
+}
+
+.admin-tenant-tab:hover:not(.active) {
+  background-color: var(--console-bg-primary) !important;
+}
+
+.admin-tenant-tab:focus-visible {
+  outline: 2px solid var(--console-primary) !important;
+  outline-offset: 2px !important;
+  border-color: var(--console-primary) !important;
+}
+
+/* Tab Content */
+/* Billing tab için özel scroll */
+#tab-content-billing {
+    max-height: calc(100vh - 4rem - 12rem - 3rem); /* Header + tabs + padding */
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 !important;
+    box-sizing: border-box;
+}
+
+#tab-content-billing::-webkit-scrollbar {
+    width: 8px;
+}
+
+#tab-content-billing::-webkit-scrollbar-track {
+    background: var(--console-bg-tertiary);
+    border-radius: 4px;
+}
+
+#tab-content-billing::-webkit-scrollbar-thumb {
+    background: var(--console-border-secondary);
+    border-radius: 4px;
+}
+
+#tab-content-billing::-webkit-scrollbar-thumb:hover {
+    background: var(--console-text-tertiary);
+}
+
+
+.admin-tenant-tab-content {
+  display: none;
+}
+
+.admin-tenant-tab-content.active {
+  display: block;
+}
+
+/* Card */
+.admin-tenant-card {
+  background-color: var(--console-bg-secondary);
+  border-radius: 0.75rem;
+  border: none;
+  box-shadow: var(--console-shadow-sm);
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  /* padding: 24px 0; */
+  /* height: fit-content; */
+}
+
+/* Scrollable Card - Sadece Kullanıcılar ve Aktivite Kayıtları sekmeleri için */
+.admin-tenant-card-scrollable {
+  display: flex;
+  flex-direction: column;
+  /* Sayfa yüksekliği - header (4rem) - info section ve tabs (~11rem) - main padding (top+bottom 4rem) - alt boşluk (48px) */
+  max-height: calc(100vh - 4rem - 11rem - 4rem - 48px);
+  overflow: hidden;
+}
+
+.admin-tenant-card-scrollable .admin-tenant-card-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0; /* Flexbox için gerekli */
+}
+
+.admin-tenant-card-header {
+  background-color: var(--console-bg-secondary);
+  border-bottom: 1px solid var(--console-border-tertiary);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .admin-tenant-card-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.admin-tenant-card-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--console-text-primary);
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.admin-tenant-card-description {
+  font-size: 0.875rem;
+  color: var(--console-text-secondary);
+  margin: 0.5rem 0 0 0;
+}
+
+.admin-tenant-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-tenant-search-wrapper {
+  position: relative;
+}
+
+.console-panel-tenant-card-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1rem;
+  width: 1rem;
+  color: var(--console-text-tertiary);
+  pointer-events: none;
+}
+
+.admin-tenant-search-input {
+  padding-left: 2.25rem;
+  height: 2.5rem;
+  width: 100%;
+  min-width: 16rem;
+  background-color: var(--console-bg-primary);
+  border: 1px solid var(--console-bg-tertiary);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--console-text-primary);
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.admin-tenant-search-input::placeholder {
+  color: var(--console-text-tertiary);
+  opacity: 1;
+}
+
+.admin-tenant-search-input:focus {
+  outline: none;
+  border-color: var(--console-primary);
+  box-shadow: 0 0 0 3px var(--console-primary-shadow-light);
+}
+
+.admin-tenant-add-user-btn {
+  background-color: var(--console-primary);
+  color: var(--console-text-inverse);
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+  box-shadow: var(--console-shadow-sm);
+}
+
+.admin-tenant-add-user-btn:hover {
+  background-color: var(--console-primary-hover);
+}
+
+.admin-tenant-card-content {
+  padding: 24px 0;
+  /* overflow-x: auto; */
+  overflow-y: visible;
+  width: 100%;
+  height: 100%;
+  display: flex;
+    flex-direction: column;
+}
+
+.delete-tenant-wrapper {
+  padding: 24px !important;
+}
+
+/* Users Table Scroll Container - activity-logs gibi scroll ekle */
+/* Tablo içeren card-content için scroll ekle - ESKİ KOD KALDIRILDI, admin-tenant-card-scrollable kullanılıyor */
+#tab-content-users .admin-tenant-card-content {
+  padding-top: 24px;
+}
+
+/* Users Table Scrollbar Stilleri - Orchids style (daha ince ve modern) */
+#tab-content-users .admin-tenant-card-content::-webkit-scrollbar,
+.admin-tenant-card-content::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+#tab-content-users .admin-tenant-card-content::-webkit-scrollbar-corner,
+.admin-tenant-card-content::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+#tab-content-users .admin-tenant-card-content::-webkit-scrollbar-track,
+.admin-tenant-card-content::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+#tab-content-users .admin-tenant-card-content::-webkit-scrollbar-thumb,
+.admin-tenant-card-content::-webkit-scrollbar-thumb {
+  background: var(--console-border-secondary);
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+#tab-content-users .admin-tenant-card-content::-webkit-scrollbar-thumb:hover,
+.admin-tenant-card-content::-webkit-scrollbar-thumb:hover {
+  background: var(--console-text-tertiary);
+  background-clip: padding-box;
+}
+
+/* Activity logs scrollbar - Orchids style */
+.admin-tenant-activity-logs::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.admin-tenant-activity-logs::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.admin-tenant-activity-logs::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.admin-tenant-activity-logs::-webkit-scrollbar-thumb {
+  background: var(--console-border-secondary);
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.admin-tenant-activity-logs::-webkit-scrollbar-thumb:hover {
+  background: var(--console-text-tertiary);
+  background-clip: padding-box;
+}
+
+/* Users Table */
+.admin-tenant-users-table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  margin: 0;
+}
+
+/* Users Table Scroll Container - scroll eklendi */
+.admin-tenant-card-content:has(.admin-tenant-users-table),
+.admin-tenant-card-content > .admin-tenant-users-table {
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
+  display: block;
+  padding-bottom: 1rem; /* En alttaki içerik için boşluk */
+}
+
+/* Fallback for browsers that don't support :has() */
+.admin-tenant-users-table-wrapper {
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
+  width: 100%;
+  /* padding: 0.5rem 1.5rem 1rem 1.5rem; */ /* Üst, sağ, alt, sol - scroll için sağ padding eklendi - REVIZE-21: Yorum satırına alındı */
+  box-sizing: border-box;
+}
+
+.admin-tenant-users-table-wrapper table {
+  width: 100%;
+  min-width: 100%;
+}
+
+/* .admin-tenant-users-table th:nth-child(1),
+.admin-tenant-users-table td:nth-child(1) {
+  width: 25%;
+}
+
+.admin-tenant-users-table th:nth-child(2),
+.admin-tenant-users-table td:nth-child(2) {
+  width: 15%;
+}
+
+.admin-tenant-users-table th:nth-child(3),
+.admin-tenant-users-table td:nth-child(3) {
+  width: 15%;
+}
+
+.admin-tenant-users-table th:nth-child(4),
+.admin-tenant-users-table td:nth-child(4) {
+  width: 10%;
+}
+
+.admin-tenant-users-table th:nth-child(5),
+.admin-tenant-users-table td:nth-child(5) {
+  width: 10%;
+  white-space: nowrap;
+}
+
+.admin-tenant-users-table th:nth-child(6),
+.admin-tenant-users-table td:nth-child(6) {
+  width: 25%;
+  min-width: 300px;
+} */
+
+.admin-tenant-users-table thead tr {
+  background-color: var(--console-bg-backdrop-lighter);
+}
+
+/* Removed - artık kullanılmıyor */
+
+
+
+.admin-tenant-users-table th {
+  padding: 1rem 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--console-text-primary);
+  border-bottom: 1px solid var(--console-border-tertiary);
+  cursor: default;
+}
+
+.admin-tenant-users-table th:last-child {
+  text-align: right;
+  padding-right: 1.5rem;
+}
+
+.admin-tenant-users-table td {
+  padding: 1rem 1rem;
+  font-size: 0.875rem;
+  color: var(--console-text-primary);
+  border-bottom: 1px solid var(--console-bg-tertiary);
+  vertical-align: middle;
+}
+
+.admin-tenant-users-table td:last-child {
+  text-align: right;
+  padding-right: 1.5rem;
+  white-space: nowrap;
+}
+
+.admin-tenant-users-table tbody tr:hover {
+  background-color: var(--console-bg-backdrop-lighter);
+}
+
+.admin-tenant-users-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-tenant-loading {
+  text-align: center !important;
+  padding: 3rem;
+  color: var(--console-text-tertiary);
+}
+
+/* User Avatar in Table */
+.admin-tenant-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-tenant-user-avatar-small {
+  height: 2.5rem;
+  width: 2.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--console-border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--console-primary-light);
+  color: var(--console-primary-text);
+  font-weight: 700;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-tenant-user-info-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.admin-tenant-user-name-cell {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--console-text-secondary);
+}
+
+.admin-tenant-user-email-cell {
+  font-size: 0.75rem;
+  color: var(--console-text-secondary);
+}
+
+.admin-tenant-username-cell {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--console-text-primary);
+  margin-bottom: 4px;
+}
+
+/* Email and Phone Cell Styles */
+.admin-tenant-email-phone-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.admin-tenant-email-phone-cell .email {
+  font-size: 14px;
+  color: var(--console-text-primary);
+}
+
+.admin-tenant-email-phone-cell .phone {
+  font-size: 14px;
+  color: var(--console-text-primary);
+  margin-top: 4px;
+}
+
+/* Badge Styles */
+.admin-tenant-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--console-border-primary);
+  color: var(--console-text-muted);
+  background-color: var(--console-bg-secondary) !important;
+  white-space: nowrap;
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
+}
+
+.admin-tenant-status-badge-small {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+}
+
+.admin-tenant-status-badge-small.active {
+  background-color: var(--console-success-light);
+  color: var(--console-success-text);
+}
+
+.admin-tenant-status-badge-small.inactive {
+  background-color: var(--console-error-light);
+  color: var(--console-error-text);
+}
+
+/* Check icon için badge içinde SVG stilleri */
+.admin-tenant-status-badge-small svg {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+  flex-shrink: 0;
+}
+
+/* Last Seen */
+.admin-tenant-last-seen {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--console-text-secondary);
+  white-space: nowrap;
+}
+
+.admin-tenant-last-seen-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+  color: var(--console-text-secondary);
+}
+
+/* Actions */
+.admin-tenant-table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  
+}
+
+.admin-tenant-action-btn-small {
+  height: 40px;
+  padding: 0 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--console-border-primary);
+  background: var(--console-bg-secondary);
+  color: var(--console-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.admin-tenant-action-btn-small svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+.admin-tenant-action-btn-small:hover {
+  background-color: var(--console-bg-primary);
+}
+
+.admin-tenant-action-btn-small.edit {
+  border-color: var(--console-border-primary);
+}
+
+.admin-tenant-action-btn-small.edit:hover {
+  background-color: var(--console-success-light);
+  color: var(--console-success);
+  border-color: var(--console-success-border);
+}
+
+.admin-tenant-action-btn-small.password {
+  border-color: var(--console-border-primary);
+}
+
+.admin-tenant-action-btn-small.password:hover {
+  background-color: var(--console-warning-light);
+  color: var(--console-warning-text);
+  border-color: var(--console-warning-border);
+}
+
+.admin-tenant-action-btn-small.toggle {
+  border-color: var(--console-border-primary);
+  background-color: var(--console-bg-secondary) !important;
+  color: var(--console-text-muted);
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.admin-tenant-action-btn-small.toggle:hover {
+  background-color: var(--console-error-light);
+  color: var(--console-error);
+  border-color: var(--console-error-border);
+}
+
+.admin-tenant-action-btn-small.toggle.activate {
+  color: var(--console-success);
+  border-color: var(--console-success-border);
+  background-color: var(--console-bg-secondary) !important;
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.admin-tenant-action-btn-small.toggle.activate svg {
+  color: var(--console-success);
+}
+
+.admin-tenant-action-btn-small.toggle.activate:hover {
+  background-color: var(--console-success-light);
+  color: var(--console-success-dark);
+  border-color: var(--console-success-border);
+}
+
+.admin-tenant-action-btn-small.toggle.activate:hover svg {
+  color: var(--console-success-dark);
+}
+
+.admin-tenant-action-btn-small.delete {
+  display: flex;
+    align-items: center;
+    justify-content: center;
+  height: 2rem;
+  width: 2rem;
+  padding: 0;
+  border-radius: 0.5rem;
+  color: var(--console-text-tertiary);
+  border: none;
+  background: transparent;
+}
+
+.admin-tenant-action-btn-small.delete:hover {
+  color: var(--console-error);
+  background-color: var(--console-error-light);
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+/* Tablet - 641px to 1023px */
+@media (min-width: 641px) and (max-width: 1023px) {
+  .admin-tenant-header-content {
+    padding: 0 1.25rem;
+  }
+  
+  .admin-tenant-main {
+    padding: 1.5rem 1.25rem;
+  }
+  
+  .admin-tenant-info-section {
+    gap: 1.25rem;
+  }
+  
+  .admin-tenant-billing-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  
+  .admin-tenant-billing-sidebar {
+    order: -1; /* Sidebar'ı üste taşı */
+  }
+  
+  .admin-tenant-settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile - max-width: 640px */
+@media (max-width: 640px) {
+  /* Header Responsive */
+  .admin-tenant-header {
+    height: auto;
+    min-height: 3.5rem;
+    backdrop-filter: blur(4px);
+  }
+
+  .admin-tenant-no-subscription {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .admin-tenant-header-content {
+    padding: 0.75rem 1rem;
+    /* flex-wrap: wrap; */
+    gap: 0.75rem;
+    height: auto;
+    min-height: 3.5rem;
+  }
+  
+  .admin-tenant-header-left {
+    flex: 1 1 100%;
+    order: 1;
+    gap: 0.5rem;
+  }
+  
+  .admin-tenant-back-btn {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+  }
+  
+  /* Header divider stilleri console-shared.css'te */
+  
+  .admin-tenant-header-title-group {
+    gap: 0.5rem;
+  }
+  
+  .admin-tenant-header-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .admin-tenant-name-title {
+    font-size: 1rem;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+  }
+  
+  .admin-tenant-subtitle {
+    font-size: 0.625rem;
+  }
+  
+  /* Header right stilleri console-shared.css'te */
+  
+  /* Notification ve user menu stilleri console-shared.css'te */
+  
+  .notification-btn {
+    width: 2rem !important;
+    height: 2rem !important;
+    padding: 0 !important;
+  }
+  
+  .user-menu-btn {
+    padding: 0.25rem !important;
+  }
+  
+  .user-info {
+    display: none !important;
+  }
+  
+  .user-avatar {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+  
+  .header-divider {
+    display: none !important;
+  }
+  
+  /* Tema butonunu mobilde gizle */
+  .theme-toggle-btn,
+  #header-theme-toggle {
+    display: none !important;
+  }
+  
+  /* Main Content */
+  .admin-tenant-main {
+    padding: 1rem;
+    padding-top: calc(3.5rem + 1rem); /* Header yüksekliği + padding */
+    min-height: calc(100vh - 3.5rem);
+    height: auto;
+    overflow-y: visible;
+    overflow-x: hidden;
+  }
+
+  .admin-tenant-users-table th,
+  .admin-tenant-users-table td {
+    width: 100% !important;
+}
+  
+  /* Tenant Info Section */
+  .admin-tenant-info-section {
+    gap: 1rem;
+    flex-direction: column;
+  }
+  
+  .admin-tenant-info-left {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+  }
+  
+  .admin-tenant-avatar-wrapper {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  
+  .admin-tenant-avatar {
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.5rem;
+    border-radius: 1rem;
+  }
+  
+  .admin-tenant-status-indicator {
+    width: 1.25rem;
+    height: 1.25rem;
+    bottom: 0;
+    right: 0;
+  }
+  
+  .admin-tenant-status-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+  
+  .admin-tenant-info-details {
+    width: 100%;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .admin-tenant-info-header {
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  /* Tenant kodu ve adı iki satır - mobilde */
+  .admin-tenant-info-header .console-flex-center-gap {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    width: 100%;
+  }
+  
+  .admin-tenant-code-badge {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+    align-self: flex-start;
+  }
+  
+  .admin-tenant-info-name {
+    font-size: 1.25rem;
+    width: 100%;
+  }
+  
+  .admin-tenant-status-badge {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+    align-self: flex-start;
+    margin-top: 0;
+  }
+  
+  .admin-tenant-info-meta {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    width: 100%;
+  }
+  
+  .admin-tenant-info-meta-item {
+    font-size: 0.75rem;
+  }
+  
+  .admin-tenant-info-actions {
+    width: 100%;
+    /* flex-direction: column; */
+    gap: 0.75rem;
+  }
+  
+  .admin-tenant-action-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.8125rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Tabs */
+  .admin-tenant-tabs-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 1rem;
+    margin: 0 0 10px 0 !important;
+  }
+  
+  .admin-tenant-tabs {
+    min-width: max-content;
+    gap: 0.5rem;
+  }
+  
+  .admin-tenant-tab {
+    font-size: 0.8125rem;
+    padding: 0.625rem 1rem;
+    white-space: nowrap;
+  }
+  
+  /* Card Scrollable - Mobilde min-height kaldır */
+  .admin-tenant-card-scrollable {
+    min-height: max-content !important;
+  }
+  
+  /* Table Actions - Mobilde sadece ikonlar görünsün */
+  .admin-tenant-table-actions {
+    gap: 0.375rem;
+    width: 100% !important;
+  }
+  
+  .admin-tenant-action-btn-small {
+    padding: 0 !important;
+    /* width: 2rem !important;
+    height: 2rem !important; */
+    min-width: 2rem !important;
+    height: 40px !important;
+    justify-content: center !important;
+    font-size: 0 !important; /* Text'i gizle */
+    line-height: 0 !important;
+    width: 100% !important;
+    justify-content: center;
+    gap: 0 !important;
+  }
+  
+  /* Aktivite kayıtları sekmesindeki butonlar için metin göster */
+  .admin-tenant-logs-actions .admin-tenant-action-btn-small {
+    padding: 0 0.75rem !important;
+    min-width: auto !important;
+    width: 100% !important;
+    font-size: 0.875rem !important;
+    line-height: normal !important;
+    gap: 0.375rem !important;
+  }
+  
+  /* SVG ikonları görünür tut */
+  .admin-tenant-action-btn-small svg {
+    margin: 0 !important;
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0;
+  }
+  
+  /* Delete butonuna da diğerleri gibi border ve background ver */
+  .admin-tenant-action-btn-small.delete {
+    border: 1px solid var(--console-border-primary) !important;
+    background: var(--console-bg-secondary) !important;
+    color: var(--console-text-muted) !important;
+  }
+  
+  .admin-tenant-action-btn-small.delete:hover {
+    background-color: var(--console-error-light) !important;
+    color: var(--console-error) !important;
+    border-color: var(--console-error-border) !important;
+  }
+  
+  /* Tab Content */
+  .admin-tenant-tab-content {
+    padding: 1rem 0;
+  }
+  
+  /* Card Header */
+  .admin-tenant-card-header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .admin-tenant-card-content .form-group-row {
+    grid-template-columns: 1fr;
+}
+  
+  .admin-tenant-card-title {
+    font-size: 1rem;
+  }
+  
+  .admin-tenant-card-description {
+    font-size: 0.8125rem;
+    margin-top: 0.25rem;
+  }
+  
+  .admin-tenant-card-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+  }
+  
+  .admin-tenant-search-wrapper {
+    width: 100%;
+  }
+  
+  .admin-tenant-search-input {
+    width: 100%;
+    min-width: 0;
+    font-size: 0.8125rem;
+  }
+  
+  .admin-tenant-add-user-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.8125rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Table Responsive - Kart Görünümü */
+  .admin-tenant-users-table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 100%; /* Scroll eklendi */
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  .admin-tenant-users-table {
+    min-width: auto;
+    font-size: 0.8125rem;
+    display: block;
+  }
+  
+  .admin-tenant-users-table thead {
+    display: none; /* Mobilde thead gizle */
+  }
+  
+  .admin-tenant-users-table tbody {
+    display: block;
+    /* padding-bottom: 0.75rem;  */
+  }
+  
+  .admin-tenant-users-table tbody tr {
+    display: block;
+    background-color: var(--console-bg-secondary);
+    border: 1px solid var(--console-border-primary);
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 1rem;
+    box-shadow: var(--console-shadow-sm);
+  }
+  
+  .admin-tenant-users-table tbody tr:last-child {
+    margin-bottom: 0.75rem; /* Son kart için de margin */
+    padding-bottom: 1rem; /* Son kartın alt kısmı için ekstra padding */
+  }
+
+  .admin-tenant-user-avatar-small {
+    height: 3.5rem;
+    width: 3.5rem;
+  }
+
+  .admin-tenant-users-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.8125rem;
+    border: none;
+  }
+  
+  .admin-tenant-users-table tbody td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  /* Data label için ön ek */
+  .admin-tenant-users-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--console-text-secondary);
+    font-size: 0.75rem;
+    margin-bottom: 5px;
+    flex-shrink: 0;
+    min-width: 100px;
+  }
+  
+  /* İşlemler kolonu için özel stil */
+  .admin-tenant-users-table tbody td:last-child {
+    justify-content: flex-end;
+    padding: 0.75rem 0 0 0;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--console-border-tertiary);
+  }
+
+  .admin-tenant-username-cell {
+    margin-bottom: 0;
+    font-size: 16px;
+}
+  
+  /* Email Phone Cell - Mobilde flex column */
+  .admin-tenant-email-phone-cell {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    /* gap: 0.25rem !important; */
+  }
+  
+  .admin-tenant-email-phone-cell .email {
+    width: 100%;
+  }
+  
+  .admin-tenant-email-phone-cell .phone {
+    width: 100%;
+    margin-top: 0 !important;
+  }
+  
+  /* Kullanıcı hücresi için data-label gizle */
+  .admin-tenant-users-table tbody td[data-label="Kullanıcı"]::before {
+    display: none !important;
+  }
+
+  .admin-tenant-users-table th:nth-child(2),
+  .admin-tenant-users-table td:nth-child(2) {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  
+  
+  .admin-tenant-users-table tbody td:last-child::before {
+    content: '';
+    display: none;
+  }
+  
+  /* Kullanıcı hücresi için özel düzen */
+  .admin-tenant-users-table tbody td:first-child {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .admin-tenant-users-table tbody td:first-child::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--console-text-secondary);
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .admin-tenant-users-table tbody td:first-child .admin-tenant-user-cell {
+    width: 100%;
+  }
+  
+  /* Billing Grid */
+  .admin-tenant-billing-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  /* Mobilde mevcut abonelik ve plan detayları üstte */
+  .admin-tenant-billing-current {
+    order: 1;
+  }
+  
+  .admin-tenant-billing-plan {
+    order: 2;
+  }
+  
+  .admin-tenant-billing-sidebar {
+    order: 3; /* Sidebar en altta */
+  }
+  
+  /* Plan Details */
+  .admin-tenant-plan-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .admin-tenant-plan-header > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .admin-tenant-plan-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  .admin-tenant-plan-title {
+    font-size: 1rem;
+  }
+  
+  .admin-tenant-plan-subtitle {
+    font-size: 0.75rem;
+  }
+  
+  .admin-tenant-plan-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .admin-tenant-plan-upgrade-btn,
+  .admin-tenant-plan-cancel-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Invoice Summary */
+  .admin-tenant-invoice-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  /* Settings Grid */
+  .admin-tenant-settings-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+  
+  .admin-tenant-settings-form {
+    gap: 1rem !important;
+  }
+
+  .admin-tenant-settings-form .form-group { 
+    margin-bottom: 0;
+  }
+  
+  .form-group-row {
+    flex-direction: column;
+  }
+  
+  .form-group-half {
+    width: 100%;
+  }
+
+  /* .admin-tenant-card {
+    margin-bottom: 50px;
+} */
+  
+  .admin-tenant-settings-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .admin-tenant-card-content:has(.admin-tenant-users-table), .admin-tenant-card-content > .admin-tenant-users-table {
+    padding: 16px;
+}
+  
+  .settings-success-message {
+    order: 2 !important; /* Mobilde de mesaj altında */
+    width: 100%;
+  }
+  
+  .admin-tenant-settings-buttons {
+    order: 1; /* Mobilde de butonlar üstte */
+  }
+  
+  .admin-tenant-settings-buttons {
+    flex-direction: row;
+    gap: 0.75rem;
+    margin-left: 0 !important;
+    width: 100%;
+  }
+  
+  .admin-tenant-settings-buttons .btn-cancel,
+  .admin-tenant-settings-buttons .btn-save {
+    width: 100%;
+    justify-content: center;
+    height: 2.75rem !important;
+    padding: 0 1.5rem !important;
+    border-radius: 0.5rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    border: 1px solid var(--console-border-primary) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    font-family: 'Geist', system-ui, sans-serif !important;
+  }
+  
+  .admin-tenant-settings-buttons .btn-cancel {
+    background-color: var(--console-bg-secondary) !important;
+    color: var(--console-text-muted) !important;
+    border-color: var(--console-border-primary) !important;
+  }
+  
+  .admin-tenant-settings-buttons .btn-cancel:hover {
+    background-color: var(--console-bg-primary) !important;
+    border-color: var(--console-border-secondary) !important;
+  }
+  
+  .admin-tenant-settings-buttons .btn-save {
+    background-color: var(--console-primary) !important;
+    color: var(--console-text-inverse) !important;
+    border-color: var(--console-primary) !important;
+  }
+  
+  .admin-tenant-settings-buttons .btn-save:hover {
+    background-color: var(--console-primary-hover) !important;
+    border-color: var(--console-primary-hover) !important;
+  }
+  
+  .admin-tenant-settings-buttons .btn-save:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+  }
+  
+  /* Activity Logs */
+  .admin-tenant-logs-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .admin-tenant-logs-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .admin-tenant-activity-filter {
+    width: 100%;
+  }
+  
+  .admin-tenant-activity-badge {
+    width: fit-content !important;
+  }
+  
+  /* Activity Log Item - Flex Column */
+  .admin-tenant-activity-log-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .admin-tenant-activity-log-item > * {
+    width: 100%;
+  }
+  
+  /* Modal Responsive */
+  /* Modal - Mobilde en üstte açılmalı */
+  .modal-overlay {
+    z-index: 99999 !important;
+  }
+  
+  .modal-overlay .modal {
+    z-index: 100000 !important;
+  }
+  
+  /* Modal açıkken html ve body scroll engelle - Yatay scroll önleme */
+  html:has(.modal-overlay.active),
+  body:has(.modal-overlay.active),
+  body.console-tenant-manage-body:has(.modal-overlay.active) {
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+  
+  body:has(.modal-overlay.active),
+  body.console-tenant-manage-body:has(.modal-overlay.active) {
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 24px 24px 16px 24px;
+  }
+  
+  .modal-header-content {
+    gap: 0.75rem;
+  }
+  
+  .modal-header-icon {
+    padding: 0.5rem;
+    width: auto;
+    height: auto;
+  }
+  
+  .modal-header-text h2 {
+    font-size: 1.25rem;
+  }
+  
+  .modal-description {
+    font-size: 0.875rem;
+  }
+  
+  .modal-body {
+    padding: 24px;
+  }
+  
+  .modal-footer {
+    padding: 1.5rem;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+  
+  .modal-footer .btn-cancel,
+  .modal-footer .btn-save {
+    width: 100%;
+    height: 2.75rem !important;
+    padding: 0 1.5rem !important;
+    border-radius: 0.5rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    border: 1px solid var(--console-border-primary) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    font-family: 'Geist', system-ui, sans-serif !important;
+  }
+  
+  .modal-footer .btn-cancel {
+    background-color: var(--console-bg-secondary) !important;
+    color: var(--console-text-muted) !important;
+    border-color: var(--console-border-primary) !important;
+  }
+  
+  .modal-footer .btn-cancel:hover {
+    background-color: var(--console-bg-primary) !important;
+    border-color: var(--console-border-secondary) !important;
+  }
+  
+  .modal-footer .btn-save {
+    background-color: var(--console-primary) !important;
+    color: var(--console-text-inverse) !important;
+    border-color: var(--console-primary) !important;
+  }
+  
+  .modal-footer .btn-save:hover {
+    background-color: var(--console-primary-hover) !important;
+    border-color: var(--console-primary-hover) !important;
+  }
+  
+  .modal-footer .btn-save:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+  }
+  
+  /* Tab Content Billing Padding - Sadece mobilde */
+  #tab-content-billing {
+    padding: 0;
+    padding-right: 0;
+    max-height: none !important; /* Mobilde scroll yok */
+    overflow-y: visible !important; /* Mobilde scroll yok */
+    overflow-x: visible !important;
+  }
+  
+  #tab-content-billing .admin-tenant-billing-grid {
+    padding: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  
+  /* Fatura Geçmişi Header */
+  .admin-tenant-invoices-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+  }
+  
+  /* Billing Header - Mobilde column */
+  .admin-tenant-billing-header {
+    display: flex;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px;
+  }
+
+  .admin-tenant-plan-badge {
+    width: fit-content;
+}
+  
+  .admin-tenant-download-all-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  .admin-tenant-billing-stats {
+    padding: 0 1.5rem !important;
+  }
+
+.admin-tenant-invoices-table {
+  margin-bottom: 24px;
+}
+
+.admin-tenant-payment-header {
+  padding: 0 1.25rem 0 1.25rem !important;
+}
+
+.admin-tenant-payment-info {
+  padding: 0 1.25rem 0 1.25rem !important;
+}
+
+.admin-tenant-invoice-header {
+  padding: 0 1.25rem 0 1.25rem !important;
+}
+
+.admin-tenant-invoice-items {
+  padding: 0 1.25rem 0 1.25rem !important;
+
+}
+  
+  /* Fatura Geçmişi Tablosu - Kart Görünümü */
+  .admin-tenant-invoices-table .admin-tenant-users-table-wrapper {
+    overflow-x: visible;
+    padding: 0;
+  }
+  
+  .admin-tenant-invoices-table .admin-tenant-users-table {
+    display: block;
+  }
+  
+  .admin-tenant-invoices-table .admin-tenant-users-table thead {
+    display: none; /* Mobilde thead gizle */
+  }
+  
+  .admin-tenant-invoices-table .admin-tenant-users-table tbody {
+    display: block;
+    padding: 0;
+  }
+  
+  .admin-tenant-invoices-table .admin-tenant-users-table tbody tr {
+    display: block;
+    background-color: var(--console-bg-secondary);
+    border: 1px solid var(--console-border-primary);
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 1rem;
+    box-shadow: var(--console-shadow-sm);
+  }
+  
+  .admin-tenant-invoices-table .admin-tenant-users-table tbody tr:last-child {
+    margin-bottom: 0;
+  }
+  
+  .admin-tenant-invoices-table .admin-tenant-users-table tbody td {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid var(--console-border-tertiary);
+    width: 100%;
+  }
+  
+  .admin-tenant-invoices-table .admin-tenant-users-table tbody td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    justify-content: flex-end;
+    padding-top: 0.75rem;
+    margin-top: 0;
+    border-top: none;
+  }
+  
+  .admin-tenant-invoices-table .admin-tenant-users-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--console-text-secondary);
+    font-size: 0.75rem;
+    /* margin-bottom: 0.75rem; */
+    flex-shrink: 0;
+    min-width: 100px;
+  }
+  
+  /* Fatura No hücresi için alt alta düzen */
+  .admin-tenant-invoices-table .admin-tenant-users-table tbody td[data-label="Fatura No"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem;
+  }
+  
+  .admin-tenant-invoices-table .admin-tenant-users-table tbody td[data-label="Fatura No"]::before {
+    min-width: auto;
+  }
+  
+  .admin-tenant-invoices-table .admin-tenant-users-table tbody td:last-child::before {
+    content: '';
+    display: none;
+  }
+}
+
+/* Very Small Mobile - max-width: 375px */
+@media (max-width: 375px) {
+  .admin-tenant-header-content {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .admin-tenant-main {
+    padding: 0.75rem;
+  }
+  
+  .admin-tenant-info-name {
+    font-size: 1.125rem;
+  }
+  
+  .admin-tenant-users-table {
+    min-width: 800px;
+    font-size: 0.75rem;
+  }
+  
+  .admin-tenant-users-table thead th {
+    padding: 0.375rem 0.25rem;
+    font-size: 0.6875rem;
+  }
+  
+  .admin-tenant-users-table tbody td {
+    padding: 0.625rem 0.25rem;
+    font-size: 0.6875rem;
+  }
+}
+
+/* Settings Tab Styles */
+.admin-tenant-settings-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Mobil için varsayılan */
+  gap: 1.5rem;
+}
+
+.admin-tenant-card-main {
+  flex: 1;
+}
+
+.admin-tenant-card-danger {
+  flex-shrink: 0;
+  height: fit-content;
+}
+
+.admin-tenant-card-title-danger {
+  color: var(--console-error);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.admin-tenant-danger-description {
+  font-size: 0.75rem;
+  color: var(--console-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.admin-tenant-danger-btn {
+  width: 100%;
+  /* padding: 1.25rem; */
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--console-error-light);
+  background: transparent;
+  color: var(--console-error-hover);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.admin-tenant-danger-btn:hover {
+  background-color: var(--console-error-light);
+  color: var(--console-error-text);
+}
+
+.admin-tenant-settings-form {
+  padding:  0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ✅ REVIZE-7: Console manage sayfasındaki ayarlar sekmesindeki form-group margin-bottom kaldır */
+.admin-tenant-settings-form .form-group {
+  margin-bottom: 0 !important;
+}
+
+.admin-tenant-settings-actions {
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--console-border-tertiary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.settings-success-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--console-success-hover);
+  font-size: 0.875rem;
+  font-weight: 500;
+  order: 1;
+}
+
+.admin-tenant-settings-buttons {
+  order: 1; /* Butonlar üstte */
+}
+
+.admin-tenant-settings-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.admin-tenant-settings-buttons .btn-cancel,
+.admin-tenant-settings-buttons .btn-save {
+  height: 2.75rem !important;
+  padding: 0 1.5rem !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  border: 1px solid var(--console-border-primary) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+}
+
+.admin-tenant-settings-buttons .btn-cancel {
+  background-color: var(--console-bg-secondary) !important;
+  color: var(--console-text-muted) !important;
+  border-color: var(--console-border-primary) !important;
+}
+
+.admin-tenant-settings-buttons .btn-cancel:hover {
+  background-color: var(--console-bg-primary) !important;
+  border-color: var(--console-border-secondary) !important;
+}
+
+.admin-tenant-settings-buttons .btn-save {
+  background-color: var(--console-primary) !important;
+  color: var(--console-text-inverse) !important;
+  border-color: var(--console-primary) !important;
+}
+
+.admin-tenant-settings-buttons .btn-save:hover {
+  background-color: var(--console-primary-hover) !important;
+  border-color: var(--console-primary-hover) !important;
+}
+
+.admin-tenant-settings-buttons .btn-save:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Billing Tab Styles */
+.admin-tenant-billing-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Web görünümü - Billing sekmesi stillerini koru */
+@media (min-width: 641px) {
+  /* Billing Grid - Web görünümünde 3 kolonlu düzen */
+  .admin-tenant-billing-grid {
+    grid-template-columns: 5fr 4fr 3fr !important;
+  }
+  /* Tab Content Billing - Web görünümünde normal stiller */
+  #tab-content-billing {
+    max-height: calc(100vh - 4rem - 12rem - 3rem) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 1.5rem;
+    box-sizing: border-box !important;
+  }
+  
+  #tab-content-billing .admin-tenant-billing-grid {
+    padding: 0 !important;
+  }
+  
+  /* Plan Header - Web görünümünde normal düzen */
+  .admin-tenant-plan-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+  }
+  
+  .admin-tenant-plan-header > div {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  
+  /* Billing Header - Web görünümünde normal düzen */
+  .admin-tenant-billing-header {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+  }
+  
+  /* Invoices Header - Web görünümünde normal düzen */
+  .admin-tenant-invoices-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: auto !important;
+  }
+  
+  .admin-tenant-download-all-btn {
+    width: auto !important;
+  }
+  
+  /* Billing order - Web görünümünde normal sıralama */
+  .admin-tenant-billing-current,
+  .admin-tenant-billing-plan,
+  .admin-tenant-billing-sidebar {
+    order: 0 !important;
+  }
+}
+
+/* 1280px+ için özel bir stil gerekmez, zaten 641px'te 3 kolonlu düzen başlıyor */
+
+/* Billing Header - Genel stil (web görünümü için varsayılan) */
+@media (min-width: 641px) {
+  .admin-tenant-billing-header {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 1rem !important;
+    flex: 1 !important;
+    flex-direction: row !important;
+    width: auto !important;
+  }
+}
+
+.admin-tenant-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 1rem;
+  background-color: var(--console-primary-light);
+  color: var(--console-primary-text);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.admin-tenant-billing-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 0 1.5rem;
+}
+
+.admin-tenant-billing-stat {
+  background-color: var(--console-bg-primary);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.admin-tenant-billing-stat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--console-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.admin-tenant-billing-stat-header svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.admin-tenant-billing-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--console-text-primary);
+  margin: 0;
+}
+
+.admin-tenant-billing-stat-limit {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--console-text-secondary);
+}
+
+.admin-tenant-billing-stat-subtext {
+  font-size: 0.75rem;
+  color: var(--console-text-secondary);
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+.admin-tenant-billing-progress {
+  width: 100%;
+  height: 0.375rem;
+  background-color: var(--console-border-primary);
+  border-radius: 9999px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.admin-tenant-billing-progress-bar {
+  height: 100%;
+  background-color: var(--console-primary);
+  border-radius: 9999px;
+  transition: width 0.3s;
+}
+
+.admin-tenant-billing-plan {
+  background: linear-gradient(135deg, var(--console-primary) 0%, var(--console-primary-hover) 100%);
+  color: var(--console-text-inverse);
+  height: 100%;
+  /* justify-content: space-between; */
+}
+
+.admin-tenant-plan-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 0 1.5rem 0 1.5rem;
+}
+
+.admin-tenant-plan-icon {
+  padding: 0.625rem;
+  background-color: var(--console-white-overlay-20);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-tenant-plan-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--console-text-only-white);
+}
+
+.admin-tenant-plan-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--console-text-only-white);
+  margin: 0 0 0.25rem 0;
+}
+
+.admin-tenant-plan-subtitle {
+  font-size: 0.75rem;
+  color: var(--console-white-overlay-70);
+  margin: 0;
+}
+
+.admin-tenant-plan-details {
+  padding: 0 1.5rem;
+  flex: 1;
+}
+
+.admin-tenant-plan-label {
+  font-size: 0.625rem;
+  color: var(--console-white-overlay-80);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+
+.admin-tenant-no-subscription-plan-name {
+  color: var(--console-text-inverse) !important;
+}
+
+.admin-tenant-plan-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--console-text-only-white) !important;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.5rem 0;
+}
+
+.admin-tenant-plan-billing-period {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--console-white-overlay-90);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Plan Billing Period Display - Container */
+#plan-billing-period-display {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Plan Billing Period Display - Row */
+.plan-billing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Plan Billing Period Display - Label */
+.plan-billing-label {
+  font-size: 0.75rem;
+  color: var(--console-white-overlay-70);
+}
+
+/* Plan Billing Period Display - Value */
+.plan-billing-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--console-text-only-white);
+}
+
+
+.admin-tenant-plan-progress {
+  width: 100%;
+  height: 0.625rem;
+  background-color: var(--console-white-overlay-20);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.admin-tenant-plan-progress-bar {
+  height: 100%;
+  background-color: var(--console-white-overlay-90);
+  border-radius: 9999px;
+}
+
+.admin-tenant-plan-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--console-text-only-white);
+}
+
+.admin-tenant-plan-features {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--console-white-overlay-20);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  display: none;
+}
+
+.admin-tenant-plan-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  /* padding: 0.5rem 0; */
+  font-size: 0.875rem;
+  color: var(--console-text-inverse);
+}
+
+.admin-tenant-plan-feature-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--console-text-inverse);
+}
+
+
+.admin-tenant-plan-actions {
+  padding: 1.5rem 1.5rem 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  /* margin-top: 2rem; */
+}
+
+.admin-tenant-plan-upgrade-btn {
+  width: 100%;
+  height: 2.75rem;
+  background-color: var(--console-white-overlay-90);
+  color: var(--console-primary);
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.admin-tenant-plan-upgrade-btn:hover {
+  background-color: var(--console-white-overlay-100);
+}
+
+.admin-tenant-plan-cancel-btn {
+  width: 100%;
+  height: 2.75rem;
+  background: transparent;
+  color: var(--console-text);
+  border: 1px solid var(--console-white-overlay-30);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.admin-tenant-plan-cancel-btn:hover {
+  background-color: var(--console-white-overlay-20);
+  border-color: var(--console-white-overlay-50);
+}
+
+.admin-tenant-billing-sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  
+
+}
+
+.admin-tenant-payment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem 1.25rem 0 1.25rem;
+}
+
+.admin-tenant-payment-icon {
+  padding: 0.5rem;
+  background-color: var(--console-primary-light);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-tenant-payment-icon svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--console-primary);
+}
+
+.admin-tenant-payment-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--console-text-primary);
+  margin: 0;
+}
+
+.admin-tenant-payment-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.25rem 1.25rem 1.25rem;
+}
+
+.admin-tenant-payment-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-tenant-payment-card {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--console-text-primary);
+  letter-spacing: -0.025em;
+  margin: 0 0 0.25rem 0;
+}
+
+.admin-tenant-payment-expiry {
+  font-size: 0.75rem;
+  color: var(--console-text-secondary);
+  margin: 0;
+}
+
+.admin-tenant-payment-edit-btn {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 0.5rem;
+  border: 1px solid var(--console-border-primary);
+  background: transparent;
+  color: var(--console-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.admin-tenant-payment-edit-btn:hover {
+  background-color: var(--console-bg-tertiary);
+  border-color: var(--console-border-secondary);
+}
+
+.admin-tenant-payment-edit-btn svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.admin-tenant-invoice-summary {
+  background: var(--console-anthracite-gradient);
+  color: var(--console-white-overlay-100);
+}
+
+.admin-tenant-invoice-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem 1.25rem 0 1.25rem;
+}
+
+.admin-tenant-invoice-icon {
+  padding: 0.5rem;
+  background-color: var(--console-white-overlay-20);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-tenant-invoice-icon svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--console-white-overlay-100);
+}
+
+.admin-tenant-invoice-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--console-white-overlay-100);
+  margin: 0;
+}
+
+.admin-tenant-invoice-items {
+  padding: 0 1.25rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-tenant-invoice-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--console-white-overlay-20);
+  font-size: 0.875rem;
+}
+
+.admin-tenant-invoice-item span:first-child {
+  color: var(--console-white-overlay-90);
+}
+
+.admin-tenant-invoice-item span:last-child {
+  font-weight: 600;
+  color: var(--console-white-overlay-100);
+}
+
+.admin-tenant-invoice-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--console-white-overlay-100);
+}
+
+.admin-tenant-invoices-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 1;
+}
+
+.admin-tenant-download-all-btn {
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--console-border-primary);
+  background: var(--console-bg-secondary);
+  color: var(--console-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.admin-tenant-download-all-btn:hover {
+  background-color: var(--console-bg-primary);
+  border-color: var(--console-border-secondary);
+}
+
+.admin-tenant-invoice-amount {
+  font-weight: 600;
+  color: var(--console-text-primary);
+}
+
+.admin-tenant-download-invoice-btn {
+  height: 2rem;
+  padding: 0 0.5rem;
+  border-radius: 0.375rem;
+  border: none;
+  background: transparent;
+  color: var(--console-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: all 0.2s;
+}
+
+.admin-tenant-download-invoice-btn:hover {
+  background-color: var(--console-primary-light);
+  color: var(--console-primary-hover);
+}
+
+/* Activity Logs Styles */
+.admin-tenant-logs-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .admin-tenant-logs-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+.admin-tenant-logs-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-tenant-activity-filter {
+  height: 2.25rem; /* h-9 */
+  padding: 0 0.75rem;
+  padding-right: 2rem; /* Chevron için yer */
+  border-radius: 0.375rem; /* rounded-md */
+  border: 1px solid var(--console-border-primary);
+  background-color: var(--console-bg-secondary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 16px 16px;
+  color: var(--console-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 180px;
+  appearance: none;
+  box-shadow: var(--console-shadow-sm); /* shadow-xs */
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
+.admin-tenant-activity-filter:focus {
+  outline: none;
+  border-color: var(--console-primary);
+  box-shadow: 0 0 0 3px var(--console-primary-shadow-light);
+}
+
+.admin-tenant-activity-logs {
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.admin-tenant-activity-log-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--console-bg-tertiary);
+  transition: background-color 0.2s;
+}
+
+.admin-tenant-activity-log-item:hover {
+  background-color: var(--console-bg-backdrop-lighter);
+}
+
+.admin-tenant-activity-log-item:last-child {
+  border-bottom: none;
+}
+
+.admin-tenant-activity-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-tenant-activity-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.admin-tenant-activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-tenant-activity-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.admin-tenant-activity-user {
+  font-weight: 600;
+  color: var(--console-text-primary);
+  font-size: 0.875rem;
+}
+
+.admin-tenant-activity-action {
+  color: var(--console-text-secondary);
+  font-size: 0.875rem;
+}
+
+.admin-tenant-activity-target {
+  font-weight: 500;
+  color: var(--console-text-primary);
+  font-size: 0.875rem;
+}
+
+.admin-tenant-activity-time {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--console-text-tertiary);
+  margin-top: 0.25rem;
+}
+
+.admin-tenant-activity-time svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.admin-tenant-activity-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid var(--console-border-primary);
+  color: var(--console-text-muted);
+  background-color: var(--console-bg-secondary);
+  text-transform: capitalize;
+  flex-shrink: 0;
+  cursor: default;
+}
+
+/* Activity Type Colors */
+.admin-tenant-activity-icon.type-user {
+  background-color: var(--console-primary-light);
+  color: var(--console-primary);
+}
+
+.admin-tenant-activity-icon.type-system {
+  background-color: var(--console-bg-tertiary);
+  color: var(--console-text-muted);
+}
+
+.admin-tenant-activity-icon.type-file {
+  background-color: var(--console-primary-lighter);
+  color: var(--console-primary); /* Daha koyu mavi - daha görünür */
+}
+
+.admin-tenant-activity-icon.type-security {
+  background-color: var(--console-warning-light);
+  color: var(--console-warning-hover);
+}
+
+.admin-tenant-activity-icon.type-billing {
+  background-color: var(--console-success-light);
+  color: var(--console-success-hover);
+}
+
+.admin-tenant-activity-icon.type-auth {
+  background-color: var(--console-info-light);
+  color: var(--console-info);
+}
+
+.admin-tenant-activity-icon.type-settings {
+  background-color: var(--console-primary-lighter);
+  color: var(--console-primary-dark);
+}
+
+.admin-tenant-activity-icon.type-kullanici {
+  background-color: var(--console-bg-icon-light);
+  color: var(--console-text-muted);
+}
+
+.admin-tenant-activity-icon.type-tenant {
+  background-color: var(--console-bg-icon-light);
+  color: var(--console-text-muted);
+}
+
+.admin-tenant-activity-icon.type-musteri {
+  background-color: var(--console-bg-icon-light);
+  color: var(--console-text-muted);
+}
+
+.admin-tenant-activity-icon.type-siparis {
+  background-color: var(--console-success-lighter);
+  color: var(--console-success);
+}
+
+.admin-tenant-activity-icon.type-urun {
+  background-color: var(--console-info-light);
+  color: var(--console-info);
+}
+
+.admin-tenant-activity-icon.type-fatura {
+  background-color: var(--console-warning-light);
+  color: var(--console-warning);
+}
+
+.admin-tenant-activity-icon.type-genel {
+  background-color: var(--console-bg-tertiary);
+  color: var(--console-text-muted);
+}
+
+/* Abonelik yok durumu için stiller */
+.admin-tenant-no-subscription {
+  color: var(--console-text-secondary);
+}
+
+/* Mavi zemin üzerindeki abonelik yok mesajı için özel stil */
+.admin-tenant-plan-badge.admin-tenant-no-subscription-badge {
+  color: var(--console-text-primary) !important;
+}
+
+.admin-tenant-plan-badge.admin-tenant-no-subscription-badge svg {
+  color: var(--console-text-primary) !important;
+}
+
+.admin-tenant-no-subscription-message {
+  color: var(--console-text-tertiary);
+  padding: 1rem 0;
+  text-align: center;
+  margin-top: 72px;
+}
+
+.admin-tenant-no-subscription-message p {
+  margin: 0;
+}
+
+.admin-tenant-no-subscription-message p:not(:first-child) {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.admin-tenant-empty-value {
+  color: var(--console-text-tertiary);
+  font-style: normal;
+  font-size: 14px;
+}
+
+/* Plan yükseltme/seçme sheet stilleri */
+.admin-tenant-upgrade-plan-card {
+  padding: 1.5rem;
+  border: 2px solid var(--console-border-tertiary);
+  border-radius: 0.75rem;
+  /* margin-bottom: 1rem; */
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.admin-tenant-upgrade-plan-card-hover {
+  border-color: var(--console-primary);
+  background-color: var(--console-primary-lighter);
+}
+
+.admin-tenant-upgrade-plan-card-current {
+  border: 2px solid #10b981;
+  background-color: rgba(16, 185, 129, 0.05);
+}
+
+/* Plan düzenle butonu */
+.admin-tenant-plan-edit-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--console-bg-secondary);
+  border: 1px solid var(--console-border-tertiary);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 10;
+  color: var(--console-text-secondary);
+}
+
+.admin-tenant-plan-edit-btn:hover {
+  background-color: var(--console-primary);
+  border-color: var(--console-primary);
+  color: white;
+  transform: scale(1.05);
+}
+
+.admin-tenant-plan-edit-btn:active {
+  transform: scale(0.95);
+}
+
+.admin-tenant-upgrade-plan-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--console-text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.admin-tenant-upgrade-plan-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--console-primary);
+  margin-bottom: 0.5rem;
+}
+
+.admin-tenant-billing-toggle-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--console-border-primary);
+  border-radius: 6px;
+  background: var(--console-bg-secondary);
+  color: var(--console-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-tenant-billing-toggle-btn:hover {
+  border-color: var(--console-primary);
+  color: var(--console-primary);
+}
+
+.admin-tenant-billing-toggle-btn.active {
+  background: var(--console-primary);
+  color: var(--console-text-inverse, white);
+  border-color: var(--console-primary);
+}
+
+.admin-tenant-upgrade-plan-features {
+  font-size: 0.875rem;
+  color: var(--console-text-secondary);
+  margin-top: 0.75rem;
+}
+
+.admin-tenant-upgrade-plan-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-tenant-upgrade-plan-feature-icon {
+  color: var(--console-success);
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* Plan Durumu Checkbox Stilleri - Özel stil, diğer stillerin müdahalesine izin vermez */
+.admin-tenant-plan-status-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Checkbox için özel stil - tüm diğer stilleri override eder */
+input[type="checkbox"].admin-tenant-plan-status-checkbox,
+input[type="checkbox"][data-plan-status-checkbox="true"],
+.admin-tenant-plan-status-wrapper input[type="checkbox"],
+.modal-body input[type="checkbox"].admin-tenant-plan-status-checkbox,
+.modal-body input[type="checkbox"][data-plan-status-checkbox="true"],
+html body input[type="checkbox"].admin-tenant-plan-status-checkbox,
+html body input[type="checkbox"][data-plan-status-checkbox="true"] {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  cursor: pointer !important;
+  accent-color: var(--console-primary) !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  border: 1px solid var(--console-border-primary) !important;
+  border-radius: 5px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-color: var(--console-bg-primary) !important;
+  transition: all 0.2s !important;
+  position: relative !important;
+  top: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Checkbox içindeki check ikonunu küçült - sadece checked durumunda */
+input[type="checkbox"].admin-tenant-plan-status-checkbox:checked::before,
+input[type="checkbox"][data-plan-status-checkbox="true"]:checked::before,
+.admin-tenant-plan-status-wrapper input[type="checkbox"]:checked::before,
+.modal-body input[type="checkbox"].admin-tenant-plan-status-checkbox:checked::before,
+.modal-body input[type="checkbox"][data-plan-status-checkbox="true"]:checked::before,
+html body input[type="checkbox"].admin-tenant-plan-status-checkbox:checked::before,
+html body input[type="checkbox"][data-plan-status-checkbox="true"]:checked::before {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: "Font Awesome 5 Free" !important;
+  font-weight: 700 !important;
+  content: "\f00c" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  color: var(--console-text-inverse) !important;
+  font-size: 10px !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+}
+
+/* Unchecked durumunda ::before'u gizle */
+input[type="checkbox"].admin-tenant-plan-status-checkbox::before,
+input[type="checkbox"][data-plan-status-checkbox="true"]::before,
+.admin-tenant-plan-status-wrapper input[type="checkbox"]::before,
+.modal-body input[type="checkbox"].admin-tenant-plan-status-checkbox::before,
+html body input[type="checkbox"].admin-tenant-plan-status-checkbox::before {
+  content: "" !important;
+  display: none !important;
+}
+
+input[type="checkbox"].admin-tenant-plan-status-checkbox:checked,
+input[type="checkbox"][data-plan-status-checkbox="true"]:checked,
+.admin-tenant-plan-status-wrapper input[type="checkbox"]:checked,
+.modal-body input[type="checkbox"].admin-tenant-plan-status-checkbox:checked,
+.modal-body input[type="checkbox"][data-plan-status-checkbox="true"]:checked {
+  background-color: var(--console-primary) !important;
+  border-color: var(--console-primary) !important;
+  accent-color: var(--console-primary) !important;
+  padding: 0 !important;
+}
+
+input[type="checkbox"].admin-tenant-plan-status-checkbox:hover,
+input[type="checkbox"][data-plan-status-checkbox="true"]:hover,
+.admin-tenant-plan-status-wrapper input[type="checkbox"]:hover,
+.modal-body input[type="checkbox"].admin-tenant-plan-status-checkbox:hover,
+.modal-body input[type="checkbox"][data-plan-status-checkbox="true"]:hover {
+  border-color: var(--console-primary) !important;
+  padding: 0 !important;
+  /* transform: scale(1.05) !important; */
+}
+
+input[type="checkbox"].admin-tenant-plan-status-checkbox:focus,
+input[type="checkbox"][data-plan-status-checkbox="true"]:focus,
+.admin-tenant-plan-status-wrapper input[type="checkbox"]:focus,
+.modal-body input[type="checkbox"].admin-tenant-plan-status-checkbox:focus,
+.modal-body input[type="checkbox"][data-plan-status-checkbox="true"]:focus {
+  outline: 2px solid var(--console-primary-shadow-light) !important;
+  outline-offset: 2px !important;
+  padding: 0 !important;
+}
+
+.admin-tenant-plan-status-label {
+  cursor: pointer !important;
+  margin: 0 !important;
+  font-size: 0.875rem !important;
+  color: var(--console-text-primary) !important;
+  user-select: none !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+}
+
+/* ============================================
+   INLINE STILLER - HTML Tag
+   ============================================ */
+html.console-tenant-manage-page {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   INLINE STILLER - Password Match Error
+   ============================================ */
+.password-error {
+  display: none;
+  color: var(--console-error);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.password-error.show {
+  display: block;
+}
+
+/* ============================================
+   INLINE STILLER - Progress Bars (Initial Values)
+   ============================================ */
+.admin-tenant-billing-progress-bar {
+  width: 0%;
+}
+
+.admin-tenant-plan-progress-bar {
+  width: 0%;
+}
+
+/* ============================================
+   INLINE STILLER - Empty State
+   ============================================ */
+.admin-tenant-empty-state {
+  padding: 3rem;
+  text-align: center;
+}
+
+.admin-tenant-empty-state-icon {
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--console-bg-primary);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.admin-tenant-empty-state-icon svg {
+  color: var(--console-text-tertiary);
+}
+
+.admin-tenant-empty-state-text {
+  color: var(--console-text-tertiary);
+}
+
+/* ============================================
+   INLINE STILLER - Invoice Table
+   ============================================ */
+.admin-tenant-invoice-id {
+  font-weight: 500;
+}
+
+.admin-tenant-status-icon {
+  display: inline-block;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* ============================================
+   INLINE STILLER - Cancel Subscription Dialog
+   ============================================ */
+.admin-tenant-cancel-dialog-content {
+  text-align: left;
+  line-height: 1.6;
+}
+
+.admin-tenant-cancel-dialog-paragraph {
+  margin-bottom: 0.75rem;
+}
+
+.admin-tenant-cancel-dialog-paragraph-subtitle {
+  margin-bottom: 0.5rem;
+  color: var(--console-text-secondary);
+}
+
+.admin-tenant-cancel-dialog-list {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+  color: var(--console-text-secondary);
+}
+
+.admin-tenant-cancel-dialog-warning {
+  margin-top: 0.75rem;
+  color: var(--console-error);
+  font-weight: 600;
+}
+
+/* Bildirim dropdown stilleri console-shared.css'te */
+
+/* Tooltip Styles */
+.tooltip {
+    position: fixed;
+    background-color: var(--console-bg-secondary);
+    color: var(--console-text-primary);
+    padding: 6px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: normal;
+    z-index: 99999;
+    pointer-events: none;
+    max-width: 200px;
+    word-wrap: break-word;
+    line-height: 1.3;
+    text-align: center;
+    box-shadow: var(--console-shadow-md);
+}
+
+/* TOP: hedefin üstünde görünürken ok aşağıya bakar (kutunun alt kenarında) */
+.tooltip.tooltip--top::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--console-bg-secondary);
+}
+
+/* BOTTOM: hedefin altında görünürken ok yukarıya bakar (kutunun üst kenarında) */
+.tooltip.tooltip--bottom::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--console-bg-secondary);
+}
+
+/* LEFT: kutu solda, ok sağa bakar (kutunun sağ kenarında) */
+.tooltip.tooltip--left::after {
+    content: "";
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-left-color: var(--console-bg-secondary);
+}
+
+/* RIGHT: kutu sağda, ok sola bakar (kutunun sol kenarında) */
+.tooltip.tooltip--right::after {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: var(--console-bg-secondary);
+}
+
+/* ============================================
+   RESPONSIVE STYLES - Web Görünümü Koruma
+   Web görünümü korunur, mobil için özel stiller mevcut
+   ============================================ */
+
+/* Web Görünümü - min-width: 641px (Web stillerini koru) */
+@media (min-width: 641px) {
+  /* Header - Web görünümünde sabit yükseklik */
+  .admin-tenant-header {
+    height: 4rem !important;
+    min-height: 4rem !important;
+  }
+  
+  .admin-tenant-header-content {
+    height: 4rem !important;
+    min-height: 4rem !important;
+    padding: 0 1.5rem !important;
+  }
+  
+  /* Main - Web görünümünde scroll yok */
+  .admin-tenant-main {
+    height: calc(100vh - 4rem) !important;
+    overflow-y: hidden !important;
+    padding: 2rem 1.5rem !important;
+    padding-top: calc(4rem + 2rem) !important;
+  }
+  
+  /* Billing Grid - Web görünümünde grid */
+  .admin-tenant-billing-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  /* Settings Grid - Web görünümünde grid */
+  .admin-tenant-settings-grid {
+    grid-template-columns: 2fr 1fr !important;
+  }
+  
+  /* Info Section - Web görünümünde yatay düzen */
+  .admin-tenant-info-section {
+    flex-direction: row !important;
+  }
+  
+  .admin-tenant-info-left {
+    flex-direction: row !important;
+  }
+  
+  /* Settings Actions - Web görünümünde yatay düzen */
+  .admin-tenant-settings-actions {
+    flex-direction: row !important;
+  }
+  
+  /* Activity Log Item - Web görünümünde yatay düzen */
+  .admin-tenant-activity-log-item {
+    flex-direction: row !important;
+  }
+  
+  /* Invoices Header - Web görünümünde yatay düzen */
+  .admin-tenant-invoices-header {
+    flex-direction: row !important;
+  }
+}
+
+/* ============================================
+   INLINE STILLER - CSS'E TAŞINAN STİLLER
+   ============================================ */
+
+/* Avatar Image Stilleri */
+.admin-tenant-user-avatar-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Avatar Fallback Initials */
+.admin-tenant-user-avatar-small .avatar-initials {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  background: #f1f5f9;
+  border-radius: 50%;
+}
+
+.admin-tenant-user-avatar-small .avatar-initials.hidden {
+  display: none;
+}
+
+/* Table Actions Cell - Text Align */
+.admin-tenant-table-actions-cell {
+  text-align: center;
+}
+
+/* Storage Warning Container */
+.admin-tenant-storage-warning-container {
+  display: flex;
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.admin-tenant-storage-warning-icon {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.admin-tenant-storage-warning-content {
+  flex: 1;
+}
+
+.admin-tenant-storage-warning-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #991b1b;
+  margin: 0 0 0.5rem 0;
+}
+
+.admin-tenant-storage-warning-text {
+  font-size: 0.75rem;
+  color: #7f1d1d;
+  margin: 0 0 0.75rem 0;
+}
+
+.admin-tenant-upgrade-plan-btn {
+  padding: 0.5rem 1rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-tenant-upgrade-plan-btn:hover {
+  background-color: #1d4ed8;
+}
+
+/* Plan Price Display - Hidden/Visible */
+.admin-tenant-plan-price-display.hidden {
+  display: none;
+}
+
+.admin-tenant-plan-yearly-display.hidden {
+  display: none;
+}
+
+/* Modal Body Overflow Control */
+body.modal-open {
+  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+html.modal-open {
+  overflow-x: hidden;
+}
+
+/* Password Group Display */
+#password-group {
+  display: block;
+}
+
+#password-group.hidden {
+  display: none;
+}
+
+/* Avatar Fallback Display Control */
+.avatar-fallback-hidden {
+  display: none !important;
+}
+
+.avatar-fallback-visible {
+  display: flex !important;
+}
+
+/* Email/Phone Icon Hover States */
+.admin-tenant-email-icon-hoverable,
+.admin-tenant-phone-icon-hoverable {
+  cursor: pointer;
+}
+
+.admin-tenant-email-icon-hoverable:hover,
+.admin-tenant-phone-icon-hoverable:hover {
+  color: #155dfc;
+}
+
+.admin-tenant-email-icon-default,
+.admin-tenant-phone-icon-default {
+  cursor: default;
+}
+
+/* Storage Warning Colors */
+.admin-tenant-storage-warning {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+}
+
+.storage-exceeded {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.storage-normal {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* Eye Icon Toggle */
+.eye-icon-hidden {
+  display: none;
+}
+
+.eye-icon-visible {
+  display: block;
+}
+
+.eye-off-icon-hidden {
+  display: none;
+}
+
+.eye-off-icon-visible {
+  display: block;
+}
+
+/* Password Match Error Display */
+#password-match-error {
+  display: none;
+}
+
+#password-match-error.show {
+  display: block;
+}
+

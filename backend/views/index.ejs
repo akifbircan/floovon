@@ -1,0 +1,38 @@
+<!-- Index Sayfası İçeriği -->
+<div id="app">
+    <!-- Sidebar Component -->
+    <div id="sidebar-component"></div>
+    
+    <!-- Header Component -->
+    <div id="header-component"></div>
+    
+    <!-- Mobile Header Component -->
+    <div id="mobile-header-component"></div>
+    
+    <!-- Landscape Overlay Component -->
+    <div id="landscape-overlay-component"></div>
+    
+    <!-- Ana İçerik -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <!-- Sayfa içeriği buraya gelecek -->
+            <div id="page-content">
+                <h1>Sipariş Yönetimi</h1>
+                <p>Floovon sipariş yönetim sistemi</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Sayfa Özel Script'leri -->
+<script>
+    // Sayfa yüklendiğinde çalışacak kodlar
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Index sayfası yüklendi');
+        
+        // Component'leri başlat
+        if (window.ComponentManager) {
+            window.ComponentManager.init();
+        }
+    });
+</script>

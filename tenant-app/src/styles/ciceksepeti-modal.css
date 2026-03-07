@@ -1,0 +1,451 @@
+/**
+ * Çiçek Sepeti sipariş detay modal – toast'taki siparişe tıklanınca açılır; SİPARİŞİ ONAYLA ile organizasyon kartı oluşur.
+ * Eski yapıdaki legacy-style.css modal stilleri ile uyumlu.
+ */
+
+.ciceksepeti-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.5));
+  z-index: 10002;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.ciceksepeti-modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.ciceksepeti-modal {
+  background-color: var(--white, #fff);
+  border-radius: 16px;
+  width: 95%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  transform: scale(0.8);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.ciceksepeti-modal-overlay.show .ciceksepeti-modal {
+  transform: scale(1);
+}
+
+.ciceksepeti-modal-header {
+  padding: 20px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-renk, #e5e7eb);
+  gap: 12px;
+}
+
+.ciceksepeti-modal-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.ciceksepeti-modal-header-content .ciceksepeti-modal-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ciceksepeti-modal-header .ciceksepeti-modal-logo {
+  width: auto;
+  height: 32px;
+}
+
+.ciceksepeti-modal-header .ciceksepeti-modal-title {
+  color: var(--cckspt-primary-text, #1f2937);
+  font-size: 20px;
+  font-weight: 500;
+  margin-top: -4px;
+}
+
+.ciceksepeti-modal-header-right {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ciceksepeti-modal-header .ciceksepeti-panel-link {
+  color: var(--mavi-renk, #2563eb);
+  font-size: 12px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ciceksepeti-modal-header .ciceksepeti-panel-link:hover {
+  text-decoration: underline;
+}
+
+.ciceksepeti-modal-header .ciceksepeti-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  width: 32px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: transparent;
+  padding: 8px;
+}
+
+.ciceksepeti-modal-header .ciceksepeti-modal-close .icon-btn-kapat {
+  color: var(--ana-renk);
+  font-size: 12px;
+}
+
+.ciceksepeti-modal-header .ciceksepeti-modal-close:hover {
+  background-color: var(--light-gray, #f3f4f6);
+}
+
+.ciceksepeti-modal-content {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ciceksepeti-modal-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 400px;
+}
+
+@media (max-width: 640px) {
+  .ciceksepeti-modal-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ciceksepeti-modal-left {
+  background-color: var(--cckspt-bg-left, #f8fafc);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ciceksepeti-modal-right {
+  padding: 24px;
+}
+
+.ciceksepeti-siparis-no {
+  font-size: 14px;
+}
+
+.ciceksepeti-siparis-no span {
+  color: var(--gray-popup-secondary, #6b7280);
+}
+
+.ciceksepeti-siparis-no strong {
+  color: var(--ana-renk, #6366f1);
+  font-weight: 600;
+}
+
+.ciceksepeti-teslim-zaman {
+  background: var(--cckspt-bg-datetime, #f1f5f9);
+  border: 1px solid var(--cckspt-border-datetime, #e2e8f0);
+  border-radius: 8px;
+  padding: 16px;
+  color: var(--cckspt-text-datetime, #475569);
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+}
+
+.ciceksepeti-teslim-zaman .teslim-zaman-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ciceksepeti-teslim-zaman .teslim-zaman-badge i {
+  padding: 14px;
+  background-color: var(--ana-renk, #6366f1);
+  color: var(--white, #fff);
+  border-radius: 50%;
+  font-size: 20px;
+  display: none;
+}
+
+.ciceksepeti-teslim-zaman .teslim-zaman-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ciceksepeti-teslim-zaman .teslim-zaman-info .teslim-tarih {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.ciceksepeti-teslim-zaman .teslim-zaman-info span {
+  font-size: 12px;
+}
+
+.ciceksepeti-urun-section {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background-color: var(--white, #fff);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 -4px 41px -4px rgba(0, 0, 0, 0.1);
+}
+
+.ciceksepeti-urun-section .urun-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f1f5f9;
+}
+
+.ciceksepeti-urun-section .urun-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ciceksepeti-urun-section .urun-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.ciceksepeti-urun-section .urun-name {
+  font-weight: 600;
+  color: var(--ana-renk, #6366f1);
+  font-size: 18px;
+}
+
+.ciceksepeti-urun-section .urun-price {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ciceksepeti-urun-section .urun-price span {
+  color: var(--gray-popup-secondary, #6b7280);
+  font-size: 12px;
+}
+
+.ciceksepeti-urun-section .urun-price strong {
+  color: var(--ana-renk, #6366f1);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ciceksepeti-info-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ciceksepeti-info-section h4 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--gray-popup-secondary, #6b7280);
+  user-select: none;
+}
+
+.ciceksepeti-info-section .info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-size: 13px;
+  gap: 16px;
+}
+
+.ciceksepeti-info-section.teslimat-wrapper {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.ciceksepeti-info-section .info-row.full-width {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ciceksepeti-info-section .info-row:last-child {
+  margin-bottom: 0;
+}
+
+.ciceksepeti-info-section .info-label {
+  color: var(--gray-popup-secondary, #6b7280);
+  min-width: 120px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.ciceksepeti-info-section .info-value {
+  color: var(--ana-renk, #6366f1);
+  font-weight: 500;
+  text-align: right;
+  flex: 1;
+  word-break: break-word;
+}
+
+.ciceksepeti-info-section .info-row.full-width .info-value {
+  text-align: left;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.ciceksepeti-info-section .info-value.siparis-notu {
+  text-align: left;
+  color: var(--ana-renk, #6366f1);
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.ciceksepeti-modal-footer {
+  background-color: var(--cckspt-modal-bottom, #f8fafc);
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-renk, #e5e7eb);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ciceksepeti-modal-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ana-renk, #6366f1);
+  min-width: 0;
+  flex: 1;
+}
+
+.ciceksepeti-modal-warning i {
+  color: #f59e0b;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.ciceksepeti-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.ciceksepeti-modal-actions button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ciceksepeti-modal-actions .ciceksepeti-btn-reject {
+  background: #dc3545;
+  color: var(--white-only, #fff);
+}
+
+.ciceksepeti-modal-actions .ciceksepeti-btn-reject:hover {
+  background: #c82333;
+}
+
+.ciceksepeti-modal-actions .ciceksepeti-btn-approve {
+  background: #28a745;
+  color: var(--white-only, #fff);
+}
+
+.ciceksepeti-modal-actions .ciceksepeti-btn-approve:hover {
+  background: #218838;
+}
+
+/* Reddet onay modalı – "Bu siparişi reddetmek istediğinize emin misiniz?" */
+.reject-confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10020;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.reject-confirmation-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.reject-confirmation-modal .confirmation-dialog {
+  background: var(--white, #fff);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.reject-confirmation-modal .confirmation-text {
+  font-size: 15px;
+  color: var(--cckspt-primary-text, #1f2937);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.reject-confirmation-modal .confirmation-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.reject-confirmation-modal .confirmation-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.reject-confirmation-modal .confirmation-btn-yes {
+  background: #dc3545;
+  color: #fff;
+}
+
+.reject-confirmation-modal .confirmation-btn-yes:hover {
+  background: #c82333;
+}
+
+.reject-confirmation-modal .confirmation-btn-no {
+  background: #6c757d;
+  color: #fff;
+}
+
+.reject-confirmation-modal .confirmation-btn-no:hover {
+  background: #5a6268;
+}

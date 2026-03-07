@@ -1,0 +1,138 @@
+@font-face {
+  font-family: 'bircan-dashboard';
+  src: url('../font/bircan-dashboard.eot?24213260');
+  src: url('../font/bircan-dashboard.eot?24213260#iefix') format('embedded-opentype'),
+       url('../font/bircan-dashboard.woff2?24213260') format('woff2'),
+       url('../font/bircan-dashboard.woff?24213260') format('woff'),
+       url('../font/bircan-dashboard.ttf?24213260') format('truetype'),
+       url('../font/bircan-dashboard.svg?24213260#bircan-dashboard') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+/* Chrome hack: SVG is rendered more smooth in Windozze. 100% magic, uncomment if you need it. */
+/* Note, that will break hinting! In other OS-es font will be not as sharp as it could be */
+/*
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: 'bircan-dashboard';
+    src: url('../font/bircan-dashboard.svg?24213260#bircan-dashboard') format('svg');
+  }
+}
+*/
+[class^="icon-"]:before, [class*=" icon-"]:before {
+  font-family: "bircan-dashboard";
+  font-style: normal;
+  font-weight: normal;
+  speak: never;
+
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  /* margin-right: .2em; */
+  text-align: center;
+  /* opacity: .8; */
+
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+
+  /* fix buttons height, for twitter bootstrap */
+  line-height: 1em;
+
+  /* Animation center compensation - margins should be symmetric */
+  /* remove if not needed */
+  /* margin-left: .2em; */
+
+  /* you can be more comfortable with increased icons size */
+  /* font-size: 120%; */
+
+  /* Font smoothing. That was taken from TWBS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: var(--gray-basic)scale;
+
+  /* Uncomment for 3D effect */
+  /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+}
+
+.icon-header-i-indirilenler:before { content: '\e800'; } /* '' */
+.icon-icon-siparis-teslim:before { content: '\e801'; } /* '' */
+.icon-header-i-yeni-profil:before { content: '\e802'; } /* '' */
+.icon-icon-siparis-teslim-v2:before { content: '\e803'; } /* '' */
+.icon-iletisim-bilgileri:before { content: '\e804'; } /* '' */
+.icon-input-saat:before { content: '\e805'; } /* '' */
+.icon-input-tarih:before { content: '\e806'; } /* '' */
+.icon-input-week-indicator:before { content: '\e807'; } /* '' */
+.icon-kart-etiketler:before { content: '\e808'; } /* '' */
+.icon-kart-gorsel-yukle-alan:before { content: '\e809'; } /* '' */
+.icon-kart-menu-arsivle:before { content: '\e80a'; } /* '' */
+.icon-kart-menu-arsivle-v2:before { content: '\e80b'; } /* '' */
+.icon-kart-menu-duzenle:before { content: '\e80c'; } /* '' */
+.icon-kart-menu-kopya-olustur:before { content: '\e80d'; } /* '' */
+.icon-kart-menu-kunye-yazdir:before { content: '\e80e'; } /* '' */
+.icon-kart-menu-tumu-teslim-edildi:before { content: '\e80f'; } /* '' */
+.icon-kart-menu-whatsapp-listesi:before { content: '\e810'; } /* '' */
+.icon-kart-organizasyon-sahibi:before { content: '\e811'; } /* '' */
+.icon-kart-organizasyon-turu:before { content: '\e812'; } /* '' */
+.icon-kart-teslimat-adres:before { content: '\e813'; } /* '' */
+.icon-ks-sil:before { content: '\e814'; } /* '' */
+.icon-kart-yok:before { content: '\e815'; } /* '' */
+.icon-ks-duzenle:before { content: '\e816'; } /* '' */
+.icon-ks-tamamlandi:before { content: '\e817'; } /* '' */
+.icon-login-kullaniciadi:before { content: '\e818'; } /* '' */
+.icon-login-sifre:before { content: '\e819'; } /* '' */
+.icon-sm-i-kampanyalar:before { content: '\e81a'; } /* '' */
+.icon-sm-i-partner:before { content: '\e81b'; } /* '' */
+.icon-bildirim-ac:before { content: '\e81c'; } /* '' */
+.icon-btn-musteri-wp-sablon:before { content: '\e81d'; } /* '' */
+.icon-baglantili-siparisler:before { content: '\e81e'; } /* '' */
+.icon-btn-kapat:before { content: '\e81f'; } /* '' */
+.icon-bilgi:before { content: '\e820'; } /* '' */
+.icon-btn-yeni-kart:before { content: '\e821'; } /* '' */
+.icon-btn-yeni-musteri:before { content: '\e822'; } /* '' */
+.icon-disa-aktar-excel:before { content: '\e823'; } /* '' */
+.icon-dashboard-disa-aktar:before { content: '\e824'; } /* '' */
+.icon-ekler:before { content: '\e825'; } /* '' */
+.icon-dashboard-filtrele:before { content: '\e826'; } /* '' */
+.icon-disa-aktar-yazdir:before { content: '\e827'; } /* '' */
+.icon-ekle-buton:before { content: '\e828'; } /* '' */
+.icon-hamburger-menu:before { content: '\e829'; } /* '' */
+.icon-header-i-bildirimler:before { content: '\e82a'; } /* '' */
+.icon-musteri-detay-eposta:before { content: '\e82b'; } /* '' */
+.icon-musteri-detay-telefon:before { content: '\e82c'; } /* '' */
+.icon-organizasyon-sahibi:before { content: '\e82d'; } /* '' */
+.icon-musteri-logosu-yazisi:before { content: '\e82e'; } /* '' */
+.icon-mobile-rotate:before { content: '\e82f'; } /* '' */
+.icon-musteri-vergi-kimlik-bilgiler:before { content: '\e830'; } /* '' */
+.icon-resim-yukle:before { content: '\e831'; } /* '' */
+.icon-rapor-bilgi-en-cok-satilan-urun:before { content: '\e832'; } /* '' */
+.icon-org-line:before { content: '\e833'; } /* '' */
+.icon-sm-i-raporlar:before { content: '\e834'; } /* '' */
+.icon-sp-kart-detay-btn-yeni-siparis:before { content: '\e835'; } /* '' */
+.icon-siparis-liste-duzenle:before { content: '\e836'; } /* '' */
+.icon-sp-kart-detay-btn-musteri-ekle:before { content: '\e837'; } /* '' */
+.icon-sk-siparis-veren:before { content: '\e838'; } /* '' */
+.icon-sk-ucret:before { content: '\e839'; } /* '' */
+.icon-search:before { content: '\e83a'; } /* '' */
+.icon-sp-kart-detay-btn-musteri-wp-sablon:before { content: '\e83b'; } /* '' */
+.icon-rapor-bilgi-en-cok-siparis-veren-musteri:before { content: '\e83c'; } /* '' */
+.icon-sk-karti-duzenle:before { content: '\e83d'; } /* '' */
+.icon-siparis-liste-sil:before { content: '\e83e'; } /* '' */
+.icon-sk-teslim-kisisi:before { content: '\e83f'; } /* '' */
+.icon-sk-urun-yazisi:before { content: '\e840'; } /* '' */
+.icon-saat:before { content: '\e841'; } /* '' */
+.icon-sm-i-dashboard:before { content: '\e842'; } /* '' */
+.icon-partner-siparis:before { content: '\e843'; } /* '' */
+.icon-rapor-bilgi-en-cok-satis-yapilan-gun:before { content: '\e844'; } /* '' */
+.icon-sm-i-ayarlar:before { content: '\e845'; } /* '' */
+.icon-sm-i-musteriler:before { content: '\e846'; } /* '' */
+.icon-siparis-tasi:before { content: '\e847'; } /* '' */
+.icon-sk-urun-bilgisi:before { content: '\e848'; } /* '' */
+.icon-sp-kart-detay-btn-partner-siparis-ekle:before { content: '\e849'; } /* '' */
+.icon-teslim-tarihi-ve-saati:before { content: '\e84a'; } /* '' */
+.icon-sp-kart-detay-btn-wp-listesi-paylas:before { content: '\e84b'; } /* '' */
+.icon-tl-simge:before { content: '\e84c'; } /* '' */
+.icon-telefon:before { content: '\e84d'; } /* '' */
+.icon-tl-simge-fill:before { content: '\e84e'; } /* '' */
+.icon-toplam-siparis:before { content: '\e84f'; } /* '' */
+.icon-urun-yazisi:before { content: '\e850'; } /* '' */
+.icon-kart-dosya-yukle-alan:before { content: '\e851'; } /* '' */

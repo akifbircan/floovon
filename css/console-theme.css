@@ -1,0 +1,448 @@
+/* ============================================
+   CONSOLE THEME CSS - Light & Dark Theme Colors
+   Tüm console sayfaları için ortak renk tanımları
+   ============================================ */
+
+:root {
+  /* Background Colors */
+  --console-bg-primary: #f8fafc;
+  --console-bg-secondary: #ffffff;
+  --console-bg-tertiary: #f1f5f9;
+  --console-bg-hover: #f8fafc;
+  --console-bg-active: #eff0f1;
+  --console-bg-overlay: rgba(0, 0, 0, 0.5);
+  --console-bg-backdrop: rgba(255, 255, 255, 0.8);
+  --console-bg-backdrop-light: rgba(248, 250, 252, 0.95);
+  --console-bg-backdrop-lighter: rgba(248, 250, 252, 0.5);
+  --console-bg-icon-light: #f1f5f9; /* Activity icon için hafif açık gri zemin (light tema) */
+
+  /* Text Colors */
+  --console-text-only-white: #ffffff;
+  --console-text-primary: #0f172a;
+  --console-text-secondary: #64748b;
+  --console-text-tertiary: #94a3b8;
+  --console-text-muted: #475569;
+  --console-text-disabled: #cbd5e1;
+  --console-text-inverse: #ffffff;
+  --console-notification-badge-text: #ffffff; /* Notification badge ve dot için beyaz yazı rengi */
+ 
+    /* Border Colors */
+  --console-border-primary: #e2e8f0;
+  --console-border-secondary: #cbd5e1;
+  --console-border-tertiary: #e5e7eb;
+  --console-border-hover: #cbd5e1;
+  --console-border-focus: #2563eb;
+  --console-tenant-plan-warning-blue: #1e40af;
+
+  /* Primary Colors (Blue) */
+  --console-primary: #2563eb;
+  --console-primary-hover: #1d4ed8;
+  --console-primary-light: #dbeafe;
+  --console-primary-lighter: #eff6ff;
+  --console-primary-dark: #1e40af;
+  --console-primary-text: #1e40af;
+  --console-primary-border: #bfdbfe;
+  --console-primary-shadow: rgba(37, 99, 235, 0.2);
+  --console-primary-shadow-light: rgba(37, 99, 235, 0.1);
+
+  /* Success Colors (Green) */
+  --console-success: #10b981;
+  --console-success-hover: #059669;
+  --console-success-light: #d1fae5;
+  --console-success-lighter: #ecfdf5;
+  --console-success-dark: #047857;
+  --console-success-text: #065f46;
+  --console-success-border: #a7f3d0;
+  --console-success-bg: #d1fae5;
+
+  /* Error Colors (Red) */
+  --console-error: #ef4444;
+  --console-error-hover: #dc2626;
+  --console-error-light: #fee2e2;
+  --console-error-lighter: #fef2f2;
+  --console-error-dark: #991b1b;
+  --console-error-text: #991b1b;
+  --console-error-border: #fecaca;
+  --console-error-bg: #fee2e2;
+
+  /* Warning Colors (Yellow/Orange) */
+  --console-warning: #f59e0b;
+  --console-warning-hover: #d97706;
+  --console-warning-light: #fef3c7;
+  --console-warning-lighter: #fffbeb;
+  --console-warning-dark: #92400e;
+  --console-warning-text: #d97706;
+  --console-warning-border: #fde68a;
+  --console-warning-bg: #fef3c7;
+
+  /* Tenant Action Button Colors - Yönet ve Düzenle butonları için özel renkler */
+  --console-btn-manage-bg: #2563eb;
+  --console-btn-manage-text: #ffffff;
+  --console-btn-manage-border: #2563eb;
+  --console-btn-manage-hover-bg: #1d4ed8;
+  --console-btn-manage-hover-text: #ffffff;
+  --console-btn-manage-hover-border: #1d4ed8;
+  
+  --console-btn-edit-bg: var(--console-bg-secondary);
+  --console-btn-edit-text: var(--console-text-primary);
+  --console-btn-edit-border: var(--console-border-primary);
+  --console-btn-edit-hover-bg: #f59e0b;
+  --console-btn-edit-hover-text: #ffffff;
+  --console-btn-edit-hover-border: #f59e0b;
+
+  /* White Overlay Colors - Gradient üzerinde kullanım için */
+  --console-white-overlay-20: rgba(255, 255, 255, 0.2);
+  --console-white-overlay-30: rgba(255, 255, 255, 0.3);
+  --console-white-overlay-50: rgba(255, 255, 255, 0.5);
+  --console-white-overlay-70: rgba(255, 255, 255, 0.7);
+  --console-white-overlay-80: rgba(255, 255, 255, 0.8);
+  --console-white-overlay-90: rgba(255, 255, 255, 0.9);
+  --console-white-overlay-95: rgba(255, 255, 255, 0.95);
+  --console-white-overlay-100: #ffffff;
+
+  /* Anthracite Colors - Fatura özeti ve benzeri alanlar için */
+  --console-anthracite-primary: #0f172a;
+  --console-anthracite-secondary: #1e293b;
+  --console-anthracite-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+
+  /* Info Colors (Blue variants) */
+  --console-info: #3b82f6;
+  --console-info-light: #dbeafe;
+  --console-info-text: #1e40af;
+  --console-info-border: #dbeafe;
+
+  /* Selection */
+  --console-selection-bg: #dbeafe;
+
+  /* Shadow */
+  --console-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --console-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --console-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --console-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --console-shadow-modal: -4px 0 6px rgba(0, 0, 0, 0.1), -2px 0 4px rgba(0, 0, 0, 0.06);
+
+  /* Admin Panel Variables */
+  --admin-bg-primary: #ffffff;
+  --admin-bg-secondary: #f7f7f7;
+  --admin-bg-muted: #f7f7f7;
+  --admin-bg-accent: #f7f7f7;
+  --admin-text-primary: #1a1a1a;
+  --admin-text-secondary: #6b6b6b;
+  --admin-text-muted: #6b6b6b;
+  --admin-text-accent: #2d2d2d;
+  --admin-color-primary: #2d2d2d;
+  --admin-color-primary-text: #fafafa;
+  --admin-color-destructive: #dc2626;
+  --admin-border-color: #e5e5e5;
+  --admin-input-border: #e5e5e5;
+  --admin-ring-color: #a3a3a3;
+  --admin-card-bg: #ffffff;
+  --admin-card-text: #1a1a1a;
+  --admin-popover-bg: #ffffff;
+  --admin-popover-text: #1a1a1a;
+  --admin-sidebar-bg: #fafafa;
+  --admin-sidebar-text: #1a1a1a;
+  --admin-sidebar-primary: #2d2d2d;
+  --admin-sidebar-primary-text: #fafafa;
+  --admin-sidebar-accent: #f7f7f7;
+  --admin-sidebar-accent-text: #2d2d2d;
+  --admin-sidebar-border: #e5e5e5;
+  --admin-sidebar-ring: #a3a3a3;
+
+  /* Admin Border Radius */
+  --admin-border-radius-base: 0.625rem;
+  --admin-border-radius-small: calc(var(--admin-border-radius-base) - 4px);
+  --admin-border-radius-medium: calc(var(--admin-border-radius-base) - 2px);
+  --admin-border-radius-large: calc(var(--admin-border-radius-base) + 4px);
+  --admin-border-radius-xl: 1rem;
+  --admin-border-radius-full: 9999px;
+
+  /* Admin Chart Colors */
+  --admin-chart-color-1: #3b82f6;
+  --admin-chart-color-2: #10b981;
+  --admin-chart-color-3: #f59e0b;
+  --admin-chart-color-4: #ef4444;
+  --admin-chart-color-5: #8b5cf6;
+
+  /* Legacy variables (backward compatibility) - Admin variable'larına referans veriyor */
+  --radius: var(--admin-border-radius-base);
+  --background: var(--admin-bg-primary);
+  --foreground: var(--admin-text-primary);
+  --card: var(--admin-card-bg);
+  --card-foreground: var(--admin-card-text);
+  --popover: var(--admin-popover-bg);
+  --popover-foreground: var(--admin-popover-text);
+  --primary: var(--admin-color-primary);
+  --primary-foreground: var(--admin-color-primary-text);
+  --secondary: var(--admin-bg-secondary);
+  --secondary-foreground: var(--admin-text-accent);
+  --muted: var(--admin-bg-muted);
+  --muted-foreground: var(--admin-text-muted);
+  --accent: var(--admin-bg-accent);
+  --accent-foreground: var(--admin-text-accent);
+  --destructive: var(--admin-color-destructive);
+  --border: var(--admin-border-color);
+  --input: var(--admin-input-border);
+  --ring: var(--admin-ring-color);
+  --chart-1: var(--admin-chart-color-1);
+  --chart-2: var(--admin-chart-color-2);
+  --chart-3: var(--admin-chart-color-3);
+  --chart-4: var(--admin-chart-color-4);
+  --chart-5: var(--admin-chart-color-5);
+  --sidebar: var(--admin-sidebar-bg);
+  --sidebar-foreground: var(--admin-sidebar-text);
+  --sidebar-primary: var(--admin-sidebar-primary);
+  --sidebar-primary-foreground: var(--admin-sidebar-primary-text);
+  --sidebar-accent: var(--admin-sidebar-accent);
+  --sidebar-accent-foreground: var(--admin-sidebar-accent-text);
+  --sidebar-border: var(--admin-sidebar-border);
+  --sidebar-ring: var(--admin-sidebar-ring);
+
+  /* Toast Notification Variables (Light Mode) */
+  --toast-bg: var(--console-bg-secondary);
+  --toast-text: var(--console-text-primary);
+  --toast-text-dark: #333333;
+  --toast-text-white: #ffffff;
+  --toast-shadow: rgba(0, 0, 0, 0.1);
+  --toast-success: var(--console-success);
+  --toast-error: #dc2626;
+  --toast-warning: var(--console-warning);
+  --toast-warning-text: #92400e;
+  --toast-info: var(--console-info);
+  --toast-checked-bg: #e6ffe8;
+  --toast-pass-bg: #e6ffe8;
+  --toast-button-confirm: var(--console-primary);
+  --toast-button-cancel: var(--console-bg-tertiary);
+  --toast-overlay-bg: rgba(0, 0, 0, 0.5);
+  --toast-border: var(--console-border-primary);
+  --toast-error-border: var(--console-error-light);
+  --toast-error-text: #991b1b;
+  --toast-warning-border: var(--console-warning-light);
+  --toast-success-border: var(--console-success-light);
+  --toast-success-text: #065f46;
+  --toast-info-border: var(--console-primary-light);
+  --toast-info-text: #1e40af;
+  --toast-button-confirm-hover: var(--console-primary-hover);
+  --toast-button-cancel-hover: var(--console-border-primary);
+  --toast-success-hover: #059669;
+}
+
+/* Dark Theme */
+:root.dark,
+html.dark-mode {
+  /* Background Colors */
+  --console-bg-primary: #1e293b;
+  --console-bg-secondary: #0f172a;
+  --console-bg-tertiary: #334155;
+  --console-bg-hover: #334155;
+  --console-bg-active: #475569;
+  --console-bg-overlay: rgba(0, 0, 0, 0.7);
+  --console-bg-backdrop: rgba(15, 23, 42, 0.9);
+  --console-bg-backdrop-light: rgba(30, 41, 59, 0.95);
+  --console-bg-backdrop-lighter: rgba(30, 41, 59, 0.5);
+  --console-bg-icon-light: #334155; 
+ 
+  /* Text Colors */
+  --console-text-only-white: #ffffff;
+  --console-text-primary: #f1f5f9;
+  --console-text-secondary: #cbd5e1;
+  --console-text-tertiary: #94a3b8;
+  --console-tenant-plan-warning-blue: #6687f5;
+  /* --console-text-muted: #64748b; */
+  --console-text-muted: #a2adbd;
+  --console-text-disabled: #475569;
+  --console-text-inverse: #0f172a;
+  --console-notification-badge-text: #ffffff; 
+
+  /* Border Colors */
+  --console-border-primary: #334155;
+  --console-border-secondary: #475569;
+  --console-border-tertiary: #475569;
+  --console-border-hover: #64748b;
+  --console-border-focus: #3b82f6;
+
+  /* Primary Colors (Blue) */
+  --console-primary: #3b82f6;
+  --console-primary-hover: #2563eb;
+  --console-primary-light: #1e3a8a;
+  --console-primary-lighter: #1e40af;
+  --console-primary-dark: #1d4ed8;
+  --console-primary-text: #93c5fd;
+  --console-primary-border: #1e40af;
+  --console-primary-shadow: rgba(59, 130, 246, 0.3);
+  --console-primary-shadow-light: rgba(59, 130, 246, 0.2);
+  /* Tenant Manage Button - Dark Mode için hover renkleri */
+  --console-btn-manage-hover-bg-dark: rgba(59, 130, 246, 0.15); /* Dark temada hover zemin rengi */
+  --console-btn-manage-hover-text-dark: #93c5fd; /* text-blue-300 - dark temada daha açık mavi */
+
+  /* Success Colors (Green) */
+  --console-success: #10b981;
+  --console-success-hover: #059669;
+  --console-success-light: #065f46;
+  --console-success-lighter: #047857;
+  --console-success-dark: #047857;
+  --console-success-text: #6ee7b7;
+  --console-success-border: #059669;
+  --console-success-bg: #065f46;
+
+  /* Error Colors (Red) */
+  --console-error: #ef4444;
+  --console-error-hover: #dc2626;
+  --console-error-light: #991b1b;
+  --console-error-lighter: #7f1d1d;
+  --console-error-dark: #991b1b;
+  --console-error-text: #fca5a5;
+  --console-error-border: #dc2626;
+  --console-error-bg: #991b1b;
+
+  /* Warning Colors (Yellow/Orange) */
+  --console-warning: #f59e0b;
+  --console-warning-hover: #d97706;
+  --console-warning-light: #92410e83;
+  --console-warning-lighter: #78360f4b;
+  --console-warning-dark: #92400e;
+  --console-warning-text: #fbbf24;
+  --console-warning-border: #d97706;
+  --console-warning-bg: #92400e;
+
+  /* Tenant Action Button Colors - Yönet ve Düzenle butonları için özel renkler (Dark Mode) */
+  --console-btn-manage-bg: #3b82f6;
+  --console-btn-manage-text: #ffffff;
+  --console-btn-manage-border: #3b82f6;
+  --console-btn-manage-hover-bg: #2563eb;
+  --console-btn-manage-hover-text: #ffffff;
+  --console-btn-manage-hover-border: #2563eb;
+  
+  --console-btn-edit-bg: var(--console-bg-secondary);
+  --console-btn-edit-text: var(--console-text-primary);
+  --console-btn-edit-border: var(--console-border-primary);
+  --console-btn-edit-hover-bg: #f59e0b;
+  --console-btn-edit-hover-text: #ffffff;
+  --console-btn-edit-hover-border: #f59e0b;
+
+  /* Anthracite Colors - Fatura özeti ve benzeri alanlar için (Dark Mode) */
+  --console-anthracite-primary: #0f172a;
+  --console-anthracite-secondary: #1e293b;
+  --console-anthracite-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+
+  /* Info Colors (Blue variants) */
+  --console-info: #3b82f6;
+  --console-info-light: #1e40af;
+  --console-info-text: #93c5fd;
+  --console-info-border: #1e40af;
+
+  /* Selection */
+  --console-selection-bg: #1e40af;
+
+  /* Shadow */
+  --console-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --console-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --console-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --console-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  --console-shadow-modal: -4px 0 6px rgba(0, 0, 0, 0.2), -2px 0 4px rgba(0, 0, 0, 0.15);
+
+  /* Admin Panel Variables */
+  --admin-bg-primary: #0f172a;
+  --admin-bg-secondary: #1e293b;
+  --admin-bg-muted: #334155;
+  --admin-bg-accent: #334155;
+  --admin-text-primary: #f1f5f9;
+  --admin-text-secondary: #cbd5e1;
+  --admin-text-muted: #94a3b8;
+  --admin-text-accent: #e2e8f0;
+  --admin-color-primary: #3b82f6;
+  --admin-color-primary-text: #ffffff;
+  --admin-color-destructive: #ef4444;
+  --admin-border-color: #334155;
+  --admin-input-border: #475569;
+  --admin-ring-color: #64748b;
+  --admin-card-bg: #0f172a;
+  --admin-card-text: #f1f5f9;
+  --admin-popover-bg: #0f172a;
+  --admin-popover-text: #f1f5f9;
+  --admin-sidebar-bg: #1e293b;
+  --admin-sidebar-text: #f1f5f9;
+  --admin-sidebar-primary: #3b82f6;
+  --admin-sidebar-primary-text: #ffffff;
+  --admin-sidebar-accent: #334155;
+  --admin-sidebar-accent-text: #e2e8f0;
+  --admin-sidebar-border: #334155;
+  --admin-sidebar-ring: #64748b;
+
+  /* Admin Border Radius (same for dark mode) */
+  --admin-border-radius-base: 0.625rem;
+  --admin-border-radius-small: calc(var(--admin-border-radius-base) - 4px);
+  --admin-border-radius-medium: calc(var(--admin-border-radius-base) - 2px);
+  --admin-border-radius-large: calc(var(--admin-border-radius-base) + 4px);
+  --admin-border-radius-xl: 1rem;
+  --admin-border-radius-full: 9999px;
+
+  /* Admin Chart Colors (same for dark mode) */
+  --admin-chart-color-1: #3b82f6;
+  --admin-chart-color-2: #10b981;
+  --admin-chart-color-3: #f59e0b;
+  --admin-chart-color-4: #ef4444;
+  --admin-chart-color-5: #8b5cf6;
+
+  /* Legacy variables (backward compatibility) - Admin variable'larına referans veriyor */
+  --radius: var(--admin-border-radius-base);
+  --background: var(--admin-bg-primary);
+  --foreground: var(--admin-text-primary);
+  --card: var(--admin-card-bg);
+  --card-foreground: var(--admin-card-text);
+  --popover: var(--admin-popover-bg);
+  --popover-foreground: var(--admin-popover-text);
+  --primary: var(--admin-color-primary);
+  --primary-foreground: var(--admin-color-primary-text);
+  --secondary: var(--admin-bg-secondary);
+  --secondary-foreground: var(--admin-text-accent);
+  --muted: var(--admin-bg-muted);
+  --muted-foreground: var(--admin-text-muted);
+  --accent: var(--admin-bg-accent);
+  --accent-foreground: var(--admin-text-accent);
+  --destructive: var(--admin-color-destructive);
+  --border: var(--admin-border-color);
+  --input: var(--admin-input-border);
+  --ring: var(--admin-ring-color);
+  --chart-1: var(--admin-chart-color-1);
+  --chart-2: var(--admin-chart-color-2);
+  --chart-3: var(--admin-chart-color-3);
+  --chart-4: var(--admin-chart-color-4);
+  --chart-5: var(--admin-chart-color-5);
+  --sidebar: var(--admin-sidebar-bg);
+  --sidebar-foreground: var(--admin-sidebar-text);
+  --sidebar-primary: var(--admin-sidebar-primary);
+  --sidebar-primary-foreground: var(--admin-sidebar-primary-text);
+  --sidebar-accent: var(--admin-sidebar-accent);
+  --sidebar-accent-foreground: var(--admin-sidebar-accent-text);
+  --sidebar-border: var(--admin-sidebar-border);
+  --sidebar-ring: var(--admin-sidebar-ring);
+
+  /* Toast Notification Variables (Dark Mode) */
+  --toast-bg: var(--console-bg-secondary);
+  --toast-text: var(--console-text-primary);
+  --toast-text-dark: #e2e8f0;
+  --toast-text-white: #ffffff;
+  --toast-shadow: rgba(0, 0, 0, 0.6);
+  --toast-success: var(--console-success);
+  --toast-error: #fca5a5;
+  --toast-warning: var(--console-warning);
+  --toast-warning-text: #fbbf24;
+  --toast-info: var(--console-info);
+  --toast-checked-bg: #064e3b;
+  --toast-pass-bg: #064e3b;
+  --toast-button-confirm: var(--console-primary);
+  --toast-button-cancel: #475569;
+  --toast-overlay-bg: rgba(0, 0, 0, 0.7);
+  --toast-border: var(--console-border-secondary);
+  --toast-error-border: var(--console-error-light);
+  --toast-error-text: #fca5a5;
+  --toast-warning-border: var(--console-warning-light);
+  --toast-success-border: var(--console-success-light);
+  --toast-success-text: #6ee7b7;
+  --toast-info-border: var(--console-primary-light);
+  --toast-info-text: #93c5fd;
+  --toast-button-confirm-hover: var(--console-primary-hover);
+  --toast-button-cancel-hover: var(--console-text-secondary);
+  --toast-success-hover: #16a34a;
+}

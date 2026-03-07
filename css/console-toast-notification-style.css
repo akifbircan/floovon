@@ -1,0 +1,471 @@
+/* #region Toast Notification - CSS Variables (Root) */
+:root {
+  --toast-bg: #ffffff;
+  --toast-text: #1e293b;
+  --toast-border: #e2e8f0;
+  --toast-shadow: rgba(0, 0, 0, 0.1);
+  
+  /* Error Toast Colors */
+  --toast-error: #ef4444;
+  --toast-error-bg: #fef2f2;
+  --toast-error-border: #fecaca;
+  --toast-error-text: #991b1b;
+  
+  /* Warning Toast Colors */
+  --toast-warning: #f59e0b;
+  --toast-warning-bg: #fffbeb;
+  --toast-warning-border: #fde68a;
+  --toast-warning-text: #92400e;
+  
+  /* Success Toast Colors */
+  --toast-success: #10b981;
+  --toast-success-bg: #f0fdf4;
+  --toast-success-border: #bbf7d0;
+  --toast-success-text: #065f46;
+  
+  /* Info Toast Colors */
+  --toast-info: #3b82f6;
+  --toast-info-bg: #eff6ff;
+  --toast-info-border: #bfdbfe;
+  --toast-info-text: #1e40af;
+  
+  /* Interactive Toast Colors */
+  --toast-overlay-bg: rgba(0, 0, 0, 0.5);
+  --toast-pass-bg: #f0fdf4;
+  --toast-button-confirm: #10b981;
+  --toast-button-confirm-hover: #059669;
+  --toast-text-white: #ffffff;
+}
+
+/* Dark mode support */
+.dark {
+  --toast-bg: #1e293b;
+  --toast-text: #f1f5f9;
+  --toast-border: #334155;
+  --toast-shadow: rgba(0, 0, 0, 0.3);
+  
+  --toast-error-bg: #7f1d1d;
+  --toast-error-border: #991b1b;
+  --toast-error-text: #fecaca;
+  
+  --toast-warning-bg: #78350f;
+  --toast-warning-border: #92400e;
+  --toast-warning-text: #fde68a;
+  
+  --toast-success-bg: #064e3b;
+  --toast-success-border: #065f46;
+  --toast-success-text: #bbf7d0;
+  
+  --toast-info-bg: #1e3a8a;
+  --toast-info-border: #1e40af;
+  --toast-info-text: #bfdbfe;
+  
+  --toast-overlay-bg: rgba(0, 0, 0, 0.7);
+}
+/* #endregion */
+
+/* #region Toast Notification - Genel Ayarlar (Admin Panel - Orchids Style) */
+ul.notifications {
+  all: unset;
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  z-index: 2147483647 !important; /* Maximum z-index value */
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: none;
+}
+
+/* #endregion */
+
+/* #region Toast Notification - Temel Toast Kartı - Orchids Style */
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 280px;
+  max-width: 400px;
+  background-color: var(--toast-bg);
+  color: var(--toast-text);
+  border: 1px solid var(--toast-border);
+  border-radius: 0.625rem;
+  padding: 14px 16px;
+  margin-top: 8px;
+  box-shadow: 0 4px 6px -1px var(--toast-shadow), 0 2px 4px -2px var(--toast-shadow);
+  animation: slideInUp 0.3s ease-out;
+  z-index: 2147483647 !important; /* Maximum z-index value */
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* #endregion */
+
+/* #region Toast Notification - İç Yapılar - Orchids Style */
+.toast .column {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.875rem;
+  flex: 1;
+}
+
+.toast .toast-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast .toast-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.toast .toast-close {
+  cursor: pointer;
+  margin-left: 20px;
+  color: var(--toast-text);
+  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+
+.toast .toast-close:hover {
+  opacity: 1;
+}
+
+.toast .toast-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* #endregion */
+
+/* #region Toast Notification - Tür Renkleri - Orchids Style */
+
+/* Error Toast Stilleri - Orchids Style */
+.toast.error:not(.interactive) {
+  background-color: var(--toast-bg);
+  border: 1px solid var(--toast-error-border);
+  color: var(--toast-error-text) !important;
+}
+
+.toast.error:not(.interactive) .toast-icon {
+  color: var(--toast-error);
+}
+
+.toast.error:not(.interactive) .toast-icon svg {
+  color: var(--toast-error);
+}
+
+.toast.error .toast-close {
+  color: var(--toast-text);
+}
+
+/* Warning Toast Stilleri - Orchids Style */
+.toast.warning:not(.interactive) {
+  background-color: var(--toast-bg);
+  border: 1px solid var(--toast-warning-border);
+  color: var(--toast-warning-text);
+}
+
+.toast.warning:not(.interactive) .toast-icon {
+  color: var(--toast-warning);
+}
+
+.toast.warning:not(.interactive) .toast-icon svg {
+  color: var(--toast-warning);
+}
+
+.toast.warning .toast-close {
+  color: var(--toast-text);
+}
+
+/* Success Toast Stilleri - Orchids Style */
+.toast.success:not(.interactive),
+.toast.kaydet:not(.interactive),
+.toast.islemtamam:not(.interactive) {
+  background-color: var(--toast-bg);
+  border: 1px solid var(--toast-success-border);
+  color: var(--toast-success-text);
+}
+
+.toast.success:not(.interactive) .toast-icon,
+.toast.kaydet:not(.interactive) .toast-icon,
+.toast.islemtamam:not(.interactive) .toast-icon {
+  color: var(--toast-success);
+}
+
+.toast.success:not(.interactive) .toast-icon svg,
+.toast.kaydet:not(.interactive) .toast-icon svg,
+.toast.islemtamam:not(.interactive) .toast-icon svg {
+  color: var(--toast-success);
+}
+
+.toast.success .toast-close,
+.toast.kaydet .toast-close,
+.toast.islemtamam .toast-close {
+  color: var(--toast-text);
+}
+
+/* Info Toast Stilleri - Orchids Style */
+.toast.info:not(.interactive) {
+  background-color: var(--toast-bg);
+  border: 1px solid var(--toast-info-border);
+  color: var(--toast-info-text, var(--toast-text));
+}
+
+.toast.info:not(.interactive) .toast-icon {
+  color: var(--toast-info);
+}
+
+.toast.info:not(.interactive) .toast-icon svg {
+  color: var(--toast-info);
+}
+
+.toast.info .toast-close {
+  color: var(--toast-text);
+}
+
+/* customSifreGonderildi Toast Stilleri - Orchids Style */
+.toast.customSifreGonderildi:not(.interactive) {
+  border-color: var(--toast-success);
+  background-color: var(--toast-pass-bg);
+  color: var(--toast-success);
+}
+
+.toast.customSifreGonderildi:not(.interactive) .toast-icon,
+.toast.customSifreGonderildi .toast-close {
+  color: var(--toast-success);
+}
+
+/* #endregion */
+
+/* #region Toast Notification - Giriş ve Çıkış Animasyonları - Orchids Style */
+.toast.hide {
+  animation: fadeOut 0.5s forwards;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* #endregion */
+
+/* #region Toast Notification - Etkileşimli Toast (Evet / Hayır) - Orchids Style */
+.toast-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--toast-overlay-bg);
+  z-index: 2147483646 !important; /* Maximum z-index - 1 */
+  backdrop-filter: blur(2px);
+}
+
+/* ✅ Toast gösterildiğinde HTML5 validation tooltip'lerini gizle */
+body:has(.toast-interactive),
+body:has(.toast-overlay) {
+  /* HTML5 native validation tooltip'lerini gizle */
+  input:invalid::-webkit-validation-bubble,
+  input:invalid::-webkit-validation-bubble-message,
+  input:invalid::-webkit-validation-bubble-arrow {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    z-index: -1 !important;
+  }
+  
+  /* Tüm validation tooltip'lerini toast'un altında tut */
+  input:invalid::after,
+  input:invalid::before {
+    z-index: 2147483645 !important; /* Toast'un altında */
+  }
+  
+  /* Custom tooltip'leri de gizle */
+  .input-error-tooltip {
+    z-index: 2147483645 !important; /* Toast'un altında */
+    display: none !important;
+  }
+}
+
+.toast.interactive {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--toast-bg);
+  z-index: 2147483647 !important; /* Maximum z-index value */
+  max-width: 420px;
+  width: 90%;
+  padding: 24px;
+  border-radius: 0.625rem;
+  border: 1px solid var(--toast-border);
+  box-shadow: 0 10px 15px -3px var(--toast-shadow), 0 4px 6px -4px var(--toast-shadow);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--toast-text);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeInCenter 0.2s ease-out forwards;
+  cursor: default;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
+.toast-interactive-header {
+  padding: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.toast-interactive-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.toast-interactive-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast-interactive-body {
+  padding: 0;
+  width: 100%;
+}
+
+.toast.interactive.hide {
+  animation: fadeOutCenter 0.3s ease forwards;
+}
+
+.toast.interactive .toast-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0;
+  margin-top: 0;
+  width: 100%;
+}
+
+.toast-btn {
+  height: 2.25rem;
+  padding: 0 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Geist', system-ui, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-message {
+  font-size: 0.875rem;
+  color: var(--toast-text);
+  text-align: left;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.toast.interactive .toast-message {
+  font-size: 0.875rem;
+  color: var(--console-text-secondary);
+}
+
+.toast-btn-confirm {
+  background-color: var(--toast-button-confirm);
+  color: var(--toast-text-white);
+}
+
+.toast-btn-confirm:hover {
+  background-color: var(--toast-button-confirm-hover);
+}
+
+.toast-btn-cancel {
+  background-color: white;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+.toast-btn-cancel:hover {
+  background-color: #f8fafc;
+}
+
+.toast-btn-red {
+  background-color: #dc2626 !important;
+  color: white !important;
+}
+
+.toast-btn-red:hover {
+  background-color: #b91c1c !important;
+}
+
+.toast-btn-green {
+  background-color: #10b981 !important;
+  color: white !important;
+}
+
+.toast-btn-green:hover {
+  background-color: #059669 !important;
+}
+
+@keyframes fadeInCenter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes fadeOutCenter {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+}
+
+/* #endregion */
+
+

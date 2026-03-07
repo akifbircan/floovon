@@ -1,0 +1,622 @@
+/* Custom styles for Floovon Console Login Page */
+
+* {
+    font-family: 'Geist', system-ui, sans-serif;
+    box-sizing: border-box;
+}
+
+/* Body Styles */
+.console-login-body {
+    font-family: 'Geist', system-ui, sans-serif;
+    background-color: var(--console-bg-secondary);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+/* Container */
+.console-login-container {
+    min-height: 100vh;
+    display: flex;
+}
+
+/* Sol Panel - Splash Section */
+.console-login-left-panel {
+    display: none;
+    position: relative;
+    width: 50%;
+    overflow: hidden;
+    background-color: var(--console-primary);
+}
+
+@media (min-width: 1024px) {
+    .console-login-left-panel {
+        display: flex;
+    }
+}
+
+.console-login-left-panel-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom right, var(--console-primary), var(--console-primary-hover), var(--console-primary-dark));
+    z-index: 10;
+}
+
+.console-login-decorative-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    z-index: 10;
+}
+
+.console-login-decorative-circle-top {
+    top: -10%;
+    left: -10%;
+    width: 40%;
+    height: 40%;
+    background-color: var(--console-bg-backdrop-lighter);
+    display: none;
+}
+
+.console-login-decorative-circle-bottom {
+    bottom: -10%;
+    right: -10%;
+    width: 50%;
+    height: 50%;
+    background-color: var(--console-primary-shadow);
+}
+
+.console-login-left-panel-content {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 4rem;
+    width: 100%;
+    height: 100%;
+}
+
+/* Tüm yazı elementlerinde beyaz yazı rengi zorunlu - light ve dark temada */
+.console-login-left-panel-content,
+.console-login-left-panel-content * {
+    color: var(--console-notification-badge-text) !important;
+}
+
+/* İkonlar için özel renk koruması - eğer gerekirse */
+.console-login-left-panel-content .console-login-feature-icon {
+    color: var(--console-primary-light) !important;
+}
+
+.console-login-logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.console-login-logo-img {
+    height: 2rem;
+    width: auto;
+}
+
+.console-login-left-panel-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.console-login-headline {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--console-text-inverse);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+}
+
+.console-login-headline-accent {
+    color: var(--console-primary-lighter);
+}
+
+.console-login-description {
+    font-size: 1.25rem;
+    color: var(--console-text-inverse);
+    opacity: 0.8;
+    max-width: 32rem;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.console-login-features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.console-login-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--console-text-inverse);
+    opacity: 0.7;
+}
+
+.console-login-feature-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--console-primary-light);
+    flex-shrink: 0;
+}
+
+.console-login-feature-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.console-login-footer-text {
+    color: var(--console-text-inverse);
+    opacity: 0.5;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Sağ Panel - Login Form */
+.console-login-right-panel {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    position: relative;
+}
+
+@media (min-width: 768px) {
+    .console-login-right-panel {
+        padding: 3rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .console-login-right-panel {
+        width: 50%;
+        padding: 4rem;
+    }
+}
+
+.console-login-card {
+    width: 100%;
+    max-width: 440px;
+}
+
+.console-login-mobile-logo {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+    .console-login-mobile-logo {
+        display: none;
+    }
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+/* Tablet - 641px to 1023px */
+@media (min-width: 641px) and (max-width: 1023px) {
+    .console-login-left-panel-content {
+        padding: 3rem 2rem;
+    }
+    
+    .console-login-headline {
+        font-size: 2.5rem;
+    }
+    
+    .console-login-description {
+        font-size: 1.125rem;
+    }
+    
+    .console-login-features-grid {
+        grid-template-columns: 1fr;
+        gap: 0.875rem;
+    }
+    
+    .console-login-right-panel {
+        padding: 2rem;
+    }
+    
+    .console-login-card {
+        max-width: 100%;
+    }
+}
+
+/* Mobile - max-width: 640px */
+@media (max-width: 640px) {
+    .console-login-container {
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    .console-login-left-panel {
+        display: none; /* Mobilde sol paneli gizle */
+    }
+    
+    .console-login-right-panel {
+        width: 100%;
+        padding: 1.5rem 2rem;
+        justify-content: flex-start;
+        min-height: 100vh;
+    }
+    
+    .console-login-card {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .console-login-mobile-logo {
+        margin-bottom: 2rem;
+    }
+    
+    .console-login-mobile-logo-img {
+        height: 2rem;
+    }
+    
+    .console-login-welcome-section {
+        margin-bottom: 2rem;
+    }
+    
+    .console-login-welcome-title {
+        font-size: 1.5rem;
+    }
+    
+    .console-login-welcome-subtitle {
+        font-size: 0.875rem;
+    }
+    
+    .console-login-form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .console-login-label {
+        font-size: 0.8125rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .console-login-input {
+        height: 2.75rem;
+        font-size: 0.9375rem;
+        padding-left: 2.75rem;
+    }
+    
+    .console-login-input-icon {
+        width: 1.125rem;
+        height: 1.125rem;
+        left: 0.875rem;
+    }
+    
+    .console-login-remember-wrapper {
+        margin-bottom: 1.5rem;
+    }
+    
+    .console-login-checkbox-label {
+        font-size: 0.8125rem;
+    }
+    
+    .console-login-submit-btn {
+        height: 3rem;
+        font-size: 0.875rem;
+    }
+    
+    .console-login-submit-text {
+        font-size: 0.875rem;
+    }
+    
+    .console-login-submit-icon {
+        width: 1rem;
+        height: 1rem;
+    }
+    
+    .console-login-help-section {
+        margin-top: 1.5rem;
+    }
+    
+    .console-login-help-text {
+        font-size: 0.75rem;
+    }
+}
+
+/* Very Small Mobile - max-width: 375px */
+@media (max-width: 375px) {
+    .console-login-right-panel {
+        padding: 1rem 0.75rem;
+    }
+    
+    .console-login-welcome-title {
+        font-size: 1.25rem;
+    }
+    
+    .console-login-input {
+        height: 2.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .console-login-submit-btn {
+        height: 2.75rem;
+        font-size: 0.8125rem;
+    }
+}
+
+.console-login-mobile-logo-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.console-login-mobile-logo-img {
+    height: 2.5rem;
+    width: auto;
+}
+
+.console-login-welcome-section {
+    margin-bottom: 2.5rem;
+}
+
+.console-login-welcome-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--console-text-primary);
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+    line-height: 1.2;
+}
+
+.console-login-welcome-subtitle {
+    color: var(--console-text-secondary);
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.console-login-help-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--console-border-tertiary);
+    text-align: center;
+}
+
+.console-login-help-text {
+    font-size: 0.875rem;
+    color: var(--console-text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.console-login-help-link {
+    font-weight: 700;
+    color: var(--console-primary);
+    text-decoration: none;
+}
+
+.console-login-help-link:hover {
+    text-decoration: underline;
+}
+
+.console-login-grid-pattern {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.1;
+    background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0);
+    background-size: 32px 32px;
+}
+
+
+/* Entry Animations */
+.console-login-animate-logo, 
+.console-login-animate-headline, 
+.console-login-animate-features, 
+.console-login-animate-footer, 
+.console-login-animate-card {
+    opacity: 0;
+    transition: all 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.console-login-animate-logo { 
+    transform: translateY(-20px); 
+    transition-delay: 100ms;
+}
+
+.console-login-animate-headline { 
+    transform: translateX(-30px); 
+    transition-duration: 1000ms; 
+    transition-delay: 400ms; 
+}
+
+.console-login-animate-features { 
+    transition-duration: 1200ms; 
+    transition-delay: 800ms; 
+}
+
+.console-login-animate-footer { 
+    transition-duration: 800ms; 
+    transition-delay: 1200ms; 
+}
+
+.console-login-animate-card { 
+    transform: scale(0.95); 
+    transition-duration: 700ms;
+    transition-delay: 300ms;
+}
+
+.console-login-is-visible {
+    opacity: 1 !important;
+    transform: translate(0, 0) scale(1) !important;
+}
+
+@keyframes console-login-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.console-login-animate-spin {
+    animation: console-login-spin 1000ms linear infinite;
+}
+
+/* Login Form Styles */
+.console-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.console-login-form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.console-login-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.console-login-label-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.console-login-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--console-text-muted);
+    line-height: 1.5;
+}
+
+/* Login Input Styles */
+.console-login-input-wrapper {
+    position: relative;
+}
+
+.console-login-input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--console-text-tertiary);
+    transition: color 200ms ease;
+    pointer-events: none;
+}
+
+.console-login-input-wrapper:focus-within .console-login-input-icon {
+    color: var(--console-primary);
+}
+
+.console-login-icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.console-login-input {
+    width: 100%;
+    height: 48px;
+    padding-left: 48px;
+    padding-right: 16px;
+    background-color: var(--console-bg-primary);
+    border: 1px solid var(--console-border-primary);
+    outline: none;
+    transition: all 200ms ease;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: 'Geist', system-ui, sans-serif;
+    color: var(--console-text-primary);
+}
+
+.console-login-input:focus {
+    border-color: var(--console-primary);
+    box-shadow: 0 0 0 2px var(--console-primary-shadow-light);
+}
+
+.console-login-input::placeholder {
+    color: var(--console-text-tertiary);
+}
+
+/* Remember Checkbox Styles */
+.console-login-remember-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.console-login-checkbox {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--console-border-secondary);
+    accent-color: var(--console-primary);
+    cursor: pointer;
+}
+
+.console-login-checkbox-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--console-text-muted);
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+/* Login Submit Button */
+.console-login-submit-btn {
+    width: 100%;
+    height: 48px;
+    background-color: var(--console-primary);
+    color: var(--console-text-inverse);
+    font-weight: 700;
+    font-size: 16px;
+    border-radius: 12px;
+    box-shadow: var(--console-primary-shadow);
+    transition: all 200ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Geist', system-ui, sans-serif;
+}
+
+.console-login-submit-btn:hover {
+    background-color: var(--console-primary-hover);
+}
+
+.console-login-submit-btn:active {
+    transform: scale(0.98);
+}
+
+.console-login-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.console-login-submit-text {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.console-login-submit-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 200ms ease;
+}
+
+.console-login-submit-btn:hover .console-login-submit-icon {
+    transform: translateX(4px);
+}

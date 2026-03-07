@@ -1,0 +1,69 @@
+/* #region Icon & Font Libraries */
+
+/* Font Awesome (CDN) */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
+
+/* Unicons — tek sürümde sabitle (4.0.8) */
+@import url("https://unicons.iconscout.com/release/v4.0.8/css/line.css");
+
+/* Bircan Dashboard ikon fontları (lokal) */
+@import url("./bircan-dashboard.css");
+@import url("./bircan-dashboard-codes.css");
+@import url("./bircan-dashboard-ie7.css");
+@import url("./bircan-dashboard-ie7-codes.css");
+
+/* #endregion */
+
+/* #region Local Font-Face Definitions */
+
+/* Euclid Circular B */
+@font-face {
+    font-family: 'Euclid Circular B';
+    src: url('../font/Euclid-Circular-B-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Euclid Circular B';
+    src: url('../font/Euclid-Circular-B-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Euclid Circular B';
+    src: url('../font/Euclid-Circular-B-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Euclid Circular B';
+    src: url('../font/Euclid-Circular-B-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Euclid Circular B';
+    src: url('../font/Euclid-Circular-B-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Courgette-Regular */
+@font-face {
+    font-family: 'Courgette-Regular';
+    src: url('../font/Courgette-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-display: swap;
+}
+
+/* #endregion */

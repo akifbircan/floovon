@@ -1,0 +1,120 @@
+<!-- Müşteri Cari Sayfası İçeriği -->
+<!-- Landscape Overlay - Dinamik Component -->
+<div class="landscape-overlay">
+    <!-- Landscape overlay component buraya yüklenecek -->
+</div>
+
+<!-- Sol Panel - Dinamik Component -->
+<div class="sol">
+    <!-- Sidebar component buraya yüklenecek -->
+</div>
+
+<!-- Main Content -->
+<div class="main--content">
+    <!-- Mobile Header - Dinamik Component -->
+    <div class="mobile-header-logo-band">
+        <!-- Mobile header component buraya yüklenecek -->
+    </div>
+
+    <!-- Desktop Header -->
+    <div class="header-logo-band">
+        <div class="profil clickdropdown">
+            <div class="kullanici-alan-wrapper clickdropbtn">
+                <div class="kullanici-alan">
+                    <div class="kullanici-adi">akifbircan</div>
+                    <div class="kullanici-yetki">Sistem Yöneticisi</div>
+                </div>
+                <img class="profil-resmi" src="/assets/profil-akifbircan.jpg" alt="">
+            </div>
+            <div class="clickdropdown-content">
+                <div class="liste-baslik" id="oturum-kisisi-kullanici-adi">@akifbircan
+                    <span id="oturum-kisisi-rol">Sistem Yöneticisi</span>
+                </div>
+                <hr>
+                <div class="menu-links-wrapper">
+                    <a href="/profil-ayarlari.html">
+                        Profil Ayarları
+                    </a>
+                    <a href="/login.html">
+                        Çıkış Yap
+                    </a>
+                </div>
+                <div class="theme-mode" data-tooltip="Temayı Değiştir" data-tooltip-pos="bottom">
+                    <button class="btn-theme-mode">
+                        <i class="fa-solid fa-moon"></i>
+                        <span>Temayı Değiştir</span>
+                    </button>
+                </div>
+                <div class="btn-teslimata-ciktim">
+                    <div class="teslimat-durum">
+                        <span id="durumBadge" class="durum-badge durum-beklemede">
+                            <i class="fa-solid fa-clock"></i>
+                            Beklemede
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h1>Müşteri Cari Hesap</h1>
+        </div>
+        
+        <div class="page-content">
+            <div class="cari-hesap-container">
+                <div class="cari-hesap-header">
+                    <h2>Müşteri Cari Hesap Yönetimi</h2>
+                    <p>Müşterilerinizin cari hesap durumlarını takip edin</p>
+                </div>
+                
+                <div class="cari-hesap-content">
+                    <div class="search-filters">
+                        <input type="text" id="customerSearch" placeholder="Müşteri ara...">
+                        <select id="customerFilter">
+                            <option value="">Tüm Müşteriler</option>
+                            <option value="positive">Alacaklı Müşteriler</option>
+                            <option value="negative">Borçlu Müşteriler</option>
+                            <option value="zero">Sıfır Bakiye</option>
+                        </select>
+                    </div>
+                    
+                    <div class="cari-list" id="cariList">
+                        <!-- Cari hesap listesi buraya gelecek -->
+                        <div class="cari-item">
+                            <div class="customer-info">
+                                <h3>Örnek Müşteri</h3>
+                                <p>Telefon: +90 555 123 4567</p>
+                            </div>
+                            <div class="balance-info">
+                                <span class="balance positive">+1,250.00 ₺</span>
+                                <small>Alacak</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Müşteri Cari sayfası yüklendi');
+        
+        // Component'leri başlat
+        if (window.ComponentManager) {
+            window.ComponentManager.init();
+        }
+        
+        // Cari hesap verilerini yükle
+        loadCariData();
+    });
+    
+    function loadCariData() {
+        console.log('Cari hesap verileri yükleniyor...');
+        // Cari hesap yükleme logic'i buraya gelecek
+    }
+</script>

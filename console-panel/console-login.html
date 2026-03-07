@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap - Floovon</title>
+    
+    <!-- Tema Kontrolü - CSS yüklenmeden önce çalışır (beyaz flash'ı önlemek için) -->
+    <script>
+      (function() {
+        try {
+          const savedTheme = localStorage.getItem('theme');
+          if (savedTheme === 'dark') {
+            // HTML ve body'ye class ekle (CSS yüklenmeden önce çalışır)
+            document.documentElement.classList.add('dark-mode');
+            // Body henüz yoksa, DOMContentLoaded'da tekrar dene
+            if (document.body) {
+              document.body.classList.add('dark-mode');
+            } else {
+              document.addEventListener('DOMContentLoaded', function() {
+                document.body.classList.add('dark-mode');
+              });
+            }
+          }
+        } catch(e) {
+          // localStorage erişilemiyorsa sessizce devam et
+        }
+      })();
+    </script>
+    
+    <!-- Faviconlar -->
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
+    <link rel="manifest" href="../favicon/site.webmanifest">
+    <link rel="icon" href="../favicon/favicon.ico?v=2" type="image/x-icon">
+    
+    <!-- Geist Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- CSS Dosyaları -->
+    <link rel="stylesheet" href="../css/console-theme.css">
+    <link rel="stylesheet" href="../css/console-login.css">
+    <link rel="stylesheet" href="../css/console-toast-notification-style.css">
+</head>
+<body class="console-login-body">
+    <div class="console-login-container">
+        <!-- Sol Alan - Splash Section (Desktop) -->
+        <div class="console-login-left-panel">
+            <div class="console-login-left-panel-gradient"></div>
+            
+            <!-- Dekoratif Elementler -->
+            <div class="console-login-decorative-circle console-login-decorative-circle-top"></div>
+            <div class="console-login-decorative-circle console-login-decorative-circle-bottom"></div>
+            
+            <div class="console-login-left-panel-content">
+                <div class="console-login-logo-wrapper console-login-animate-logo">
+                    <img src="../assets/logo-floovon-white.svg" alt="Floovon Logo" class="console-login-logo-img">
+                </div>
+
+                <div class="console-login-left-panel-main">
+                    <div class="console-login-animate-headline">
+                        <h1 class="console-login-headline">
+                            Kontrol Merkezi
+                            <!-- <span class="console-login-headline-accent">tüm süreçleri yönetin.</span> -->
+                        </h1>
+                        <p class="console-login-description">
+                            Floovon platformunun tüm tenant, kullanıcı ve sistem bileşenleri bu alandan yönetilir. Bu alan yalnızca yetkili sistem yöneticileri içindir.
+                        </p>
+                    </div>
+
+                    <div class="console-login-features-grid console-login-animate-features">
+                        <div class="console-login-feature-item">
+                            <i data-lucide="check-circle-2" class="console-login-feature-icon"></i>
+                            <span class="console-login-feature-text">Merkezi Yönetim</span>
+                        </div>
+                        <div class="console-login-feature-item">
+                            <i data-lucide="check-circle-2" class="console-login-feature-icon"></i>
+                            <span class="console-login-feature-text">Sistem Sağlığı</span>
+                        </div>
+                        <div class="console-login-feature-item">
+                            <i data-lucide="check-circle-2" class="console-login-feature-icon"></i>
+                            <span class="console-login-feature-text">Güvenli Erişim</span>
+                        </div>
+                        <div class="console-login-feature-item">
+                            <i data-lucide="check-circle-2" class="console-login-feature-icon"></i>
+                            <span class="console-login-feature-text">Operasyon & Bakım</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="console-login-footer-text console-login-animate-footer">
+                    Floovon® Sipariş Yönetimi © 2026
+                </div>
+            </div>
+
+            <!-- Arka plan deseni (Grid) -->
+            <div class="console-login-grid-pattern"></div>
+        </div>
+
+        <!-- Sağ Alan - Login Form -->
+        <div class="console-login-right-panel">
+            <!-- <div class="console-login-help-link">
+                <a href="mailto:destek@floovon.com" class="console-login-help-link-btn">
+                    <i data-lucide="help-circle" class="console-login-help-icon"></i>
+                    Yardım
+                </a>
+            </div> -->
+
+            <div class="console-login-card console-login-animate-card">
+                <div class="console-login-mobile-logo">
+                    <div class="console-login-mobile-logo-wrapper">
+                        <img src="../assets/logo-floovon-dark.svg" alt="Floovon Logo" class="console-login-mobile-logo-img">
+                    </div>
+                </div>
+
+                <div class="console-login-welcome-section">
+                    <h2 class="console-login-welcome-title">Hoş geldiniz!</h2>
+                    <p class="console-login-welcome-subtitle">Lütfen yönetici hesabınıza giriş yapın.</p>
+                </div>
+
+                <form id="console-login-form" class="console-login-form">
+                    <div class="console-login-form-fields">
+                        <div class="console-login-form-group">
+                            <label for="console-login-username" class="console-login-label">
+                                Kullanıcı Adı
+                            </label>
+                            <div class="console-login-input-wrapper">
+                                <div class="console-login-input-icon">
+                                    <i data-lucide="user" class="console-login-icon"></i>
+                                </div>
+                                <input 
+                                    type="text"
+                                    id="console-login-username"
+                                    name="console-login-username"
+                                    autocomplete="username"
+                                    placeholder="Kullanıcı adınızı girin"
+                                    class="console-login-input"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="console-login-form-group">
+                            <div class="console-login-label-wrapper">
+                                <label for="console-login-password" class="console-login-label">
+                                    Şifre
+                                </label>
+                            </div>
+                            <div class="console-login-input-wrapper">
+                                <div class="console-login-input-icon">
+                                    <i data-lucide="lock" class="console-login-icon"></i>
+                                </div>
+                                <input 
+                                    type="password"
+                                    id="console-login-password"
+                                    name="console-login-password"
+                                    autocomplete="current-password"
+                                    placeholder="••••••••"
+                                    class="console-login-input"
+                                    required
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="console-login-remember-wrapper">
+                        <input type="checkbox" id="console-login-remember" class="console-login-checkbox">
+                        <label for="console-login-remember" class="console-login-checkbox-label">
+                            Beni Hatırla
+                        </label>
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        id="console-login-submit-btn"
+                        name="console-login-submit"
+                        class="console-login-submit-btn"
+                    >
+                        <span class="console-login-submit-text">GİRİŞ YAP</span>
+                        <i data-lucide="arrow-right" class="console-login-submit-icon"></i>
+                    </button>
+                </form>
+
+                <div class="console-login-help-section">
+                    <p class="console-login-help-text">
+                        Yardıma mı ihtiyacınız var? <a href="mailto:destek@floovon.com" class="console-login-help-link">Yöneticinize başvurun.</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/toast-notification-script.js"></script>
+    <script src="../js/console-login.js"></script>
+</body>
+</html>
+
+
+
+
+

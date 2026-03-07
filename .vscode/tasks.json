@@ -1,0 +1,49 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "TEK TIKLA: GitHub Push + Sunucuya Yukle",
+            "type": "shell",
+            "command": "${workspaceFolder}\\github-run\\13-github-push-ve-sunucuya-yukle.bat",
+            "windows": {
+                "command": "${workspaceFolder}\\github-run\\13-github-push-ve-sunucuya-yukle.bat"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Sadece GitHub'a Push",
+            "type": "shell",
+            "command": "${workspaceFolder}\\github-run\\02-github-push-degiskilikleri-gonder.bat",
+            "windows": {
+                "command": "${workspaceFolder}\\github-run\\02-github-push-degiskilikleri-gonder.bat"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "GitHub'dan Pull",
+            "type": "shell",
+            "command": "${workspaceFolder}\\github-run\\01-github-pull-degiskilikleri-cek.bat",
+            "windows": {
+                "command": "${workspaceFolder}\\github-run\\01-github-pull-degiskilikleri-cek.bat"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ]
+}
+

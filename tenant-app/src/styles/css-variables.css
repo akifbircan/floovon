@@ -1,0 +1,797 @@
+/**
+ * CSS Variables - Eski CSS'ten alınan renk değişkenleri
+ * Light Mode (root) ve Dark Mode (body.dark-mode) desteği
+ */
+
+:root {
+  /* Header Height */
+  --header-height: 64px;
+  
+  /* Ana Renkler */
+  --primary-pink: rgba(246, 71, 152, 1);
+  --full-black-only: #000000;
+  --full-black: #000000;
+  --ana-renk-only: #2E3237;
+  --ana-renk: #2E3237;
+  --ikincil-renk: #282C5B;
+  --mavi-renk: #004cff;
+  --mavi-renk-only: var(--mor-primary); /* #053FC7 eski mavi-renk-only */
+  --mor-renk-hover: #4338ca; /* mor koyu hover */
+  --mor-primary-text: var(--mor-primary); /* light: mor; dark temada metin için beyaz (body.dark-mode'ta #fff) */
+  --gri70: #707070;
+  --border-renk: #f1f3f7;
+  --search-input-border: #c8cbd4;
+  --filter-input-border: #c8cbd4;
+  --placeholder: #9e9e9e;
+  --white: #ffffff;
+  --white-only: #ffffff;
+
+  /* Gri Tonları */
+  --light-gray: #e0e0e0;
+  --ultralight-gray: #f1f1f1;
+  --islem-ikon-bg: #e7e7e7;
+  --mid-gray: #d8d8d8;
+  --dark-gray: #384047;
+  --gray-border: #d8d8d8;
+  --subtle-gray: #A7A7A7;
+  --gray-soft-dark: #8A8B8B;
+  --gray-subtle-dark: #959595;
+  --gray-ultra-light: #dbdbdb;
+  --neutral-gray-b1: #B1B1B1;
+  --neutral-gray-e3: #e3e3e3;
+  --gray-surface-light: #bcbcbc;
+  --gray-classic: #A9A9A9;
+  --gray-light-ce: #cecece;
+  --gray-light-ec: #ececec;
+  --gray-light-v2: #E2E2E2;
+  --gray-light-f2: #f2f2f2;
+  --gray-light-dd: #ddd;
+  --gray-light-ee: #e9e9e9;
+  --gray-light-cc: #ccc;
+  --gray-basic: gray;
+  /* Sipariş detay / Çiçek Sepeti popup’larda ikincil metin; dark’ta daha açık gri okunabilirlik için */
+  --gray-popup-secondary: #6b7280;
+  --gri-orta: #999999;
+  --gri-acik: #b3b3b3;
+  --gray-text-base: #606060;
+  --gray-light-comon: #ece5dd;
+  --gray-ui-bg: #f4f4f4;
+
+  /* Pembe/Magenta Tonları */
+  --accent-pink: #C22C71;
+  --highlight-button-pink: #eb5e91;
+  --karttur-bg-organizasyon-border: #F64798;
+  --pink-soft-bg: #FAE3ED;
+  --pink-rich-alpha: rgba(194, 44, 113, 0.5);
+  --pink-intense: #ff009d;
+  --pink-blush-alpha: rgba(246, 71, 153, 0.1);
+  --pink-alpha-strong: rgba(246, 71, 152, 0.5);
+
+  /* Kart Türü Renkleri - Eski index sayfasından */
+  --karttur-bg-aracsusleme: hsla(36, 100%, 90%, 0.5);
+  --karttur-bg-aracsusleme-text: #ff9800;
+  --karttur-bg-aracsusleme-border: #ff9800;
+  --karttur-bg-organizasyon: hsla(340, 100%, 95%, 0.5);
+  --karttur-bg-organizasyon-text: #ff4081;
+  --karttur-bg-ozelgun: hsla(16, 100%, 84%, 0.5);
+  --karttur-bg-ozelgun-text: #de3c00;
+  --karttur-bg-ozelgun-border: #de3c00;
+  --karttur-bg-ozelsiparis: hsla(291, 64%, 82%, 0.5);
+  --karttur-bg-ozelsiparis-text: #9C27B0;
+  --karttur-bg-ozelsiparis-border: #9C27B0;
+
+  /* Mavi Tonları */
+  --input-border-gray: #e5e5e5;
+  --border-color: #c8c8c8;
+  --blue-transparent: #053fc714;
+  --blue-dark: #060F8D;
+  --blue-vivid: #0037ff;
+  --mavi-seffaf: rgba(5, 63, 199, 0.8);
+  --mor-primary: #6a48b8; /* net mor (eski #513fff mavi görünüyordu) */
+  --mor-primary-hover: #5b21b6;
+  /* Light'ta mor, dark'ta beyaz – body.dark-mode override gerektirmez */
+  --mor-primary-flex: var(--mor-primary);
+  /* --mavi-canli: #3f81ff; (eski mavi-canli) */
+  --accent-blue-soft: rgba(5, 63, 199, 0.4);
+  --bg-blue-pale: #d6e1ff;
+  --mint-blue: #b6ccff;
+  --sky-light-bg: #bedef3;
+  --soft-blue-bg: #ccecf1;
+  --calm-cyan: #6cbdca;
+  --light-aqua-bg: #e4fbfe;
+  --ay-aqua-bg: #b6dee3;
+  --hafta-aqua-bg: #ddf7fd;
+
+  /* Müşteri detay - Yüklenen dosyalar alanı */
+  --customers-detail-files-bg: #f1faff;
+  --customers-detail-file-item-hover: #caeafb;
+
+  /* Yeşil Tonları */
+  --success-green: #33BE5C;
+  --success-green-transparent: rgba(51, 190, 92, 0.1);
+  --accent-green-alpha: #d9ffe7;
+  --accent-green-alpha-hover: #c0edd1;
+  --accent-green-bold: #00bc45;
+  --green-transparent: rgba(0, 255, 4, 0.1);
+  --green-deep: #006e30;
+  --yesil-canli: #7DC500;
+  --yesil-dogal: #57ad57;
+  --yesil-destek: #19ba39;
+  --yesil-color-1: #2e7d32;
+  --yesil-color-1-soft: #e8f5e9;
+  --mint-green: #b6ffd2;
+  --arsiv-orgbaslik-color: #c2f2e1;
+  --arsiv-detay-btn-color: #2b4d41;
+  --bakiye-yesil: #E3FEE4;
+  --kirilgan-yesil: #F8FCF2;
+
+  /* Kırmızı/Turuncu Tonları */
+  --danger-pink: #ff004c;
+  --accent-red: #ff0000;
+  --red-warm: #ea2121;
+  --kirmizi-canli: #ff3f3f;
+  --kirmizi-sicak: #e95252;
+  --popup-saatkalan-sure-uyari: #ff0900;
+  --mint-orange: #ffdbb6;
+  --orange-bright: #ff9100;
+
+  /* Sarı Tonları */
+  --yellow-soft: #edffb1;
+  --yellow-pure: #dbff00;
+  --yazi-not: yellow;
+
+  /* Arka Plan Renkleri */
+  --light-bg: #e4e6e9;
+  --extra-light-gray: #f3fbff;
+  --extra-light-bg: #f9f9f9;
+  --ultra-light-bg: #f7f9fd;
+  --form-dark-bg: #f5f5f5;
+  --white-off: #FCFDFE;
+  --panel-bg-light: #F2F5FC;
+  --box-bg-light: #F2F5FC;
+  --lavender-bg: #F6F3FA;
+  --light-violet-bg: #f7eaff;
+  --pattern-bg-light-1: #fafafa;
+  --pattern-bg-light-2: #f0f0f0;
+  --peach-tint: #FEF6EC;
+  --info-card-bg: #dbe4e7;
+  --anakart-ciceksepeti-bg: #e1def1;
+  --ciceksepeti-anakart-bg: #ffffff;
+  --ciceksepeti-anakart-text: #000000;
+  --ciceksepeti-anakart-border: #f64798;
+
+  /* Overlay ve Shadow */
+  --gray-overlay: rgba(139, 139, 139, .1);
+  --overlay-gray-light: rgba(216, 216, 216, 0.3);
+  --overlay-gray-medium: rgba(216, 216, 216, 0.5);
+  --shadow-gray-soft: rgba(112, 112, 112, 0.2);
+  --black-alpha-25: rgba(0, 0, 0, 0.25);
+  --box-shadow-light: rgba(0, 0, 0, 0.1);
+  --black-true: black;
+  --gri-seffaf: rgba(112, 112, 112, 0.3);
+  --divider-gray-fade: rgba(200, 200, 200, 0.3);
+  --overlay-bg-black: #353543d9;
+  --popup-overlay-bg: rgba(0, 0, 0, 0.6);
+
+  /* Text Renkleri */
+  --text-gray-muted: #929598;
+
+  /* Diğer Renkler */
+  --action-blue: #004aca;
+  --magenta-deep: #9E0036;
+  --olive-dark-base: #687901;
+  --green-secondary: #358256;
+  --olive-alpha: rgba(76, 99, 0, 0.5);
+  --gray-zero-alpha: #9f9f9f00;
+  --whatsapp-green: #075E54;
+  --whatsapp-green-hover: #055a50;
+  --whatsapp-text: #fff;
+
+  /* Auto Color Variables */
+  --auto-color-1-1959a9: #373d3f;
+  --auto-color-2-5edde7: #ae9090;
+  --auto-color-3-5f6ebe: #ECEFF1;
+  --auto-color-4-50c71d: #f44336;
+  --auto-color-5-bdd34b: #EF71A7;
+  --auto-color-6-84d56e: #c5ddd1;
+  --auto-color-7-78c464: #F6AA47;
+  --auto-color-8-8a8a56: #E2F2EA;
+  --auto-color-9-5f3fcb: #F1F2F5;
+  --auto-color-10-2ea908: #bbbbbb;
+  --auto-color-11-44d210: #1249CA;
+  --auto-color-12-896e70: #05C760;
+  --auto-color-13-f96d40: #ffaa00;
+  --auto-color-14-33a56b: rgba(180, 180, 180, 0.2);
+  --auto-color-15-cc704d: #ff0000;
+  --auto-color-16-7c2376: #fff6f6;
+  --auto-color-17-b95ff8: #ffbaba;
+  --auto-color-18-8cb1d2: #00FF00;
+  --auto-color-19-5596d6: #F8F8F8;
+  --auto-color-20-0aceba: #FA9E57;
+  --auto-color-21-515809: rgba(0, 0, 0, 0.1);
+  --auto-color-22-69d815: #d5ffd5;
+  --auto-color-22-654321: #eeffee;
+  --auto-color-23-98f2d3: rgba(204, 204, 204, 0.3);
+  --auto-color-24-3561fd: rgba(216, 216, 216, .3);
+  --auto-color-25-84fd30: rgba(180, 180, 180, 0.1);
+  --auto-color-26-c11b5c: rgba(200, 200, 200, .5);
+  --auto-color-27-59e8bf: rgba(5, 63, 199, .5);
+  --auto-color-28-f69643: rgba(5, 63, 199, .1);
+  --auto-color-29-0313fa: rgba(5, 63, 199, .03);
+  --auto-color-30-286696: rgba(204, 204, 204, 0.2);
+  --auto-color-31-4934b2: rgba(112, 112, 112, .6);
+  --auto-color-32-a173a3: #f3fffe;
+  --auto-color-33-533816: #e6fdff;
+  --auto-color-34-09000d: rgba(196, 196, 196, 0.2);
+  --auto-color-35-8376cd: rgba(200, 200, 200, .6);
+  --auto-color-36-e978e6: rgba(255, 0, 93, .2);
+  --auto-color-37-a2c1e4: rgba(255, 255, 255, 0.85);
+  --auto-color-38-a2437e: #f1f1f1;
+  --auto-color-39-3d5cfd: #e3e3e3;
+  --auto-color-40-22b6cd: rgba(255, 255, 255, .9);
+  --auto-color-41-447ebf: rgba(112, 112, 112, .8);
+  --auto-color-42-0e3343: rgba(235, 235, 235, .4);
+  --auto-color-43-11a34c: rgba(112, 112, 112, .5);
+  --auto-color-44-754ec1: rgba(5, 63, 199, .05);
+  --auto-color-45-c0d775: rgba(185, 185, 185, .3);
+  --auto-color-46-4d0bcd: rgba(5, 63, 199, .02);
+  --auto-color-47-02eee3: rgba(5, 63, 199, .2);
+  --auto-color-48-7b1960: rgba(194, 44, 113, .3);
+  --auto-color-49-5dba46: #e8ffef;
+  --auto-color-50-6ebe39: rgba(0, 255, 76, 0.179);
+  --auto-color-51-be0bed: rgba(246, 71, 71, .05);
+  --auto-color-52-abcd12: #d6f5e2;
+  --auto-color-53-123abc: rgba(0, 123, 255, 0.1);
+
+  /* Login Sayfası */
+  --login-text: #ffffff;
+  --login-form-bg: #f1f3f7;
+  --img-mask: rgba(26, 27, 43, 0.4);
+  --landscape-overlay-bg: #ffffff;
+
+  /* Çiçek Sepeti */
+  --cckspt-primary-text: #0a5191;
+  --cckspt-bg-left: #fff;
+  --cckspt-modal-bottom: #fff3cd;
+  --cckspt-bg-datetime: #00ff440d;
+  --cckspt-border-datetime: #00ff44;
+  --cckspt-text-datetime: #00370F;
+
+  /* Raporlar */
+  --rapor-sicak-bg: #ff0000ab;
+  --rapor-sicak-color: #ffffff;
+  --tur-odeme: #ffd8e9;
+  --tur-tahsilat: #dfffeb;
+
+  /* Chart Renkleri */
+  --chart-color-1: var(--mor-primary);
+  --chart-color-2: var(--highlight-button-pink);
+  --chart-color-3: var(--accent-green-bold);
+  --chart-color-4: var(--karttur-bg-ozelgun-text);
+  --chart-color-5: var(--gray-soft-dark);
+
+  /* Kart Menü */
+  --kart-menu-content: #fff;
+
+  /* Uyarılar */
+  --gecmissiparisuyari-bg: #fff3cd;
+  --gecmissiparisuyari-border: #ffc107;
+
+  /* Müşteri Seç */
+  --bg-musteri-sec-satir: #e0eaff;
+
+  /* Tablo */
+  --table-sort-header-hover: #3f4268;
+  --tablo-satir-hover: #f9f9f9;
+  --siparis-detay-tablo-satir: #f5f5f5;
+  --tablo-satir-teslim-edilen: #d6f5e5;
+  --tablo-satir-teslim-edilen-hover: #b5dbc8;
+
+  /* Toast Notification */
+  --toast-bg: #ffffff;
+  --toast-text: #333333;
+  --toast-text-dark: #333333;
+  --toast-text-white: #fff;
+  --toast-shadow: rgba(0, 0, 0, 0.1);
+  --toast-success: #28a745;
+  --toast-error: #dc3545;
+  --toast-warning: #ffc107;
+  --toast-warning-text: #392b00;
+  --toast-info: #17a2b8;
+  --toast-checked-bg: #e6ffe8;
+  --toast-pass-bg: #e6ffe8;
+  --toast-button-confirm: #28a745;
+  --toast-button-cancel: #f0f0f0;
+  --toast-overlay-bg: rgba(0, 0, 0, 0.6);
+
+  /* Partner Siparişler */
+  --partner-siparis-verilen: #e65c43;
+  --partner-siparis-verilen-i-bg: #ff8b773d;
+  --partner-siparis-alinan: #e0428d;
+  --partner-siparis-alinan-i-bg: #ff77b530;
+
+  /* Teslim Saati Süre Uyarıları */
+  --ts-kalan-sure-uyari-text: #ffffff;
+  --ts-kalan-sure-uyari-bg: #ff0000;
+  --ts-saat-gecti-uyari-text: #293300;
+  --ts-saat-gecti-uyari-bg: #cfff00;
+  --ts-saat-gecti-uyari-border: #779300;
+  --ts-daha-zaman-var-text: #2E3237;
+  --ts-daha-zaman-var-bg: #ffffff;
+  --ts-daha-zaman-var-border: #d8d8d8;
+
+  /* Scroll Bar */
+  --scroll-thumb-color: #9e9e9e;
+  --scroll-thumb-color-hover: #b3b3b3;
+  --scroll-track-color: #f1f1f1;
+
+  /* Araç Takip */
+  --arac-takip-teslimat-kenarlık: #e1e5e9;
+  --arac-takip-beklemede-zemin: #fed7d7;
+  --arac-takip-beklemede-metin: #c53030;
+  --arac-takip-aktif-zemin: #edfff2;
+  --arac-takip-aktif-metin: #2f855a;
+  --arac-takip-tamamlandi-zemin: #bee3f8;
+  --arac-takip-tamamlandi-metin: #2b6cb0;
+  --arac-takip-main-logo-bg: #282c5b;
+  --arac-takip-vehicle-item-bg: #f1f3f7;
+  --arac-takip-vehicle-item-bg-hover: #e1e4eb;
+
+  /* Yaklaşan Siparişler */
+  --yaklasan-siparis-bg: #d8e7ed;
+  --yaklasan-siparis-footer: #c1dce6;
+  --yaklasan-siparis-text: #2E3237;
+  --yaklasan-siparis-alan-bg: #ffffff;
+
+  /* Satış Türü Badge Renkleri */
+  --rapor-nakit-bg: #e8f5e9;
+  --rapor-nakit-color: #2e7d32;
+  --rapor-pos-bg: #e3f2fd;
+  --rapor-pos-color: #1565c0;
+  --rapor-havale-bg: #fff3e0;
+  --rapor-havale-color: #e65100;
+  --rapor-cari-bg: #f3e5f5;
+  --rapor-cari-color: #7b1fa2;
+  --rapor-sicak-satis-bg: #ffebe6;
+  --rapor-sicak-satis-color: #ff6b35;
+  --rapor-bilgi-box-1-color: var(--success-green);
+  --rapor-bilgi-box-2-color: var(--gri70);
+  --rapor-bilgi-box-3-color: var(--orange-bright);
+  --rapor-bilgi-box-4-color: var(--rapor-sicak-satis-color);
+
+  /* Profil Yetki Kart İkonları */
+  --profil-yetki-sistem-end: #8b5cf6;
+  --profil-yetki-siparis-start: #3b82f6;
+  --profil-yetki-siparis-end: #60a5fa;
+  --profil-yetki-teslimat-start: #10b981;
+  --profil-yetki-teslimat-end: #34d399;
+  --profil-yetki-kart-footer-bg: rgba(0, 0, 0, 0.02);
+  --profil-yetki-kart-footer-bg-dark: rgba(255, 255, 255, 0.03);
+  --profil-kart-hover-shadow: rgba(109, 40, 217, 0.1);
+  --profil-secure-bg: #fcfcfc;
+
+  /* Fatura */
+  --fatura-kesildi-bg: #d4edda;
+  --fatura-kesildi-color: #155724;
+  --fatura-kesilmedi-bg: #f8d7da;
+  --fatura-kesilmedi-color: #721c24;
+  --fatura-taslak-bg: #fff3cd;
+  --fatura-taslak-color: #856404;
+  --fatura-gonderildi-bg: #cce5ff;
+  --fatura-gonderildi-color: #004085;
+
+  /* Diğer */
+  --export-button-blue: #282C5B;
+  --export-button-text: #ffffff;
+  --form-date-input-bg: #e0f6ff;
+  --parameter-save-button: rgb(5, 63, 199, .8);
+  --list-item-hover: #f2f2f2;
+  --sidebar-item-hover: #f5f3ff; /* mor ton hover */
+  --sidebar-icon-color: #4b5563; /* text-gray-600 equivalent */
+  --sidebar-icon-hover-color: #111827; /* text-gray-900 equivalent */
+  --sidebar-icon-active-bg: #ede9fe; /* mor ton active bg (purple-50) */
+  --sidebar-icon-active-color: var(--mor-primary);
+  --sidebar-hover-bg: #f5f3ff; /* mor ton hover bg */
+  --sidebar-tooltip-bg: #2e1065; /* mor koyu tooltip */
+  --sidebar-tooltip-text: #ffffff; /* text-white */
+  --body-bg: #f1f3f7;
+  --edit-button-bg: #EBF1EE;
+  --edit-button-bg-hover: #bfd4ca;
+  --partner-siparis-input-bg: #fff2f8;
+  --dark-green-button: #005530;
+}
+
+/* Dark Mode Variables */
+body.dark-mode,
+html.dark-mode {
+  --primary-pink: rgb(255, 255, 255);
+  --anakart-ciceksepeti-bg: #0e0a25;
+  --ana-renk: #e5e5e5;
+  --ana-renk-only: #ffffff;
+  --ikincil-renk: #d9d9d9;
+  --mavi-renk: #004cff;
+  --mavi-renk-only: var(--mor-primary); /* #a6c1ff eski mavi-renk-only dark */
+  --mor-renk-hover: #7c5cff; /* mor açık hover dark */
+  --mor-primary-text: #ffffff; /* dark temada mor yazılar okunabilsin diye beyaz */
+  --mor-primary-flex: #ffffff; /* dark'ta mor yerine beyaz (tab active, vurgu metin vb.) */
+  --gri70: #c8c8c8;
+  --border-renk: #36353F;
+  --profil-secure-bg: #252830;
+  --search-input-border: #505060;
+  --filter-input-border: #4a4a55;
+  /* Müşteri detay - Yüklenen dosyalar (dark: koyu zemin ve hover) */
+  --customers-detail-files-bg: #1a2535;
+  --customers-detail-file-item-hover: #253340;
+  --placeholder: #939393;
+  --white: #1D2026;
+  --ciceksepeti-anakart-bg: #001425;
+  --ciceksepeti-anakart-text: #ffffff;
+  --ciceksepeti-anakart-border: #f64798;
+  --white-only: #ffffff;
+  --light-gray: #2a2d39;
+  --ultralight-gray: #2a2d39;
+  --islem-ikon-bg: #373a45;
+  --mid-gray: #545454;
+  --dark-gray: #e1e1e1;
+  --gray-border: #444;
+  --accent-pink: #FF77B5;
+  --input-border-gray: #7f7f7f;
+  --border-color: #414141;
+  --highlight-button-pink: #ff77ab;
+  --karttur-bg-organizasyon-border: #F64798;
+  
+  /* Kart Türü Renkleri - Dark Mode (Eski sistemden: Background solid renk, Text beyaz) */
+  --karttur-bg-organizasyon: rgb(246, 71, 153);
+  --karttur-bg-organizasyon-text: rgb(255, 255, 255);
+  --karttur-bg-ozelsiparis: rgb(111, 79, 174);
+  --karttur-bg-ozelsiparis-text: rgb(255, 255, 255);
+  --karttur-bg-ozelsiparis-border: rgba(110, 79, 174, 1);
+  --karttur-bg-ozelgun: rgb(255, 52, 25);
+  --karttur-bg-ozelgun-text: rgb(255, 255, 255);
+  --karttur-bg-ozelgun-border: rgba(222, 60, 0, 1);
+  --karttur-bg-aracsusleme: rgb(255, 136, 0);
+  --karttur-bg-aracsusleme-text: rgb(255, 255, 255);
+  --karttur-bg-aracsusleme-border: rgba(255, 136, 0, 1);
+  
+  --light-bg: #1a1a1a;
+  --subtle-gray: #999;
+  --gray-overlay: rgba(255, 255, 255, 0.05);
+  --blue-transparent: #689dfb38;
+  --extra-light-gray: #292e39;
+  --gray-soft-dark: #999;
+  --gray-subtle-dark: #999;
+  --gray-ultra-light: #444;
+  --pink-soft-bg: #3a1f2a;
+  --arsiv-orgbaslik-color: #1a3d2e;
+  --arsiv-detay-btn-color: #7dd3a0;
+  --success-green: #44d46b;
+  --danger-pink: #ff4444;
+  --action-blue: #699dff;
+  --ultra-light-bg: #1a1a1a;
+  --mint-blue: #1a2d4d;
+  --mint-green: #1a3d2e;
+  --mint-orange: #3d2d1a;
+  --extra-light-bg: #1a1a1a;
+  --form-dark-bg: #282d37;
+  --soft-blue-bg: #1a2d3d;
+  --success-green-transparent: rgba(68, 212, 107, 0.1);
+  --lavender-bg: #2a1f3a;
+  --sky-light-bg: #1a2d3d;
+  --blue-dark: #a6c1ff;
+  --calm-cyan: #4a8a94;
+  --light-aqua-bg: #0b1c2b;
+  --ay-aqua-bg: #1a3d3d;
+  --hafta-aqua-bg: #0f2a2a;
+  --light-violet-bg: #2a1f3a;
+  --neutral-gray-b1: #666;
+  --neutral-gray-e3: #444;
+  --panel-bg-light: #1a1d26;
+  --box-bg-light: #1a1d26;
+  --overlay-gray-light: rgba(255, 255, 255, 0.1);
+  --overlay-gray-medium: rgba(255, 255, 255, 0.2);
+  --shadow-gray-soft: rgba(255, 255, 255, 0.1);
+  --text-gray-muted: #999;
+  --gray-surface-light: #666;
+  --gray-classic: #666;
+  --accent-green-alpha: #1a3d2e;
+  --accent-green-alpha-hover: #2a4d3e;
+  --accent-green-bold: #44d46b;
+  --accent-red: #ff4444;
+  --accent-blue-soft: rgba(183, 205, 255, 0.4);
+  --bg-blue-pale: #1a2d4d;
+  --divider-gray-fade: rgba(255, 255, 255, 0.1);
+  --magenta-deep: #ff77b5;
+  --green-transparent: rgba(68, 212, 107, 0.1);
+  --green-deep: #44d46b;
+  --pink-blush-alpha: rgba(255, 119, 181, 0.1);
+  --yellow-soft: #3d3d1a;
+  --olive-dark-base: #7d8a1a;
+  --green-secondary: #00ff66;
+  --pink-alpha-strong: rgba(255, 119, 181, 0.5);
+  --olive-alpha: rgba(125, 138, 26, 0.5);
+  --gray-zero-alpha: #9f9f9f00;
+  --gray-light-ce: #444;
+  --gray-light-ec: #282934;
+  --gray-light-v2: #31323b;
+  --white-off: #1a1a1a;
+  --black-alpha-25: rgba(255, 255, 255, 0.1);
+  --box-shadow-light: rgba(255, 255, 255, 0.1);
+  --black-true: white;
+  --whatsapp-green: #25D366;
+  --whatsapp-green-hover: #1da851;
+  --whatsapp-text: #fff;
+  --gray-light-comon: #31323b;
+  --gray-ui-bg: #3b3b3b;
+  --gray-text-base: #999;
+  --gray-light-f2: #31323b;
+  --gray-light-dd: #444;
+  --pink-rich-alpha: rgba(255, 119, 181, 0.5);
+  --peach-tint: #3d2d1a;
+  --orange-bright: #ffb178;
+  --red-warm: #ff6666;
+  --popup-saatkalan-sure-uyari: #ff4444;
+  --gray-light-ee: #2a2a2a;
+  --pink-intense: #ff77b5;
+  --blue-vivid: #699dff;
+  --yellow-pure: #ffd700;
+  --gray-basic: #666;
+  /* Popup’larda ikincil metin: daha açık gri (okunabilirlik) */
+  --gray-popup-secondary: #b4b4be;
+  --pattern-bg-light-1: #1a1a1a;
+  --pattern-bg-light-2: #2a2a2a;
+  --export-button-blue: #474852;
+  --export-button-text: #ffffff;
+  --form-date-input-bg: #1a2d3d;
+  --overlay-bg-black: rgba(0, 0, 0, 0.8);
+  --yazi-not: #ffd700;
+  --dark-green-button: #44d46b;
+  --edit-button-bg: #1a3d2e;
+  --edit-button-bg-hover: #2a4d3e;
+  --partner-siparis-input-bg: #3a1f2a;
+  --gray-border: rgb(255, 255, 255, 0.1);
+  --parameter-save-button: rgba(183, 205, 255, 0.8);
+  --list-item-hover: #2a2a2a;
+  --sidebar-item-hover: #252038; /* mor ton dark hover */
+  --sidebar-icon-color: #c8c8c8; /* Dark mode icon color */
+  --sidebar-icon-hover-color: #ffffff; /* Dark mode hover icon color */
+  --sidebar-icon-active-bg: #2e1065; /* mor koyu active bg */
+  --sidebar-icon-active-color: #ffffff; /* dark temada seçili ikon beyaz */
+  --sidebar-hover-bg: #252038; /* mor ton dark hover bg */
+  --sidebar-tooltip-bg: #2e1065; /* mor koyu tooltip */
+  --sidebar-tooltip-text: #e5e5e5; /* Dark mode tooltip text */
+  --body-bg: #1a1d29;
+  --bakiye-yesil: #1a3d2e;
+  --kirilgan-yesil: #2a3d2a;
+  --gri-seffaf: rgba(255, 255, 255, 0.1);
+  --yesil-canli: #44d46b;
+  --mavi-seffaf: rgba(183, 205, 255, 0.8);
+  --gri-orta: #666;
+  --gri-acik: #888;
+  --mor-primary: #6D28D9; /* net mor dark tema */
+  /* dark temada mor yazılar için --mor-primary-text yukarıda #ffffff olarak tanımlı */
+  /* --mavi-canli: #699dff; (eski mavi-canli dark) */
+  --yesil-dogal: #44d46b;
+  --kirmizi-canli: #ff6666;
+  --kirmizi-sicak: #ff7777;
+  --yesil-destek: #44d46b;
+  --yesil-color-1: #44d46b;
+  --yesil-color-1-soft: #1a3d2e;
+  --info-card-bg: #27383f;
+
+  /* Auto Color Variables - Dark Mode */
+  --auto-color-1-1959a9: #1f2324;
+  --auto-color-2-5edde7: #8e7c7c;
+  --auto-color-3-5f6ebe: #2a2d2f;
+  --auto-color-4-50c71d: #ff6659;
+  --auto-color-5-bdd34b: #ff94c1;
+  --auto-color-6-84d56e: #a2bcb4;
+  --auto-color-7-78c464: #ffc270;
+  --auto-color-8-8a8a56: #234233;
+  --auto-color-9-5f3fcb: #2b2c2f;
+  --auto-color-10-2ea908: #cccccc;
+  --auto-color-11-44d210: #4675f5;
+  --auto-color-12-896e70: #00f3a2;
+  --auto-color-13-f96d40: #e0a830;
+  --auto-color-14-33a56b: rgba(255, 255, 255, 0.1);
+  --auto-color-15-cc704d: #ff4444;
+  --auto-color-16-7c2376: #3a1f1f;
+  --auto-color-17-b95ff8: #5f2a2a;
+  --auto-color-18-8cb1d2: #00cc00;
+  --auto-color-19-5596d6: #2a2a2a;
+  --auto-color-20-0aceba: #ffb178;
+  --auto-color-21-515809: rgba(255, 255, 255, 0.05);
+  --auto-color-22-69d815: #284128;
+  --auto-color-22-654321: #244124;
+  --auto-color-23-98f2d3: rgba(255, 255, 255, 0.2);
+  --auto-color-24-3561fd: rgba(200, 200, 200, 0.2);
+  --auto-color-25-84fd30: rgba(255, 255, 255, 0.05);
+  --auto-color-26-c11b5c: rgba(255, 255, 255, 0.3);
+  --auto-color-27-59e8bf: rgba(130, 160, 255, 0.3);
+  --auto-color-28-f69643: rgba(130, 160, 255, 0.1);
+  --auto-color-29-0313fa: rgba(130, 160, 255, 0.03);
+  --auto-color-30-286696: rgba(255, 255, 255, 0.1);
+  --auto-color-31-4934b2: rgba(180, 180, 180, 0.70);
+  --auto-color-32-a173a3: #182020;
+  --auto-color-33-533816: #2d4d4d;
+  --auto-color-34-09000d: rgba(255, 255, 255, 0.1);
+  --auto-color-35-8376cd: rgba(255, 255, 255, 0.4);
+  --auto-color-36-e978e6: rgba(255, 100, 150, 0.2);
+  --auto-color-37-a2c1e4: rgba(72, 72, 72, 0.85);
+  --auto-color-38-a2437e: #3d3d3d;
+  --auto-color-39-3d5cfd: #3a3a3a;
+  --auto-color-40-22b6cd: rgba(255, 255, 255, 0.9);
+  --auto-color-41-447ebf: rgba(255, 255, 255, 0.6);
+  --auto-color-42-0e3343: rgba(255, 255, 255, 0.4);
+  --auto-color-43-11a34c: rgba(255, 255, 255, 0.5);
+  --auto-color-44-754ec1: rgba(130, 160, 255, 0.05);
+  --auto-color-45-c0d775: rgba(255, 255, 255, 0.2);
+  --auto-color-46-4d0bcd: rgba(130, 160, 255, 0.02);
+  --auto-color-47-02eee3: rgba(130, 160, 255, 0.2);
+  --auto-color-48-7b1960: rgba(255, 100, 180, 0.3);
+  --auto-color-49-5dba46: #1a2e22;
+  --auto-color-50-6ebe39: rgba(0, 255, 81, 0.13);
+  --auto-color-51-be0bed: rgba(255, 100, 100, 0.05);
+  --auto-color-52-abcd12: #243b2d;
+  --auto-color-53-123abc: rgba(0, 123, 255, 0.1);
+
+  /* Login Sayfası - Dark Mode */
+  --login-text: #ffffff;
+  --login-form-bg: #282d37;
+  --img-mask: rgba(26, 27, 43, 0.4);
+  --landscape-overlay-bg: #1d2026;
+
+  /* Çiçek Sepeti - Dark Mode */
+  --cckspt-primary-text: #fff;
+  --cckspt-bg-left: #26292e;
+  --cckspt-modal-bottom: #26292e;
+  --cckspt-bg-datetime: #00ff440d;
+  --cckspt-border-datetime: #00ff44;
+  --cckspt-text-datetime: #fff;
+
+  /* Raporlar - Dark Mode */
+  --rapor-sicak-bg: #ff0000ab;
+  --rapor-sicak-color: #ffffff;
+  --tur-odeme: #9b3d66;
+  --tur-tahsilat: #234c33;
+
+  /* Chart Renkleri - Dark Mode */
+  --chart-color-1: var(--blue-vivid);
+  --chart-color-2: var(--pink-intense);
+  --chart-color-3: var(--yesil-destek);
+  --chart-color-4: var(--orange-bright);
+  --chart-color-5: var(--gray-light-cc);
+
+  /* Kart Menü - Dark Mode */
+  --kart-menu-content: #050810;
+
+  /* Uyarılar - Dark Mode */
+  --gecmissiparisuyari-bg: #3c3623;
+  --gecmissiparisuyari-border: #d8b200;
+
+  /* Müşteri Seç - Dark Mode */
+  --bg-musteri-sec-satir: #2a354a;
+
+  /* Tablo - Dark Mode */
+  --table-sort-header-hover: #bdbdbd7d;
+  --tablo-satir-hover: #22272f;
+  --siparis-detay-tablo-satir: #2c2c35;
+  --tablo-satir-teslim-edilen: #234233;
+  --tablo-satir-teslim-edilen-hover: #183226;
+
+  /* Toast Notification - Dark Mode */
+  --toast-bg: #252340;
+  --toast-text: #e0e0e0;
+  --toast-text-dark: #333333;
+  --toast-text-white: #fff;
+  --toast-shadow: rgba(0, 0, 0, 0.6);
+  --toast-success: #44d46b;
+  --toast-error: #dc3545;
+  --toast-warning: #ffcc5c;
+  --toast-warning-text: #fff6dc;
+  --toast-info: #4dd0e1;
+  --toast-checked-bg: #1d7b3b;
+  --toast-pass-bg: #003805;
+  --toast-button-confirm: #28a745;
+  --toast-button-cancel: #f0f0f0;
+  --toast-overlay-bg: rgba(0, 0, 0, 0.8);
+
+  /* Partner Siparişler - Dark Mode */
+  --partner-siparis-verilen: #ff8b77;
+  --partner-siparis-verilen-i-bg: #ff8b7740;
+  --partner-siparis-alinan: #ff77b5;
+  --partner-siparis-alinan-i-bg: #ff77b542;
+
+  /* Teslim Saati Süre Uyarıları - Dark Mode */
+  --ts-kalan-sure-uyari-text: #ffffff;
+  --ts-kalan-sure-uyari-bg: #ff5050;
+  --ts-saat-gecti-uyari-text: #293300;
+  --ts-saat-gecti-uyari-bg: #cfff00;
+  --ts-saat-gecti-uyari-border: #779300;
+  --ts-daha-zaman-var-text: #2E3237;
+  --ts-daha-zaman-var-bg: #ffffff;
+  --ts-daha-zaman-var-border: #d8d8d8;
+
+  /* Scroll Bar - Dark Mode */
+  --scroll-thumb-color: #939393;
+  --scroll-thumb-color-hover: #abaaaa;
+  --scroll-track-color: transparent;
+
+  /* Araç Takip - Dark Mode */
+  --arac-takip-teslimat-kenarlık: #4a5568;
+  --arac-takip-beklemede-zemin: #742a2a;
+  --arac-takip-beklemede-metin: #fed7d7;
+  --arac-takip-aktif-zemin: #22543d;
+  --arac-takip-aktif-metin: #c6f6d5;
+  --arac-takip-tamamlandi-zemin: #2a4365;
+  --arac-takip-tamamlandi-metin: #bee3f8;
+  --arac-takip-main-logo-bg: #36353f;
+  --arac-takip-vehicle-item-bg: #36353f;
+  --arac-takip-vehicle-item-bg-hover: #2b2a33;
+
+  /* Yaklaşan Siparişler - Dark Mode */
+  --yaklasan-siparis-bg: #223151;
+  --yaklasan-siparis-footer: #343d4f;
+  --yaklasan-siparis-text: #ffffff;
+  --yaklasan-siparis-alan-bg: #1a1d26;
+
+  /* Satış Türü Badge Renkleri - Dark Mode */
+  --rapor-nakit-bg: #1a3d2e;
+  --rapor-nakit-color: #44d46b;
+  --rapor-pos-bg: #1a2d4d;
+  --rapor-pos-color: #699dff;
+  --rapor-havale-bg: #3d2d1a;
+  --rapor-havale-color: #ffb178;
+  --rapor-cari-bg: #3a1f3a;
+  --rapor-cari-color: #ff77b5;
+  --rapor-sicak-satis-bg: #ff240029;
+  --rapor-sicak-satis-color: #ffdec5;
+
+  /* Fatura - Dark Mode */
+  --fatura-kesildi-bg: #1a3d2e;
+  --fatura-kesildi-color: #44d46b;
+  --fatura-kesilmedi-bg: #3a1f1f;
+  --fatura-kesilmedi-color: #ff6666;
+  --fatura-taslak-bg: #3d2d1a;
+  --fatura-taslak-color: #ffb178;
+  --fatura-gonderildi-bg: #1a2d4d;
+  --fatura-gonderildi-color: #699dff;
+}
+
+/* Light tema: date/time varsayılan ikon rengi (siyah/koyu) */
+:root {
+  --input-date-time-indicator-filter: none;
+  --input-date-time-indicator-opacity: 1;
+}
+
+/* Dark tema: date/time input takvim ve saat ikonları açık renkte görünsün – !important ile modal-styles’taki brightness(0) ezilir */
+body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode input[type="time"]::-webkit-calendar-picker-indicator,
+body.dark-mode input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+html.dark-mode input[type="date"]::-webkit-calendar-picker-indicator,
+html.dark-mode input[type="time"]::-webkit-calendar-picker-indicator,
+html.dark-mode input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+body.dark-mode .yeni-kart-container input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode .yeni-kart-container input[type="time"]::-webkit-calendar-picker-indicator,
+body.dark-mode .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator,
+body.dark-mode .yeni-musteri-container input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode .yeni-musteri-container input[type="time"]::-webkit-calendar-picker-indicator,
+body.dark-mode .yeni-siparis-container input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode .yeni-siparis-container input[type="time"]::-webkit-calendar-picker-indicator,
+body.dark-mode .yeni-siparis-container .input-alan input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode .yeni-siparis-container .input-alan input[type="time"]::-webkit-calendar-picker-indicator,
+body.dark-mode [class*="overlay"] input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode [class*="overlay"] input[type="time"]::-webkit-calendar-picker-indicator,
+body.dark-mode [class*="overlay"] .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode [class*="overlay"] .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) !important;
+  opacity: 0.85 !important;
+  cursor: pointer;
+}
+
+body.dark-mode,
+html.dark-mode {
+  --input-date-time-indicator-filter: invert(1);
+  --input-date-time-indicator-opacity: 0.85;
+}
+

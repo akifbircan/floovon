@@ -1,0 +1,178 @@
+/* Toast override: mor primary, beyaz yazı, büyük harf butonlar, daha belirgin tasarım */
+
+/* Onay butonu → mor primary, beyaz yazı */
+.toast-btn-confirm,
+.toast .toast-btn.toast-btn-confirm,
+.toast-btn.toast-btn-confirm {
+  background-color: var(--mor-primary, #6D28D9) !important;
+  color: var(--white-only) !important;
+  font-weight: 600;
+}
+
+/* .toast-btn-confirm:hover,
+.toast .toast-btn.toast-btn-confirm:hover {
+  filter: brightness(1.1);
+  color: #ffffff !important;
+} */
+
+/* Danger buton da mor primary + beyaz */
+.toast-btn-danger,
+.toast .toast-btn.toast-btn-danger {
+  background-color: var(--mor-primary, #6D28D9) !important;
+  color: var(--white-only) !important;
+  font-weight: 600;
+}
+
+.toast-btn-danger:hover {
+  filter: brightness(1.1);
+  color: var(--white-only) !important;
+}
+
+/* Toast aksiyon butonları - normal casing (İptal, Evet, Sil) */
+.toast .toast-actions .toast-btn,
+.toast-btn-cancel {
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* İptal butonu: açık zemin, koyu yazı (mevcut gibi) */
+.toast-btn-cancel {
+  color: var(--toast-text-dark, #1e293b) !important;
+}
+
+/* Toast: zemin tema rengi (light=beyaz, dark=koyu); yazı ve ikonlar renkli (tema değişkenleri) */
+.toast {
+  background-color: var(--toast-bg) !important;
+  color: var(--toast-text) !important;
+}
+.toast .column span {
+  color: var(--toast-text) !important;
+}
+.toast .toast-close,
+.toast .toast-close svg {
+  color: var(--toast-text) !important;
+  fill: none !important;
+  stroke: var(--toast-text) !important;
+}
+
+/* Light tema: zemin beyaz (--toast-bg #fff), yazı koyu (--toast-text #333) */
+/* Dark tema: zemin koyu (--toast-bg #252340), yazı açık (--toast-text #e0e0e0) */
+
+/* Sol çizgi + sol ikon tipe göre renkli (success/error/warning/info – tema değişkenleri) */
+.toast.success {
+  border-left-color: var(--toast-success);
+  background-color: var(--toast-bg) !important;
+}
+.toast.success .toast-icon,
+.toast.success .toast-icon svg {
+  color: var(--toast-success) !important;
+  fill: none !important;
+  stroke: var(--toast-success) !important;
+}
+
+.toast.error {
+  border-left-color: var(--toast-error);
+  background-color: var(--toast-bg) !important;
+}
+.toast.error .toast-icon,
+.toast.error .toast-icon svg {
+  color: var(--toast-error) !important;
+  fill: none !important;
+  stroke: var(--toast-error) !important;
+}
+
+.toast.warning {
+  border-left-color: var(--toast-warning);
+  background-color: var(--toast-bg) !important;
+}
+.toast.warning .column span {
+  color: var(--toast-warning-text, var(--toast-text)) !important;
+}
+.toast.warning .toast-icon,
+.toast.warning .toast-icon svg {
+  color: var(--toast-warning) !important;
+  fill: none !important;
+  stroke: var(--toast-warning) !important;
+}
+
+.toast.info {
+  border-left-color: var(--toast-info);
+  background-color: var(--toast-bg) !important;
+}
+.toast.info .toast-icon,
+.toast.info .toast-icon svg {
+  color: var(--toast-info) !important;
+  fill: none !important;
+  stroke: var(--toast-info) !important;
+}
+
+/* Diğer tipler – zemin ve yazı tema değişkeni */
+.toast:not(.success):not(.error):not(.warning):not(.info) {
+  background-color: var(--toast-bg) !important;
+  color: var(--toast-text) !important;
+}
+.toast:not(.success):not(.error):not(.warning):not(.info) .column span,
+.toast:not(.success):not(.error):not(.warning):not(.info) .toast-close,
+.toast:not(.success):not(.error):not(.warning):not(.info) .toast-close svg {
+  color: var(--toast-text) !important;
+  stroke: var(--toast-text) !important;
+}
+
+/* İkon kutusu – SVG stroke ile çizili */
+.toast .toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.toast .toast-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* Genel toast gölge ve radius */
+.toast {
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.toast.interactive {
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobil: toast'lar kenarlardan boşluklu (modallarla aynı 16px) – inline stilleri geçersiz kılmak için !important */
+@media (max-width: 767px) {
+  .app-toast-container,
+  [class*="toast"][class*="container"] {
+    left: 16px !important;
+    right: 16px !important;
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+  .app-toast-container > div,
+  [class*="toast"][class*="container"] > div {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+
+
+
+
+
+
+
+

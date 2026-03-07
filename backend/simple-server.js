@@ -9887,6 +9887,9 @@ app.get('/api/organizasyon-kartlar', async (req, res) => {
             }
         }
 
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         res.json({
             success: true,
             data: organizasyonKartlari,
@@ -10625,6 +10628,9 @@ app.get('/api/siparis-kartlar', async (req, res) => {
                 throw colErr;
             }
         }
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         res.json({ success: true, data: list || [] });
     } catch (error) {
         console.error('❌ GET /api/siparis-kartlar hatası:', error);
@@ -10996,6 +11002,9 @@ app.get('/api/siparis-kartlar/archived', async (req, res) => {
             return tb - ta;
         });
 
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         res.json({
             success: true,
             data: birlesik,

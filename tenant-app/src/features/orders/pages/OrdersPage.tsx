@@ -222,7 +222,7 @@ export const OrdersPage: React.FC = () => {
     queryKey: ['archived-orders'],
     queryFn: async () => {
       try {
-        const result = await apiRequest<ArchivedOrder[] | { data?: ArchivedOrder[] }>('/siparis-kartlar/archived', {
+        const result = await apiRequest<ArchivedOrder[] | { data?: ArchivedOrder[] }>(`/siparis-kartlar/archived?t=${Date.now()}`, {
           method: 'GET',
         });
         const arr = Array.isArray(result) ? result : (result?.data ?? []);
@@ -234,7 +234,8 @@ export const OrdersPage: React.FC = () => {
         throw err;
       }
     },
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 0,
     retry: false,
   });
 

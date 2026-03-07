@@ -1,0 +1,7 @@
+# Sunucuya SSH ile baglanip git pull + build + pm2 restart yapmak icin
+# Bu dosyayi "sunucu-config.txt" olarak kopyalayin ve asagidaki degerleri doldurun.
+# sunucu-config.txt .gitignore'da oldugu icin GitHub'a gitmez.
+
+host=panel.floovon.com
+user=akifbircan
+remotepath=/home/floovon/htdocs/panel.floovon.com

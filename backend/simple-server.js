@@ -8356,6 +8356,7 @@ app.get('/api/admin/tenants', requireAdmin, async (req, res) => {
                 plan_end_date: t.plan_end_date
             };
         });
+        res.setHeader('X-Admin-Tenants-Version', '2'); // 2 = en son abonelik satırı (console/panel uyumlu)
         res.json({ success: true, data });
     } catch (error) {
         console.error('❌ /api/admin/tenants hatası:', error);

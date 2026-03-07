@@ -8386,6 +8386,9 @@ app.get('/api/admin/tenants', requireAdmin, async (req, res) => {
             };
         });
         res.setHeader('X-Admin-Tenants-Version', '3');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         res.json({ success: true, data });
     } catch (error) {
         console.error('❌ /api/admin/tenants hatası:', error);

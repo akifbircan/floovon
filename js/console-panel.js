@@ -513,12 +513,15 @@ class AdminPanel {
                 tbody.innerHTML = '<tr><td colspan="7" class="p-12 text-center text-slate-400">Yükleniyor...</td></tr>';
             }
             
-            const response = await fetch(`${this.apiBase}/admin/tenants`, {
+            const response = await fetch(`${this.apiBase}/admin/tenants?t=${Date.now()}`, {
                 headers: {
                     'Authorization': `Bearer ${this.adminToken}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
                 },
-                credentials: 'include'
+                credentials: 'include',
+                cache: 'no-store'
             });
             
             if (!response.ok) {

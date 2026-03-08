@@ -851,6 +851,15 @@ if (hasTenantAppDist) {
             res.status(404).end();
         }
     });
+    app.get('/favicon.ico', (req, res) => {
+        const p = path.join(tenantAppDistPath, 'favicon.ico');
+        if (fs.existsSync(p)) {
+            res.type('image/x-icon');
+            res.sendFile(p);
+        } else {
+            res.status(404).end();
+        }
+    });
 }
 
 // 3. Uzantısız URL'leri .html dosyasına yönlendir (static middleware'den ÖNCE!)

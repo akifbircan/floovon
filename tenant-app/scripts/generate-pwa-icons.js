@@ -18,12 +18,16 @@ const files = [
 ];
 
 function main() {
+  if (!fs.existsSync(faviconDir)) {
+    console.warn('PWA ikonları: favicon klasörü yok, atlanıyor (mevcut public ikonları kullanılacak).');
+    return;
+  }
   for (const { from, to } of files) {
     const src = path.join(faviconDir, from);
     const dest = path.join(publicDir, to);
     if (!fs.existsSync(src)) {
-      console.error(`Bulunamadı: ${src}`);
-      process.exit(1);
+      console.warn(`PWA ikonları: ${from} bulunamadı, atlanıyor.`);
+      continue;
     }
     fs.copyFileSync(src, dest);
     console.log(`${to} (favicon/${from} kopyalandı)`);

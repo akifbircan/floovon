@@ -21,17 +21,19 @@
 .btn-close-modal:hover,
 .whatsapp-info-modal-close-btn:hover,
 .btn-close-form:hover {
-    background-color: var(--light-gray, rgba(0, 0, 0, 0.06)) !important;
+    background-color: var(--light-gray) !important;
     color: var(--ana-renk) !important;
 }
 
 /* ========== TEK ORTAK BUTON STİLLERİ (Kaydet = primary mor, Vazgeç = secondary) ========== */
-/* Primary: mor arka plan, beyaz yazı – tüm form/modal “Kaydet / Gönder” butonları bu bloktan alır */
+/* Yapı: (1) Primary tam stil, (2) Secondary tam stil, (3) Sadece 12px – primary/secondary’de olmayan modal butonları */
+/* Primary: mor arka plan, beyaz yazı, 12px – tüm form/modal Kaydet/Gönder butonları */
 .btn-modal-primary,
 .primary-button,
 .btn-kaydet,
 .btn-guncelle,
 .btn-kart-olustur,
+.popup-btn-save,
 .modal-react-teknik-destek-btn-primary,
 .modal-react-teknik-destek-btn,
 .modal-react-sicak-satis-kaydet,
@@ -58,6 +60,7 @@
 .btn-kaydet:hover:not(:disabled),
 .btn-guncelle:hover:not(:disabled),
 .btn-kart-olustur:hover:not(:disabled),
+.popup-btn-save:hover:not(:disabled),
 .modal-react-teknik-destek-btn-primary:hover:not(:disabled),
 .modal-react-teknik-destek-btn:hover:not(:disabled),
 .modal-react-sicak-satis-kaydet:hover:not(:disabled),
@@ -65,7 +68,7 @@
 .modal-react-arsiv-sebep-btn:hover:not(:disabled),
 .modal-react-teslim-foto-add:hover:not(:disabled),
 .modal-react-order-action-btn:hover:not(:disabled) {
-    opacity: 0.92 !important;
+    opacity: 0.90 !important;
     filter: brightness(1.05) !important;
     color: var(--white-only) !important;
 }
@@ -80,6 +83,7 @@
 .secondary-button,
 .btn-vazgec,
 .btn-iptal,
+.popup-btn-cancel,
 .modal-react-teknik-destek-footer .btn-vazgec,
 .modal-react-teknik-destek-footer .secondary-button {
     padding: 10px 24px !important;
@@ -99,6 +103,7 @@
 .secondary-button:hover,
 .btn-vazgec:hover,
 .btn-iptal:hover,
+.popup-btn-cancel:hover,
 .modal-react-teknik-destek-footer .btn-vazgec:hover,
 .modal-react-teknik-destek-footer .secondary-button:hover,
 .modal-react-sicak-satis-vazgec:hover,
@@ -109,17 +114,7 @@
     border-color: var(--gray-border, var(--border-renk)) !important;
 }
 
-/* Form/modal butonları hepsi 12px */
-.primary-button,
-.secondary-button,
-.btn-kaydet,
-.btn-vazgec,
-.btn-guncelle,
-.btn-iptal,
-.btn-kart-olustur,
-.btn-modal-primary,
-.btn-modal-secondary,
-.butonlar button,
+/* Sadece primary/secondary dışı modal butonları 12px (WhatsApp, teslim-foto, imza, arşiv-sebep, order-action vb.) */
 .modal-react-teslim-foto-add,
 .modal-react-teslim-foto-skip,
 .modal-react-imza-onayla,
@@ -141,21 +136,6 @@
     font-size: 12px !important;
 }
 
-/* Mor primary butonlarda yazı her zaman beyaz (başka stiller override etmesin) */
-.primary-button,
-.btn-kaydet,
-.btn-guncelle,
-.btn-kart-olustur,
-.btn-modal-primary {
-    color: var(--white-only) !important;
-}
-.primary-button:hover:not(:disabled),
-.btn-kaydet:hover:not(:disabled),
-.btn-guncelle:hover:not(:disabled),
-.btn-modal-primary:hover:not(:disabled) {
-    color: var(--white-only) !important;
-}
-
 /* ========== YENİ KART MODAL ========== */
 .overlay-yeni-kart-container {
     display: none !important;
@@ -164,7 +144,7 @@
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.5)) !important;
+    background-color: var(--overlay-bg-black) !important;
     z-index: 9999 !important;
     align-items: stretch !important;
     justify-content: flex-end !important; /* Web: form sağdan açılsın */
@@ -629,7 +609,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     gap: 8px !important;
     cursor: pointer !important;
     user-select: none !important;
-    border: 1px solid var(--auto-color-43-11a34c, #ccc) !important;
+    border: 1px solid var(--auto-color-43-11a34c) !important;
     border-radius: 5px !important;
     padding: 4px 10px !important;
     font-size: 13px !important;
@@ -639,7 +619,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
 
 .yeni-kart-container .input-form .label-kapsayici-org-tipler .radio-label:hover,
 .yeni-kart-container .label-kapsayici-org-tipler .radio-label:hover {
-    background: var(--bg-blue-pale, rgba(0, 102, 204, 0.06)) !important;
+    background: var(--bg-blue-pale) !important;
 }
 
 .yeni-kart-container .input-form .label-kapsayici-org-tipler .radio-label input[type="radio"],
@@ -652,7 +632,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     height: 16px !important;
     min-width: 16px !important;
     min-height: 16px !important;
-    border: 1px solid var(--gri70, #999) !important;
+    border: 1px solid var(--gri70) !important;
     border-radius: 50% !important;
     padding: 0 !important;
     position: relative !important;
@@ -663,8 +643,8 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
 
 .yeni-kart-container .input-form .label-kapsayici-org-tipler .radio-label input[type="radio"]:checked,
 .yeni-kart-container .label-kapsayici-org-tipler .radio-label input[type="radio"]:checked {
-    border-color: var(--mor-primary, #0066cc) !important;
-    background-color: var(--mor-primary, #0066cc) !important;
+    border-color: var(--mor-primary) !important;
+    background-color: var(--mor-primary) !important;
 }
 
 .yeni-kart-container .input-form .label-kapsayici-org-tipler .radio-label input[type="radio"]:checked::before,
@@ -674,7 +654,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    color: #fff !important;
+    color: var(--white) !important;
     font-size: 11px !important;
     font-weight: bold !important;
     line-height: 1 !important;
@@ -682,8 +662,8 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
 
 .yeni-kart-container .input-form .label-kapsayici-org-tipler .radio-label:has(input:checked),
 .yeni-kart-container .label-kapsayici-org-tipler .radio-label:has(input:checked) {
-    border-color: var(--mor-primary, #0066cc) !important;
-    background: var(--bg-blue-pale, rgba(0, 102, 204, 0.06)) !important;
+    border-color: var(--mor-primary) !important;
+    background: var(--bg-blue-pale) !important;
 }
 
 .yeni-kart-container .input-form .label-kapsayici-org-tipler .radio-label span,
@@ -703,7 +683,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     user-select: none !important;
     text-transform: uppercase !important;
     font-weight: bold !important;
-    border: 1px solid var(--auto-color-43-11a34c, #ccc) !important;
+    border: 1px solid var(--auto-color-43-11a34c) !important;
     border-radius: 5px !important;
     padding: 4px 10px !important;
     font-size: 13px !important;
@@ -711,7 +691,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
 }
 
 .yeni-kart-container .etiket-grup .radio-label:hover {
-    background: var(--bg-blue-pale, rgba(0, 102, 204, 0.06)) !important;
+    background: var(--bg-blue-pale) !important;
 }
 
 .yeni-kart-container .etiket-grup .radio-label input[type="radio"] {
@@ -723,7 +703,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     height: 16px !important;
     min-width: 16px !important;
     min-height: 16px !important;
-    border: 1px solid var(--gri70, #999) !important;
+    border: 1px solid var(--gri70) !important;
     border-radius: 50% !important;
     padding: 0 !important;
     position: relative !important;
@@ -732,8 +712,8 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
 }
 
 .yeni-kart-container .etiket-grup .radio-label input[type="radio"]:checked {
-    border-color: var(--mor-primary, #0066cc) !important;
-    background-color: var(--mor-primary, #0066cc) !important;
+    border-color: var(--mor-primary) !important;
+    background-color: var(--mor-primary) !important;
 }
 
 .yeni-kart-container .etiket-grup .radio-label input[type="radio"]:checked::before {
@@ -742,15 +722,15 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    color: #fff !important;
+    color: var(--white) !important;
     font-size: 11px !important;
     font-weight: bold !important;
     line-height: 1 !important;
 }
 
 .yeni-kart-container .etiket-grup .radio-label:has(input:checked) {
-    border-color: var(--mor-primary, #0066cc) !important;
-    background: var(--bg-blue-pale, rgba(0, 102, 204, 0.06)) !important;
+    border-color: var(--mor-primary) !important;
+    background: var(--bg-blue-pale) !important;
 }
 
 .yeni-kart-container .etiket-grup .radio-label span {
@@ -1127,8 +1107,8 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     padding: 6px 12px !important;
     cursor: pointer !important;
     margin-left: 10px !important;
-    background-color: var(--kirmizi-sicak, #e95252) !important;
-    color: #fff !important;
+    background-color: var(--kirmizi-sicak) !important;
+    color: var(--white) !important;
     border: none !important;
     border-radius: 4px !important;
     flex-shrink: 0 !important;
@@ -1144,7 +1124,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
 .yeni-kart-container .dosya-yukle-alan:hover,
 .ayarlar-panel .dosya-yukle-alan:hover,
 .ayarlar-panel-form .dosya-yukle-alan:hover {
-    background-color: rgba(0, 0, 0, 0.02) !important;
+    background-color: var(--light-gray) !important;
     border-color: var(--mor-primary-text) !important;
 }
 
@@ -1163,7 +1143,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.5)) !important;
+    background-color: var(--overlay-bg-black) !important;
     z-index: 9999 !important;
     align-items: center !important;
     justify-content: center !important;
@@ -1411,7 +1391,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
 /* Dosya seçildiğinde yeşil çerçeve (variable) */
 .yeni-musteri-container .musteri-logosu .dosya-yukle-alan.dosya-secildi {
     border: 1px solid var(--success-green) !important;
-    background-color: var(--white, #fff) !important;
+    background-color: var(--white) !important;
     justify-content: space-between !important;
     padding: 0 12px !important;
     overflow: hidden !important;
@@ -1439,8 +1419,8 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     padding: 6px 12px !important;
     cursor: pointer !important;
     margin-left: 10px !important;
-    background-color: var(--kirmizi-sicak, #e95252) !important;
-    color: #fff !important;
+    background-color: var(--kirmizi-sicak) !important;
+    color: var(--white) !important;
     border: none !important;
     border-radius: 4px !important;
     flex-shrink: 0 !important;
@@ -1468,7 +1448,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     display: flex !important;
     align-items: center !important;
     justify-content: flex-end !important;
-    padding: 40px 20px 0 !important;
+    padding: 40px  0 0 20px !important;
 }
 
 .yeni-musteri-container .alt-alan .duzenleyen {
@@ -1516,7 +1496,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     width: 100vw !important;
     height: 100vh !important;
     overflow-y: auto !important;
-    background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.5)) !important;
+    background-color: var(--overlay-bg-black) !important;
     z-index: 9999 !important;
     justify-content: center !important;
     align-items: flex-start !important;
@@ -1763,12 +1743,6 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     gap: 5px !important;
 }
 
-.overlay-yeni-kart-container .yeni-kart-container button,
-.overlay-yeni-musteri-container .yeni-musteri-container button,
-.overlay-yeni-siparis-container .yeni-siparis-container button {
-    cursor: pointer !important;
-}
-
 /* Modal açıkken sayfa scroll'unu tamamen kapat (yatay + dikey) */
 html:has(.overlay-yeni-kart-container.show),
 html:has(.overlay-yeni-musteri-container.show),
@@ -1804,8 +1778,8 @@ body:has(.whatsapp-qr-modal) {
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background: var(--overlay-bg-black, rgba(0, 0, 0, 0.5)) !important;
-    z-index: 100000 !important;
+    background: var(--overlay-bg-black) !important;
+   z-index: 100000 !important;
     align-items: center !important;
     justify-content: center !important;
     opacity: 0 !important;
@@ -1841,7 +1815,7 @@ body:has(.whatsapp-qr-modal) {
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.7)) !important;
+    background-color: var(--overlay-bg-black) !important;
     z-index: 9999 !important;
     align-items: center !important;
     justify-content: center !important;
@@ -1858,7 +1832,7 @@ body:has(.whatsapp-qr-modal) {
     padding: 24px !important;
     max-width: 500px !important;
     width: 90% !important;
-    box-shadow: var(--modal-shadow, 0 4px 6px rgba(0, 0, 0, 0.1)) !important;
+    box-shadow: var(--modal-shadow) !important;
     z-index: 9999 !important;
     position: relative !important;
 }
@@ -2072,7 +2046,7 @@ body:has(.whatsapp-qr-modal) {
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.7)) !important;
+    background-color: var(--overlay-bg-black) !important;
     z-index: 9999 !important;
     align-items: center !important;
     justify-content: center !important;
@@ -2095,7 +2069,7 @@ body:has(.whatsapp-qr-modal) {
     max-width: 400px !important;
     min-width: 400px !important;
     z-index: 9999 !important;
-    box-shadow: var(--modal-shadow, 0 4px 6px rgba(0, 0, 0, 0.1)) !important;
+    box-shadow: var(--modal-shadow) !important;
     display: block !important;
 }
 
@@ -2105,7 +2079,7 @@ body:has(.whatsapp-qr-modal) {
     justify-content: space-between !important;
     margin-bottom: 20px !important;
     padding-bottom: 15px !important;
-    border-bottom: 1px solid var(--divider-gray-fade, rgba(200, 200, 200, 0.3)) !important;
+    border-bottom: 1px solid var(--divider-gray-fade) !important;
 }
 
 .whatsapp-info-modal-title {
@@ -2119,7 +2093,7 @@ body:has(.whatsapp-qr-modal) {
 }
 
 .whatsapp-info-modal-title i {
-    color: var(--whatsapp-green, #25D366) !important;
+    color: var(--whatsapp-green) !important;
     font-size: 20px !important;
     display: inline-block !important;
     visibility: visible !important;
@@ -2169,7 +2143,7 @@ body:has(.whatsapp-qr-modal) {
 
 .whatsapp-info-modal-loading i {
     font-size: 32px !important;
-    color: var(--whatsapp-green, #25D366) !important;
+    color: var(--whatsapp-green) !important;
 }
 
 .whatsapp-info-modal-loading p {
@@ -2189,7 +2163,7 @@ body:has(.whatsapp-qr-modal) {
     justify-content: center !important;
     gap: 10px !important;
     padding: 12px 15px !important;
-    background-color: var(--success-bg, #d4edda) !important;
+    background-color: var(--success-bg) !important;
     border-radius: 8px !important;
     margin-bottom: 10px !important;
 }
@@ -2198,14 +2172,14 @@ body:has(.whatsapp-qr-modal) {
     width: 10px !important;
     height: 10px !important;
     border-radius: 50% !important;
-    background-color: var(--success-text, #155724) !important;
+    background-color: var(--success-text) !important;
     flex-shrink: 0 !important;
 }
 
 .whatsapp-info-status-text {
     font-size: 14px !important;
     font-weight: 600 !important;
-    color: var(--success-text, #155724) !important;
+    color: var(--success-text) !important;
 }
 
 .whatsapp-info-row {
@@ -2213,9 +2187,9 @@ body:has(.whatsapp-qr-modal) {
     align-items: center !important;
     gap: 12px !important;
     padding: 12px 0 !important;
-    color: var(--ana-renk, #374151) !important;
+    color: var(--ana-renk) !important;
     font-size: 14px !important;
-    border-bottom: 1px solid var(--divider-gray-fade, rgba(200, 200, 200, 0.3)) !important;
+    border-bottom: 1px solid var(--divider-gray-fade) !important;
 }
 
 .whatsapp-info-row:last-of-type {
@@ -2242,12 +2216,12 @@ body:has(.whatsapp-qr-modal) {
     justify-content: center !important;
     gap: 15px !important;
     padding: 40px 20px !important;
-    color: var(--error-text, #721c24) !important;
+    color: var(--error-text) !important;
 }
 
 .whatsapp-info-error-state i {
     font-size: 32px !important;
-    color: var(--error-text, #721c24) !important;
+    color: var(--error-text) !important;
 }
 
 .whatsapp-info-error-state p {
@@ -2260,13 +2234,13 @@ body:has(.whatsapp-qr-modal) {
     gap: 10px !important;
     margin-top: 20px !important;
     padding-top: 15px !important;
-    border-top: 1px solid var(--divider-gray-fade, rgba(200, 200, 200, 0.3)) !important;
+    border-top: 1px solid var(--divider-gray-fade) !important;
     justify-content: flex-end !important;
 }
 
 .whatsapp-info-disconnect-btn {
-    background-color: var(--error-bg, #f8d7da) !important;
-    color: var(--error-text, #721c24) !important;
+    background-color: var(--error-bg) !important;
+    color: var(--error-text) !important;
     border: none !important;
     border-radius: 8px !important;
     padding: 10px 20px !important;
@@ -2314,7 +2288,7 @@ body:has(.whatsapp-qr-modal) {
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background: var(--overlay-bg-black, rgba(0, 0, 0, 0.7)) !important;
+    background: var(--overlay-bg-black) !important;
     justify-content: center !important;
     align-items: center !important;
     z-index: 9999 !important;
@@ -2327,11 +2301,11 @@ body:has(.whatsapp-qr-modal) {
     text-align: center !important;
     max-width: 400px !important;
     width: 90% !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: var(--shadow-gray-soft) !important;
 }
 
 .whatsapp-qr-modal-title {
-    color: var(--whatsapp-green, #25D366) !important;
+    color: var(--whatsapp-green) !important;
     margin-bottom: 20px !important;
     font-size: 20px !important;
     font-weight: 600 !important;
@@ -2344,7 +2318,7 @@ body:has(.whatsapp-qr-modal) {
 }
 
 .whatsapp-qr-canvas {
-    border: 2px solid var(--whatsapp-green, #25D366) !important;
+    border: 2px solid var(--whatsapp-green) !important;
     padding: 10px !important;
     background: var(--white) !important;
     margin: 0 auto 20px !important;
@@ -2363,14 +2337,14 @@ body:has(.whatsapp-qr-modal) {
 }
 
 .qr-status-message.success {
-    background-color: var(--success-bg, #d4edda) !important;
-    color: var(--success-text, #155724) !important;
+    background-color: var(--success-bg) !important;
+    color: var(--success-text) !important;
     font-weight: 600 !important;
 }
 
 .qr-status-message.error {
-    background-color: var(--error-bg, #f8d7da) !important;
-    color: var(--error-text, #721c24) !important;
+    background-color: var(--error-bg) !important;
+    color: var(--error-text) !important;
     font-weight: 600 !important;
 }
 
@@ -2399,7 +2373,7 @@ body:has(.whatsapp-qr-modal) {
 }
 
 .whatsapp-qr-btn-close {
-    background: var(--whatsapp-green, #25D366) !important;
+    background: var(--whatsapp-green) !important;
     color: var(--white) !important;
 }
 
@@ -2411,7 +2385,7 @@ body:has(.whatsapp-qr-modal) {
     width: 40px !important;
     height: 40px !important;
     border: 4px solid var(--light-gray) !important;
-    border-top: 4px solid var(--whatsapp-green, #25D366) !important;
+    border-top: 4px solid var(--whatsapp-green) !important;
     border-radius: 50% !important;
     animation: spin 1s linear infinite !important;
     margin: 0 auto 10px !important;
@@ -2550,24 +2524,24 @@ body:has(.whatsapp-qr-modal) {
 }
 .modal-react-teslim-foto-skip {
     background-color: var(--neutral-gray-b1) !important;
-    color: var(--ana-renk, #1a1a1a) !important;
+    color: var(--ana-renk) !important;
 }
 
 .modal-react-teslim-foto-status {
     min-height: 24px !important;
     font-size: 13px !important;
-    color: var(--ana-renk, #2e3237) !important;
+    color: var(--ana-renk) !important;
     display: none !important;
 }
 
 .modal-react-teslim-foto-status.error {
-    background-color: #fee !important;
-    color: #c00 !important;
+background-color: var(--error-bg) !important;
+  color: var(--error-text) !important;
 }
 
 .modal-react-teslim-foto-status.success {
-    background-color: #efe !important;
-    color: #060 !important;
+background-color: var(--success-bg) !important;
+  color: var(--success-text) !important;
 }
 
 /* ========== İMZA MODAL ========== */
@@ -3137,7 +3111,7 @@ html.dark-mode .modal-react-arsiv-sebep-option.selected .modal-react-arsiv-sebep
     overflow: hidden !important;
     border-radius: 8px !important;
     background: white !important;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 20px 25px -5px var(--box-shadow-light) !important;
     width: 100% !important;
     max-width: 512px !important;
     opacity: 1 !important;
@@ -3225,14 +3199,14 @@ html.dark-mode .modal-react-arsiv-sebep-option.selected .modal-react-arsiv-sebep
 .modal-react-arac-takip-error {
     margin-bottom: 16px !important;
     padding: 12px !important;
-    background-color: #FEF2F2 !important;
-    border: 1px solid #FECACA !important;
+    background-color: var(--error-bg) !important;
+    border: 1px solid var(--error-text) !important;
     border-radius: 8px !important;
 }
 
 .modal-react-arac-takip-error-text {
     font-size: 14px !important;
-    color: #991B1B !important;
+    color: var(--error-text) !important;
 }
 
 .modal-react-arac-takip-actions {
@@ -3281,7 +3255,7 @@ color: var(--ana-renk) !important;
     left: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    background: var(--overlay-bg-black, rgba(0, 0, 0, 0.7)) !important;
+    background: var(--overlay-bg-black) !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -3298,7 +3272,7 @@ color: var(--ana-renk) !important;
 }
 
 .modal-react-whatsapp-qr-title {
-    color: var(--yesil-destek, var(--whatsapp-green, #25D366)) !important;
+    color: var(--yesil-destek) !important;
     margin-bottom: 20px !important;
     font-size: 20px !important;
     font-weight: 600 !important;
@@ -3325,7 +3299,7 @@ color: var(--ana-renk) !important;
 }
 
 #modal-react-whatsapp-qr-canvas.modal-react-whatsapp-qr-canvas {
-    border: 2px solid var(--whatsapp-green, #25D366) !important;
+    border: 2px solid var(--whatsapp-green) !important;
     padding: 10px !important;
     background: var(--white) !important;
     margin: 0 auto !important;
@@ -3344,12 +3318,12 @@ color: var(--ana-renk) !important;
 
 .modal-react-whatsapp-qr-status-message.qr-status-success,
 .modal-react-whatsapp-qr-status-message.success {
-    color: var(--green-secondary, #10b981) !important;
+    color: var(--green-secondary) !important;
     font-weight: 600 !important;
 }
 
 .modal-react-whatsapp-qr-status-message.error {
-    color: var(--error-text, #721c24) !important;
+    color: var(--error-text) !important;
     font-weight: 600 !important;
 }
 
@@ -3435,7 +3409,7 @@ color: var(--ana-renk) !important;
     min-height: 32px !important;
     min-width: 32px !important;
     padding: 10px 20px !important;
-    background: var(--whatsapp-green, #25D366) !important;
+    background: var(--whatsapp-green) !important;
     color: var(--white-only, var(--white)) !important;
     border: none !important;
     border-radius: 5px !important;
@@ -3444,7 +3418,7 @@ color: var(--ana-renk) !important;
 .whatsapp-qr-btn-close:hover,
 .modal-react-whatsapp-qr-btn-close:hover {
     opacity: 0.9 !important;
-    background: var(--whatsapp-green, #25D366) !important;
+    background: var(--whatsapp-green) !important;
     color: var(--white-only, var(--white)) !important;
 }
 
@@ -3453,8 +3427,8 @@ color: var(--ana-renk) !important;
 }
 
 .modal-react-whatsapp-qr-loading-spinner {
-    border: 4px solid var(--gray-light-ee, #eeeeee) !important;
-    border-top: 4px solid var(--yesil-destek, var(--whatsapp-green, #25D366)) !important;
+    border: 4px solid var(--gray-light-ee) !important;
+    border-top: 4px solid var(--yesil-destek) !important;
     border-radius: 50% !important;
     width: 50px !important;
     height: 50px !important;
@@ -3475,7 +3449,7 @@ color: var(--ana-renk) !important;
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.7)) !important;
+    background-color: var(--overlay-bg-black) !important;
     z-index: 2147483646 !important; /* overlay her şeyin üstünde (sidebar/header 0 yapılıyor) */
     align-items: center !important;
     justify-content: center !important;
@@ -3505,7 +3479,7 @@ color: var(--ana-renk) !important;
     max-width: 400px !important;
     min-width: 400px !important;
     z-index: 9999 !important;
-    box-shadow: var(--modal-shadow, 0 4px 6px rgba(0, 0, 0, 0.1)) !important;
+    box-shadow: var(--modal-shadow) !important;
 }
 
 .modal-react-whatsapp-info-header {
@@ -3526,7 +3500,7 @@ color: var(--ana-renk) !important;
 }
 
 .modal-react-whatsapp-info-title i.fa-brands.fa-whatsapp {
-    color: var(--whatsapp-green, #25D366) !important;
+    color: var(--whatsapp-green) !important;
     font-size: 20px !important;
     display: inline-block !important;
     visibility: visible !important;
@@ -3588,7 +3562,7 @@ color: var(--ana-renk) !important;
     justify-content: center !important;
     gap: 10px !important;
     padding: 12px !important;
-    background-color: #d4edda !important;
+    background-color: var(--success-bg) !important;
     border-radius: 8px !important;
 }
 
@@ -3596,13 +3570,13 @@ color: var(--ana-renk) !important;
     width: 10px !important;
     height: 10px !important;
     border-radius: 50% !important;
-    background-color: #28a745 !important;
+    background-color: var(--success-green) !important;
     flex-shrink: 0 !important;
 }
 
 .modal-react-whatsapp-info-status-text {
     font-weight: 600 !important;
-    color: #155724 !important;
+    color: var(--success-text) !important;
     font-size: 14px !important;
 }
 
@@ -3664,7 +3638,7 @@ color: var(--ana-renk) !important;
 }
 
 .modal-react-whatsapp-info-disconnect-btn {
-    background-color: #dc3545 !important;
+    background-color: var(--kirmizi-canli) !important;
     color: white !important;
 }
 
@@ -3690,7 +3664,7 @@ color: var(--ana-renk) !important;
 .modal-react-whatsapp-phone-overlay {
     position: fixed !important;
     inset: 0 !important;
-    background-color: var(--popup-overlay-bg, rgba(0, 0, 0, 0.5)) !important;
+    background-color: var(--popup-overlay-bg) !important;
     z-index: 99999 !important;
     display: flex !important;
     align-items: center !important;
@@ -3738,7 +3712,7 @@ color: var(--ana-renk) !important;
     justify-content: space-between !important;
     border: none !important;
     border-radius: 6px !important;
-    background-color: var(--whatsapp-green, #25D366) !important;
+    background-color: var(--whatsapp-green) !important;
     cursor: pointer !important;
     transition: background 0.3s !important;
     font-size: 12px !important;
@@ -3771,7 +3745,7 @@ color: var(--ana-renk) !important;
 }
 
 .modal-react-whatsapp-phone-close {
-    background-color: var(--neutral-gray-b1, #e5e7eb) !important;
+    background-color: var(--neutral-gray-b1) !important;
     padding: 10px 24px !important;
     border-radius: 5px !important;
     font-size: 12px !important;
@@ -4082,7 +4056,7 @@ color: var(--ana-renk) !important;
     overflow: hidden !important;
     border-radius: 8px !important;
     background: white !important;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 20px 25px -5px var(--box-shadow-light) !important;
     width: 100% !important;
     max-width: 512px !important;
 }
@@ -4103,33 +4077,33 @@ color: var(--ana-renk) !important;
     font-size: 18px !important;
     font-weight: 500 !important;
     line-height: 1.5 !important;
-    color: #111827 !important;
+    color: var(--ana-renk) !important;
 }
 
 .modal-react-order-action-close {
-    color: #9CA3AF !important;
+    color: var(--gray-soft-dark) !important;
 }
 
 .modal-react-order-action-close:hover {
-    color: #6B7280 !important;
+    color: var(--gray-text-base) !important;
 }
 
 .modal-react-order-action-order-info {
     margin-bottom: 16px !important;
     padding: 12px !important;
-    background-color: #F9FAFB !important;
+    background-color: var(--extra-light-bg) !important;
     border-radius: 8px !important;
 }
 
 .modal-react-order-action-order-name {
     font-weight: 600 !important;
-    color: #111827 !important;
+    color: var(--ana-renk) !important;
 }
 
 .modal-react-order-action-order-phone,
 .modal-react-order-action-order-product {
     font-size: 14px !important;
-    color: #4B5563 !important;
+    color: var(--gray-text-base) !important;
     margin-top: 4px !important;
 }
 
@@ -4178,7 +4152,7 @@ color: var(--ana-renk) !important;
     max-width: 90vw !important;
     height: 100vh !important;
     background: var(--white) !important;
-    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: -4px 0 12px var(--shadow-gray-soft) !important;
     z-index: 9999 !important;
     transform: translateX(100%) !important;
     transition: transform 0.3s ease-in-out !important;
@@ -4343,7 +4317,7 @@ color: var(--ana-renk) !important;
 .modal-react-teknik-destek-form-group textarea:focus {
     outline: none !important;
     border-color: var(--mor-primary-text) !important;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
+    box-shadow: 0 0 0 3px var(--accent-blue-soft) !important;
 }
 
 .modal-react-teknik-destek-form-group textarea {
@@ -4369,7 +4343,7 @@ color: var(--ana-renk) !important;
     width: 64px !important;
     height: 64px !important;
     margin: 0 auto 20px !important;
-    background-color: #10b981 !important;
+    background-color: var(--success-green) !important;
     border-radius: 50% !important;
     display: flex !important;
     align-items: center !important;
@@ -4427,12 +4401,12 @@ color: var(--ana-renk) !important;
 }
 
 .yeni-etiket-popup-overlay .etiket-popup {
-    background: var(--white, #fff) !important;
+    background: var(--white) !important;
     border-radius: 8px !important;
     padding: 24px !important;
     width: 400px !important;
     max-width: 90vw !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 4px 20px var(--shadow-gray-soft) !important;
 }
 
 .yeni-etiket-popup-overlay .popup-header {
@@ -4441,18 +4415,18 @@ color: var(--ana-renk) !important;
     align-items: center !important;
     margin-bottom: 16px !important;
     padding-bottom: 12px !important;
-    border-bottom: 1px solid var(--gri70, #ccc) !important;
+    border-bottom: 1px solid var(--gri70) !important;
 }
 
 .yeni-etiket-popup-overlay .popup-title {
     font-size: 16px !important;
     font-weight: 600 !important;
-    color: var(--ana-renk, #333) !important;
+    color: var(--ana-renk) !important;
     margin: 0 !important;
 }
 
 .yeni-etiket-popup-overlay .popup-info {
-    background: var(--bg-blue-pale, rgba(0, 102, 204, 0.06)) !important;
+    background: var(--bg-blue-pale) !important;
     border-radius: 6px !important;
     padding: 12px !important;
     font-size: 13px !important;
@@ -4481,7 +4455,7 @@ color: var(--ana-renk) !important;
 .yeni-etiket-popup-overlay .popup-input {
     width: 100% !important;
     padding: 10px 12px !important;
-    border: 1px solid var(--gri70, #ccc) !important;
+    border: 1px solid var(--gri70) !important;
     border-radius: 6px !important;
     font-size: 14px !important;
     box-sizing: border-box !important;
@@ -4574,9 +4548,14 @@ color: var(--ana-renk) !important;
     border-radius: 0 !important;
   }
 
+  /* QR scanner: backdrop (aria-hidden) gizli kalsın; overlay > div display:flex sadece container’a uygulanmalı */
+  .modal-react-qr-scanner-overlay > div[aria-hidden] {
+    display: none !important;
+  }
   /* Modal içeriği: üst/alt/sol/sağ boşluk, kendi içinde kayar, açılış animasyonu (müşteri ekle/düzenle gibi) */
   [role="dialog"][aria-modal="true"] > div,
-  .modal-react-qr-scanner-overlay > div,
+  .modal-react-qr-scanner-overlay > .modal-react-qr-scanner-container,
+  .modal-react-qr-scanner-overlay > div:not([aria-hidden]),
   .modal-react-order-action-overlay > div,
   .modal-react-teknik-destek-overlay > div,
   .modal-react-teslim-foto-overlay > div,
@@ -4612,7 +4591,7 @@ color: var(--ana-renk) !important;
     display: flex !important;
     flex-direction: column !important;
     animation: modal-mobile-open 0.25s ease-out;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 32px var(--shadow-gray-soft);
   }
   @keyframes modal-mobile-open {
     from { opacity: 0; transform: scale(0.96); }
@@ -4634,27 +4613,28 @@ color: var(--ana-renk) !important;
     max-height: calc(100vh - 32px) !important;
   }
 
-  /* Karekod popup mobil: overlay padding yukarıdaki ortak 16px */
+  /* Karekod popup mobil: tam genişlik (overlay padding 16px), container overlay içini doldurur */
   .modal-react-qr-scanner-overlay {
     box-sizing: border-box !important;
-  }
-  .modal-react-qr-scanner-overlay .modal-react-qr-scanner-container,
-  .modal-react-qr-scanner-overlay .modal-react-qr-scanner-content {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    border-radius: 12px !important;
+    padding: 16px !important;
   }
   .modal-react-qr-scanner-overlay .modal-react-qr-scanner-container {
     min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
     margin: 0 !important;
     border-radius: 12px !important;
     overflow: hidden !important;
+    flex: 1 1 auto !important;
   }
   .modal-react-qr-scanner-overlay .modal-react-qr-scanner-content {
     margin: 0 !important;
     padding: 16px !important;
     overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    border-radius: 12px !important;
   }
   .modal-react-qr-scanner-viewport,
   .modal-react-qr-scanner-error,
@@ -4665,6 +4645,37 @@ color: var(--ana-renk) !important;
   }
   .modal-react-qr-scanner-manual input {
     min-width: 0 !important;
+  }
+  /* Kameranın görüntüsü viewport içinde görünsün (html5-qrcode video/canvas) */
+  #modal-react-qr-viewport,
+  .modal-react-qr-scanner-content [id*="qr-viewport"],
+  .modal-react-qr-scanner-content [id*="reader"] {
+    min-height: 240px !important;
+    height: 256px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    background: var(--full-black) !important;
+  }
+  #modal-react-qr-viewport > div,
+  #modal-react-qr-viewport .qr-shaded-region,
+  .modal-react-qr-scanner-content [id*="qr-viewport"] > div,
+  .modal-react-qr-scanner-content [id*="reader"] > div {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  #modal-react-qr-viewport video,
+  .modal-react-qr-scanner-content video {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 200px !important;
+    object-fit: cover !important;
+    display: block !important;
+    background: var(--full-black) !important;
   }
 
   .modal-react-order-action-overlay .modal-react-order-action-inner {
@@ -4939,7 +4950,7 @@ color: var(--ana-renk) !important;
     width: 100% !important;
     flex: none !important;
     border-left: none !important;
-    border-top: 1px solid var(--border-renk, #e5e7eb) !important;
+    border-top: 1px solid var(--border-renk) !important;
     padding-top: 16px !important;
     overflow: visible !important;
   }

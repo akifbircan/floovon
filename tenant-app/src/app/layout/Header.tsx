@@ -551,7 +551,6 @@ export const Header: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  markAsRead(bildirim.id);
                   setNotificationsDropdownOpen(false);
                   if (bildirim.organizasyon_id) {
                     navigate(`/siparis-kart-detay/${bildirim.organizasyon_id}`);
@@ -605,7 +604,7 @@ export const Header: React.FC = () => {
         })}
       </>
     );
-  }, [notifications, loading, user, markAsRead, navigate]);
+  }, [notifications, loading, user, navigate]);
 
   return (
     <div className="header">
@@ -908,7 +907,7 @@ export const Header: React.FC = () => {
             ></i>
             {notificationsDropdownOpen && (
               <div 
-                className="clickdropdown-content" 
+                className="clickdropdown-content bildirimler-dropdown" 
                 id="bildirimlerDropdown"
                 style={{
                   position: 'absolute',
@@ -916,10 +915,6 @@ export const Header: React.FC = () => {
                   right: 0,
                   minWidth: '320px',
                   width: '320px',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '6px',
-                  boxShadow: '0px 8px 16px 0px rgba(0, 0, 0, 0.1)',
                   paddingBottom: '10px',
                   zIndex: 99999,
                   display: 'block',

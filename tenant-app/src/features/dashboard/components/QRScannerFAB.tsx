@@ -14,7 +14,7 @@ export const QRScannerFAB: React.FC<QRScannerFABProps> = ({ onOpen, className })
   return (
     <button
       onClick={onOpen}
-      className={`fixed bottom-6 right-6 md:hidden w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-50 flex items-center justify-center transition-all hover:scale-110 ${className ?? ''}`}
+      className={`buton-siparis-karekod fixed bottom-6 right-6 md:hidden w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-50 flex items-center justify-center transition-all hover:scale-110 ${className ?? ''}`}
       aria-label="QR Kod Oku"
     >
       <svg

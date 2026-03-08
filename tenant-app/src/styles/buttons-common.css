@@ -47,7 +47,7 @@
 
 .profil-btn-secondary:hover:not(:disabled),
 .ayarlar-btn-secondary:hover:not(:disabled) {
-  background-color: var(--gray-light-f2, #f2f2f2);
+  background-color: var(--gray-light-f2);
   border-color: var(--border-renk);
 }
 
@@ -61,5 +61,5 @@
 .profil-btn-ghost:hover:not(:disabled),
 .ayarlar-btn-ghost:hover:not(:disabled) {
   color: var(--ana-renk);
-  background-color: var(--gray-light-f2, #f5f5f5);
+  background-color: var(--gray-light-f2);
 }

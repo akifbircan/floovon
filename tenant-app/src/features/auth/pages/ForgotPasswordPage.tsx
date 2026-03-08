@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { apiRequest } from '../../../lib/api';
 import { usePageAnimations } from '../../../shared/hooks/usePageAnimations';
 import { showToast } from '../../../shared/utils/toastUtils';
+import { applySavedThemeToDocument } from '../../../shared/hooks/useTheme';
 
 const forgotPasswordSchema = z.object({
   tenant_code: z.string().min(1, 'Tenant kodu gereklidir'),
@@ -30,6 +31,16 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 export const ForgotPasswordPage: React.FC = () => {
   usePageAnimations('forgot-password');
   const [searchParams] = useSearchParams();
+
+  // Şifremi unuttum sayfası Header dışında render edildiği için: kayıtlı temayı uygula
+  useEffect(() => {
+    applySavedThemeToDocument();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'theme') applySavedThemeToDocument();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
   const navigate = useNavigate();
   const token = searchParams.get('token');
   const isRequestMode = !token;
@@ -125,7 +136,7 @@ export const ForgotPasswordPage: React.FC = () => {
   return (
     <div className="container-login min-h-screen">
       {/* Sol Alan - Görsel - Login sayfasıyla aynı */}
-      <div className="sol-alan hidden lg:block">
+      <div className="sol-alan">
         <div className="gorsel-alan">
           <div className="gorsel-yazi">
             <div className="ust-yazi">

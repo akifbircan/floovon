@@ -17365,13 +17365,16 @@ app.get('/api/tenants', async (req, res) => {
     }
 });
 
-// Yazdırma ayarları endpoint
+// Yazdırma ayarları endpoint (tenantId yoksa varsayılan döndür – giriş yapılmamış sayfada 400 vermeyelim)
 app.get('/api/ayarlar/yazdirma', async (req, res) => {
     try {
-        const tenantId = req.tenantId || await getTenantId(req);
+        const tenantId = req.tenantId || await getTenantId(req).catch(() => null);
         
         if (!tenantId) {
-            return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
+            return res.json({
+                success: true,
+                data: { id: 1, logo_png_path: null, logo_png_url: null, is_active: 1 }
+            });
         }
         
         // ayarlar_genel_yazdirma_ayarlari tablosunu kontrol et

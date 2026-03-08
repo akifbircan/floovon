@@ -110,6 +110,7 @@
 
   /* Yeşil Tonları */
   --success-green: #33BE5C;
+  --success: var(--success-green);
   --success-green-transparent: rgba(51, 190, 92, 0.1);
   --accent-green-alpha: #d9ffe7;
   --accent-green-alpha-hover: #c0edd1;
@@ -121,6 +122,9 @@
   --yesil-destek: #19ba39;
   --yesil-color-1: #2e7d32;
   --yesil-color-1-soft: #e8f5e9;
+  --yesil-color-1-border: #81c784;
+  --border-very-light: #eeeeee;
+
   --mint-green: #b6ffd2;
   --arsiv-orgbaslik-color: #c2f2e1;
   --arsiv-detay-btn-color: #2b4d41;
@@ -132,6 +136,10 @@
   --accent-red: #ff0000;
   --red-warm: #ea2121;
   --kirmizi-canli: #ff3f3f;
+  --kirmizi-uyari: var(--kirmizi-canli);
+  --error-red: var(--kirmizi-canli);
+  --primary-color: var(--mor-primary);
+  --primary-blue: var(--mor-primary);
   --kirmizi-sicak: #e95252;
   --kirmizi-soft-bg: #ffebee;
   --popup-saatkalan-sure-uyari: #ff0900;
@@ -170,6 +178,16 @@
   --shadow-gray-soft: rgba(112, 112, 112, 0.2);
   --black-alpha-25: rgba(0, 0, 0, 0.25);
   --box-shadow-light: rgba(0, 0, 0, 0.1);
+  --black-alpha-06: rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 1px 10px 0 rgba(0, 0, 0, 0.25);
+  --shadow-card-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-side: -4px 0 24px rgba(0, 0, 0, 0.15);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.2);
+  --shadow-drop: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-drop-md: 0 6px 16px rgba(0, 0, 0, 0.12);
+  --shadow-focus-mor: 0 0 0 2px rgba(109, 40, 217, 0.15);
+  --shadow-focus-yesil: 0 0 0 2px rgba(46, 125, 50, 0.25);
+  --modal-shadow: 0 4px 6px var(--box-shadow-light);
   --black-true: black;
   --gri-seffaf: rgba(112, 112, 112, 0.3);
   --divider-gray-fade: rgba(200, 200, 200, 0.3);
@@ -306,6 +324,90 @@
   --toast-button-confirm: #28a745;
   --toast-button-cancel: #f0f0f0;
   --toast-overlay-bg: rgba(0, 0, 0, 0.6);
+  --toast-error-hover: #c82333;
+  --toast-success-hover: #218838;
+  --overlay-bg-half: rgba(0, 0, 0, 0.5);
+  --warning-amber: #f59e0b;
+  --btn-secondary-bg: #6c757d;
+  --btn-secondary-bg-hover: #5a6268;
+  --cckspt-urun-image-bg: #f1f5f9;
+  --surface-muted: #e4e4e4;
+  --success-soft-bg: rgba(46, 125, 50, 0.08);
+  --success-soft-bg-alt: rgba(46, 125, 50, 0.06);
+  --gray-muted-text: #666666;
+  --white-alpha-20: rgba(255, 255, 255, 0.2);
+  --white-alpha-25: rgba(255, 255, 255, 0.25);
+  --white-alpha-85: rgba(255, 255, 255, 0.85);
+  --green-success-15: rgba(34, 197, 94, 0.15);
+  --gray-neutral-15: rgba(156, 163, 175, 0.15);
+  --gray-neutral-solid: #9ca3af;
+  --green-emerald: #48bb78;
+  --green-emerald-15: rgba(72, 187, 120, 0.15);
+  --green-emerald-20: rgba(72, 187, 120, 0.2);
+  --gray-neutral-30: rgba(156, 163, 175, 0.3);
+  --gray-neutral-50: rgba(156, 163, 175, 0.5);
+  --gray-neutral-20: rgba(156, 163, 175, 0.2);
+  --mor-alpha-06: rgba(109, 40, 217, 0.06);
+  --mor-alpha-10: rgba(109, 40, 217, 0.1);
+  --violet-alpha-04: rgba(124, 58, 237, 0.04);
+  --purple-50-bg: #f3e8ff;
+  --purple-700: #6d28d9;
+  --emerald-50-bg: #d1fae5;
+  --emerald-600: #059669;
+  --gray-200-bg: #e5e7eb;
+  --gray-600: #4b5563;
+  --toast-text-primary: #2c3e50;
+  --toast-success-solid: #00C851;
+  --toast-text-muted: #6c757d;
+  --toast-text-dark: #212529;
+  --toast-error-solid: #dc3545;
+  --toast-success-border: #28a745;
+  --white-50: rgba(255, 255, 255, 0.5);
+  --white-80: rgba(255, 255, 255, 0.8);
+  --text-heading-dark: #1f2937;
+  --border-white-60: rgba(255, 255, 255, 0.6);
+  --bg-white-20: rgba(255, 255, 255, 0.2);
+  --text-white-90: rgba(255, 255, 255, 0.9);
+
+  /* Header bildirim listesi – kendine özel (diğer stilleri etkilemez) */
+  --notif-whatsapp-connected-bg: rgba(37, 211, 102, 0.1);
+  --notif-whatsapp-connected-hover: rgba(37, 211, 102, 0.2);
+  --notif-whatsapp-disconnected-bg: rgba(156, 163, 175, 0.1);
+  --notif-whatsapp-disconnected-hover: rgba(156, 163, 175, 0.2);
+  --notif-badge-bg: var(--success-green);
+  --notif-dropdown-bg: var(--white);
+  --notif-dropdown-border: var(--border-renk);
+  --notif-dropdown-shadow: var(--box-shadow-light);
+  --notif-status-ok: var(--success-green);
+  --notif-status-iptal: var(--kirmizi-sicak);
+  --notif-status-arsiv: var(--orange-bright);
+  --notif-item-ok-border: var(--success-green);
+  --notif-item-ok-bg: var(--success-green-transparent);
+  --notif-list-title: var(--gray-soft-dark);
+  --notif-list-text: var(--ana-renk);
+  --notif-item-hover: #f2f3f6;
+  --notif-item-border: var(--border-renk);
+  --notif-kisi-bg: var(--border-renk);
+  --notif-kisi-text: var(--gray-soft-dark);
+  --notif-kisi-border: rgba(0, 0, 0, 0.06);
+  /* Okunmuş bildirimde kişi alanı zemini beyaz */
+  --notif-kisi-bg-okundu: #ffffff;
+  --notif-kisi-text-okundu: var(--gray-soft-dark);
+  --notif-item-badge-bg: var(--white-only);
+  --notif-item-badge-border: var(--border-renk);
+  --notif-item-badge-text: var(--ana-renk);
+
+  /* Modal/WhatsApp mesaj durumları (success/error metin ve zemin) */
+  --success-bg: var(--accent-green-alpha);
+  --success-text: var(--yesil-color-1);
+  --error-bg: var(--kirmizi-soft-bg);
+  --error-text: var(--kirmizi-canli);
+
+  /* Badge tahsilat/ödeme (dashboard vb.) */
+  --badge-tahsilat-bg: var(--accent-green-alpha);
+  --badge-tahsilat-fg: var(--green-deep);
+  --badge-odeme-bg: var(--kirmizi-soft-bg);
+  --badge-odeme-fg: var(--kirmizi-canli);
 
   /* Partner Siparişler */
   --partner-siparis-verilen: #e65c43;
@@ -578,11 +680,57 @@ html.dark-mode {
   --yesil-dogal: #44d46b;
   --kirmizi-canli: #ff6666;
   --kirmizi-sicak: #ff7777;
+  --kirmizi-uyari: var(--kirmizi-canli);
+  --error-red: var(--kirmizi-canli);
+  --primary-color: var(--mor-primary);
+  --primary-blue: var(--mor-primary);
   --kirmizi-soft-bg: rgba(255, 80, 80, 0.18);
   --yesil-destek: #44d46b;
   --yesil-color-1: #44d46b;
   --yesil-color-1-soft: #1a3d2e;
   --info-card-bg: #27383f;
+
+  /* Header bildirim listesi – dark tema: opak hover, metin hiyerarşisi (beyaz değil) */
+  --notif-whatsapp-connected-bg: rgba(68, 212, 107, 0.15);
+  --notif-whatsapp-connected-hover: rgba(68, 212, 107, 0.25);
+  --notif-whatsapp-disconnected-bg: rgba(156, 163, 175, 0.15);
+  --notif-whatsapp-disconnected-hover: rgba(156, 163, 175, 0.25);
+  --notif-badge-bg: var(--success-green);
+  --notif-dropdown-bg: var(--white);
+  --notif-dropdown-border: #2a2d35;
+  --notif-dropdown-shadow: var(--shadow-gray-soft);
+  --notif-status-ok: var(--success-green);
+  --notif-status-iptal: var(--kirmizi-sicak);
+  --notif-status-arsiv: var(--orange-bright);
+  --notif-item-ok-border: var(--success-green);
+  --notif-item-ok-bg: var(--success-green-transparent);
+  /* Dark: ana metin – okunaklı gri, beyaz değil */
+  --notif-list-text: #c8c8ce;
+  /* Dark: ikincil metin (başlık, arşiv sebebi vb.) – daha koyu gri */
+  --notif-list-title: #8a8a92;
+  /* Dark: hover opak blok, transparan değil */
+  --notif-item-hover: #252830;
+  --notif-item-border: #2a2d35;
+  --notif-kisi-bg: #252830;
+  --notif-kisi-text: #8a8a92;
+  --notif-kisi-border: rgba(255, 255, 255, 0.1);
+  --notif-kisi-bg-okundu: #2a2d35;
+  --notif-kisi-text-okundu: #b4b4be;
+  --notif-item-badge-bg: #2a2d35;
+  --notif-item-badge-border: #3a3d45;
+  --notif-item-badge-text: #c8c8ce;
+
+  /* Modal/WhatsApp success/error – dark tema */
+  --success-bg: var(--accent-green-alpha);
+  --success-text: var(--yesil-color-1);
+  --error-bg: var(--kirmizi-soft-bg);
+  --error-text: var(--kirmizi-canli);
+
+  /* Badge tahsilat/ödeme – dark tema */
+  --badge-tahsilat-bg: var(--accent-green-alpha);
+  --badge-tahsilat-fg: var(--yesil-color-1);
+  --badge-odeme-bg: var(--kirmizi-soft-bg);
+  --badge-odeme-fg: var(--kirmizi-canli);
 
   /* Auto Color Variables - Dark Mode */
   --auto-color-1-1959a9: #1f2324;
@@ -700,6 +848,50 @@ html.dark-mode {
   --toast-button-confirm: #28a745;
   --toast-button-cancel: #f0f0f0;
   --toast-overlay-bg: rgba(0, 0, 0, 0.8);
+  --toast-error-hover: #e04545;
+  --toast-success-hover: #2ea352;
+  --overlay-bg-half: rgba(0, 0, 0, 0.6);
+  --warning-amber: #fbbf24;
+  --btn-secondary-bg: #6b7280;
+  --btn-secondary-bg-hover: #4b5563;
+  --cckspt-urun-image-bg: var(--ultralight-gray);
+  --surface-muted: #3b3b3b;
+  --success-soft-bg: rgba(68, 212, 107, 0.12);
+  --success-soft-bg-alt: rgba(68, 212, 107, 0.08);
+  --gray-muted-text: var(--gray-text-base);
+  --white-alpha-20: rgba(255, 255, 255, 0.2);
+  --white-alpha-25: rgba(255, 255, 255, 0.25);
+  --white-alpha-85: rgba(255, 255, 255, 0.85);
+  --green-success-15: rgba(68, 212, 107, 0.15);
+  --gray-neutral-15: rgba(156, 163, 175, 0.15);
+  --gray-neutral-solid: #9ca3af;
+  --green-emerald: var(--success-green);
+  --green-emerald-15: var(--success-green-transparent);
+  --green-emerald-20: rgba(68, 212, 107, 0.2);
+  --gray-neutral-30: rgba(156, 163, 175, 0.3);
+  --gray-neutral-50: rgba(156, 163, 175, 0.5);
+  --gray-neutral-20: rgba(156, 163, 175, 0.2);
+  --mor-alpha-06: rgba(109, 40, 217, 0.1);
+  --mor-alpha-10: rgba(109, 40, 217, 0.15);
+  --violet-alpha-04: rgba(124, 58, 237, 0.08);
+  --purple-50-bg: rgba(109, 40, 217, 0.2);
+  --purple-700: var(--mor-primary);
+  --emerald-50-bg: var(--accent-green-alpha);
+  --emerald-600: var(--success-green);
+  --gray-200-bg: var(--gray-light-v2);
+  --gray-600: var(--gray-soft-dark);
+  --toast-text-primary: var(--ana-renk);
+  --toast-success-solid: var(--toast-success);
+  --toast-text-muted: var(--gray-popup-secondary);
+  --toast-text-dark: var(--ana-renk);
+  --toast-error-solid: var(--toast-error);
+  --toast-success-border: var(--toast-success);
+  --white-50: rgba(255, 255, 255, 0.5);
+  --white-80: rgba(255, 255, 255, 0.8);
+  --text-heading-dark: var(--ana-renk);
+  --border-white-60: rgba(255, 255, 255, 0.6);
+  --bg-white-20: rgba(255, 255, 255, 0.2);
+  --text-white-90: rgba(255, 255, 255, 0.9);
 
   /* Partner Siparişler - Dark Mode */
   --partner-siparis-verilen: #ff8b77;

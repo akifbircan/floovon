@@ -132,7 +132,7 @@
 }
 
 .arsiv-tablosu .grup-satir-row:hover {
-  background-color: var(--tablo-satir-hover, rgba(109, 40, 217, 0.06));
+  background-color: var(--tablo-satir-hover);
 }
 
 /* Grup başlıkları - Ay, Hafta, Organizasyon - tam genişlik */
@@ -253,7 +253,7 @@
 .arsiv-adres-hucre .arsiv-adres-acik {
   display: block;
   font-size: 11px;
-  color: var(--gri70, #666);
+  color: var(--gri70);
 }
 
 .arsiv-tablosu .td-icerik {
@@ -294,12 +294,12 @@
 body.dark-mode .arsiv-geri-getir-btn,
 html.dark-mode .arsiv-geri-getir-btn {
   color: var(--white-only);
-  border-color: rgba(255, 255, 255, 0.6);
+  border-color: var(--border-white-60);
 }
 
 body.dark-mode .arsiv-geri-getir-btn:hover,
 html.dark-mode .arsiv-geri-getir-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-white-20);
   border-color: var(--white-only);
 }
 
@@ -310,7 +310,7 @@ html.dark-mode .arsiv-tablosu .detay-buton {
 
 body.dark-mode .arsiv-tablosu .detay-buton:hover,
 html.dark-mode .arsiv-tablosu .detay-buton:hover {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-white-90);
 }
 
 /* Teslim Edildi arşiv sebebi – imza tooltip ve popup (eski sistemle uyumlu) */
@@ -330,8 +330,8 @@ html.dark-mode .arsiv-tablosu .detay-buton:hover {
   transform: translate(-50%, -100%);
   margin-top: -8px;
   z-index: 9999;
-  background: var(--white, #fff);
-  border: 1px solid var(--border-renk, #e5e7eb);
+  background: var(--white);
+  border: 1px solid var(--border-renk);
   border-radius: 8px;
   padding: 10px 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -341,7 +341,7 @@ html.dark-mode .arsiv-tablosu .detay-buton:hover {
 .teslim-edildi-imza-tooltip-kisi {
   font-size: 11px;
   font-weight: 600;
-  color: var(--ana-renk, #374151);
+  color: var(--ana-renk);
   margin-bottom: 6px;
   white-space: nowrap;
   overflow: hidden;
@@ -353,16 +353,16 @@ html.dark-mode .arsiv-tablosu .detay-buton:hover {
   max-height: 120px;
   width: auto;
   height: auto;
-  border: 1px solid var(--border-renk, #e5e7eb);
+  border: 1px solid var(--border-renk);
   border-radius: 6px;
-  background: #fff;
+  background: var(--white);
 }
 
 /* İmza popup (tıklanınca açılan modal) */
 .imza-popup-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-bg-half);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -375,7 +375,7 @@ html.dark-mode .arsiv-tablosu .detay-buton:hover {
   to { opacity: 1; }
 }
 .imza-popup {
-  background: var(--white, #fff);
+  background: var(--white);
   border-radius: 12px;
   padding: 24px;
   max-width: 500px;
@@ -391,18 +391,18 @@ html.dark-mode .arsiv-tablosu .detay-buton:hover {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 2px solid var(--border-renk, #e5e7eb);
+  border-bottom: 2px solid var(--border-renk);
 }
 .imza-popup-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--ana-renk, #374151);
+  color: var(--ana-renk);
 }
 .imza-popup-close {
   background: none;
   border: none;
-  color: var(--gray-basic, #6b7280);
+  color: var(--gray-basic);
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
@@ -411,8 +411,8 @@ html.dark-mode .arsiv-tablosu .detay-buton:hover {
   justify-content: center;
 }
 .imza-popup-close:hover {
-  background: var(--bg-secondary, #f3f4f6);
-  color: var(--ana-renk, #374151);
+  background: var(--extra-light-bg);
+  color: var(--ana-renk);
 }
 .imza-popup-content {
   display: flex;
@@ -423,7 +423,7 @@ html.dark-mode .arsiv-tablosu .detay-buton:hover {
   padding: 12px;
   background: var(--border-renk);
   border-radius: 8px;
-  border-left: 4px solid var(--mor-primary, #6d28d9);
+  border-left: 4px solid var(--mor-primary);
 }
 .imza-teslim-kisi strong {
   color: var(--gray-text-base);
@@ -431,7 +431,7 @@ html.dark-mode .arsiv-tablosu .detay-buton:hover {
   font-weight: 500;
 }
 .imza-teslim-kisi span {
-  color: var(--ana-renk, #374151);
+  color: var(--ana-renk);
   font-weight: 600;
 }
 .imza-gorsel-wrapper {
@@ -439,15 +439,15 @@ html.dark-mode .arsiv-tablosu .detay-buton:hover {
   justify-content: center;
   align-items: center;
   padding: 16px;
-  background: var(--bg-secondary, #f3f4f6);
+  background: var(--extra-light-bg);
   border-radius: 8px;
 }
 .imza-gorsel-wrapper img {
   max-width: 100%;
   height: auto;
-  border: 2px solid var(--border-renk, #e5e7eb);
+  border: 2px solid var(--border-renk);
   border-radius: 8px;
-  background: #fff;
+  background: var(--white);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 

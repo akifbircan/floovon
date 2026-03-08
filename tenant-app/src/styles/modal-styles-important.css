@@ -39,7 +39,7 @@ div.yeni-musteri-container.show {
     width: 100vw !important;
     height: 100vh !important;
     z-index: 9999 !important;
-    background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.5)) !important;
+    background-color: var(--overlay-bg-black) !important;
     overflow-y: auto !important;
 }
 
@@ -361,17 +361,7 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
 }
 
 /* ========== BUTTON STILLERİ - OVERRIDE KORUMALI ========== */
-.overlay-yeni-kart-container .yeni-kart-container button,
-.overlay-yeni-musteri-container .yeni-musteri-container button,
-.overlay-yeni-siparis-container .yeni-siparis-container button {
-    cursor: pointer !important;
-}
-
-/* Primary/Secondary butonlar modal-styles.css ortak bloktan gelir; sadece gerekirse override */
-.overlay-yeni-kart-container .yeni-kart-container .butonlar .primary-button,
-.overlay-yeni-kart-container .yeni-kart-container .butonlar .btn-kaydet {
-    color: var(--white-only) !important;
-}
+/* Renk/cursor/font-size → modal-styles.css ortak primary/secondary bloklarında; burada tekrar yok */
 
 /* ========== LABEL STILLERİ - OVERRIDE KORUMALI ========== */
 .overlay-yeni-kart-container .yeni-kart-container label,
@@ -390,7 +380,7 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background: var(--overlay-bg-black, rgba(0, 0, 0, 0.5)) !important;
+    background: var(--overlay-bg-black) !important;
     z-index: 9999 !important;
     align-items: center !important;
     justify-content: center !important;
@@ -438,7 +428,7 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.7)) !important;
+    background-color: var(--overlay-bg-black) !important;
     z-index: 9999 !important;
     align-items: center !important;
     justify-content: center !important;
@@ -476,7 +466,7 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
 }
 
 .whatsapp-info-modal-title i.fa-brands.fa-whatsapp {
-    color: var(--whatsapp-green, #25D366) !important;
+    color: var(--whatsapp-green) !important;
     font-size: 20px !important;
     display: inline-block !important;
     visibility: visible !important;
@@ -581,7 +571,7 @@ body select.modal-react-arac-takip-select {
         width: 100% !important;
         flex: none !important;
         border-left: none !important;
-        border-top: 1px solid var(--border-renk, #e5e7eb) !important;
+        border-top: 1px solid var(--border-renk) !important;
         padding-top: 16px !important;
     }
     .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici .tabcontent,
@@ -686,11 +676,11 @@ body select.modal-react-arac-takip-select {
         height: 8px;
     }
     .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-track {
-        background: var(--scroll-track-color, #f1f1f1);
+        background: var(--scroll-track-color);
         border-radius: 4px;
     }
     .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-thumb {
-        background: var(--scroll-thumb-color, #999);
+        background: var(--scroll-thumb-color);
         border-radius: 4px;
     }
 }

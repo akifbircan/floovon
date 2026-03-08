@@ -177,7 +177,7 @@ body:has(.cari-drawer-overlay) .header {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--mor-primary, #6D28D9) !important;
+  background-color: var(--mor-primary) !important;
   padding: 10px;
   border-radius: 8px;
   cursor: pointer;
@@ -234,20 +234,20 @@ body:has(.cari-drawer-overlay) .header {
 
 /* Bağlı durum - Yeşil zemin */
 .header .h-sag .ikon-whatsapp.connected {
-  background-color: rgba(37, 211, 102, 0.1); /* Soft WhatsApp yeşil */
+  background-color: var(--notif-whatsapp-connected-bg);
 }
 
 .header .h-sag .ikon-whatsapp.connected:hover {
-  background-color: rgba(37, 211, 102, 0.2); /* Hover'da biraz daha koyu */
+  background-color: var(--notif-whatsapp-connected-hover);
 }
 
 /* Bağlı değil durum - Gri zemin */
 .header .h-sag .ikon-whatsapp.disconnected {
-  background-color: rgba(156, 163, 175, 0.1); /* Soft gri */
+  background-color: var(--notif-whatsapp-disconnected-bg);
 }
 
 .header .h-sag .ikon-whatsapp.disconnected:hover {
-  background-color: rgba(156, 163, 175, 0.2); /* Hover'da biraz daha koyu */
+  background-color: var(--notif-whatsapp-disconnected-hover);
 }
 
 .header .h-sag .ikon-bildirimler {
@@ -258,7 +258,7 @@ body:has(.cari-drawer-overlay) .header {
   position: absolute;
   top: 4px;
   right: 4px;
-  background-color: rgb(0, 207, 0);
+  background-color: var(--notif-badge-bg);
   cursor: pointer;
   height: 14px;
   width: 14px;
@@ -338,7 +338,7 @@ body:has(.cari-drawer-overlay) .header {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--gri70);
-  background-color: var(--gray-light-f2, #f2f2f2);
+  background-color: var(--gray-light-f2);
 }
 
 .header .h-sag .profil .kullanici-alan-wrapper .menu-ok {
@@ -378,7 +378,7 @@ body:has(.cari-drawer-overlay) .header {
   background: var(--white);
   border: 1px solid var(--border-renk);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--notif-dropdown-shadow);
   z-index: 1000;
   padding: 8px 0;
 }
@@ -391,7 +391,7 @@ body:has(.cari-drawer-overlay) .header {
   padding: 10px 20px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--subtle-gray, var(--gray-soft-dark));
+  color: var(--subtle-gray);
 }
 
 /* Bildirimler dropdown için liste-baslik */
@@ -399,7 +399,7 @@ body:has(.cari-drawer-overlay) .header {
   padding: 10px 20px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--subtle-gray, var(--gray-soft-dark));
+  color: var(--notif-list-title);
 }
 
 .clickdropdown-content .liste-baslik span {
@@ -429,16 +429,21 @@ body:has(.cari-drawer-overlay) .header {
   background-color: var(--light-bg);
 }
 
-/* Bildirimler Dropdown */
+/* Bildirimler Dropdown – arka plan/border/shadow CSS değişkenleriyle (dark tema uyumlu) */
 .ikon-bildirimler.clickdropdown {
   position: relative;
   overflow: visible;
 }
 
+.ikon-bildirimler .clickdropdown-content.bildirimler-dropdown,
 .ikon-bildirimler .clickdropdown-content {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+  background: var(--notif-dropdown-bg);
+  border: 1px solid var(--notif-dropdown-border);
+  border-radius: 6px;
+  box-shadow: var(--notif-dropdown-shadow);
 }
 
 #bildirimlerListesi {
@@ -463,7 +468,7 @@ body:has(.cari-drawer-overlay) .header {
 
 .liste-alt {
   padding: 10px 0 6px 0;
-  border-top: 1px solid var(--input-border-gray, var(--border-renk));
+  border-top: 1px solid var(--notif-item-border);
 }
 
 .liste-alt a {
@@ -487,7 +492,7 @@ body:has(.cari-drawer-overlay) .header {
 .bildirim-bos-mesaj {
   padding: 20px;
   text-align: center;
-  color: var(--gri70, var(--gray-soft-dark));
+  color: var(--notif-list-title);
   font-size: 14px;
 }
 
@@ -506,7 +511,7 @@ body:has(.cari-drawer-overlay) .header {
 }
 
 .bildirim-durum-ok {
-  background-color: var(--success-green, #10b981);
+  background-color: var(--notif-status-ok);
   height: 10px;
   width: 10px;
   border-radius: 50%;
@@ -514,7 +519,7 @@ body:has(.cari-drawer-overlay) .header {
 }
 
 .bildirim-durum-iptal {
-  background-color: var(--kirmizi-sicak, #ef4444);
+  background-color: var(--notif-status-iptal);
   height: 8px;
   width: 8px;
   border-radius: 50%;
@@ -522,7 +527,7 @@ body:has(.cari-drawer-overlay) .header {
 }
 
 .bildirim-durum-arsiv {
-  background-color: var(--auto-color-13-f96d40, #f96d40);
+  background-color: var(--notif-status-arsiv);
   height: 10px;
   width: 10px;
   border-radius: 50%;
@@ -534,7 +539,7 @@ body:has(.cari-drawer-overlay) .header {
   align-items: center;
   font-size: 13px;
   font-weight: 500;
-  color: var(--ana-renk, #1D2026);
+  color: var(--notif-list-text);
   gap: 6px;
   padding: 0;
   padding-bottom: 3px;
@@ -543,7 +548,7 @@ body:has(.cari-drawer-overlay) .header {
 .bildirim-icerik .bildirim-arsiv-sebep {
   font-size: 11px;
   font-weight: 400;
-  color: var(--gri70, var(--gray-soft-dark));
+  color: var(--notif-list-title);
   margin-top: -2px;
   padding-bottom: 2px;
 }
@@ -555,7 +560,7 @@ body:has(.cari-drawer-overlay) .header {
 .bildirim-icerik .siparis-veren-musteri {
   font-size: 12px;
   font-weight: 500;
-  color: var(--ana-renk, #1D2026);
+  color: var(--notif-list-text);
 }
 
 .bildirim-icerik .siparis-veren-musteri:empty {
@@ -564,12 +569,12 @@ body:has(.cari-drawer-overlay) .header {
 
 .bildirim-icerik .siparis-edilen-urun {
   font-size: 11px;
-  color: var(--ana-renk, #1D2026);
+  color: var(--notif-item-badge-text);
   padding: 2px 8px 2px 2px;
-  border: 1px solid var(--mid-gray, var(--border-renk));
+  border: 1px solid var(--notif-item-badge-border);
   border-radius: 5px;
   width: fit-content;
-  background-color: var(--white, #ffffff);
+  background-color: var(--notif-item-badge-bg);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -582,7 +587,7 @@ body:has(.cari-drawer-overlay) .header {
 .bildirim-icerik .siparis-organizasyon {
   font-size: 11px;
   font-weight: 500;
-  color: var(--ana-renk, #1D2026);
+  color: var(--notif-list-text);
 }
 
 .bildirim-icerik .siparis-organizasyon:empty {
@@ -611,20 +616,28 @@ body:has(.cari-drawer-overlay) .header {
 }
 
 .bildirim-item:hover {
-  background-color: var(--light-bg, var(--border-renk)) !important;
+  background-color: var(--notif-item-hover) !important;
 }
 
 #bildirimlerListesi a:hover {
-  background-color: var(--light-bg, var(--border-renk)) !important;
+  background-color: var(--notif-item-hover) !important;
 }
 
 .bildirim-item.bildirim-okundu {
-  border-left: 1px solid var(--success-green, #10b981);
-  background-color: var(--success-green-transparent, rgba(16, 185, 129, 0.1)) !important;
+  border-left: 1px solid var(--notif-item-ok-border);
+  background-color: var(--notif-item-ok-bg) !important;
 }
 
 .bildirim-item.bildirim-okundu:hover {
-  background-color: var(--light-bg, var(--border-renk)) !important;
+  background-color: var(--notif-item-hover) !important;
+}
+
+.bildirim-item.bildirim-okundu .bildirim-kisi {
+  background-color: var(--notif-kisi-bg-okundu);
+}
+
+.bildirim-item.bildirim-okundu .bildirim-kisi .dzn-kisitarih {
+  color: var(--notif-kisi-text-okundu);
 }
 
 .bildirim-kisi {
@@ -633,9 +646,9 @@ body:has(.cari-drawer-overlay) .header {
   justify-content: flex-start;
   width: fit-content;
   border-radius: 100px;
-  background-color: var(--border-renk, #f1f3f7);
+  background-color: var(--notif-kisi-bg);
+  border: 1px solid var(--notif-kisi-border);
   padding: 2px;
-  margin-top: 4px;
 }
 
 .bildirim-kisi img.header-profil-resmi {
@@ -649,13 +662,13 @@ body:has(.cari-drawer-overlay) .header {
 .bildirim-kisi .dzn-kisitarih {
   font-size: 10px;
   font-weight: 500;
-  color: var(--gri70, var(--gray-soft-dark));
+  color: var(--notif-kisi-text);
   padding-left: 5px;
   padding-right: 8px;
 }
 
 .clickdropdown-content hr {
-  border: 1px solid var(--input-border-gray, var(--border-renk));
+  border: 1px solid var(--notif-item-border);
   opacity: 0.2;
   width: 100%;
   margin: 0;

@@ -9,7 +9,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--overlay-bg-black, rgba(0, 0, 0, 0.5));
+  background-color: var(--overlay-bg-black);
   z-index: 10002;
   display: flex;
   align-items: center;
@@ -25,7 +25,7 @@
 }
 
 .ciceksepeti-modal {
-  background-color: var(--white, #fff);
+  background-color: var(--white);
   border-radius: 16px;
   width: 95%;
   max-width: 900px;
@@ -46,7 +46,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-renk, #e5e7eb);
+  border-bottom: 1px solid var(--border-renk);
   gap: 12px;
 }
 
@@ -69,7 +69,7 @@
 }
 
 .ciceksepeti-modal-header .ciceksepeti-modal-title {
-  color: var(--cckspt-primary-text, #1f2937);
+  color: var(--cckspt-primary-text);
   font-size: 20px;
   font-weight: 500;
   margin-top: -4px;
@@ -82,7 +82,7 @@
 }
 
 .ciceksepeti-modal-header .ciceksepeti-panel-link {
-  color: var(--mavi-renk, #2563eb);
+  color: var(--mavi-renk);
   font-size: 12px;
   text-decoration: none;
   display: flex;
@@ -113,7 +113,7 @@
 }
 
 .ciceksepeti-modal-header .ciceksepeti-modal-close:hover {
-  background-color: var(--light-gray, #f3f4f6);
+  background-color: var(--light-gray);
 }
 
 .ciceksepeti-modal-content {
@@ -135,7 +135,7 @@
 }
 
 .ciceksepeti-modal-left {
-  background-color: var(--cckspt-bg-left, #f8fafc);
+  background-color: var(--cckspt-bg-left);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -151,20 +151,20 @@
 }
 
 .ciceksepeti-siparis-no span {
-  color: var(--gray-popup-secondary, #6b7280);
+  color: var(--gray-popup-secondary);
 }
 
 .ciceksepeti-siparis-no strong {
-  color: var(--ana-renk, #6366f1);
+  color: var(--ana-renk);
   font-weight: 600;
 }
 
 .ciceksepeti-teslim-zaman {
-  background: var(--cckspt-bg-datetime, #f1f5f9);
-  border: 1px solid var(--cckspt-border-datetime, #e2e8f0);
+  background: var(--cckspt-bg-datetime);
+  border: 1px solid var(--cckspt-border-datetime);
   border-radius: 8px;
   padding: 16px;
-  color: var(--cckspt-text-datetime, #475569);
+  color: var(--cckspt-text-datetime);
   min-height: 72px;
   display: flex;
   align-items: center;
@@ -178,8 +178,8 @@
 
 .ciceksepeti-teslim-zaman .teslim-zaman-badge i {
   padding: 14px;
-  background-color: var(--ana-renk, #6366f1);
-  color: var(--white, #fff);
+  background-color: var(--ana-renk);
+  color: var(--white);
   border-radius: 50%;
   font-size: 20px;
   display: none;
@@ -204,7 +204,7 @@
   display: flex;
   gap: 16px;
   align-items: center;
-  background-color: var(--white, #fff);
+  background-color: var(--white);
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 -4px 41px -4px rgba(0, 0, 0, 0.1);
@@ -216,7 +216,7 @@
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
-  background: #f1f5f9;
+  background: var(--cckspt-urun-image-bg);
 }
 
 .ciceksepeti-urun-section .urun-image img {
@@ -232,7 +232,7 @@
 
 .ciceksepeti-urun-section .urun-name {
   font-weight: 600;
-  color: var(--ana-renk, #6366f1);
+  color: var(--ana-renk);
   font-size: 18px;
 }
 
@@ -243,12 +243,12 @@
 }
 
 .ciceksepeti-urun-section .urun-price span {
-  color: var(--gray-popup-secondary, #6b7280);
+  color: var(--gray-popup-secondary);
   font-size: 12px;
 }
 
 .ciceksepeti-urun-section .urun-price strong {
-  color: var(--ana-renk, #6366f1);
+  color: var(--ana-renk);
   font-weight: 600;
   font-size: 14px;
 }
@@ -263,7 +263,7 @@
   margin: 0 0 12px;
   font-size: 15px;
   font-weight: 500;
-  color: var(--gray-popup-secondary, #6b7280);
+  color: var(--gray-popup-secondary);
   user-select: none;
 }
 
@@ -277,7 +277,7 @@
 }
 
 .ciceksepeti-info-section.teslimat-wrapper {
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 16px;
 }
@@ -292,14 +292,14 @@
 }
 
 .ciceksepeti-info-section .info-label {
-  color: var(--gray-popup-secondary, #6b7280);
+  color: var(--gray-popup-secondary);
   min-width: 120px;
   flex-shrink: 0;
   user-select: none;
 }
 
 .ciceksepeti-info-section .info-value {
-  color: var(--ana-renk, #6366f1);
+  color: var(--ana-renk);
   font-weight: 500;
   text-align: right;
   flex: 1;
@@ -314,15 +314,15 @@
 
 .ciceksepeti-info-section .info-value.siparis-notu {
   text-align: left;
-  color: var(--ana-renk, #6366f1);
+  color: var(--ana-renk);
   font-weight: 400;
   font-size: 14px;
 }
 
 .ciceksepeti-modal-footer {
-  background-color: var(--cckspt-modal-bottom, #f8fafc);
+  background-color: var(--cckspt-modal-bottom);
   padding: 20px 24px;
-  border-top: 1px solid var(--border-renk, #e5e7eb);
+  border-top: 1px solid var(--border-renk);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -335,13 +335,13 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: var(--ana-renk, #6366f1);
+  color: var(--ana-renk);
   min-width: 0;
   flex: 1;
 }
 
 .ciceksepeti-modal-warning i {
-  color: #f59e0b;
+  color: var(--warning-amber);
   font-size: 20px;
   flex-shrink: 0;
 }
@@ -362,21 +362,21 @@
 }
 
 .ciceksepeti-modal-actions .ciceksepeti-btn-reject {
-  background: #dc3545;
-  color: var(--white-only, #fff);
+  background: var(--toast-error);
+  color: var(--white-only);
 }
 
 .ciceksepeti-modal-actions .ciceksepeti-btn-reject:hover {
-  background: #c82333;
+  background: var(--toast-error-hover);
 }
 
 .ciceksepeti-modal-actions .ciceksepeti-btn-approve {
-  background: #28a745;
-  color: var(--white-only, #fff);
+  background: var(--toast-success);
+  color: var(--white-only);
 }
 
 .ciceksepeti-modal-actions .ciceksepeti-btn-approve:hover {
-  background: #218838;
+  background: var(--toast-success-hover);
 }
 
 /* Reddet onay modalı – "Bu siparişi reddetmek istediğinize emin misiniz?" */
@@ -386,7 +386,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-bg-half);
   z-index: 10020;
   display: flex;
   align-items: center;
@@ -402,7 +402,7 @@
 }
 
 .reject-confirmation-modal .confirmation-dialog {
-  background: var(--white, #fff);
+  background: var(--white);
   border-radius: 12px;
   padding: 24px;
   max-width: 380px;
@@ -412,7 +412,7 @@
 
 .reject-confirmation-modal .confirmation-text {
   font-size: 15px;
-  color: var(--cckspt-primary-text, #1f2937);
+  color: var(--cckspt-primary-text);
   margin-bottom: 20px;
   line-height: 1.5;
 }
@@ -433,19 +433,19 @@
 }
 
 .reject-confirmation-modal .confirmation-btn-yes {
-  background: #dc3545;
-  color: #fff;
+  background: var(--toast-error);
+  color: var(--white);
 }
 
 .reject-confirmation-modal .confirmation-btn-yes:hover {
-  background: #c82333;
+  background: var(--toast-error-hover);
 }
 
 .reject-confirmation-modal .confirmation-btn-no {
-  background: #6c757d;
-  color: #fff;
+  background: var(--btn-secondary-bg);
+  color: var(--white);
 }
 
 .reject-confirmation-modal .confirmation-btn-no:hover {
-  background: #5a6268;
+  background: var(--btn-secondary-bg-hover);
 }

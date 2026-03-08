@@ -1321,10 +1321,10 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
                 />
               </div>
               <div className="popup-buttons">
-                <button type="button" className="secondary-button popup-btn popup-btn-cancel" onClick={closeTurPopup}>
+                <button type="button" className="secondary-button btn-vazgec" onClick={closeTurPopup}>
                   VAZGEÇ
                 </button>
-                <button type="submit" className="primary-button popup-btn popup-btn-save" disabled={turPopupSaving}>
+                <button type="submit" className="primary-button btn-kaydet" disabled={turPopupSaving}>
                   {turPopupSaving ? <LoadingSpinner size="sm" /> : 'KAYDET'}
                 </button>
               </div>
@@ -1368,10 +1368,10 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
                 />
               </div>
               <div className="popup-buttons">
-                <button type="button" className="secondary-button popup-btn popup-btn-cancel" onClick={closeEtiketPopup}>
+                <button type="button" className="secondary-button btn-vazgec" onClick={closeEtiketPopup}>
                   VAZGEÇ
                 </button>
-                <button type="submit" className="primary-button popup-btn popup-btn-save" disabled={etiketPopupSaving}>
+                <button type="submit" className="primary-button btn-kaydet" disabled={etiketPopupSaving}>
                   {etiketPopupSaving ? <LoadingSpinner size="sm" /> : 'KAYDET'}
                 </button>
               </div>

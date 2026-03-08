@@ -383,11 +383,101 @@
   color: var(--white) !important;
 }
 
-/* Mobil Görünüm */
+/* Sol alan: webde görünür, mobilde gizli (Tailwind .hidden kullanılmıyor, tam kontrol burada) */
+@media only screen and (min-width: 768px) {
+  .container-login .sol-alan {
+    display: block !important;
+  }
+}
+
+/* Mobil Görünüm – form tam genişlik, kenar boşluğu az, input 14px */
+@media only screen and (max-width: 767px) {
+  .container-login {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto 1fr !important;
+    height: auto !important;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  .container-login .sol-alan {
+    display: none !important;
+  }
+
+  .container-login .sag-alan {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh;
+    min-height: 100dvh;
+    border-radius: 0;
+    background-color: var(--white);
+    padding: 0 !important;
+  }
+
+  .container-login .sag-alan .form-alan {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px 16px 32px !important;
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px)) !important;
+    box-sizing: border-box;
+    justify-content: center !important;
+    align-items: center !important;
+    overflow-y: auto;
+  }
+
+  .container-login .form-alan .input-alan {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 350px !important;
+    padding: 24px !important;
+    box-sizing: border-box;
+    /* background-color: transparent !important; */
+  }
+
+  .container-login .input-alan .logo {
+    width: 120px;
+  }
+
+  .container-login .baslik {
+    font-size: 22px;
+    padding-top: 16px;
+  }
+
+  .container-login .input-label label {
+    font-size: 14px !important;
+  }
+
+  .container-login .input-label input {
+    font-size: 14px !important;
+    height: 48px;
+    padding-left: 44px;
+    box-sizing: border-box;
+  }
+
+  .container-login .form-alan .input-alan button:not(.btn-yeni-ekle):not(.remove-button):not(.searchable-select-trigger) {
+    font-size: 14px !important;
+    margin-top: 20px;
+  }
+
+  .container-login .beni-hatirla-wrapper label {
+    font-size: 14px !important;
+  }
+
+  .yardim-butonu {
+    display: none;
+  }
+
+  .web-link {
+    display: block;
+  }
+}
+
+/* Eski 600px – 768–767 arası da yukarıdaki 767 kuralıyla çözüldü */
 @media only screen and (max-width: 600px) {
   .container-login {
     grid-template-columns: 1fr;
-    grid-template-rows: 40% 60%;
+    grid-template-rows: auto 1fr;
   }
 
   .sol-alan {
@@ -437,6 +527,13 @@
   
   .mobile-icon {
     display: none;
+  }
+}
+
+/* Login sol-alan: web (1024px+) mutlaka görünsün */
+@media (min-width: 1024px) {
+  body .container-login .sol-alan {
+    display: block !important;
   }
 }
 

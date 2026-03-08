@@ -4,6 +4,13 @@
  */
 
 @media (max-width: 767px) {
+  /* Mobilde tüm inputlar 14px */
+  input,
+  textarea,
+  select {
+    font-size: 14px !important;
+  }
+
   /* Sidebar (sol menü) mobilde tamamen gizli */
   nav[data-sidebar],
   .sidebar-desktop {
@@ -181,13 +188,13 @@
   /* Teslimatta: yeşil vurgu (mobil araç ikonu) */
   .mobile-header-right-actions .mobile-arac-takip-btn.mobile-arac-takip-btn--active,
   .mobile-header-right-actions .mobile-arac-takip-btn-wrapper.mobile-arac-takip-btn-wrapper--active .mobile-arac-takip-btn {
-    background: rgba(34, 197, 94, 0.15);
-    border-color: var(--success, #22c55e);
-    color: var(--success, #22c55e);
+    background: var(--green-success-15);
+    border-color: var(--success-green);
+    color: var(--success-green);
   }
   .mobile-header-right-actions .mobile-arac-takip-btn.mobile-arac-takip-btn--active i,
   .mobile-header-right-actions .mobile-arac-takip-btn-wrapper.mobile-arac-takip-btn-wrapper--active .mobile-arac-takip-btn i {
-    color: var(--success, #22c55e);
+    color: var(--success-green);
   }
 
   /* Mobil header tema butonu - araç takip butonu ile aynı yuvarlak ve boyut (40px) */
@@ -279,6 +286,18 @@
     display: none;
   }
 
+  /* Profil dropdown mobilde headerın altında, içerik üzerinde açılsın (kesilmesin) */
+  .header .mobile-header-right-actions .profil .clickdropdown-content {
+    position: fixed !important;
+    top: calc(var(--header-height, 64px) + 8px) !important;
+    left: auto !important;
+    right: 16px !important;
+    width: 260px !important;
+    max-width: calc(100vw - 32px) !important;
+    margin-top: 0 !important;
+    z-index: 9999 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+  }
   .mobile-header-right-actions .clickdropdown-content {
     position: absolute;
     top: 100%;
@@ -391,7 +410,7 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: var(--scroll-thumb-color, #999) var(--scroll-track-color, #eee);
+    scrollbar-color: var(--scroll-thumb-color) var(--scroll-track-color);
     width: 100%;
   }
   /* Index sipariş alanı: yatay scroll çubuğu görünür (kartlar yatay kaydırılır) */
@@ -399,15 +418,15 @@
     height: 8px;
   }
   .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-track {
-    background: var(--scroll-track-color, #f1f1f1);
+    background: var(--scroll-track-color);
     border-radius: 4px;
   }
   .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-thumb {
-    background: var(--scroll-thumb-color, #999);
+    background: var(--scroll-thumb-color);
     border-radius: 4px;
   }
   .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-thumb:hover {
-    background: var(--scroll-thumb-color-hover, #777);
+    background: var(--scroll-thumb-color-hover);
   }
 
   /* Mobilde ana kolon alanı kartlardan biraz ayrı dursun (margin korundu) */
@@ -644,12 +663,12 @@
     height: 36px;
     border-radius: 8px;
     background-color: var(--white);
-    color: var(--ikincil-renk, #6366f1);
+    color: var(--ikincil-renk);
     -webkit-tap-highlight-color: transparent;
   }
 
   .gizle-goster-buton:hover {
-    background-color: var(--gray-light-f2, #f3f4f6);
+    background-color: var(--gray-light-f2);
   }
 
   .gizle-goster-buton i {
@@ -676,17 +695,21 @@
     min-width: 0;
   }
 
-  /* QR FAB - sadece mobilde, navbar (64px) üstünde */
+  /* QR FAB (buton-siparis-karekod) - mobilde navbar + adres çubuğu/safe-area hesaba katılarak */
+  .buton-siparis-karekod,
   .qr-fab-index {
-    bottom: 80px !important;
-    right: 20px !important;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    right: calc(20px + env(safe-area-inset-right, 0px)) !important;
     width: 72px !important;
     height: 72px !important;
     z-index: 100;
     border-radius: 50%;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+    /* Dinamik viewport: adres çubuğu açıkken de buton görünür alanda kalsın */
+    position: fixed !important;
   }
 
+  .buton-siparis-karekod svg,
   .qr-fab-index svg {
     width: 36px;
     height: 36px;

@@ -263,7 +263,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
                 setError(null);
                 setScannedOrder(order);
                 setOrderDetails(orderToDetails(order));
-                onScanSuccess(order);
+                /* Manuel girişteki gibi künye görünümü bu modalda kalsın; OrderActionModal açılmaz */
               } else {
                 const errorMsg = 'Eşleşen sipariş bulunamadı!';
                 setError(errorMsg);
@@ -339,7 +339,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 9999,
+        zIndex: 10002,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -358,8 +358,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       <div
         className="modal-react-qr-scanner-container relative overflow-hidden rounded-lg text-left sm:my-8 sm:w-full sm:max-w-lg"
         style={{
-          minWidth: 320,
-          maxWidth: 512,
           maxHeight: '90vh',
           overflow: 'auto',
         }}

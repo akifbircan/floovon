@@ -21,7 +21,7 @@ nav[data-sidebar] .shadow-sm {
 nav[data-sidebar] a:hover,
 nav[data-sidebar] button:hover,
 nav[data-sidebar] .menu-item:hover {
-  background-color: var(--sidebar-item-hover, var(--list-item-hover, #f5f3ff)) !important;
+  background-color: var(--sidebar-item-hover) !important;
 }
 
 /* Logo link hover: arka plan değişmez, emblem scale efekti */
@@ -40,19 +40,19 @@ nav[data-sidebar] a,
 nav[data-sidebar] button,
 nav[data-sidebar] a i,
 nav[data-sidebar] button i {
-  color: var(--sidebar-icon-color, #4b5563) !important;
+  color: var(--sidebar-icon-color) !important;
 }
 
 nav[data-sidebar] a.text-gray-600,
 nav[data-sidebar] button.text-gray-600 {
-  color: var(--sidebar-icon-color, #4b5563) !important;
+  color: var(--sidebar-icon-color) !important;
 }
 
 nav[data-sidebar] a:hover,
 nav[data-sidebar] button:hover,
 nav[data-sidebar] a:hover i,
 nav[data-sidebar] button:hover i {
-  color: var(--sidebar-icon-hover-color, #111827) !important;
+  color: var(--sidebar-icon-hover-color) !important;
 }
 
 /* Logo link hover renk değişikliği devre dışı */
@@ -63,12 +63,12 @@ nav[data-sidebar] a.logo-link:hover img {
 
 nav[data-sidebar] a.hover\:text-gray-900:hover,
 nav[data-sidebar] button.hover\:text-gray-900:hover {
-  color: var(--sidebar-icon-hover-color, #111827) !important;
+  color: var(--sidebar-icon-hover-color) !important;
 }
 
 nav[data-sidebar] a.hover\:bg-gray-50:hover,
 nav[data-sidebar] button.hover\:bg-gray-50:hover {
-  background-color: var(--sidebar-hover-bg, #f5f3ff) !important;
+  background-color: var(--sidebar-hover-bg) !important;
 }
 
 /* Active state - Blue colors */
@@ -76,7 +76,7 @@ nav[data-sidebar] a.bg-blue-50,
 nav[data-sidebar] a[class*="bg-blue-50"],
 nav[data-sidebar] button.bg-blue-50,
 nav[data-sidebar] button[class*="bg-blue-50"] {
-  background-color: var(--sidebar-icon-active-bg, #ede9fe) !important;
+  background-color: var(--sidebar-icon-active-bg) !important;
 }
 
 nav[data-sidebar] a.text-blue-700,
@@ -87,7 +87,7 @@ nav[data-sidebar] a.text-blue-600,
 nav[data-sidebar] a[class*="text-blue-600"],
 nav[data-sidebar] button.text-blue-600,
 nav[data-sidebar] button[class*="text-blue-600"] {
-  color: var(--sidebar-icon-active-color, #6D28D9) !important;
+  color: var(--sidebar-icon-active-color) !important;
 }
 
 nav[data-sidebar] a.bg-blue-50 i,
@@ -98,7 +98,7 @@ nav[data-sidebar] a.text-blue-700 i,
 nav[data-sidebar] a[class*="text-blue-700"] i,
 nav[data-sidebar] button.text-blue-700 i,
 nav[data-sidebar] button[class*="text-blue-700"] i {
-  color: var(--sidebar-icon-active-color, #6D28D9) !important;
+  color: var(--sidebar-icon-active-color) !important;
 }
 
 /* Dark mode: seçili sayfa ikonu beyaz (mor zemin üstünde okunaklı) */
@@ -110,7 +110,7 @@ body.dark-mode nav[data-sidebar] a.text-blue-700,
 body.dark-mode nav[data-sidebar] a[class*="text-blue-700"] i,
 body.dark-mode nav[data-sidebar] a.text-blue-600,
 body.dark-mode nav[data-sidebar] a[class*="text-blue-600"] i {
-  color: #ffffff !important;
+  color: var(--white-only) !important;
 }
 
 /* Logo link hover devre dışı - Dark Mode (özel durum, variable'lar yeterli değil) */
@@ -125,8 +125,8 @@ body.dark-mode nav[data-sidebar] a.logo-link:hover img {
 
 /* Sidebar Tooltip Styles - Variable Renkler */
 nav[data-sidebar] .sidebar-tooltip {
-  background-color: var(--sidebar-tooltip-bg, #2e1065) !important;
-  color: var(--sidebar-tooltip-text, #ffffff) !important;
+  background-color: var(--sidebar-tooltip-bg) !important;
+  color: var(--sidebar-tooltip-text) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 9999;
 }
@@ -134,27 +134,27 @@ nav[data-sidebar] .sidebar-tooltip {
 /* Mobile Navbar - Variable Renkler */
 nav[class*="fixed bottom-0"] a,
 nav[class*="fixed bottom-0"] a i {
-  color: var(--sidebar-icon-color, #4b5563) !important;
+  color: var(--sidebar-icon-color) !important;
 }
 
 nav[class*="fixed bottom-0"] a.text-gray-600 {
-  color: var(--sidebar-icon-color, #4b5563) !important;
+  color: var(--sidebar-icon-color) !important;
 }
 
 nav[class*="fixed bottom-0"] a:hover,
 nav[class*="fixed bottom-0"] a.hover\:text-gray-900:hover {
-  color: var(--sidebar-icon-hover-color, #111827) !important;
+  color: var(--sidebar-icon-hover-color) !important;
 }
 
 nav[class*="fixed bottom-0"] a.text-blue-600,
 nav[class*="fixed bottom-0"] a.bg-blue-50 {
-  color: var(--sidebar-icon-active-color, #6D28D9) !important;
-  background-color: var(--sidebar-icon-active-bg, #ede9fe) !important;
+  color: var(--sidebar-icon-active-color) !important;
+  background-color: var(--sidebar-icon-active-bg) !important;
 }
 
 body.dark-mode nav[class*="fixed bottom-0"] a.bg-blue-50,
 body.dark-mode nav[class*="fixed bottom-0"] a.bg-blue-50 i {
-  color: #ffffff !important;
+  color: var(--white-only) !important;
 }
 
 /* Sidebar Scrollbar */
@@ -163,15 +163,15 @@ nav[data-sidebar]::-webkit-scrollbar {
 }
 
 nav[data-sidebar]::-webkit-scrollbar-track {
-  background: var(--scroll-track-color, #f1f1f1);
+  background: var(--scroll-track-color);
 }
 
 nav[data-sidebar]::-webkit-scrollbar-thumb {
-  background: var(--scroll-thumb-color, #9e9e9e);
+  background: var(--scroll-thumb-color);
   border-radius: 4px;
 }
 
 nav[data-sidebar]::-webkit-scrollbar-thumb:hover {
-  background: var(--scroll-thumb-color-hover, #bebebe);
+  background: var(--scroll-thumb-color-hover);
 }
 

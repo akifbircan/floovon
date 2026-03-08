@@ -740,7 +740,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     align-items: center;
     justify-content: center;
     gap: 6px;
-    background-color: rgba(156, 163, 175, 0.15);
+    background-color: var(--gray-neutral-15);
     padding: 6px 12px;
     border-radius: 20px;
     user-select: none;
@@ -750,26 +750,26 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #9ca3af;
+    background-color: var(--gray-neutral-solid);
     flex-shrink: 0;
 }
 
 .sag-panel .active-vehicles-info .active-text {
     font-size: 12px;
     font-weight: 600;
-    color: #9ca3af;
+    color: var(--gray-neutral-solid);
 }
 
 .sag-panel .active-vehicles-info.has-active .active-text {
-    color: #48bb78;
+    color: var(--green-emerald);
 }
 
 .sag-panel .active-vehicles-info.has-active .active-dot {
-    background-color: #48bb78;
+    background-color: var(--green-emerald);
 }
 
 .sag-panel .active-vehicles-info.has-active {
-    background-color: rgba(72, 187, 120, 0.15);
+    background-color: var(--green-emerald-15);
 }
 
 .sag-panel .vehicle-list {
@@ -797,12 +797,12 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
 }
 
 .sag-panel .vehicle-list::-webkit-scrollbar-thumb {
-    background: rgba(156, 163, 175, 0.3);
+    background: var(--gray-neutral-30);
     border-radius: 3px;
 }
 
 .sag-panel .vehicle-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(156, 163, 175, 0.5);
+    background: var(--gray-neutral-50);
 }
 
 .sag-panel .vehicle-item {
@@ -869,12 +869,12 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
 }
 
 .sag-panel .status-active {
-    background-color: rgba(72, 187, 120, 0.2);
-    color: var(--green-secondary, #48bb78);
+    background-color: var(--green-emerald-20);
+    color: var(--green-secondary);
 }
 
 .sag-panel .status-inactive {
-    /* background-color: rgba(156, 163, 175, 0.2); */
+    /* background-color: var(--gray-neutral-20); */
     /* color: var(--gri70); */
     background-color: var(--white);
     color: var(--red-warm);
@@ -991,7 +991,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(246, 71, 152, 1);
+    color: var(--primary-pink);
     flex-shrink: 0;
 }
 
@@ -1104,7 +1104,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     width: 44px;
     height: 44px;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--white-alpha-20);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1147,7 +1147,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     transition: background 0.2s;
 }
 .vehicle-detail-modal-header .close-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--white-alpha-25);
 }
 .vehicle-detail-modal-header .icon-btn-kapat::before {
     content: "×";
@@ -1173,7 +1173,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     font-size: 14px;
 }
 .vehicle-detail-error {
-    color: var(--red-warm, #c53030);
+    color: var(--red-warm);
 }
 .vehicle-detail-map-section.map-section {
     margin-bottom: 16px;
@@ -1210,7 +1210,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: var(--arac-takip-vehicle-item-bg, #f1f3f7);
+    background: var(--arac-takip-vehicle-item-bg);
     color: var(--gray-classic);
     font-size: 14px;
 }
@@ -1251,7 +1251,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     margin-bottom: 20px;
 }
 .vehicle-detail-info-grid .detail-info-card {
-    background: var(--arac-takip-vehicle-item-bg, #f1f3f7);
+    background: var(--arac-takip-vehicle-item-bg);
     border-radius: 10px;
     padding: 12px;
     text-align: center;
@@ -1270,7 +1270,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     color: var(--ana-renk);
 }
 .vehicle-detail-info-grid .detail-info-value.status-active-detail {
-    color: var(--green-secondary, #48bb78);
+    color: var(--green-secondary);
 }
 .vehicle-detail-info-grid .info-icon {
     font-size: 14px;

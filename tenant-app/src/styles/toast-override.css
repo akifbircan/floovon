@@ -4,7 +4,7 @@
 .toast-btn-confirm,
 .toast .toast-btn.toast-btn-confirm,
 .toast-btn.toast-btn-confirm {
-  background-color: var(--mor-primary, #6D28D9) !important;
+  background-color: var(--mor-primary) !important;
   color: var(--white-only) !important;
   font-weight: 600;
 }
@@ -12,13 +12,13 @@
 /* .toast-btn-confirm:hover,
 .toast .toast-btn.toast-btn-confirm:hover {
   filter: brightness(1.1);
-  color: #ffffff !important;
+  color: var(--white) !important;
 } */
 
 /* Danger buton da mor primary + beyaz */
 .toast-btn-danger,
 .toast .toast-btn.toast-btn-danger {
-  background-color: var(--mor-primary, #6D28D9) !important;
+  background-color: var(--mor-primary) !important;
   color: var(--white-only) !important;
   font-weight: 600;
 }
@@ -39,7 +39,7 @@
 
 /* İptal butonu: açık zemin, koyu yazı (mevcut gibi) */
 .toast-btn-cancel {
-  color: var(--toast-text-dark, #1e293b) !important;
+  color: var(--toast-text-dark) !important;
 }
 
 /* Toast: zemin tema rengi (light=beyaz, dark=koyu); yazı ve ikonlar renkli (tema değişkenleri) */

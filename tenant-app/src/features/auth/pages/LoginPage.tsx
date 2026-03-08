@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { loginRequest } from '../../../lib/api';
 import type { User } from '../../../lib/auth';
+import { applySavedThemeToDocument } from '../../../shared/hooks/useTheme';
 
 const loginSchema = z.object({
   tenant_code: z.string().min(1, 'Tenant kodu gereklidir'),
@@ -45,6 +46,16 @@ export const LoginPage: React.FC = () => {
       };
     })(),
   });
+
+  // Login sayfası: ilk yüklemede temayı uygula + diğer sekmede (index) tema değişince de güncelle
+  useEffect(() => {
+    applySavedThemeToDocument();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'theme') applySavedThemeToDocument();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   // URL veya localStorage'tan hatırlanan değerleri forma uygula (ilk yükleme ve URL değişince)
   useEffect(() => {
@@ -132,8 +143,8 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="container-login min-h-screen">
-      {/* Sol Alan - Görsel - Eski HTML yapısına göre */}
-      <div className="sol-alan hidden lg:block">
+      {/* Sol Alan - Görsel - Webde görünür (lg:block), mobilde gizli (login-custom.css) */}
+      <div className="sol-alan lg:block">
         <div className="gorsel-alan">
           <div className="gorsel-yazi">
             <div className="ust-yazi">

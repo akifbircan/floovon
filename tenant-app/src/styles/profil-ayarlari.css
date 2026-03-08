@@ -297,7 +297,7 @@
   border-radius: 999px;
   font-size: 10px;
   font-weight: 800;
-  background-color: var(--form-dark-bg, #f3f4f6);
+  background-color: var(--form-dark-bg);
   color: var(--ana-renk);
   white-space: nowrap;
   text-transform: uppercase;
@@ -313,7 +313,7 @@
   border-radius: 999px;
   font-size: 10px;
   font-weight: 600;
-  background-color: var(--form-dark-bg, #f3f4f6);
+  background-color: var(--form-dark-bg);
   color: var(--ana-renk);
   white-space: nowrap;
   text-transform: uppercase;
@@ -428,7 +428,7 @@
 .profil-form-col-secure {
   width: 100%;
   padding: 1.25rem;
-  border: 1px solid var(--border-renk, #e5e7eb);
+  border: 1px solid var(--border-renk);
   border-radius: 8px;
   background-color: var(--profil-secure-bg);
   display: flex;
@@ -636,13 +636,13 @@
 
 /* Kullanıcı adı çakışması uyarısı (profil yönetimi – yeni kullanıcı) */
 .partner-modal-field input.input-hata {
-  border-color: var(--kirmizi-uyari, #dc2626);
+  border-color: var(--kirmizi-uyari);
 }
 .partner-modal-field .profil-field-uyari {
   display: block;
   margin-top: 0.25rem;
   font-size: 0.75rem;
-  color: var(--kirmizi-uyari, #dc2626);
+  color: var(--kirmizi-uyari);
 }
 
 .profil-select,
@@ -693,7 +693,7 @@
   color: var(--ana-renk);
   margin: 0 0 0.5rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--mor-primary, #6b21a8);
+  border-bottom: 2px solid var(--mor-primary);
 }
 .ayarlar-ciceksepeti-sekme-desc {
   font-size: 0.875rem;
@@ -929,13 +929,13 @@
   border-color: var(--mor-primary);
 }
 .profil-field input.input-hata {
-  border-color: var(--kirmizi-uyari, #dc2626);
+  border-color: var(--kirmizi-uyari);
 }
 .profil-field .profil-field-uyari {
   display: block;
   margin-top: 0.25rem;
   font-size: 0.75rem;
-  color: var(--kirmizi-uyari, #dc2626);
+  color: var(--kirmizi-uyari);
 }
 .profil-field select {
   width: 100%;
@@ -1000,7 +1000,7 @@
   border-color: var(--mor-primary-hover);
 }
 .ayarlar-logo-butonlar .ayarlar-btn-secondary:hover:not(:disabled) {
-  background-color: var(--gray-light-f2, #f2f2f2);
+  background-color: var(--gray-light-f2);
   border-color: var(--border-renk);
 }
 
@@ -1266,7 +1266,7 @@ html.dark-mode .profil-yetki-kart-footer {
 }
 
 .profil-yetkilendirme-hint--info {
-  color: var(--primary-blue, #2563eb);
+  color: var(--mor-primary);
   margin-top: -0.5rem;
 }
 

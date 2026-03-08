@@ -465,10 +465,10 @@ export const YeniPartnerModal: React.FC<YeniPartnerModalProps> = ({
             />
           </div>
           <div className="partner-modal-drawer-actions">
-            <button type="button" className="partner-modal-btn-secondary" onClick={requestClose}>
+            <button type="button" className="secondary-button btn-vazgec" onClick={requestClose}>
               VAZGEÇ
             </button>
-            <button type="submit" className="partner-modal-btn-primary" disabled={loading}>
+            <button type="submit" className="primary-button btn-kaydet" disabled={loading}>
               {loading ? <LoadingSpinner size="sm" /> : 'KAYDET'}
             </button>
           </div>

@@ -12,6 +12,20 @@ function isDarkMode(): boolean {
   return document.body.classList.contains('dark-mode') || document.documentElement.classList.contains('dark-mode');
 }
 
+/** Login / Şifremi Unuttum gibi Header olmayan sayfalarda: localStorage'daki temayı body/html'e uygular */
+export function applySavedThemeToDocument(): void {
+  if (typeof document === 'undefined' || typeof localStorage === 'undefined') return;
+  const saved = localStorage.getItem('theme');
+  const isDark = saved === 'dark';
+  if (isDark) {
+    document.body.classList.add('dark-mode');
+    document.documentElement.classList.add('dark-mode');
+  } else {
+    document.body.classList.remove('dark-mode');
+    document.documentElement.classList.remove('dark-mode');
+  }
+}
+
 /** Mevcut tema (dark/light) ve tema değiştiğinde re-render tetikler */
 export function useTheme(): boolean {
   const [isDark, setIsDark] = useState(() => isDarkMode());

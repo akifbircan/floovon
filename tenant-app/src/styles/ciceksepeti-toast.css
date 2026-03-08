@@ -47,7 +47,7 @@
 
 .ciceksepeti-toast {
   background: linear-gradient(135deg, #0012c8, #00a53e);
-  color: var(--white, #fff);
+  color: var(--white);
   border-radius: 12px;
   padding: 16px;
   transform: translateX(100%);
@@ -92,7 +92,7 @@
 }
 
 .ciceksepeti-toast-header .ciceksepeti-toast-close i {
-  color: var(--white-only, #fff);
+  color: var(--white-only);
   font-size: 9px;
 }
 
@@ -104,14 +104,14 @@
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 8px;
-  color: var(--white-only, #fff);
+  color: var(--white-only);
 }
 
 .ciceksepeti-toast-subtitle {
   font-size: 12px;
   opacity: 0.9;
   margin-bottom: 12px;
-  color: var(--white-only, #fff);
+  color: var(--white-only);
 }
 
 .ciceksepeti-toast-orders {
@@ -129,12 +129,12 @@
 }
 
 .ciceksepeti-toast-orders::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--white-50);
   border-radius: 3px;
 }
 
 .ciceksepeti-toast-orders::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--white-80);
 }
 
 .ciceksepeti-toast-order-item {
@@ -144,8 +144,8 @@
   cursor: pointer;
   transition: all ease-in-out 0.2s;
   position: relative;
-  color: #2c3e50;
-  border-left: 3px solid #00C851;
+  color: var(--toast-text-primary);
+  border-left: 3px solid var(--toast-success-solid);
 }
 
 .ciceksepeti-toast-order-item:hover {
@@ -162,7 +162,7 @@
 .ciceksepeti-order-title {
   font-weight: 500;
   font-size: 15px;
-  color: #00C851;
+  color: var(--toast-success-solid);
   margin-bottom: 4px;
 }
 
@@ -180,13 +180,13 @@
 }
 
 .ciceksepeti-order-info .info-label {
-  color: #6c757d;
+  color: var(--toast-text-muted);
   font-weight: 500;
   margin-right: 8px;
 }
 
 .ciceksepeti-order-info .info-value {
-  color: #212529;
+  color: var(--toast-text-dark);
   font-weight: 500;
 }
 
@@ -196,7 +196,7 @@
   right: 14px;
   width: 10px;
   height: 10px;
-  background: #00C851;
+  background: var(--toast-success-solid);
   border-radius: 50%;
   animation: ciceksepetiPulse 2s infinite;
 }
@@ -228,7 +228,7 @@
   width: 24px;
   height: 24px;
   border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top: 3px solid var(--white-only, #fff);
+  border-top: 3px solid var(--white-only);
   border-radius: 50%;
   animation: ciceksepetiCheckingSpin 1s linear infinite;
   flex-shrink: 0;
@@ -243,13 +243,13 @@
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 4px;
-  color: var(--white-only, #fff);
+  color: var(--white-only);
 }
 
 .ciceksepeti-checking-text .checking-subtitle {
   font-size: 12px;
   opacity: 0.9;
-  color: var(--white-only, #fff);
+  color: var(--white-only);
 }
 
 .ciceksepeti-no-orders-toast .ciceksepeti-no-orders-content {
@@ -260,7 +260,7 @@
 }
 
 .ciceksepeti-no-orders-toast .no-orders-icon {
-  color: var(--white-only, #fff);
+  color: var(--white-only);
   font-size: 24px;
 }
 
@@ -268,12 +268,12 @@
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 4px;
-  color: var(--white-only, #fff);
+  color: var(--white-only);
 }
 
 .ciceksepeti-no-orders-toast .no-orders-subtitle {
   font-size: 12px;
-  color: var(--white-only, #fff);
+  color: var(--white-only);
 }
 
 /* Çiçek Sepeti sonuç toast'ları (Reddet / Onayla / Hata) – sabit sağ üst, stilli */
@@ -303,11 +303,11 @@
   padding: 14px 16px;
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  background: var(--white, #fff);
-  color: var(--cckspt-primary-text, #1f2937);
+  background: var(--white);
+  color: var(--cckspt-primary-text);
   font-size: 14px;
   line-height: 1.4;
-  border-left: 4px solid #6c757d;
+  border-left: 4px solid var(--btn-secondary-bg);
   animation: ciceksepeti-toast-in 0.35s ease;
 }
 
@@ -336,27 +336,27 @@
 }
 
 .ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-reject {
-  border-left-color: #dc3545;
+  border-left-color: var(--toast-error-solid);
 }
 
 .ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-reject .ciceksepeti-result-toast-column i {
-  color: #dc3545;
+  color: var(--toast-error-solid);
 }
 
 .ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-approve {
-  border-left-color: #28a745;
+  border-left-color: var(--toast-success-border);
 }
 
 .ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-approve .ciceksepeti-result-toast-column i {
-  color: #28a745;
+  color: var(--toast-success-border);
 }
 
 .ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-error {
-  border-left-color: #dc3545;
+  border-left-color: var(--toast-error-solid);
 }
 
 .ciceksepeti-result-toasts .ciceksepeti-result-toast.ciceksepeti-toast-error .ciceksepeti-result-toast-column i {
-  color: #dc3545;
+  color: var(--toast-error-solid);
 }
 
 .ciceksepeti-result-toasts .ciceksepeti-result-toast .ciceksepeti-result-toast-close {
@@ -365,11 +365,11 @@
   border: none;
   padding: 4px;
   cursor: pointer;
-  color: #6c757d;
+  color: var(--toast-text-muted);
   font-size: 16px;
   line-height: 1;
 }
 
 .ciceksepeti-result-toasts .ciceksepeti-result-toast .ciceksepeti-result-toast-close:hover {
-  color: #1f2937;
+  color: var(--text-heading-dark);
 }

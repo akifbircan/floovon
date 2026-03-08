@@ -722,7 +722,7 @@
 }
 
 .siparis-kart.over {
-    border-top: 3px solid var(--birincil-renk, #007bff);
+    border-top: 3px solid var(--mor-primary);
     margin-top: -3px;
 }
 

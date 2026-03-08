@@ -1,6 +1,9 @@
 #!/bin/bash
 # Sunucuda migration'ları çalıştırmak için script
-# 
+#
+# UYARI: Sunucu DB'nizi local ile aynı tutuyorsanız (FTP ile aynı .db atıyorsanız)
+#        bu script'i deploy sırasında ÇAĞIRMAYIN. Sadece şema değişikliği yaptığınızda manuel çalıştırın.
+#
 # Kullanım:
 #   bash scripts/run-migrations-on-server.sh
 #   veya

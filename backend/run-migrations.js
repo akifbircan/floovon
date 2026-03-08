@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 /**
  * Tüm migration'ları çalıştırır
- * Sunucuda migration'ları manuel olarak çalıştırmak için kullanılır
- * 
+ *
+ * NE ZAMAN ÇALIŞTIRILMALI:
+ * - Sadece sunucuda veritabanı ŞEMASI değiştiğinde (yeni tablo/kolon eklediğinizde)
+ * - Veya tamamen yeni/boş bir veritabanı ilk kez kurulurken
+ *
+ * ÇALIŞTIRMAYIN:
+ * - Sunucu DB'nizi local ile AYNI tutuyorsanız (FTP ile aynı .db dosyasını atıyorsanız)
+ *   → Deploy script'inizde "node run-migrations.js" adımını KALDIRIN; DB zaten doğru.
+ *
  * Kullanım:
  *   node run-migrations.js
  *   veya

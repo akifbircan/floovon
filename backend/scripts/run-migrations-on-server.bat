@@ -1,6 +1,9 @@
 @echo off
 REM Sunucuda migration'ları çalıştırmak için Windows batch script
-REM 
+REM
+REM UYARI: Sunucu DB'nizi local ile aynı tutuyorsanız (FTP ile aynı .db atıyorsanız)
+REM        bu script'i deploy sırasında CAGIRMAYIN. Sadece şema degisikligi yaptiginizda manuel calistirin.
+REM
 REM Kullanım:
 REM   scripts\run-migrations-on-server.bat
 

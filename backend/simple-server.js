@@ -2316,6 +2316,70 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
         
         try {
         // ========================================================================
+        // ZORUNLU: tenants_kullanicilar ve admin_kullanicilar (yoksa oluştur – aynı db bağlantısı)
+        // ========================================================================
+        await new Promise((resolve, reject) => {
+            db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='tenants_kullanicilar'", [], (err, row) => {
+                if (err) { reject(err); return; }
+                if (row) { console.log('ℹ️ tenants_kullanicilar zaten mevcut'); resolve(); return; }
+                db.run(`
+                    CREATE TABLE tenants_kullanicilar (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        tenant_id INTEGER,
+                        name TEXT,
+                        surname TEXT,
+                        email TEXT NOT NULL,
+                        username TEXT,
+                        phone TEXT,
+                        password TEXT,
+                        role TEXT DEFAULT 'Sistem Yöneticisi',
+                        is_active INTEGER DEFAULT 1,
+                        is_admin INTEGER DEFAULT 0,
+                        status TEXT DEFAULT 'aktif',
+                        profile_image TEXT,
+                        last_login DATETIME,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+                    )
+                `, (e) => {
+                    if (e) { reject(e); return; }
+                    console.log('✅ tenants_kullanicilar tablosu oluşturuldu');
+                    db.run('CREATE INDEX IF NOT EXISTS idx_tenants_kullanicilar_tenant_id ON tenants_kullanicilar(tenant_id)', () => {});
+                    db.run('CREATE INDEX IF NOT EXISTS idx_tenants_kullanicilar_tenant_active ON tenants_kullanicilar(tenant_id, is_active)', () => resolve());
+                });
+            });
+        }).catch((e) => { console.error('❌ tenants_kullanicilar:', e.message); });
+        await new Promise((resolve, reject) => {
+            db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='admin_kullanicilar'", [], (err, row) => {
+                if (err) { reject(err); return; }
+                if (row) { console.log('ℹ️ admin_kullanicilar zaten mevcut'); resolve(); return; }
+                db.run(`
+                    CREATE TABLE admin_kullanicilar (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        kullaniciadi TEXT NOT NULL UNIQUE,
+                        email TEXT,
+                        password TEXT NOT NULL,
+                        role TEXT DEFAULT 'admin',
+                        profil_resmi TEXT,
+                        is_active INTEGER DEFAULT 1,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                `, (e) => {
+                    if (e) { reject(e); return; }
+                    console.log('✅ admin_kullanicilar tablosu oluşturuldu');
+                    const crypto = require('crypto');
+                    const defaultPass = crypto.createHash('sha256').update('admin123').digest('hex');
+                    db.run(`INSERT INTO admin_kullanicilar (name, kullaniciadi, email, password, role, is_active) VALUES (?, ?, ?, ?, ?, 1)`, ['Admin', 'admin', 'admin@floovon.com', defaultPass, 'admin'], (e2) => {
+                        if (!e2) console.log('⚠️ Varsayılan admin: kullaniciadi=admin, şifre=admin123');
+                        resolve();
+                    });
+                });
+            });
+        }).catch((e) => { console.error('❌ admin_kullanicilar:', e.message); });
+        // ========================================================================
         // FATURA: tenants_faturalar tablosu (yoksa oluştur - ilk plan değişiminden önce hazır)
         // ========================================================================
         if (typeof ensureTenantsFaturalarTable === 'function') {

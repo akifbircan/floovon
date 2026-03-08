@@ -425,7 +425,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
                     type="text"
                     value={manualOrderId}
                     onChange={(e) => setManualOrderId(e.target.value)}
-                    placeholder="Sipariş no. veya kod (123, ORD-123)"
+                    placeholder="Sipariş kodunu yazınız"
                     className="flex-1 px-3 py-2 border rounded-lg text-sm"
                     onKeyDown={(e) => e.key === 'Enter' && handleManualLookup()}
                   />

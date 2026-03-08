@@ -1,0 +1,25 @@
+{
+  "name": "Floovon Panel",
+  "short_name": "Floovon Panel",
+  "description": "Floovon tenant paneli",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#6a48b8",
+  "background_color": "#f1f3f7",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "192x192",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    }
+  ]
+}

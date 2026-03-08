@@ -13,7 +13,7 @@ import { formatPhoneNumber, cleanPhoneForDatabase, formatTutarInputLive, formatT
 import { usePhoneInput } from '../../../shared/hooks/usePhoneInput';
 import { useAddressSelect } from '../../dashboard/hooks/useAddressSelect';
 import { getKonumAyarlari } from '../../dashboard/api/formActions';
-import { Trash2, FileSearch, Package, Settings, Truck, Send, Pencil, Upload, Info, Wrench, Clock, ShoppingCart, Plug, RefreshCw } from 'lucide-react';
+import { Trash2, FileSearch, Package, Settings, Truck, Send, Pencil, Upload, Info, Wrench, Clock, ShoppingCart, Plug, RefreshCw, Bell } from 'lucide-react';
 import { WhatsAppQRModal } from '../../dashboard/components/WhatsAppQRModal';
 
 interface Urun {
@@ -75,6 +75,10 @@ function CiceksepetiAyarlariForm() {
   const [testBildirimi, setTestBildirimi] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [notifPermission, setNotifPermission] = useState<'default' | 'granted' | 'denied' | 'unsupported'>(() => {
+    if (typeof window === 'undefined' || typeof (window as any).Notification === 'undefined') return 'unsupported';
+    return (window as any).Notification.permission as 'default' | 'granted' | 'denied';
+  });
   React.useEffect(() => {
     if (cicekData && typeof cicekData === 'object') {
       setApiKey((cicekData.api_key as string) ?? '');
@@ -314,7 +318,51 @@ function CiceksepetiAyarlariForm() {
               <label className="ayarlar-label ayarlar-label-inline">
                 <input type="checkbox" checked={sesBildirimi} onChange={(e) => setSesBildirimi(e.target.checked)} className="ayarlar-checkbox" /> Ses Bildirimi
               </label>
-              <small className="ayarlar-help">Yeni sipariş geldiğinde ses bildirimi çalar</small>
+              <small className="ayarlar-help">Yeni sipariş geldiğinde ses bildirimi çalar (uygulama olarak açıksa ilk dokunuştan sonra çalışır)</small>
+            </div>
+          </div>
+          <div className="ayarlar-ciceksepeti-checkbox-kutu">
+            <div className="ayarlar-form-group">
+              <label className="ayarlar-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Bell size={16} aria-hidden /> Telefon bildirimleri
+              </label>
+              {notifPermission === 'unsupported' && (
+                <small className="ayarlar-help">Bu tarayıcı bildirimleri desteklemiyor.</small>
+              )}
+              {notifPermission !== 'unsupported' && (
+                <>
+                  <small className="ayarlar-help" style={{ display: 'block', marginBottom: '0.5rem' }}>
+                    {notifPermission === 'granted' ? 'Açık — Yeni siparişte telefondaki bildirim çubuğunda uyarı görünür.' : notifPermission === 'denied' ? 'Kapalı — Tarayıcı ayarlarından bildirim iznini açabilirsiniz.' : 'Yeni sipariş geldiğinde telefondaki bildirim ekranında da uyarı görmek için izin verin.'}
+                  </small>
+                  {notifPermission !== 'granted' && (
+                    <button
+                      type="button"
+                      className="ayarlar-btn ayarlar-btn-secondary"
+                      style={{ marginTop: 4 }}
+                      onClick={() => {
+                        const integration = (window as any).ciceksepetiIntegration;
+                        if (integration && typeof integration.requestNotificationPermission === 'function') {
+                          integration.requestNotificationPermission((p: string) => {
+                            setNotifPermission(p as 'default' | 'granted' | 'denied');
+                            if (p === 'granted') showToast('success', 'Bildirim izni verildi. Yeni siparişlerde telefon bildirimi görünecek.');
+                            if (p === 'denied') showToast('info', 'Bildirim kapalı. İsterseniz tarayıcı ayarlarından açabilirsiniz.');
+                          });
+                        } else {
+                          if (typeof (window as any).Notification !== 'undefined') {
+                            (window as any).Notification.requestPermission().then((p: string) => {
+                              setNotifPermission(p as 'default' | 'granted' | 'denied');
+                              if (p === 'granted') showToast('success', 'Bildirim izni verildi.');
+                            });
+                          }
+                        }
+                      }}
+                    >
+                      <Bell size={14} style={{ marginRight: 6 }} aria-hidden />
+                      {notifPermission === 'denied' ? 'İzin tarayıcıda kapalı' : 'Telefon bildirimlerini aç'}
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </div>
           <div className="ayarlar-ciceksepeti-checkbox-kutu">

@@ -25,6 +25,7 @@ class CiceksepetiFloovonIntegration {
         this.pendingOrders = []; // Onay bekleyen siparişler
         this.currentModalOrder = null; // Modal'da görüntülenen sipariş
         this.audioContext = null; // Audio context'i önceden oluştur
+        this.audioUnlocked = false; // PWA/mobil: ilk dokunuşta ses kilidi açılsın
         this.reminderTimer = null; // Hatırlatma zamanlayıcısı
         this.testOrderInterval = null; // Test sipariş interval referansı
         this.testOrderTimeout = null; // Test sipariş timeout referansı
@@ -34,6 +35,16 @@ class CiceksepetiFloovonIntegration {
     init() {
         // Audio context'i ilk kullanıcı etkileşiminde hazırla
         this.initAudioContext();
+        // PWA/mobil: ilk dokunuşta ses çalınabilsin diye kilidi aç (bir kez)
+        var self = this;
+        function onceUnlock() {
+            if (!self.audioUnlocked) {
+                self.unlockAudio();
+                self.audioUnlocked = true;
+            }
+        }
+        document.addEventListener('click', onceUnlock, { once: true });
+        document.addEventListener('touchstart', onceUnlock, { once: true });
         
         // Toast container'ın var olduğundan emin ol; popup sadece index'te
         this.ensureToastContainer();
@@ -152,18 +163,57 @@ class CiceksepetiFloovonIntegration {
         // Sayfa ilk tıklandığında audio context'i hazırla
         document.addEventListener('click', () => {
             if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        // console.log('Audio context hazır');
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
         }, { once: true });
-        
-        // Dokunmatik cihazlar için
         document.addEventListener('touchstart', () => {
             if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        // console.log('Audio context hazır (touch)');
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
         }, { once: true });
+    }
+
+    /** PWA/mobil: Tarayıcı ilk kullanıcı etkileşiminden sonra ses çalsın diye kilidi açar */
+    unlockAudio() {
+        try {
+            var a = new Audio("/assets/sounds/sound-12.mp3");
+            a.volume = 0;
+            a.play().then(function() { a.pause(); }).catch(function() {});
+        } catch (e) {}
+    }
+
+    /** Telefon bildirim çubuğunda bildirim gösterir (izin verilmişse). PWA/uygulama açık veya arka plandayken çalışır. */
+    showSystemNotification(title, body) {
+        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+        try {
+            var icon = (window.BACKEND_BASE_URL || window.location.origin || '') + '/favicon.ico';
+            var n = new Notification(title, { body: body || '', icon: icon });
+            n.onclick = function() {
+                n.close();
+                window.focus();
+            };
+            setTimeout(function() { n.close(); }, 8000);
+        } catch (e) {}
+    }
+
+    /** Bildirim izni ister; ayarlar sayfasından veya ilk siparişte çağrılabilir. */
+    requestNotificationPermission(callback) {
+        if (typeof Notification === 'undefined') {
+            if (callback) callback('unsupported');
+            return Promise.resolve('unsupported');
+        }
+        if (Notification.permission === 'granted') {
+            if (callback) callback('granted');
+            return Promise.resolve('granted');
+        }
+        if (Notification.permission === 'denied') {
+            if (callback) callback('denied');
+            return Promise.resolve('denied');
+        }
+        return Notification.requestPermission().then(function(p) {
+            if (callback) callback(p);
+            return p;
+        });
     }
     
     // playNotificationSound() {
@@ -423,11 +473,16 @@ class CiceksepetiFloovonIntegration {
         
         this.updateToast(forceShow);
         
-        // Ses bildirimi kontrolü
-        const sesBildirimiEnabled = localStorage.getItem('ciceksepeti_ses_bildirimi') !== 'false';
+        // Ses bildirimi kontrolü (PWA/mobil: ilk dokunuştan sonra çalar)
+        var sesBildirimiEnabled = localStorage.getItem('ciceksepeti_ses_bildirimi') !== 'false';
         if (sesBildirimiEnabled) {
             this.playNotificationSound();
         }
+        // Telefon bildirim çubuğunda göster (izin verilmişse)
+        var firstOrder = this.pendingOrders[0];
+        var notifTitle = 'Yeni Çiçek Sepeti siparişi';
+        var notifBody = firstOrder ? ('Sipariş no: ' + (firstOrder.siparisNo || '')) : 'Yeni sipariş geldi.';
+        this.showSystemNotification(notifTitle, notifBody);
     }
     
     addToPendingOrders(order) {

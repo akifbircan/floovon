@@ -16,6 +16,7 @@
       })();
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="manifest" href="/tenant-panel.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,6 +46,17 @@
     <title>Floovon™</title>
   </head>
   <body>
+    <!-- PWA: Uygulama olarak açıldığında her zaman tenant panel (/) açılsın; /console veya /console-login ise yönlendir -->
+    <script>
+      (function() {
+        var path = typeof window !== 'undefined' && window.location && window.location.pathname ? window.location.pathname.replace(/\/$/, '') || '/' : '/';
+        var isStandalone = (typeof navigator !== 'undefined' && navigator.standalone) || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+        if (isStandalone && (path === '/console' || path === '/console-login')) {
+          window.location.replace('/');
+          return;
+        }
+      })();
+    </script>
     <!-- Tema: sayfa yenilense bile dark/light localStorage’dan hemen uygulansın (login dahil) -->
     <script>
       (function() {

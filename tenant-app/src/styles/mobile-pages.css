@@ -644,7 +644,7 @@
 
   .reports-filtreler {
     flex-direction: column;
-    gap: 12px;
+    gap: 12px !important;
   }
 
   .reports-filtreler input[type="date"],

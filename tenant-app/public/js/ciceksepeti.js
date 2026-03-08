@@ -81,7 +81,6 @@ class CiceksepetiFloovonIntegration {
         });
         
         // Document-level delegation: toast’taki sipariş satırına tıklanınca modal açılsın (React/script fark etmez)
-        const self = this;
         document.addEventListener('click', function ciceksepetiToastOrderClick(e) {
             var item = e.target.closest('.ciceksepeti-toast-order-item');
             if (!item) return;

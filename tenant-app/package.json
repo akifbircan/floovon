@@ -46,7 +46,9 @@
     "eslint": "8.57.0",
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.26",
+    "pngjs": "^7.0.0",
     "postcss": "8.5.6",
+    "sharp": "^0.33.5",
     "tailwindcss": "3.4.19",
     "typescript": "5.9.3",
     "vite": "6.4.1"

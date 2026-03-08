@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const MOBILE_BREAKPOINT = 767;
 function useIsMobile(): boolean {
@@ -627,20 +628,9 @@ export const CustomersPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Sağ Detay Paneli – masaüstünde yan panel, mobilde modal */}
-      {(!isMobile || selectedCustomerId) && (
-        <>
-          {isMobile && selectedCustomerId && (
-            <div
-              className="page-detail-modal-backdrop"
-              onClick={() => setSelectedCustomerId(null)}
-              aria-hidden
-            />
-          )}
-          <div
-            className={`page-panel-sag w-full md:w-1/2 lg:w-3/5 ${isMobile && selectedCustomerId ? 'page-panel-sag--as-modal' : ''}`}
-            onClick={(e) => e.stopPropagation()}
-          >
+      {/* Sağ Detay Paneli – masaüstünde yan panel, mobilde modal (portal ile body'de) */}
+      {(!isMobile || selectedCustomerId) && (() => {
+        const panelContent = (
             <div className="page-panel-sag-inner">
               <div className="customers-detail-header mb-4 flex items-center justify-between flex-shrink-0">
                 <h2 className="customers-detail-title">Müşteri Detayları</h2>
@@ -864,9 +854,30 @@ export const CustomersPage: React.FC = () => {
             </div>
           )}
             </div>
+        );
+        const panel = (
+          <div
+            className={`page-panel-sag w-full md:w-1/2 lg:w-3/5 ${isMobile && selectedCustomerId ? 'page-panel-sag--as-modal' : ''}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {panelContent}
           </div>
-        </>
-      )}
+        );
+        if (isMobile && selectedCustomerId) {
+          return createPortal(
+            <>
+              <div
+                className="page-detail-modal-backdrop"
+                onClick={() => setSelectedCustomerId(null)}
+                aria-hidden
+              />
+              {panel}
+            </>,
+            document.body
+          );
+        }
+        return panel;
+      })()}
 
       {/* Click outside to close export menu (seçimi temizlemeden) */}
       {exportMenuOpen && (

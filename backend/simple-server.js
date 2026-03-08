@@ -848,6 +848,15 @@ app.head(/^\/(?!api|uploads|admin|admin-login|admin-tenant-manage|landing)([^/]+
 // 4. Root static ÖNCE - console, landing için js/, css/, assets/ (config.js, console-*.css vb.)
 app.use(express.static(staticFilesPath));
 
+// 4b. PWA manifest - her zaman JSON olarak dön (SPA fallback HTML vermesin)
+const tenantManifestPath = path.join(tenantAppDistPath, 'tenant-panel.webmanifest');
+if (hasTenantAppDist && fs.existsSync(tenantManifestPath)) {
+    app.get('/tenant-panel.webmanifest', (req, res) => {
+        res.type('application/manifest+json');
+        res.sendFile(tenantManifestPath);
+    });
+}
+
 // 5. Tenant-app (React) dist - panel asset'leri (tooltip-system.js, /assets/ vb. root'ta yoksa)
 if (hasTenantAppDist) {
     app.use(express.static(tenantAppDistPath));

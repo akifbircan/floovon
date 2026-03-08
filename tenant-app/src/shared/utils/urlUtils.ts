@@ -12,9 +12,32 @@ import { getApiBaseUrl } from '../../lib/runtime';
 export function getUploadUrl(path: string | null | undefined): string {
   if (!path) return '';
   
-  // Eğer zaten tam URL ise, direkt döndür
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path;
+  let cleanPath = path.trim();
+  // Veritabanında localhost ile kayıtlı tam URL'leri mevcut siteye çevir (Mixed Content / CORS önleme)
+  if (cleanPath.startsWith('http://localhost:') || cleanPath.startsWith('https://localhost:') ||
+      cleanPath.startsWith('http://127.0.0.1:') || cleanPath.startsWith('https://127.0.0.1:')) {
+    try {
+      const u = new URL(cleanPath);
+      cleanPath = u.pathname; // Sadece path kısmını kullan, aşağıda backend base ile birleştirilecek
+    } catch {
+      // Parse hatası olursa aşağıdaki relative path işlemine bırak
+    }
+  } else if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
+    // Aynı origin ise relative yap; değilse olduğu gibi bırak
+    if (typeof window !== 'undefined') {
+      try {
+        const u = new URL(cleanPath);
+        if (u.origin === window.location.origin) {
+          cleanPath = u.pathname;
+        } else {
+          return cleanPath;
+        }
+      } catch {
+        return cleanPath;
+      }
+    } else {
+      return cleanPath;
+    }
   }
   
   // Backend base URL'ini al
@@ -26,8 +49,6 @@ export function getUploadUrl(path: string | null | undefined): string {
   // - "/uploads/tenants/1/organizations/2/davetiye-gorseli/..."
   // - "/api/uploads/tenants/1/organizations/2/davetiye-gorseli/..."
   // - "tenants/1/organizations/2/davetiye-gorseli/..."
-  
-  let cleanPath = path;
   
   // /api/uploads/ -> /uploads/
   if (cleanPath.startsWith('/api/uploads/')) {

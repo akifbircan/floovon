@@ -13,6 +13,15 @@ export const getApiBaseUrl = (): string => {
     }
   }
 
+  // Tarayıcıda sayfa zaten production domain'deyse (HTTPS), localhost kullanma – Mixed Content önle
+  if (typeof window !== 'undefined') {
+    const { hostname } = window.location;
+    const isProductionDomain = hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '';
+    if (isProductionDomain) {
+      return '/api';
+    }
+  }
+
   const envBaseUrl = import.meta.env.VITE_API_BASE_URL;
   if (envBaseUrl && String(envBaseUrl).trim()) {
     const base = String(envBaseUrl).trim().replace(/\/+$/, '');

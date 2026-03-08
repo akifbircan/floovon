@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 
 const MOBILE_BREAKPOINT = 767;
@@ -457,20 +458,9 @@ export const PartnersPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Sağ Detay Paneli – masaüstünde yan panel, mobilde modal */}
-      {(!isMobile || selectedPartnerId) && (
-        <>
-          {isMobile && selectedPartnerId && (
-            <div
-              className="page-detail-modal-backdrop"
-              onClick={() => setSelectedPartnerId(null)}
-              aria-hidden
-            />
-          )}
-          <div
-            className={`page-panel-sag w-full md:w-1/2 lg:w-3/5 ${isMobile && selectedPartnerId ? 'page-panel-sag--as-modal' : ''}`}
-            onClick={(e) => e.stopPropagation()}
-          >
+      {/* Sağ Detay Paneli – masaüstünde yan panel, mobilde modal (portal ile body'de, overlay üstte) */}
+      {(!isMobile || selectedPartnerId) && (() => {
+        const panelContent = (
             <div className="page-panel-sag-inner">
               <div className="partners-detail-header mb-4 flex items-center justify-between flex-shrink-0">
                 <h2 className="partners-detail-title">Partner Firma Detayları</h2>
@@ -591,9 +581,30 @@ export const PartnersPage: React.FC = () => {
             </div>
           )}
             </div>
+        );
+        const panel = (
+          <div
+            className={`page-panel-sag w-full md:w-1/2 lg:w-3/5 ${isMobile && selectedPartnerId ? 'page-panel-sag--as-modal' : ''}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {panelContent}
           </div>
-        </>
-      )}
+        );
+        if (isMobile && selectedPartnerId) {
+          return createPortal(
+            <>
+              <div
+                className="page-detail-modal-backdrop"
+                onClick={() => setSelectedPartnerId(null)}
+                aria-hidden
+              />
+              {panel}
+            </>,
+            document.body
+          );
+        }
+        return panel;
+      })()}
 
       {exportMenuOpen && (
         <div

@@ -1323,10 +1323,10 @@ body.css-loaded .admin-tenant-users-table tbody {
   background-color: var(--console-error-light);
 }
 
+/* Admin kullanıcıda tıklanabilir kalsın ki toast gösterilebilsin; sadece görsel olarak disabled */
 .admin-tenant-action-btn-small.disabled {
   opacity: 0.55;
   cursor: not-allowed;
-  pointer-events: none;
 }
 
 /* ============================================

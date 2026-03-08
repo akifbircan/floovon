@@ -554,15 +554,32 @@ class TenantManage {
                         return uId === parseInt(userId);
                     });
                     if (user) {
+                        const isAdminUser = button.getAttribute('data-is-admin') === '1' || user.is_admin === 1 || user.is_admin === '1';
+                        if (isAdminUser) {
+                            if (typeof createToast === 'function') {
+                                createToast('error', 'Bu kullanıcı varsayılan/ana kullanıcı olduğu için durumu değiştirilemez.');
+                            }
+                            return;
+                        }
                         // Status kolonunu kontrol et (varsa), yoksa is_active'den çıkar
                         const currentStatus = user.status || (user.is_active === 1 ? 'aktif' : 'pasif');
                         const isActive = currentStatus === 'aktif';
-                        // Toggle butonu tıklandı - debug log kaldırıldı
                         this.toggleUserStatus(parseInt(userId), isActive ? 0 : 1);
                     } else {
                         console.error('❌ Kullanıcı bulunamadı toggle için:', userId);
                     }
                 } else if (action === 'delete') {
+                    const user = this.users.find(u => {
+                        const uId = typeof u.id === 'string' ? parseInt(u.id) : u.id;
+                        return uId === parseInt(userId);
+                    });
+                    const isAdminUser = user && (user.is_admin === 1 || user.is_admin === '1');
+                    if (isAdminUser) {
+                        if (typeof createToast === 'function') {
+                            createToast('error', 'Bu kullanıcı varsayılan/ana kullanıcı olduğu için silinemez.');
+                        }
+                        return;
+                    }
                     this.deleteUser(parseInt(userId));
                 }
             });
@@ -1393,11 +1410,11 @@ class TenantManage {
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                             Şifre Değiştir
                         </button>
-                        <button class="admin-tenant-action-btn-small toggle ${isAdminUser ? 'disabled' : ''} ${isActive ? '' : 'activate'}" data-user-id="${user.id}" data-action="toggle" title="${isAdminUser ? 'Varsayılan kullanıcı durumu değiştirilemez' : (isActive ? 'Pasif Yap' : 'Aktif Yap')}" ${isAdminUser ? 'disabled' : ''}>
+                        <button class="admin-tenant-action-btn-small toggle ${isAdminUser ? 'disabled' : ''} ${isActive ? '' : 'activate'}" data-user-id="${user.id}" data-action="toggle" data-is-admin="${isAdminUser ? '1' : '0'}" title="${isAdminUser ? 'Varsayılan kullanıcı durumu değiştirilemez' : (isActive ? 'Pasif Yap' : 'Aktif Yap')}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
                             ${isActive ? 'Pasif Yap' : 'Aktif Yap'}
                         </button>
-                        <button class="admin-tenant-action-btn-small delete ${isAdminUser ? 'disabled' : ''}" data-user-id="${user.id}" data-action="delete" title="${isAdminUser ? 'Varsayılan kullanıcı silinemez' : 'Sil (is_active = 0)'}" ${isAdminUser ? 'disabled' : ''}>
+                        <button class="admin-tenant-action-btn-small delete ${isAdminUser ? 'disabled' : ''}" data-user-id="${user.id}" data-action="delete" data-is-admin="${isAdminUser ? '1' : '0'}" title="${isAdminUser ? 'Varsayılan kullanıcı silinemez' : 'Sil (is_active = 0)'}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                         </button>
                     </div>

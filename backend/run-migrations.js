@@ -21,6 +21,12 @@ async function runMigrations() {
         await createTenantsTable();
         console.log('✅ Tenants tablosu hazır\n');
 
+        // 0b. tenants_kullanicilar ve admin_kullanicilar (uygulama bu tablolara bağımlı)
+        console.log('📋 0b. tenants_kullanicilar ve admin_kullanicilar tabloları oluşturuluyor...');
+        const { createTenantsKullanicilarAndAdmin } = require('./migrations/create-tenants-kullanicilar-and-admin');
+        await createTenantsKullanicilarAndAdmin();
+        console.log('✅ Kullanıcı tabloları hazır\n');
+
         // 1. Billing tablolarını oluştur
         console.log('📋 1. Billing tabloları oluşturuluyor...');
         const { createTenantsBillingTables } = require('./migrations/create-tenants-billing-tables');

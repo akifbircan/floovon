@@ -17,9 +17,14 @@ async function addDefaultPermissionsForAllTenants() {
             console.log('✅ Veritabanına bağlandı');
         });
 
-        // Önce tüm tenant'ları al
+        // Önce tüm tenant'ları al (tenants tablosu yoksa sessizce atla – migration sırası veya boş DB)
         db.all("SELECT id FROM tenants", (err, tenants) => {
             if (err) {
+                if (err.message && err.message.includes('no such table: tenants')) {
+                    console.warn('⚠️ tenants tablosu henüz yok, varsayılan izinler atlanıyor (önce tenants migration çalıştırılmalı)');
+                    db.close();
+                    return resolve();
+                }
                 console.error('❌ Tenant listesi alınamadı:', err);
                 db.close();
                 return reject(err);

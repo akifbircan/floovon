@@ -15,6 +15,12 @@ console.log('🔄 Migration\'lar çalıştırılıyor...\n');
 
 async function runMigrations() {
     try {
+        // 0. Tenants tablosu (diğer migration'lar buna bağımlı)
+        console.log('📋 0. Tenants tablosu oluşturuluyor...');
+        const { createTenantsTable } = require('./migrations/create-tenants-table');
+        await createTenantsTable();
+        console.log('✅ Tenants tablosu hazır\n');
+
         // 1. Billing tablolarını oluştur
         console.log('📋 1. Billing tabloları oluşturuluyor...');
         const { createTenantsBillingTables } = require('./migrations/create-tenants-billing-tables');

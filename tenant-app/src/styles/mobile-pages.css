@@ -554,6 +554,10 @@
     flex-direction: row;
   }
 
+  .arsiv-tablosu .grup-baslik-metin {
+    flex-direction: column !important;
+  }
+
   .arsiv-tablosu tr.grup-satir-row {
     display: block;
     padding: 12px 14px;

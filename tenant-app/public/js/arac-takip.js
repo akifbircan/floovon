@@ -6,6 +6,10 @@
  * - loadVehicleList: Web arac listesi
  * - Arac Takip Sistemi: GPS card, live map, vehicle detail, modal
  */
+// Lucide Van ikonu (index araç takip alanı ile aynı)
+var LUCIDE_VAN_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-van vehicle-tracking-lucide-icon" aria-hidden="true"><path d="M13 6v5a1 1 0 0 0 1 1h6.102a1 1 0 0 1 .712.298l.898.91a1 1 0 0 1 .288.702V17a1 1 0 0 1-1 1h-3"></path><path d="M5 18H3a1 1 0 0 1-1-1V8a2 2 0 0 1 2-2h12c1.1 0 2.1.8 2.4 1.8l1.176 4.2"></path><path d="M9 18h5"></path><circle cx="16" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg>';
+var LUCIDE_VAN_ICON_16 = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-van vehicle-tracking-lucide-icon" aria-hidden="true"><path d="M13 6v5a1 1 0 0 0 1 1h6.102a1 1 0 0 1 .712.298l.898.91a1 1 0 0 1 .288.702V17a1 1 0 0 1-1 1h-3"></path><path d="M5 18H3a1 1 0 0 1-1-1V8a2 2 0 0 1 2-2h12c1.1 0 2.1.8 2.4 1.8l1.176 4.2"></path><path d="M9 18h5"></path><circle cx="16" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg>';
+var LUCIDE_VAN_ICON_32 = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-van vehicle-tracking-lucide-icon" style="opacity:0.3" aria-hidden="true"><path d="M13 6v5a1 1 0 0 0 1 1h6.102a1 1 0 0 1 .712.298l.898.91a1 1 0 0 1 .288.702V17a1 1 0 0 1-1 1h-3"></path><path d="M5 18H3a1 1 0 0 1-1-1V8a2 2 0 0 1 2-2h12c1.1 0 2.1.8 2.4 1.8l1.176 4.2"></path><path d="M9 18h5"></path><circle cx="16" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg>';
 // #region Araç Takip Wrapper Web ve Mobil Alanları
 
 //#region Mobilde Araç Takip İçin "Teslimata Çıktım Butonu"
@@ -1344,7 +1348,7 @@ async function loadVehicleList() {
             }
             vehicleListContainer.innerHTML = `
                 <div class="no-vehicle-message" style="padding: 20px; text-align: center; color: var(--gray-classic);">
-                    <i class="fa-solid fa-car" style="font-size: 32px; margin-bottom: 10px; opacity: 0.3;"></i>
+                    <span style="display: block; margin-bottom: 10px;">${LUCIDE_VAN_ICON_32}</span>
                     <p style="margin-top: 10px; font-size: 14px; line-height: 1.5;">
                         Herhangi bir araç eklenmemiş. Araç eklemek için Ayarlar > Araç Takip ayarlarından yeni araç ekleyebilirsiniz.
                     </p>
@@ -1463,7 +1467,7 @@ async function loadVehicleList() {
             vehicleItem.innerHTML = `
                 <div class="vehicle-main-info">
                     <div class="vehicle-plate">
-                        <div class="plate-icon"><i class="fa-solid fa-truck"></i></div>
+                        <div class="plate-icon">${LUCIDE_VAN_ICON}</div>
                         <span class="plate-number">${arac.plaka || 'Plaka yok'}</span>
                     </div>
                     <div class="vehicle-status ${durumClass}">${durumText}</div>
@@ -1609,7 +1613,7 @@ function populateMultiVehicleList(vehicles) {
         vehicleItem.innerHTML = `
             <div class="vehicle-main-info">
                 <div class="vehicle-plate">
-                    <div class="plate-icon"><i class="fa-solid fa-truck"></i></div>
+                    <div class="plate-icon">${LUCIDE_VAN_ICON}</div>
                     <span class="plate-number">${arac.plaka}</span>
                 </div>
                 <div class="vehicle-status ${durumClass}">${durumText}</div>
@@ -1629,7 +1633,7 @@ function showEmptyVehicleList() {
 
     vehicleListContainer.innerHTML = `
         <div style="text-align: center; padding: 20px; color: var(--ana-renk); opacity: 0.6;">
-            <i class="fa-solid fa-car" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+            <span style="display: block; margin-bottom: 10px;">${LUCIDE_VAN_ICON}</span>
             <div>Henüz teslimatta olan araç bulunmuyor</div>
         </div>
     `;
@@ -3075,7 +3079,7 @@ async function openAracTakipModal() {
         modalContent.innerHTML = `
             <div class="modal-info-group">
                 <label class="modal-label">
-                    <i class="fa-solid fa-car"></i> Araç Seçiniz
+                    <span class="plate-icon" style="display: inline-flex; vertical-align: middle;">${LUCIDE_VAN_ICON_16}</span> Araç Seçiniz
                 </label>
                 <select id="aracTakipModalSelect" class="modal-select">
                     <option value="">Araç seçiniz...</option>

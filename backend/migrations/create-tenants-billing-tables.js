@@ -10,7 +10,6 @@ const dbPath = path.resolve(__dirname, '../floovon_professional.db');
  * - tenants_kullanimlar
  * - tenants_odeme_yontemleri
  * - tenants_faturalar
- * - tenants_fatura_kalemleri
  */
 async function createTenantsBillingTables() {
     return new Promise((resolve, reject) => {
@@ -159,32 +158,8 @@ async function createTenantsBillingTables() {
                             db.run(`CREATE INDEX IF NOT EXISTS idx_tenants_faturalar_durum ON tenants_faturalar(durum)`);
                             db.run(`CREATE INDEX IF NOT EXISTS idx_tenants_faturalar_fatura_tarihi ON tenants_faturalar(fatura_tarihi DESC)`);
 
-                            // 6. tenants_fatura_kalemleri tablosu
-                            db.run(`
-                                CREATE TABLE IF NOT EXISTS tenants_fatura_kalemleri (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    fatura_id INTEGER NOT NULL,
-                                    kalem_tipi TEXT NOT NULL,
-                                    aciklama TEXT NOT NULL,
-                                    miktar INTEGER DEFAULT 1,
-                                    birim_fiyat INTEGER NOT NULL,
-                                    toplam_fiyat INTEGER NOT NULL,
-                                    olusturma_tarihi DATETIME DEFAULT CURRENT_TIMESTAMP,
-                                    FOREIGN KEY (fatura_id) REFERENCES tenants_faturalar(id) ON DELETE CASCADE
-                                )
-                            `, (err) => {
-                                if (err) {
-                                    console.error('❌ tenants_fatura_kalemleri tablosu oluşturulamadı:', err);
-                                    db.close();
-                                    return reject(err);
-                                }
-                                console.log('✅ tenants_fatura_kalemleri tablosu oluşturuldu');
-
-                                db.run(`CREATE INDEX IF NOT EXISTS idx_tenants_fatura_kalemleri_fatura_id ON tenants_fatura_kalemleri(fatura_id)`);
-
-                                // Örnek veriler ekle
-                                insertSampleData(db, resolve, reject);
-                            });
+                            // Örnek veriler ekle
+                            insertSampleData(db, resolve, reject);
                         });
                     });
                 });
@@ -385,30 +360,8 @@ function insertSampleData(db, resolve, reject) {
                                                                 return resolve();
                                                             }
                                                             console.log('✅ Örnek fatura eklendi');
-
-                                                            // 6. Fatura kalemleri ekle
-                                                            db.get('SELECT id FROM tenants_faturalar WHERE tenant_id = ? AND fatura_no = ?', [tenantId, 'INV-001'], (err, invoice) => {
-                                                                if (err || !invoice) {
-                                                                    db.close();
-                                                                    return resolve();
-                                                                }
-
-                                                                db.run(`
-                                                                    INSERT OR IGNORE INTO tenants_fatura_kalemleri 
-                                                                    (fatura_id, kalem_tipi, aciklama, miktar, birim_fiyat, toplam_fiyat)
-                                                                    VALUES 
-                                                                    (?, 'plan', 'Plan Ücreti', 1, ?, ?)
-                                                                `, [invoice.id, planPrice.aylik_ucret, planPrice.aylik_ucret], (err) => {
-                                                                    if (err) {
-                                                                        console.warn('⚠️ Fatura kalemleri eklenirken hata:', err.message);
-                                                                    } else {
-                                                                        console.log('✅ Örnek fatura kalemleri eklendi');
-                                                                    }
-
-                                                                    db.close();
-                                                                    resolve();
-                                                                });
-                                                            });
+                                                            db.close();
+                                                            resolve();
                                                         });
                                                     });
                                                 });

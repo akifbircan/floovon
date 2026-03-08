@@ -169,6 +169,8 @@ ul.notifications {
 
 .toast.error:not(.interactive) .toast-icon svg {
   color: var(--toast-error);
+  stroke: var(--toast-error);
+  fill: none !important;
 }
 
 .toast.error .toast-close {
@@ -188,6 +190,8 @@ ul.notifications {
 
 .toast.warning:not(.interactive) .toast-icon svg {
   color: var(--toast-warning);
+  stroke: var(--toast-warning);
+  fill: none !important;
 }
 
 .toast.warning .toast-close {
@@ -234,6 +238,8 @@ ul.notifications {
 
 .toast.info:not(.interactive) .toast-icon svg {
   color: var(--toast-info);
+  stroke: var(--toast-info);
+  fill: none !important;
 }
 
 .toast.info .toast-close {

@@ -48,18 +48,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     // API base'i global erişim için sakla (fatura indirme, iptal vb. için)
     window.dashboardApiBase = apiBase;
 
-    // Eğer tenant code varsa, verileri yükle
+    // Eğer tenant code varsa, verileri yükle (hata olsa bile tab/modal listener'ları mutlaka kurulur)
     if (finalTenantCode) {
-        await loadDashboardData(apiBase, finalTenantCode);
+        try {
+            await loadDashboardData(apiBase, finalTenantCode);
+        } catch (err) {
+            console.error('Dashboard veri yükleme hatası:', err);
+        }
     } else {
         // Tenant code yoksa, login sayfasına yönlendir
         window.location.href = 'login.html';
+        return;
     }
     
     // Tab değiştirme
     initTabs();
     
-    // Modal event listener'ları
+    // Modal event listener'ları (Plan Değiştir modalı dahil)
     initModalListeners();
     
     // Logout butonu
@@ -352,6 +357,11 @@ function updateBusinessInfo(data) {
         const stateText = data.state || '';
         cityStateEl.textContent = cityText && stateText ? `${cityText} / ${stateText}` : (cityText || stateText || '-');
     }
+    
+    // Tenant kodu (Hesap Sahibi Bilgileri - giriş için gerekli)
+    const tenantCodeHesapEl = document.getElementById('info-tenant-code-hesap');
+    if (tenantCodeHesapEl && data.tenant_code) tenantCodeHesapEl.textContent = data.tenant_code;
+    else if (tenantCodeHesapEl) tenantCodeHesapEl.textContent = '-';
     
     // Kullanıcı e-posta (Hesap Sahibi Bilgileri)
     const userEmailEl = document.getElementById('info-user-email');
@@ -945,35 +955,20 @@ async function loadPlansForModal(apiBase) {
                     <ul class="plan-option-features">
                         ${features.length > 0 ? features.map(f => `<li>${f}</li>`).join('') : '<li>Özellik bilgisi bulunmuyor.</li>'}
                     </ul>
-                    <button class="plan-select-btn ${isCurrent ? 'disabled' : ''}" ${isCurrent ? 'disabled' : ''} data-plan-id="${plan.id}" data-plan-name="${plan.plan_adi || 'Bilinmeyen Plan'}" data-monthly-price="${monthlyPrice}" data-yearly-price="${yearlyPrice}">
+                    <button type="button" class="plan-select-btn ${isCurrent ? 'disabled' : ''}" ${isCurrent ? 'disabled' : ''} data-plan-id="${plan.id}" data-plan-name="${plan.plan_adi || 'Bilinmeyen Plan'}" data-monthly-price="${monthlyPrice}" data-yearly-price="${yearlyPrice}">
                         ${isCurrent ? 'Mevcut Plan' : 'Bu Plana Geç'}
                     </button>
                 `;
                 
                 plansContainer.appendChild(planOption);
-                
-                // "Bu Plana Geç" butonuna event listener ekle
-                if (!isCurrent) {
-                    const selectBtn = planOption.querySelector('.plan-select-btn');
-                    if (selectBtn) {
-                        selectBtn.addEventListener('click', async () => {
-                            const planId = selectBtn.dataset.planId;
-                            const planName = selectBtn.dataset.planName;
-                            
-                            // Plan değişikliği için backend'e istek gönder
-                            await upgradePlan(planId, planName, billingPeriod);
-                            
-                            // Modal'ı kapat
-                            closeAllModals();
-                        });
-                    }
-                }
+                // "Bu Plana Geç" tıklaması initModalListeners içindeki event delegation ile (#plans-list-container) yakalanıyor
             } catch (planError) {
                 console.error(`❌ Plan render hatası (plan ${index}):`, planError, plan);
             }
         });
         
-        console.log(`✅ ${result.data.length} plan render edildi`);
+        const btns = plansContainer.querySelectorAll('.plan-select-btn');
+        console.log(`✅ ${result.data.length} plan render edildi. Butonlar:`, Array.from(btns).map(b => ({ id: b.dataset.planId, name: b.dataset.planName, disabled: b.disabled })));
         
     } catch (error) {
         console.error('❌ Planlar yüklenirken hata:', error);
@@ -1064,8 +1059,8 @@ function updateBillingHistory(invoices) {
             }
         }
         
-        // Tutar formatla - toplam_tutar veya amount olabilir
-        const invoiceAmount = invoice.toplam_tutar || invoice.amount || 0;
+        // Tutar formatla - backend kuruş gönderir
+        const invoiceAmount = invoice.toplam_tutar ?? invoice.amount ?? 0;
         const amount = formatTurkishLira(invoiceAmount);
         
         // Durum formatla
@@ -1079,6 +1074,12 @@ function updateBillingHistory(invoices) {
         // Backend'den gelen değer 'yillik' veya 'aylik' olabilir, string kontrolü yap
         const billingPeriodLower = String(billingPeriod).toLowerCase();
         const billingPeriodText = (billingPeriodLower === 'yillik' || billingPeriodLower === 'yearly') ? 'Yıllık' : 'Aylık';
+        
+        // Yıllık planda: yıllık toplam tutar KDV dahil (aylık x 12) badge için
+        const rawKurus = Number(invoice.toplam_tutar ?? invoice.amount ?? 0) || 0;
+        const yearlyBadgeHtml = (billingPeriodLower === 'yillik' || billingPeriodLower === 'yearly')
+            ? `<span class="billing-yearly-badge">Yıllık: ${formatTurkishLira(rawKurus * 12)} (KDV Dahil) Aylık olarak faturalandırılır</span>`
+            : '';
         
         // Fatura numarası
         const faturaNo = invoice.fatura_no || '';
@@ -1097,15 +1098,15 @@ function updateBillingHistory(invoices) {
             `;
         }
         
-        // PDF indirme butonu (her zaman göster, eğer PDF yoksa disabled)
-        const hasPdf = !!(invoice.has_pdf || invoice.pdf_yolu);
+        // PDF indirme butonu (her zaman tıklanabilir; sunucu yoksa PDF'yi anında oluşturur)
+        const hasPdf = true;
         const tenantCode = new URLSearchParams(window.location.search).get('tenant') || localStorage.getItem('tenant_code') || '';
         
         billingItem.innerHTML = `
             <div class="billing-item-header">
                 <div class="billing-item-header-left">
                     ${faturaNo ? `<div class="billing-invoice-number">Fatura No: <strong>${faturaNo}</strong></div>` : ''}
-                    <div class="billing-date">${formattedDate || 'Tarih belirtilmemiş'}</div>
+                    <div class="billing-date">Fatura Tarihi: <strong>${formattedDate || 'Tarih belirtilmemiş'}</strong></div>
                 </div>
                 <div class="billing-item-header-right">
                     <span class="billing-status ${statusClass}">${statusText}</span>
@@ -1121,6 +1122,7 @@ function updateBillingHistory(invoices) {
                                 <span>${planName}</span>
                             </div>
                             <div class="billing-period">${billingPeriodText} Abonelik</div>
+                            ${yearlyBadgeHtml}
                         </div>
                         ${paymentMethodHtml}
                     </div>
@@ -1136,7 +1138,7 @@ function updateBillingHistory(invoices) {
                         data-invoice-id="${invoice.id}" 
                         data-tenant-code="${tenantCode}"
                         data-has-pdf="${hasPdf}"
-                        title="${hasPdf ? 'Faturayı PDF Olarak İndir' : 'PDF mevcut değil'}">
+                        title="Faturayı PDF olarak indir">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="7 10 12 15 17 10"/>
@@ -1180,10 +1182,9 @@ async function downloadInvoice(invoiceId, tenantCode, faturaNo) {
             createToast('info', 'Fatura indiriliyor...');
         }
         
-        // Fatura indir (sunucu HTML döndürüyor, .html olarak kaydedilmeli)
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.download = `fatura-${(faturaNo || invoiceId).replace(/[^a-zA-Z0-9-_]/g, '_')}.html`;
+        link.download = `fatura-${(faturaNo || invoiceId).replace(/[^a-zA-Z0-9-_]/g, '_')}.pdf`;
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
@@ -1292,6 +1293,7 @@ function initTabs() {
  * Modal event listener'ları
  */
 function initModalListeners() {
+    console.log('[initModalListeners] Çalıştı');
     // Modal overlay
     const modalOverlay = document.getElementById('modal-overlay');
     
@@ -1371,7 +1373,7 @@ function initModalListeners() {
                 modalTitle.textContent = isCancelled ? 'Yeni Plan Seç' : 'Plan Değiştir';
             }
             
-            // Plan yoksa toggle'ı sıfırla ve mevcut plan bilgisini temizle
+            // Plan yoksa toggle'ı sıfırla ve mevcut plan bilgisini temizle (Yeni Plan Seç'te hiçbir plan "Mevcut" sayılmasın)
             if (isCancelled) {
                 window.dashboardBillingPeriod = 'monthly'; // Toggle'ı aylık olarak sıfırla
                 const toggleMonthly = document.getElementById('dashboard-toggle-monthly');
@@ -1380,6 +1382,12 @@ function initModalListeners() {
                     toggleMonthly.classList.add('active');
                     toggleYearly.classList.remove('active');
                 }
+                // Yeni Plan Seç modunda karttaki eski plan id'yi kaldır ki tüm planlar seçilebilir olsun
+                const subscriptionCard = document.querySelector('.subscription-card');
+                if (subscriptionCard) {
+                    subscriptionCard.removeAttribute('data-current-plan-id');
+                    subscriptionCard.removeAttribute('data-current-billing-period');
+                }
             }
             
             // Önce planları yükle, sonra modal'ı aç
@@ -1387,7 +1395,8 @@ function initModalListeners() {
                 await loadPlansForModal(apiBase);
                 // Planlar yüklendikten sonra modal'ı aç
                 openModal('upgrade-plan-modal');
-                
+                const planBtns = document.querySelectorAll('#upgrade-plan-modal .plan-select-btn');
+                console.log('[Plan Değiştir] Modal açıldı, buton sayısı:', planBtns.length, planBtns.length ? '(disabled olmayan: ' + Array.from(planBtns).filter(b => !b.disabled).length + ')' : '');
                 // Kontrol: Eğer planlar yüklenmediyse hata mesajı göster
                 setTimeout(() => {
                     const plansContainer = document.getElementById('plans-list-container');
@@ -1407,6 +1416,37 @@ function initModalListeners() {
             }
         });
     }
+
+    // Plan değiştir modalı: "Bu Plana Geç" tıklamaları – document delegation (modal dinamik yüklendiği için)
+    document.addEventListener('click', async function planSwitchHandler(e) {
+        const target = e.target;
+        const btn = target.closest('#upgrade-plan-modal .plan-select-btn');
+        // Debug: her tıklamada hedefi logla (sadece modal içindeyse)
+        const inModal = target.closest('#upgrade-plan-modal');
+        if (inModal) {
+            console.log('[Plan Değiştir] Tıklama modal içinde:', {
+                targetTag: target.tagName,
+                targetClass: target.className,
+                closestBtn: btn ? 'bulundu' : 'yok',
+                btnDisabled: btn ? btn.disabled : '-',
+                dataPlanId: btn ? btn.dataset.planId : '-'
+            });
+        }
+        if (!btn || btn.disabled) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const planId = btn.dataset.planId;
+        const planName = btn.dataset.planName || 'Plan';
+        const billingPeriod = window.dashboardBillingPeriod || 'monthly';
+        if (!planId) {
+            console.warn('[Plan Değiştir] planId yok, işlem iptal');
+            return;
+        }
+        console.log('[Plan Değiştir] upgradePlan çağrılıyor:', { planId, planName, billingPeriod });
+        await upgradePlan(planId, planName, billingPeriod);
+        // Modal kapatma: onayda upgradePlan içinde closeAllModals çağrılıyor; iptalde modal açık kalsın
+    });
+    console.log('[Plan Değiştir] Document click listener (Bu Plana Geç) kaydedildi.');
     
     // Save profile butonu
     const saveProfileBtn = document.getElementById('save-profile-btn');
@@ -1729,16 +1769,20 @@ async function loadPaymentMethodForEdit(apiBase, tenantCode) {
 }
 
 /**
- * Modal aç
+ * Modal aç (scrollbar kaymasını önlemek için padding-right uygulanır)
  */
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     const overlay = document.getElementById('modal-overlay');
     
     if (modal && overlay) {
+        var scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        if (scrollbarWidth > 0) {
+            document.body.style.paddingRight = scrollbarWidth + 'px';
+        }
+        document.body.classList.add('modal-open');
         modal.classList.add('active');
         overlay.classList.add('active');
-        document.body.classList.add('modal-open');
     }
 }
 
@@ -1752,6 +1796,7 @@ function closeAllModals() {
     modals.forEach(modal => modal.classList.remove('active'));
     if (overlay) overlay.classList.remove('active');
     document.body.classList.remove('modal-open');
+    document.body.style.paddingRight = '';
 }
 
 /**
@@ -1791,14 +1836,12 @@ async function savePaymentMethod(apiBase, tenantCode, source = 'modal') {
         }
         
         const paymentResult = await paymentResponse.json();
-        if (!paymentResult.success || !paymentResult.data || !paymentResult.data.payment_method) {
-            throw new Error('Ödeme yöntemi bulunamadı');
+        if (!paymentResult.success || !paymentResult.data) {
+            throw new Error('Abonelik bilgisi alınamadı');
         }
         
-        const paymentId = paymentResult.data.payment_method.id;
-        if (!paymentId) {
-            throw new Error('Ödeme yöntemi ID bulunamadı');
-        }
+        const existingPayment = paymentResult.data.payment_method || null;
+        const paymentId = existingPayment && existingPayment.id ? existingPayment.id : null;
         
         // Form verilerini al
         let kartSahibi, kartNumarasi, sonKullanimAyi, sonKullanimYili;
@@ -1865,53 +1908,48 @@ async function savePaymentMethod(apiBase, tenantCode, source = 'modal') {
             sonKullanimYiliFull = parseInt('20' + sonKullanimYili);
         }
         
-        // Backend'e güncelleme isteği gönder
-        const updateData = {
+        const payload = {
             tenant_code: tenantCode,
             kart_sahibi_adi: kartSahibi
         };
-        
-        if (kartNumarasi) {
-            updateData.kart_numarasi = kartNumarasi;
+        if (kartNumarasi) payload.kart_numarasi = kartNumarasi;
+        if (sonKullanimAyi) payload.son_kullanim_ayi = parseInt(sonKullanimAyi);
+        if (sonKullanimYiliFull) payload.son_kullanim_yili = sonKullanimYiliFull;
+
+        let response;
+        if (paymentId) {
+            response = await fetch(`${apiBase}/public/payment-method/${paymentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(payload)
+            });
+        } else {
+            response = await fetch(`${apiBase}/public/payment-method`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(payload)
+            });
         }
-        
-        if (sonKullanimAyi) {
-            updateData.son_kullanim_ayi = parseInt(sonKullanimAyi);
+
+        if (!response.ok) {
+            const errorResult = await response.json();
+            throw new Error(errorResult.error || (paymentId ? 'Ödeme yöntemi güncellenemedi' : 'Ödeme yöntemi eklenemedi'));
         }
-        
-        if (sonKullanimYiliFull) {
-            updateData.son_kullanim_yili = sonKullanimYiliFull;
-        }
-        
-        const updateResponse = await fetch(`${apiBase}/public/payment-method/${paymentId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify(updateData)
-        });
-        
-        if (!updateResponse.ok) {
-            const errorResult = await updateResponse.json();
-            throw new Error(errorResult.error || 'Ödeme yöntemi güncellenemedi');
-        }
-        
-        const updateResult = await updateResponse.json();
+        const updateResult = await response.json();
         if (!updateResult.success) {
-            throw new Error(updateResult.error || 'Ödeme yöntemi güncellenemedi');
+            throw new Error(updateResult.error || (paymentId ? 'Ödeme yöntemi güncellenemedi' : 'Ödeme yöntemi eklenemedi'));
         }
         
-        // Toast göster - toast script'i yüklenene kadar bekle
         setTimeout(() => {
             if (typeof window.createToast === 'function') {
-                window.createToast('success', 'Ödeme yöntemi güncellendi!');
+                window.createToast('success', paymentId ? 'Ödeme yöntemi güncellendi!' : 'Ödeme yöntemi eklendi!');
             } else if (typeof createToast === 'function') {
-                createToast('success', 'Ödeme yöntemi güncellendi!');
+                createToast('success', paymentId ? 'Ödeme yöntemi güncellendi!' : 'Ödeme yöntemi eklendi!');
             }
         }, 100);
         
-        // Sayfayı yenile veya verileri güncelle
         if (source === 'form') {
             const paymentEditForm = document.getElementById('payment-edit-form');
             const paymentDisplay = document.getElementById('payment-display');
@@ -2066,15 +2104,21 @@ function toggleDashboardPricing(period) {
  * Plan yükseltme
  */
 async function upgradePlan(planId, planName, billingPeriod = null) {
+    console.log('[upgradePlan] Başladı', { planId, planName, billingPeriod });
     try {
         const apiBase = window.dashboardApiBase || (typeof window.getFloovonApiBase === 'function' ? window.getFloovonApiBase() : window.API_BASE_URL || '/api');
         const tenantCode = new URLSearchParams(window.location.search).get('tenant') || localStorage.getItem('tenant_code');
-        
+        console.log('[upgradePlan] apiBase:', apiBase, 'tenantCode:', tenantCode ? 'var' : 'YOK');
         if (!tenantCode) {
-            if (typeof createToast === 'function') {
-                createToast('error', 'Tenant kodu bulunamadı');
+            const msg = 'Tenant kodu bulunamadı. Lütfen giriş yapın veya dashboard\'a tenant parametresi ile girin.';
+            if (typeof window.createToast === 'function') {
+                window.createToast('error', msg);
+            } else if (typeof createToast === 'function') {
+                createToast('error', msg);
             } else if (typeof window.showToast === 'function') {
-                window.showToast('Tenant kodu bulunamadı', 'error');
+                window.showToast(msg, 'error');
+            } else {
+                alert(msg);
             }
             return;
         }
@@ -2094,6 +2138,7 @@ async function upgradePlan(planId, planName, billingPeriod = null) {
         
         const subscriptionResult = await subscriptionResponse.json();
         const currentPlan = subscriptionResult.success && subscriptionResult.data ? subscriptionResult.data : null;
+        console.log('[upgradePlan] Mevcut abonelik alındı:', currentPlan ? 'var' : 'yok');
         
         // Yeni plan bilgisini al
         const plansResponse = await fetch(`${apiBase}/public/plans`, {
@@ -2110,7 +2155,7 @@ async function upgradePlan(planId, planName, billingPeriod = null) {
         
         const plansResult = await plansResponse.json();
         const newPlan = plansResult.success && plansResult.data ? plansResult.data.find(p => p.id == planId) : null;
-        
+        console.log('[upgradePlan] Yeni plan bulundu:', newPlan ? newPlan.plan_adi : 'YOK');
         if (!newPlan) {
             throw new Error('Yeni plan bulunamadı');
         }
@@ -2162,6 +2207,7 @@ async function upgradePlan(planId, planName, billingPeriod = null) {
         }
         
         // Kullanıcıdan onay al - Toast notification ile
+        console.log('[upgradePlan] Onay dialogu gösteriliyor (createToastInteractive:', typeof window.createToastInteractive, ')');
         return new Promise((resolve) => {
             if (typeof window.createToastInteractive === 'function') {
                 window.createToastInteractive({
@@ -2209,7 +2255,7 @@ async function upgradePlan(planId, planName, billingPeriod = null) {
 }
 
 /**
- * Loading overlay göster/gizle
+ * Loading overlay göster/gizle (scrollbar kayması önlenir)
  */
 function showSubscriptionLoading(message = 'İşleminiz gerçekleştiriliyor, lütfen bekleyin...') {
     const overlay = document.getElementById('subscription-loading-overlay');
@@ -2217,6 +2263,10 @@ function showSubscriptionLoading(message = 'İşleminiz gerçekleştiriliyor, l�
     if (overlay) {
         if (textElement) {
             textElement.textContent = message;
+        }
+        var scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        if (scrollbarWidth > 0) {
+            document.body.style.paddingRight = scrollbarWidth + 'px';
         }
         overlay.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -2228,6 +2278,7 @@ function hideSubscriptionLoading() {
     if (overlay) {
         overlay.style.display = 'none';
         document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
     }
 }
 

@@ -3291,6 +3291,7 @@ align-items: flex-start !important;
 
             .landing-showcase-card-wide .landing-showcase-visual {
                 margin-top: 24px;
+                width: 100%;
             }
 
             .landing-mockup-stats-row {
@@ -3399,5 +3400,13 @@ align-items: flex-start !important;
             .landing-header-cta .cta-button {
                 padding: 6px 12px;
                 font-size: 12px;
+            }
+
+            .profile-header-card {
+                padding: 14px !important;
+            }
+
+            .credit-card {
+                height: 190px !important;
             }
         }

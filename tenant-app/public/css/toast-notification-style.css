@@ -51,6 +51,33 @@ ul.notifications {
   color: var(--toast-success);
 }
 
+/* Error: beyaz stroke, daire dolu olmasın (X-içinde-daire ikonu görünsün) */
+.toast.error .column i,
+.toast.error .column .toast-icon {
+  color: var(--toast-text-white) !important;
+}
+.toast.error .column .toast-icon svg {
+  color: var(--toast-text-white) !important;
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+.toast.warning .column i,
+.toast.warning .column .toast-icon {
+  color: var(--toast-warning-text) !important;
+}
+.toast.warning .column .toast-icon svg {
+  stroke: var(--toast-warning-text) !important;
+  fill: none !important;
+}
+.toast.info .column i,
+.toast.info .column .toast-icon {
+  color: var(--toast-text-white) !important;
+}
+.toast.info .column .toast-icon svg {
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+
 .toast.success:not(.interactive) .column .toast-icon,
 .toast.success:not(.interactive) .column .toast-icon svg {
   color: var(--toast-mor-primary, #6D28D9) !important;
@@ -112,8 +139,14 @@ ul.notifications {
   color: var(--toast-text-white) !important;
 }
 
-.toast.error:not(.interactive) .column i {
+.toast.error:not(.interactive) .column i,
+.toast.error:not(.interactive) .column .toast-icon {
   color: var(--toast-text-white) !important;
+}
+.toast.error:not(.interactive) .column .toast-icon svg {
+  color: var(--toast-text-white) !important;
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
 }
 
 .toast.error .fa-xmark {
@@ -125,7 +158,8 @@ ul.notifications {
 }
 
 .toast.error .toast-close svg {
-  fill: var(--toast-text-white) !important;
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
 }
 
 /* Success Toast – mor primary sol çizgi ve ikon */
@@ -140,19 +174,38 @@ ul.notifications {
   color: var(--toast-warning-text) !important;
 }
 
-.toast.warning:not(.interactive) .column i {
+.toast.warning:not(.interactive) .column i,
+.toast.warning:not(.interactive) .column .toast-icon {
   color: var(--toast-warning-text) !important;
 }
+.toast.warning:not(.interactive) .column .toast-icon svg {
+  stroke: var(--toast-warning-text) !important;
+  fill: none !important;
+}
 
-.toast.warning .fa-xmark {
+.toast.warning .fa-xmark,
+.toast.warning .toast-close {
   color: var(--toast-warning-text) !important;
+}
+.toast.warning .toast-close svg {
+  stroke: var(--toast-warning-text) !important;
+  fill: none !important;
 }
 
 /* Info Toast Stilleri */
 .toast.info:not(.interactive) {
   border-color: var(--toast-info);
-  background-color: var(--toast-bg);
-  color: var(--toast-text);
+  background-color: var(--toast-info);
+  color: var(--toast-text-white) !important;
+}
+
+.toast.info:not(.interactive) .column i,
+.toast.info:not(.interactive) .column .toast-icon {
+  color: var(--toast-text-white) !important;
+}
+.toast.info:not(.interactive) .column .toast-icon svg {
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
 }
 
 /* customSifreGonderildi Toast Stilleri */

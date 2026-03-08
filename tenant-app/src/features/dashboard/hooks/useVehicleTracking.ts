@@ -225,6 +225,13 @@ export const useVehicleTracking = () => {
     staleTime: 0,
   });
 
+  // "Teslimata çıktım" sonrası araç listesini hemen yenile (mobilde konumun "Teslimatta değil" kalmasını önler)
+  useEffect(() => {
+    const handler = () => refetch();
+    window.addEventListener('aracTakipDurumGuncellendi', handler);
+    return () => window.removeEventListener('aracTakipDurumGuncellendi', handler);
+  }, [refetch]);
+
   // Araçları sırala: Aktif olanlar üstte
   const sortedVehicles = vehiclesData
     ? [...vehiclesData].sort((a, b) => {

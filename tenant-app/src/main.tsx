@@ -2,8 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
+import { initErrorLogger } from './lib/errorLogger';
 import App from './app/App';
 import './index.css';
+
+initErrorLogger();
 import './styles/css-variables.css';
 import './styles/floovon-dashboard.css';
 import './styles/floovon-dashboard-codes.css';

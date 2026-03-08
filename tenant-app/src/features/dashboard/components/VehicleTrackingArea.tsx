@@ -56,12 +56,26 @@ export const VehicleTrackingArea: React.FC = () => {
       return;
     }
 
+    // Teslimatta olan araçlar için hemen "Konum yükleniyor..." göster (mobilde "Teslimatta değil" kısa süre görünmesin)
+    const loadingTexts: Record<string, string> = {};
+    for (const vehicle of vehicles) {
+      const vehicleId = (vehicle.id || vehicle.arac_id || '').toString();
+      const durum = (vehicle.durum || vehicle.arac_durum || '').toString().toLowerCase().trim();
+      const isActiveFromDB =
+        vehicle.is_active !== undefined
+          ? vehicle.is_active === 1 || vehicle.is_active === true || vehicle.is_active === '1'
+          : true;
+      const isActive = durum === 'teslimatta' && isActiveFromDB;
+      loadingTexts[vehicleId] = isActive ? 'Konum yükleniyor...' : 'Teslimatta değil';
+    }
+    setLocationTexts(loadingTexts);
+
     // ✅ KRİTİK: Eğer zaten işlem yapılıyorsa, yeni işlem başlatma
     if (isProcessingRef.current) {
       return;
     }
 
-    // Debounce + koordinattan yer adı (reverse geocoding) – sıralı istek, 429 önlemek için arada bekle
+    // Kısa debounce (500ms) + koordinattan yer adı – "Teslimata çıktım" sonrası konumun hızlı gelmesi için
     const timeoutId = setTimeout(async () => {
       isProcessingRef.current = true;
       const newLocationTexts: Record<string, string> = {};
@@ -113,7 +127,7 @@ export const VehicleTrackingArea: React.FC = () => {
         return newLocationTexts;
       });
       isProcessingRef.current = false;
-    }, 2000);
+    }, 500);
 
     return () => {
       clearTimeout(timeoutId);
@@ -162,7 +176,7 @@ export const VehicleTrackingArea: React.FC = () => {
           </div>
         ) : vehicles.length === 0 ? (
           <div className="no-vehicle-message" style={{ padding: '20px', textAlign: 'center', color: 'var(--gray-classic)' }}>
-            <i className="fa-solid fa-car" style={{ fontSize: '32px', marginBottom: '10px', opacity: 0.3 }}></i>
+            <Van size={32} className="vehicle-tracking-lucide-icon" style={{ marginBottom: '10px', opacity: 0.3 }} aria-hidden />
             <p style={{ marginTop: '10px', fontSize: '14px', lineHeight: '1.5' }}>
               Herhangi bir araç eklenmemiş. Araç eklemek için Ayarlar &gt; Araç Takip ayarlarından yeni araç ekleyebilirsiniz.
             </p>

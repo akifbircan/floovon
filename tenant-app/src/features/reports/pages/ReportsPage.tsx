@@ -9,7 +9,7 @@ import AnimatedCounter from '../../../shared/components/AnimatedCounter';
 import { usePageAnimations } from '../../../shared/hooks/usePageAnimations';
 import { showToast, showToastInteractive } from '../../../shared/utils/toastUtils';
 import { getPrintLogoAndFooter, openPrintWindow, downloadTableAsExcel, buildPrintHtml, getPrintDateDDMMYYYY } from '../../dashboard/utils/exportUtils';
-import { formatPhoneNumber, formatTL } from '../../../shared/utils/formatUtils';
+import { formatPhoneNumber, formatTL, parseTL, formatTutarInputLive, formatTutarInputKeyDown, formatTLDisplayValue } from '../../../shared/utils/formatUtils';
 import { Eye, Pencil, Trash2, TurkishLira, Banknote, Wallet, Flame, Users, ShoppingCart, TrendingUp, Calculator, ChevronDown } from 'lucide-react';
 import { TableSortHeader } from '../../../shared/components/TableSortHeader';
 import { useTheme } from '../../../shared/hooks/useTheme';
@@ -398,8 +398,8 @@ export const ReportsPage: React.FC = () => {
 
   const handleDuzenleKaydet = async () => {
     if (!duzenleModal?.sicakSatisId) return;
-    const fiyatNum = parseFloat(duzenleForm.fiyat.replace(/\s*TL\s*/gi, '').replace(/\./g, '').replace(',', '.') || '0');
-    if (isNaN(fiyatNum) || fiyatNum <= 0) {
+    const fiyatNum = parseTL(duzenleForm.fiyat);
+    if (fiyatNum <= 0) {
       showToast('warning', 'Geçerli bir fiyat giriniz');
       return;
     }
@@ -424,7 +424,7 @@ export const ReportsPage: React.FC = () => {
   const openDuzenle = (r: SatisRaporu) => {
     if (!r.isSicakSatis || !r.sicakSatisId) return;
     setDuzenleModal(r);
-    setDuzenleForm({ urunAdi: r.urun, adet: r.miktar, fiyat: r.tutar.toFixed(2), satisTuru: r.satisTuru });
+    setDuzenleForm({ urunAdi: r.urun, adet: r.miktar, fiyat: formatTLDisplayValue(r.tutar) || '', satisTuru: r.satisTuru });
   };
 
   const sorguMetni = useMemo(() => {
@@ -990,7 +990,19 @@ export const ReportsPage: React.FC = () => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="duzenleFiyat">Ürün Fiyatı</label>
-                  <input type="text" id="duzenleFiyat" value={duzenleForm.fiyat} onChange={(e) => setDuzenleForm((p) => ({ ...p, fiyat: e.target.value }))} placeholder="0,00" className="tl-input" required aria-label="Ürün fiyatı (TL)" />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    id="duzenleFiyat"
+                    value={duzenleForm.fiyat}
+                    onChange={(e) => setDuzenleForm((p) => ({ ...p, fiyat: formatTutarInputLive(e.target.value) }))}
+                    onKeyDown={(e) => formatTutarInputKeyDown(e, duzenleForm.fiyat)}
+                    onBlur={() => setDuzenleForm((p) => ({ ...p, fiyat: formatTLDisplayValue(parseTL(p.fiyat)) }))}
+                    placeholder="0,00"
+                    className="tl-input"
+                    required
+                    aria-label="Ürün fiyatı (TL)"
+                  />
                 </div>
               </div>
               <div className="form-group">

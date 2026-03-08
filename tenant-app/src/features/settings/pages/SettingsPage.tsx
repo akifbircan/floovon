@@ -9,7 +9,7 @@ import { SearchInput } from '../../../shared/components/SearchInput';
 import { usePageAnimations } from '../../../shared/hooks/usePageAnimations';
 import { showToast, showToastInteractive } from '../../../shared/utils/toastUtils';
 import { usePlan } from '../../../app/providers/PlanProvider';
-import { formatPhoneNumber, cleanPhoneForDatabase, formatTutarInputLive, formatTutarInputKeyDown, parseTL, formatTL } from '../../../shared/utils/formatUtils';
+import { formatPhoneNumber, cleanPhoneForDatabase, formatTutarInputLive, formatTutarInputKeyDown, parseTL, formatTL, formatTLDisplayValue } from '../../../shared/utils/formatUtils';
 import { usePhoneInput } from '../../../shared/hooks/usePhoneInput';
 import { useAddressSelect } from '../../dashboard/hooks/useAddressSelect';
 import { getKonumAyarlari } from '../../dashboard/api/formActions';
@@ -1970,6 +1970,7 @@ export const SettingsPage: React.FC = () => {
                             }))
                           }
                           onKeyDown={(e) => formatTutarInputKeyDown(e as any, urunFormData.fiyat)}
+                          onBlur={() => setUrunFormData((prev) => ({ ...prev, fiyat: formatTLDisplayValue(parseTL(prev.fiyat)) }))}
                           placeholder="0,00"
                           className="ayarlar-input tl-input"
                           required
@@ -2240,10 +2241,7 @@ export const SettingsPage: React.FC = () => {
                                         setUrunFormData({
                                           ad: urun.ad || '',
                                           grup: urun.grup || '',
-                                          fiyat:
-                                            urun.fiyat != null && !Number.isNaN(urun.fiyat)
-                                              ? String(urun.fiyat)
-                                              : '',
+                                          fiyat: formatTLDisplayValue(urun.fiyat) || '',
                                           gorsel: null,
                                         });
                                       }}

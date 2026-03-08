@@ -1,0 +1,326 @@
+/* #region Toast Notification - Genel Ayarlar */
+ul.notifications {
+  all: unset;
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  z-index: 2147483645 !important;
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 250px;
+  max-width: 320px;
+  background-color: var(--toast-bg);
+  color: var(--toast-text);
+  border-left: 5px solid;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-top: 10px;
+  box-shadow: 0 4px 12px var(--toast-shadow);
+  animation: slideInUp 0.4s ease;
+  z-index: 2147483645 !important;
+  border: none;
+}
+
+.toast .column {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  flex: 1;
+}
+
+/* Varsayılan ikon rengi (sadece tür belirtilmemişse) */
+.toast .column i,
+.toast .column .toast-icon {
+  font-size: 18px;
+  margin: 0;
+  padding: 0;
+  color: var(--toast-success);
+}
+
+/* Error: ikon beyaz stroke, dolu daire olmasın (X içinde daire görünsün) */
+.toast.error .column i,
+.toast.error .column .toast-icon {
+  color: var(--toast-text-white) !important;
+}
+.toast.error .column .toast-icon svg {
+  color: var(--toast-text-white) !important;
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+
+.toast.success:not(.interactive) .column .toast-icon,
+.toast.success:not(.interactive) .column .toast-icon svg {
+  color: var(--toast-mor-primary, #6D28D9) !important;
+}
+
+.toast .toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast .toast-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.toast .fa-xmark,
+.toast .toast-close {
+  cursor: pointer;
+  margin-left: 20px;
+  color: var(--toast-text);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.toast .toast-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Error: zemin kırmızı – ikon da beyaz (zeminle uyumlu) */
+.toast.error:not(.interactive) {
+  border-color: var(--toast-error);
+  background-color: var(--toast-error);
+  color: var(--toast-text-white) !important;
+}
+
+/* Yinelenen kurallar yukarıda .toast.error ile kapsandı */
+
+.toast.error .fa-xmark,
+.toast.error .toast-close {
+  color: var(--toast-text-white) !important;
+}
+.toast.error .toast-close svg {
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+
+/* Success */
+.toast.success:not(.interactive) {
+  border-left-color: var(--toast-mor-primary, #6D28D9);
+}
+
+/* Warning: zemin turuncu – ikon da metin rengiyle uyumlu */
+.toast.warning:not(.interactive) {
+  border-color: var(--toast-warning);
+  background-color: var(--toast-warning);
+  color: var(--toast-warning-text) !important;
+}
+
+.toast.warning:not(.interactive) .column i,
+.toast.warning:not(.interactive) .column .toast-icon {
+  color: var(--toast-warning-text) !important;
+}
+.toast.warning:not(.interactive) .column .toast-icon svg {
+  stroke: var(--toast-warning-text) !important;
+  fill: none !important;
+}
+
+.toast.warning .fa-xmark,
+.toast.warning .toast-close {
+  color: var(--toast-warning-text) !important;
+}
+.toast.warning .toast-close svg {
+  stroke: var(--toast-warning-text) !important;
+  fill: none !important;
+}
+
+/* Info: zemin mavi – ikon beyaz stroke, dolu daire olmasın */
+.toast.info:not(.interactive) {
+  border-color: var(--toast-info);
+  background-color: var(--toast-info);
+  color: var(--toast-text-white) !important;
+}
+
+.toast.info:not(.interactive) .column i,
+.toast.info:not(.interactive) .column .toast-icon {
+  color: var(--toast-text-white) !important;
+}
+.toast.info:not(.interactive) .column .toast-icon svg {
+  color: var(--toast-text-white) !important;
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+
+.toast.info .fa-xmark,
+.toast.info .toast-close {
+  color: var(--toast-text-white) !important;
+}
+.toast.info .toast-close svg {
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+
+.toast.hide {
+  animation: fadeOut 0.5s forwards;
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; transform: translateX(100%); }
+}
+
+/* Etkileşimli toast: overlay + onay kutusu (Plan Değiştir vb.) – Console/Orchids ile aynı görünüm */
+.toast-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background-color: var(--toast-overlay-bg, rgba(0, 0, 0, 0.5)) !important;
+  z-index: 2147483646 !important;
+  pointer-events: auto !important;
+  backdrop-filter: blur(2px);
+}
+
+.toast.interactive {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  background-color: var(--toast-bg) !important;
+  z-index: 2147483647 !important;
+  max-width: 420px;
+  width: 90%;
+  padding: 24px;
+  border-radius: 0.625rem;
+  border: 1px solid var(--toast-border);
+  box-shadow: 0 10px 15px -3px var(--toast-shadow), 0 4px 6px -4px var(--toast-shadow);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--toast-text);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeInCenter 0.2s ease-out forwards;
+  cursor: default;
+  list-style: none;
+  margin: 0;
+}
+
+.toast-interactive-header {
+  padding: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.toast-interactive-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.toast-interactive-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast.interactive .toast-interactive-body {
+  padding: 0;
+  width: 100%;
+}
+
+.toast.interactive.hide {
+  animation: fadeOutCenter 0.3s ease forwards;
+}
+
+.toast.interactive .toast-message {
+  font-size: 0.875rem;
+  color: var(--toast-text);
+  text-align: left;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.toast.interactive .toast-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0;
+  margin-top: 0;
+  width: 100%;
+}
+
+.toast.interactive .toast-btn {
+  height: 2.25rem;
+  padding: 0 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast.interactive .toast-btn-confirm {
+  background-color: var(--toast-button-confirm);
+  color: var(--toast-text-white);
+}
+
+.toast.interactive .toast-btn-confirm:hover {
+  background-color: var(--toast-button-confirm-hover);
+}
+
+.toast.interactive .toast-btn-cancel {
+  background-color: white;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+.toast.interactive .toast-btn-cancel:hover {
+  background-color: #f8fafc;
+}
+
+@keyframes fadeInCenter {
+  from { opacity: 0; transform: translate(-50%, -40%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+@keyframes fadeOutCenter {
+  to { opacity: 0; transform: translate(-50%, -60%); }
+}
+
+:root {
+  --toast-bg: #ffffff;
+  --toast-text: #2e3237;
+  --toast-text-white: #ffffff;
+  --toast-text-dark: #1e293b;
+  --toast-border: #e2e8f0;
+  --toast-shadow: rgba(0, 0, 0, 0.1);
+  --toast-success: #10b981;
+  --toast-error: #ef4444;
+  --toast-warning: #f59e0b;
+  --toast-info: #3b82f6;
+  --toast-warning-text: #2e1200;
+  --toast-pass-bg: #f0fdf4;
+  --toast-mor-primary: #6D28D9;
+  --toast-button-cancel: #e2e8f0;
+  /* Etkileşimli toast (Console/Orchids ile aynı) */
+  --toast-overlay-bg: rgba(0, 0, 0, 0.5);
+  --toast-button-confirm: #10b981;
+  --toast-button-confirm-hover: #059669;
+  --overlay-bg-black: rgba(0, 0, 0, 0.5);
+}

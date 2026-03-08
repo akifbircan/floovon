@@ -839,12 +839,17 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     justify-content: center;
 }
 
-.sag-panel .plate-icon i {
+.sag-panel .plate-icon i,
+.sag-panel .plate-icon svg {
     font-size: 12px;
+    width: 14px;
+    height: 14px;
     color: var(--ana-renk);
+    flex-shrink: 0;
 }
 
-.dark-mode .sag-panel .plate-icon i {
+.dark-mode .sag-panel .plate-icon i,
+.dark-mode .sag-panel .plate-icon svg {
     color: var(--ana-renk);
 }
 
@@ -1066,7 +1071,6 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
 }
 
 .vehicle-detail-overlay .vehicle-detail-modal.detail-modal {
-    background: var(--white);
     border-radius: 16px;
     width: 100%;
     max-width: 420px;
@@ -1087,9 +1091,9 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     align-items: center;
     justify-content: space-between;
     padding: 18px 20px;
-    background: var(--arac-takip-main-logo-bg, var(--mor-primary));
+    background: var(--mor-primary);
     color: var(--white-only);
-    border-radius: 16px 16px 0 0;
+    /* border-radius: 14px 14px 0 0; */
 }
 .vehicle-detail-modal-title.modal-title {
     display: flex;
@@ -1131,15 +1135,15 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
 .vehicle-detail-modal-header .close-btn {
     width: 36px;
     height: 36px;
-    border: none;
+    /* border: none; */
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.15);
+    /* background: var(--white-only); */
     color: var(--white-only);
-    cursor: pointer;
+    /* cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 18px; */
     transition: background 0.2s;
 }
 .vehicle-detail-modal-header .close-btn:hover {
@@ -1156,6 +1160,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     overflow-y: auto;
     flex: 1;
     min-height: 0;
+    background-color: var(--white);
 }
 .vehicle-detail-loading,
 .vehicle-detail-error {
@@ -1256,7 +1261,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-    color: var(--gray-classic);
+    color: var(--gri70);
     margin-bottom: 4px;
 }
 .vehicle-detail-info-grid .detail-info-value {
@@ -1269,7 +1274,7 @@ body.dark-mode .sag-panel input[type="week"]::-webkit-calendar-picker-indicator 
 }
 .vehicle-detail-info-grid .info-icon {
     font-size: 14px;
-    color: var(--mor-primary, #6D28D9);
+    color: var(--mor-primary-text);
     margin-bottom: 4px;
 }
 .vehicle-detail-actions.modal-actions {

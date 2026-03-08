@@ -1866,7 +1866,8 @@ body:has(.whatsapp-qr-modal) {
 .sicak-satis-popup .header-alan {
     border-bottom: 1px solid var(--auto-color-45-c0d775) !important;
     margin-bottom: 20px !important;
-    padding: 0 20px 20px !important;
+    /* padding: 0 20px 20px !important; */
+    padding-bottom: 20px;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -1959,8 +1960,7 @@ body:has(.whatsapp-qr-modal) {
     color: var(--gri70) !important;
 }
 
-.sicak-satis-popup .form-group input:not([type="radio"]),
-.sicak-satis-popup .form-group select {
+.sicak-satis-popup .form-group input:not([type="radio"]) {
     width: 100% !important;
     max-width: 100% !important;
     height: 36px !important;
@@ -1970,6 +1970,19 @@ body:has(.whatsapp-qr-modal) {
     border-radius: 4px !important;
     outline: none !important;
     background: var(--white) !important;
+    color: var(--ana-renk) !important;
+    box-sizing: border-box !important;
+}
+.sicak-satis-popup .form-group select {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 36px !important;
+    padding: 0 8px !important;
+    font-size: 13px !important;
+    border: 1px solid var(--input-border-gray) !important;
+    border-radius: 4px !important;
+    outline: none !important;
+    background-color: var(--white) !important;
     color: var(--ana-renk) !important;
     box-sizing: border-box !important;
     cursor: pointer !important;
@@ -2835,7 +2848,7 @@ body:has(.whatsapp-qr-modal) {
 }
 
 .modal-react-arsiv-sebep-subtitle {
-    font-size: 14px !important;
+    font-size: 12px !important;
     color: var(--gri70) !important;
     margin: 0 !important;
     line-height: 1.5 !important;
@@ -4491,9 +4504,9 @@ color: var(--ana-renk) !important;
 
 /* Kapat butonu ortak .btn-close-modal / .btn-close-form stili kullanıyor (yukarıdaki ORTAK MODAL KAPAT BUTONU) */
 
-/* ========== Mobil: Tüm modallar ortadan, aynı kenar boşluğu (16px) ========== */
+/* ========== Mobil: Tüm modallar ortadan, sabit overlay, açılış animasyonu, iç scroll ========== */
 @media (max-width: 767px) {
-  /* Ortak: Tüm overlay'ler ortalanır, kenar boşluğu 16px */
+  /* Overlay: her zaman tam ekran, sayfa üstünde, kapatınca iz kalmaması için fixed */
   [role="dialog"][aria-modal="true"],
   .modal-react-qr-scanner-overlay,
   .modal-react-order-action-overlay,
@@ -4518,10 +4531,16 @@ color: var(--ana-renk) !important;
   .sicak-satis-overlay,
   [data-modal-backdrop],
   [class*="modal-"][class*="overlay"] {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99999 !important;
+    display: flex !important;
     padding: 16px !important;
     justify-content: center !important;
     align-items: center !important;
     box-sizing: border-box !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   [role="dialog"][aria-modal="true"],
@@ -4555,7 +4574,7 @@ color: var(--ana-renk) !important;
     border-radius: 0 !important;
   }
 
-  /* Modal içeriği: kenar boşluğu içinde, max-height, border-radius */
+  /* Modal içeriği: üst/alt/sol/sağ boşluk, kendi içinde kayar, açılış animasyonu (müşteri ekle/düzenle gibi) */
   [role="dialog"][aria-modal="true"] > div,
   .modal-react-qr-scanner-overlay > div,
   .modal-react-order-action-overlay > div,
@@ -4582,12 +4601,22 @@ color: var(--ana-renk) !important;
   [data-modal-content] {
     max-width: 100% !important;
     width: 100% !important;
-    margin: 0 !important;
+    margin: auto !important;
     max-height: calc(100vh - 32px) !important;
+    min-height: 0 !important;
     border-radius: 12px !important;
     box-sizing: border-box !important;
-    overflow: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
+    display: flex !important;
+    flex-direction: column !important;
+    animation: modal-mobile-open 0.25s ease-out;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+  @keyframes modal-mobile-open {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
   }
 
   /* Sağdan açılan drawer/modal animasyonu kaldır – hepsi ortadan açılsın */
@@ -5073,26 +5102,33 @@ color: var(--ana-renk) !important;
   .ayarlar-form-group {
     width: 100% !important;
     max-width: 100% !important;
+    align-items: center;
   }
 
-  .ayarlar-form-group .ayarlar-label,
-  .ayarlar-form-group label {
-    font-size: 13px !important;
-  }
+
 
   .ayarlar-form-group input,
   .ayarlar-form-group select,
   .ayarlar-form-group textarea {
-    width: 100% !important;
+    /* width: 100% !important; */
     max-width: 100% !important;
     box-sizing: border-box !important;
-    font-size: 16px !important; /* zoom önlemek için */
+    font-size: 14px !important; /* zoom önlemek için */
   }
-
+  .ayarlar-form-group .ayarlar-label,
+  .ayarlar-form-group label {
+    font-size: 13px !important;
+    text-align: center !important;
+    width: fit-content !important;
+  }
   .ayarlar-form-actions {
     flex-wrap: wrap !important;
     gap: 10px !important;
   }
+
+  .ayarlar-logo-alan-inline {
+    justify-content: center;
+}
 
   .ayarlar-form-actions button {
     flex: 1 1 auto !important;

@@ -72,17 +72,24 @@ export async function arsivleSiparis(
   
   // ✅ DÜZELTME: Eski sistemde her zaman body gönderiliyor, boş olsa bile
   // Backend boş body'yi de kabul ediyor, o yüzden her zaman gönder
-  const response = await apiRequest<SiparisActionResponse>(
+  // apiRequest, backend { success, data } döndürünce sadece data'yı döndürüyor; arşiv başarılı olsa bile result.success yok. Normalize et.
+  const response = await apiRequest<SiparisActionResponse | { id?: number }>(
     `/siparis-kartlar/${siparisId}/archive`,
     {
       method: 'PATCH',
       data: requestData, // Her zaman gönder (boş olsa bile)
     }
   );
-  if (response?.success && typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && (response?.success === true || (response && 'id' in response))) {
     window.dispatchEvent(new CustomEvent('floovon-notifications-refresh'));
   }
-  return response;
+  if (response && typeof response === 'object' && response.success === true) {
+    return response as SiparisActionResponse;
+  }
+  if (response && typeof response === 'object' && 'id' in response) {
+    return { success: true, message: 'Sipariş arşivlendi' };
+  }
+  return (response as SiparisActionResponse) ?? { success: false, message: 'Arşivleme yanıtı alınamadı' };
 }
 
 /**
@@ -134,7 +141,8 @@ export async function tumunuTeslimEt(organizasyonId: number): Promise<SiparisAct
  * ✅ DÜZELTME: Backend endpoint'i PATCH /api/organizasyon-kartlar/:id/archive
  */
 export async function arsivleOrganizasyonKart(organizasyonId: number, sebep?: string): Promise<SiparisActionResponse> {
-  const response = await apiRequest<SiparisActionResponse>(
+  // apiRequest, backend { success, data } döndürünce sadece data döndürüyor; result.success yok. Normalize et.
+  const response = await apiRequest<SiparisActionResponse | { id?: number; status?: string }>(
     `/organizasyon-kartlar/${organizasyonId}/archive`,
     {
       method: 'PATCH',
@@ -142,7 +150,13 @@ export async function arsivleOrganizasyonKart(organizasyonId: number, sebep?: st
     }
   );
 
-  return response;
+  if (response && typeof response === 'object' && response.success === true) {
+    return response as SiparisActionResponse;
+  }
+  if (response && typeof response === 'object' && ('id' in response || 'status' in response)) {
+    return { success: true, message: 'Organizasyon kartı arşivlendi' };
+  }
+  return (response as SiparisActionResponse) ?? { success: false, message: 'Arşivleme yanıtı alınamadı' };
 }
 
 /**

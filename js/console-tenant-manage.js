@@ -1291,10 +1291,8 @@ class TenantManage {
             const initialsDisplayClass = profileImage ? 'hidden' : '';
             const initialsHtml = `<div class="avatar-initials ${initialsDisplayClass}">${initials}</div>`;
             
-            // Get role from database (default to "Sipariş Operatörü" if not set)
             const role = user.role && user.role.trim() !== '' ? user.role : 'Sipariş Operatörü';
-            
-            // console.log('🔍 User role:', { userId: user.id, userName: user.name, role: user.role, finalRole: role });
+            const isAdminUser = user.is_admin === 1 || user.is_admin === '1';
             
             // Get last seen from last_login field
             let lastSeen = 'Hiç giriş yapmamış';
@@ -1367,7 +1365,12 @@ class TenantManage {
                     </div>
                 </td>
                 <td data-label="Yetki">
-                    <span class="admin-tenant-role-badge">${role}</span>
+                    <span class="admin-tenant-role-cell-wrap">
+                        ${(user.is_admin === 1 || user.is_admin === '1') ? `<span class="admin-tenant-role-is-admin" title="Varsayılan/ana kullanıcı (silinemez, durumu değiştirilemez)" data-tooltip="Varsayılan/ana kullanıcı">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>
+                        </span>` : ''}
+                        <span class="admin-tenant-role-badge">${role}</span>
+                    </span>
                 </td>
                 <td data-label="Durum">
                     <span class="admin-tenant-status-badge-small ${isActive ? 'active' : 'inactive'}">
@@ -1390,11 +1393,11 @@ class TenantManage {
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                             Şifre Değiştir
                         </button>
-                        <button class="admin-tenant-action-btn-small toggle ${isActive ? '' : 'activate'}" data-user-id="${user.id}" data-action="toggle" title="${isActive ? 'Pasif Yap' : 'Aktif Yap'}">
+                        <button class="admin-tenant-action-btn-small toggle ${isAdminUser ? 'disabled' : ''} ${isActive ? '' : 'activate'}" data-user-id="${user.id}" data-action="toggle" title="${isAdminUser ? 'Varsayılan kullanıcı durumu değiştirilemez' : (isActive ? 'Pasif Yap' : 'Aktif Yap')}" ${isAdminUser ? 'disabled' : ''}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
                             ${isActive ? 'Pasif Yap' : 'Aktif Yap'}
                         </button>
-                        <button class="admin-tenant-action-btn-small delete" data-user-id="${user.id}" data-action="delete" title="Sil (is_active = 0)">
+                        <button class="admin-tenant-action-btn-small delete ${isAdminUser ? 'disabled' : ''}" data-user-id="${user.id}" data-action="delete" title="${isAdminUser ? 'Varsayılan kullanıcı silinemez' : 'Sil (is_active = 0)'}" ${isAdminUser ? 'disabled' : ''}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                         </button>
                     </div>
@@ -1519,8 +1522,8 @@ class TenantManage {
         if (form) {
             form.reset();
             document.getElementById('user-active').checked = true;
-            // Admin yetkisi alanı kaldırıldı - artık kullanılmıyor
-            // document.getElementById('user-admin').checked = false;
+            const userAdminEl = document.getElementById('user-admin');
+            if (userAdminEl) userAdminEl.checked = false;
             document.getElementById('user-password').required = true;
             const passwordGroup = document.getElementById('password-group');
             if (passwordGroup) passwordGroup.style.display = 'block';
@@ -1921,13 +1924,14 @@ class TenantManage {
             if (firstNameEl) firstNameEl.value = firstName;
             if (lastNameEl) lastNameEl.value = lastName;
             
-            // Toggle butonu status'a göre set et
             if (activeEl) {
                 const currentStatus = user.status || (user.is_active === 1 ? 'aktif' : 'pasif');
                 activeEl.checked = currentStatus === 'aktif';
             }
-            // Admin yetkisi alanı kaldırıldı - artık kullanılmıyor
-            // if (adminEl) adminEl.checked = user.is_admin === 1;
+            const adminEl = document.getElementById('user-admin');
+            if (adminEl) {
+                adminEl.checked = user.is_admin === 1 || user.is_admin === '1';
+            }
             if (roleEl) {
                 // Rol değerini ayarla
                 let userRole = user.role;
@@ -1992,7 +1996,8 @@ class TenantManage {
                 phone: originalPhoneValue,
                 password: '',
                 role: user.role || '',
-                status: originalStatus // Status kullan
+                status: originalStatus,
+                is_admin: user.is_admin === 1 || user.is_admin === '1'
             };
             form.dataset.originalValues = JSON.stringify(originalValues);
             
@@ -2009,6 +2014,9 @@ class TenantManage {
                 const password = passwordEl ? passwordEl.value : '';
                 const role = roleEl ? roleEl.value : '';
                 const isActive = activeEl ? activeEl.checked : false;
+                const currentStatus = isActive ? 'aktif' : 'pasif';
+                const adminEl = document.getElementById('user-admin');
+                const isAdmin = adminEl ? adminEl.checked : false;
                 
                 formHasChanges = (
                     firstname !== originalValues.firstname ||
@@ -2018,7 +2026,8 @@ class TenantManage {
                     phone !== originalValues.phone ||
                     password !== originalValues.password ||
                     role !== originalValues.role ||
-                    isActive !== originalValues.isActive
+                    currentStatus !== originalValues.status ||
+                    (typeof originalValues.is_admin !== 'undefined' && isAdmin !== originalValues.is_admin)
                 );
             };
             
@@ -2311,8 +2320,8 @@ class TenantManage {
         const password = document.getElementById('user-password').value;
         const role = document.getElementById('user-role').value;
         const isActive = document.getElementById('user-active').checked;
-        // Admin yetkisi alanı kaldırıldı - artık kullanılmıyor
-        // const isAdmin = document.getElementById('user-admin').checked;
+        const adminEl = document.getElementById('user-admin');
+        const isAdmin = adminEl ? adminEl.checked : false;
         
         if (!firstname || !lastname || !kullaniciadi || !email) {
             if (typeof createToast === 'function') {
@@ -2435,15 +2444,12 @@ class TenantManage {
                 name: nameValue,
                 surname: surnameValue,
                 kullaniciadi: kullaniciadi,
-                username: kullaniciadi, // Backend için
+                username: kullaniciadi,
                 email: email,
-                // Toggle butonu status kullanmalı, is_active değil
-                // Sadece status değiştiyse gönder (yeni kullanıcı için her zaman gönder)
                 ...(this.currentEditingUser ? (currentStatus !== originalStatus && { status: currentStatus }) : { status: currentStatus }),
-                // is_active de gönder (yeni kullanıcı için her zaman, düzenlemede sadece değiştiyse)
-                ...(this.currentEditingUser ? (currentStatus !== originalStatus && { is_active: isActive ? 1 : 0 }) : { is_active: isActive ? 1 : 0 }),
-                // is_admin kolonu kaldırıldı - artık kullanılmıyor
-                // is_admin: isAdmin ? 1 : 0,
+                // Düzenlemede sadece status alanı değişir; is_active her zaman 1 kalır (kullanıcı tablodan kaybolmaz). Yeni kullanıcıda is_active gönderilir.
+                ...(this.currentEditingUser ? { is_active: 1 } : { is_active: isActive ? 1 : 0 }),
+                ...(this.currentEditingUser && (isAdmin !== (this.currentEditingUser.is_admin === 1 || this.currentEditingUser.is_admin === '1') ? { is_admin: isAdmin ? 1 : 0 } : {})),
                 role: role || null
             };
             
@@ -2606,7 +2612,6 @@ class TenantManage {
         // Sil butonu ile karıştırılmamalı - sil butonu is_active'i 0 yapar ve kullanıcı tablodan kaybolur
         // Bu buton ise status kolonunu günceller, kullanıcı tabloda kalır
         
-        // Kullanıcıyı bul
         const user = this.users.find(u => u.id === userId);
         if (!user) {
             if (typeof createToast === 'function') {
@@ -2614,12 +2619,14 @@ class TenantManage {
             }
             return;
         }
+        if (user.is_admin === 1 || user.is_admin === '1') {
+            if (typeof createToast === 'function') {
+                createToast('error', 'Bu kullanıcı varsayılan/ana kullanıcı olduğu için durumu değiştirilemez.');
+            }
+            return;
+        }
         
-        // Status değerini belirle (1 = aktif, 0 = pasif)
         const statusValue = newStatus === 1 ? 'aktif' : 'pasif';
-        
-        // Not: is_admin kolonu kaldırıldı, artık admin_users tablosunda yönetiliyor
-        // Tenant kullanıcıları için superadmin kontrolü gerekli değil
         
         const statusText = statusValue;
         
@@ -4198,7 +4205,7 @@ class TenantManage {
         
         const abonelikBaslangic = formatDate(this.abonelik.mevcut_donem_baslangic || this.abonelik.olusturma_tarihi);
         const abonelikBitis = formatDate(this.abonelik.mevcut_donem_bitis);
-        const sonrakiOdeme = formatDate(this.abonelik.sonraki_odeme_tarihi);
+        const sonrakiOdeme = formatDate(this.abonelik.sonraki_odeme_tarihi || this.abonelik.mevcut_donem_bitis);
         
         // Plan detayları HTML'i oluştur
         billingPeriodEl.innerHTML = `
@@ -4716,25 +4723,11 @@ class TenantManage {
         saveBtn.className = 'btn-save flex-1';
         saveBtn.textContent = 'Kartı Kaydet';
         saveBtn.onclick = async () => {
-            // Önce ödeme yöntemlerini yeniden yükle (güncel olması için)
             await this.loadOdemeYontemleri();
-            
-            // Güncel ödeme yöntemini al
-            const currentPayment = this.odemeYontemleri && this.odemeYontemleri.length > 0 
+            const currentPayment = this.odemeYontemleri && this.odemeYontemleri.length > 0
                 ? (this.odemeYontemleri.find(p => p.varsayilan_mi === 1) || this.odemeYontemleri[0])
                 : null;
-            
-            if (!currentPayment || !currentPayment.id) {
-                console.error('❌ Ödeme yöntemi bulunamadı:', {
-                    odemeYontemleri: this.odemeYontemleri,
-                    currentPayment
-                });
-                if (typeof createToast === 'function') {
-                    createToast('error', 'Ödeme yöntemi bulunamadı');
-                }
-                return;
-            }
-            
+
             // Sheet içindeki inputları bul
             const sheet = this.sheets.payment;
             if (!sheet) {
@@ -4869,32 +4862,37 @@ class TenantManage {
                 requestBody.son_kullanim_yili = yil;
             }
             
-            // Ödeme yöntemi güncelleme - Gönderilen veriler
-            
+            const headers = {
+                'Authorization': `Bearer ${this.adminToken}`,
+                'Content-Type': 'application/json'
+            };
+
             try {
-                const response = await fetch(`${this.apiBase}/admin/tenants/${this.tenantId}/odeme-yontemleri/${currentPayment.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${this.adminToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(requestBody)
-                });
-                
+                let response;
+                if (currentPayment && currentPayment.id) {
+                    response = await fetch(`${this.apiBase}/admin/tenants/${this.tenantId}/odeme-yontemleri/${currentPayment.id}`, {
+                        method: 'PUT',
+                        headers,
+                        credentials: 'include',
+                        body: JSON.stringify(requestBody)
+                    });
+                } else {
+                    response = await fetch(`${this.apiBase}/admin/tenants/${this.tenantId}/odeme-yontemleri`, {
+                        method: 'POST',
+                        headers,
+                        credentials: 'include',
+                        body: JSON.stringify({ ...requestBody, kart_tipi: 'Kredi Kartı' })
+                    });
+                }
+
                 const result = await response.json();
-                
+
                 if (response.ok && result.success) {
-                    
-                    // Ödeme yöntemlerini yeniden yükle
                     await this.loadOdemeYontemleri();
-                    // Billing tab'ını yeniden render et
                     this.renderBillingTab();
-                    
                     if (typeof createToast === 'function') {
-                        createToast('success', 'Ödeme yöntemi başarıyla güncellendi');
+                        createToast('success', currentPayment && currentPayment.id ? 'Ödeme yöntemi başarıyla güncellendi' : 'Ödeme yöntemi eklendi');
                     }
-                    
                     this.sheets.payment.update(false);
                     setTimeout(() => {
                         if (this.sheets.payment && this.sheets.payment.parentNode) {
@@ -4902,18 +4900,13 @@ class TenantManage {
                         }
                     }, 300);
                 } else {
-                    const errorMessage = result.error || result.message || 'Ödeme yöntemi güncellenemedi';
-                    console.error('❌ Ödeme yöntemi güncellenemedi:', {
-                        status: response.status,
-                        error: errorMessage,
-                        result
-                    });
+                    const errorMessage = result.error || result.message || (currentPayment ? 'Ödeme yöntemi güncellenemedi' : 'Ödeme yöntemi eklenemedi');
                     throw new Error(errorMessage);
                 }
             } catch (error) {
-                console.error('❌ Ödeme yöntemi güncellenirken hata:', error);
+                console.error('❌ Ödeme yöntemi kaydedilirken hata:', error);
                 if (typeof createToast === 'function') {
-                    createToast('error', error.message || 'Ödeme yöntemi güncellenemedi');
+                    createToast('error', error.message || 'Ödeme yöntemi kaydedilemedi');
                 }
             }
         };
@@ -5218,7 +5211,7 @@ class TenantManage {
                 document.getElementById('console-manage-toggle-monthly')?.classList.add('active');
             }
             
-            // Tüm plan kartlarını güncelle
+            // Tüm plan kartlarını güncelle (fiyat gösterimi)
             content.querySelectorAll('.admin-tenant-upgrade-plan-card').forEach(planCard => {
                 const planId = planCard.dataset.planId;
                 const priceDisplay = planCard.querySelector(`.admin-tenant-plan-price-display[data-plan-id="${planId}"]`);
@@ -5234,15 +5227,19 @@ class TenantManage {
                     if (yearlyDisplay) yearlyDisplay.style.display = 'none';
                 }
             });
+            updateCurrentPlanState(period);
         };
         
-        // Plan kartları
+        // Plan kartları (landing dashboard ile aynı mantık: mevcut plan = aynı plan_id + aynı billing period)
         plans.forEach(plan => {
-            const isCurrentPlan = currentPlanId && plan.id == currentPlanId;
+            const currentPeriod = window.consoleManageBillingPeriod || 'monthly';
+            const isCurrentPlan = currentPlanId && plan.id == currentPlanId &&
+                ((currentPeriod === 'yearly' && normalizedCurrentBillingPeriod === 'yearly') ||
+                 (currentPeriod === 'monthly' && normalizedCurrentBillingPeriod === 'monthly'));
             const planCard = document.createElement('div');
             planCard.className = `admin-tenant-upgrade-plan-card${isCurrentPlan ? ' admin-tenant-upgrade-plan-card-current' : ''}`;
             planCard.onmouseenter = () => {
-                planCard.classList.add('admin-tenant-upgrade-plan-card-hover');
+                if (!planCard.classList.contains('admin-tenant-upgrade-plan-card-current')) planCard.classList.add('admin-tenant-upgrade-plan-card-hover');
             };
             planCard.onmouseleave = () => {
                 planCard.classList.remove('admin-tenant-upgrade-plan-card-hover');
@@ -5252,6 +5249,7 @@ class TenantManage {
             planCard.style.position = 'relative';
             
             planCard.onclick = async (e) => {
+                if (planCard.classList.contains('admin-tenant-upgrade-plan-card-current')) return;
                 // Düzenle butonuna tıklanırsa plan düzenleme modalını aç
                 if (e.target.closest('.admin-tenant-plan-edit-btn')) {
                     e.stopPropagation();
@@ -5261,12 +5259,9 @@ class TenantManage {
                 
                 // Artık "Planı Değiştir" modunda tüm planları göster, sadece upgrade değil
                 if (hasActive) {
-                    // Mevcut plan varsa, plan değiştirme işlemi yap (upgrade yerine change)
-                    // Toggle'dan gelen billing period'u kullan (her zaman güncel)
                     const billingPeriod = window.consoleManageBillingPeriod || 'monthly';
                     this.changePlan(plan.id, billingPeriod);
                 } else {
-                    // Toggle'dan gelen billing period'u kullan (her zaman güncel)
                     const billingPeriod = window.consoleManageBillingPeriod || 'monthly';
                     this.selectPlan(plan.id, billingPeriod);
                 }
@@ -5288,9 +5283,17 @@ class TenantManage {
             };
             planCard.appendChild(editBtn);
             
+            const planNameWrapper = document.createElement('div');
+            planNameWrapper.className = 'admin-tenant-upgrade-plan-name-wrapper';
             const planName = document.createElement('h3');
             planName.className = 'admin-tenant-upgrade-plan-name';
             planName.textContent = plan.plan_adi;
+            const currentBadge = document.createElement('span');
+            currentBadge.className = 'admin-tenant-current-plan-badge';
+            currentBadge.textContent = 'Mevcut Plan';
+            currentBadge.style.display = isCurrentPlan ? 'inline-block' : 'none';
+            planNameWrapper.appendChild(planName);
+            planNameWrapper.appendChild(currentBadge);
             
             const planPrice = document.createElement('div');
             planPrice.className = 'admin-tenant-upgrade-plan-price';
@@ -5377,11 +5380,24 @@ class TenantManage {
                 });
             }
             
-            planCard.appendChild(planName);
+            planCard.appendChild(planNameWrapper);
             planCard.appendChild(planPrice);
             planCard.appendChild(planFeatures);
             content.appendChild(planCard);
         });
+        
+        // Toggle değişince mevcut plan badge ve disabled durumunu güncelle (landing dashboard mantığı)
+        const updateCurrentPlanState = (period) => {
+            content.querySelectorAll('.admin-tenant-upgrade-plan-card').forEach(planCard => {
+                const planId = planCard.dataset.planId;
+                const isCurrent = currentPlanId && planId == currentPlanId &&
+                    ((period === 'yearly' && normalizedCurrentBillingPeriod === 'yearly') ||
+                     (period === 'monthly' && normalizedCurrentBillingPeriod === 'monthly'));
+                planCard.classList.toggle('admin-tenant-upgrade-plan-card-current', !!isCurrent);
+                const badge = planCard.querySelector('.admin-tenant-current-plan-badge');
+                if (badge) badge.style.display = isCurrent ? 'inline-block' : 'none';
+            });
+        };
         
         const footer = createSheetFooter();
         const cancelBtn = document.createElement('button');
@@ -6126,10 +6142,7 @@ class TenantManage {
                 this.sheets.upgradePlan.parentNode.removeChild(this.sheets.upgradePlan);
             }
             
-            // Loading toast göster
-            if (typeof createToast === 'function') {
-                createToast('info', 'Plan değiştiriliyor ve faturanız oluşturuluyor, lütfen bekleyin...');
-            }
+            this.showPlanChangeLoading('Plan değiştiriliyor ve faturanız oluşturuluyor, lütfen bekleyin...');
             
             const requestBody = { plan_id: planId, billing_period: billingPeriod };
             console.log('🔍 [CONSOLE MANAGE FRONTEND] İstek gönderiliyor:', {
@@ -6157,6 +6170,7 @@ class TenantManage {
             console.log('🔍 [CONSOLE MANAGE FRONTEND] Response data:', result);
             
             if (response.ok && result.success) {
+                this.hidePlanChangeLoading();
                 if (typeof createToast === 'function') {
                     createToast('success', 'Plan başarıyla değiştirildi');
                 }
@@ -6203,9 +6217,28 @@ class TenantManage {
             }
         } catch (error) {
             console.error('❌ Plan yükseltilirken hata:', error);
+            this.hidePlanChangeLoading();
             if (typeof createToast === 'function') {
                 createToast('error', error.message || 'Plan yükseltilemedi');
             }
+        }
+    }
+    
+    showPlanChangeLoading(message = 'Plan değiştiriliyor ve faturanız oluşturuluyor, lütfen bekleyin...') {
+        const overlay = document.getElementById('console-manage-plan-loading-overlay');
+        const textEl = overlay?.querySelector('.console-manage-plan-loading-text');
+        if (overlay) {
+            if (textEl) textEl.textContent = message;
+            overlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    hidePlanChangeLoading() {
+        const overlay = document.getElementById('console-manage-plan-loading-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
         }
     }
     
@@ -6318,7 +6351,7 @@ class TenantManage {
         // Yeni sekmede aç veya direkt indir (Dashboard'daki mantık)
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.download = `fatura-${faturaNo}.html`;
+        link.download = `fatura-${faturaNo}.pdf`;
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();

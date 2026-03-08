@@ -107,6 +107,13 @@
 
 .arsiv-tablosu thead th {
   white-space: nowrap;
+  text-align: left;
+}
+.arsiv-tablosu thead th.th-teslim-saati {
+  text-align: center;
+}
+.arsiv-tablosu thead th.th-islemler {
+  text-align: right;
 }
 
 .arsiv-tablosu tbody td {
@@ -168,7 +175,7 @@
 }
 
 .arsiv-tablosu td.grup-baslik.organizasyon {
-  background-color: var(--gray-light-f2);
+  background-color: var(--arsiv-grup-baslik-organizasyon-bg);
   font-size: 13px;
   font-weight: 600;
   color: var(--ana-renk);
@@ -185,6 +192,8 @@
 
 .arsiv-tablosu .grup-baslik-metin {
   display: flex;
+  flex-direction: column;
+  text-align: center;
   align-items: center;
   gap: 8px;
 }
@@ -231,6 +240,21 @@
 .arsiv-tablosu thead th:last-child {
   text-align: center !important;
   vertical-align: middle !important;
+}
+
+/* Adres hücresi: üst satır adres, alt satır açık adres */
+.arsiv-adres-hucre {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.arsiv-adres-hucre .arsiv-adres-konum {
+  font-weight: 600;
+}
+.arsiv-adres-hucre .arsiv-adres-acik {
+  display: block;
+  font-size: 11px;
+  color: var(--gri70, #666);
 }
 
 .arsiv-tablosu .td-icerik {

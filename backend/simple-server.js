@@ -412,12 +412,12 @@ function getFrontendBaseForResetLink(req) {
  * @param {Object} opts - tenantId, tenantCode (veya tenants_no), tenant row (email, name, firma_adi), planAdi, faturaDongusu, aylikUcretKurus, faturaNo, donemBitis (iptal için), cancel_reason (iptal için)
  */
 async function sendAbonelikMail(type, opts) {
-    const { tenantId, tenantCode, tenant, planAdi, faturaDongusu, aylikUcretKurus, faturaNo, donemBitis, cancel_reason } = opts;
+    const { tenantId, tenantCode, tenant, planAdi, faturaDongusu, aylikUcretKurus, faturaNo, donemBitis, cancel_reason, baseUrl: optsBaseUrl } = opts;
     const to = tenant && (tenant.email || tenant.e_posta);
     if (!to || !String(to).trim()) return;
     const mailService = getMailService();
     if (!mailService || (!mailService.noreplyInitialized && !mailService.initialized)) return;
-    const baseUrl = (process.env.FRONTEND_URL || '').trim().replace(/\/$/, '') || (process.env.API_BASE_URL || 'http://localhost:3001').replace(/\/api.*$/, '');
+    const baseUrl = optsBaseUrl && String(optsBaseUrl).trim() ? String(optsBaseUrl).trim().replace(/\/$/, '') : (process.env.SERVER_PUBLIC_URL || process.env.FRONTEND_URL || '').trim().replace(/\/$/, '') || (process.env.API_BASE_URL || '').trim().replace(/\/api.*$/, '') || 'http://localhost:3001';
     const code = tenantCode || (tenant && tenant.tenants_no) || '';
     const dashboardUrl = code ? `${baseUrl}/landing/dashboard.html?tenant=${encodeURIComponent(code)}` : baseUrl;
     const tenantInfo = [{ firma_adi: (tenant && (tenant.firma_adi || tenant.name)) || '', yetkili_kisi: (tenant && tenant.name) || '' }];
@@ -2316,6 +2316,13 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
         
         try {
         // ========================================================================
+        // FATURA: tenants_faturalar tablosu (yoksa oluştur - ilk plan değişiminden önce hazır)
+        // ========================================================================
+        if (typeof ensureTenantsFaturalarTable === 'function') {
+            await ensureTenantsFaturalarTable();
+            console.log('✅ tenants_faturalar tablosu hazır');
+        }
+        // ========================================================================
         // tenants_kullanicilar.profile_image kolonu - profil_resmi varsa uyumluluk için
         // ========================================================================
         await new Promise((resolve) => {
@@ -2460,6 +2467,9 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
         
         // organizasyon_siparisler_ciceksepeti tablosuna arşivleme kolonları
         await ensureCiceksepetiArsivColumns();
+        
+        // Proje kullanım hata logları tablosu (frontend/backend hataları)
+        await initProjeKullanimHataLogsTable();
         
         // Tenants_logs tablosunu oluştur
         await initializeTenantsLogsTable();
@@ -3002,6 +3012,8 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
                 initializePasswordResetTokens();
                 // Müşteri tahsilatlar tablosunu kontrol et ve eksik kolonları ekle
                 initializeMusteriTahsilatlarTable();
+                // tenants_odeme_yontemleri: odeme_yontemi_id (1=Kredi Kartı) kolonu
+                ensureTenantsOdemeYontemleriOdemeYontemiId();
             });
         });
     });
@@ -3295,6 +3307,41 @@ async function initializeMusteriTahsilatlarTable() {
         console.log('✅ musteri_tahsilatlar tablosu kontrolü tamamlandı');
     } catch (error) {
         console.error('❌ musteri_tahsilatlar tablo kontrolü hatası:', error);
+    }
+}
+
+// tenants_odeme_yontemleri: odeme_yontemi_id (1=Kredi Kartı) kolonu
+async function ensureTenantsOdemeYontemleriOdemeYontemiId() {
+    try {
+        const tableExists = await new Promise((resolve, reject) => {
+            db.all("SELECT name FROM sqlite_master WHERE type='table' AND name='tenants_odeme_yontemleri'", [], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows && rows.length > 0);
+            });
+        });
+        if (!tableExists) return;
+        const columns = await new Promise((resolve, reject) => {
+            db.all("PRAGMA table_info(tenants_odeme_yontemleri)", [], (err, rows) => {
+                if (err) reject(err);
+                else resolve((rows || []).map(r => r.name));
+            });
+        });
+        if (!columns.includes('odeme_yontemi_id')) {
+            await new Promise((resolve, reject) => {
+                db.run('ALTER TABLE tenants_odeme_yontemleri ADD COLUMN odeme_yontemi_id INTEGER DEFAULT 1', (err) => {
+                    if (err) {
+                        console.error('❌ tenants_odeme_yontemleri.odeme_yontemi_id eklenirken hata:', err);
+                        reject(err);
+                    } else {
+                        console.log('✅ tenants_odeme_yontemleri.odeme_yontemi_id kolonu eklendi (1=Kredi Kartı)');
+                        resolve();
+                    }
+                });
+            });
+            await run('UPDATE tenants_odeme_yontemleri SET odeme_yontemi_id = 1 WHERE odeme_yontemi_id IS NULL', []);
+        }
+    } catch (error) {
+        console.error('❌ ensureTenantsOdemeYontemleriOdemeYontemiId hatası:', error);
     }
 }
 
@@ -3861,6 +3908,33 @@ async function ensureCiceksepetiArsivColumns() {
         await addColumnIfMissing('organizasyon_siparisler_ciceksepeti', 'arsivleme_sebebi', 'TEXT');
     } catch (error) {
         console.error('❌ ensureCiceksepetiArsivColumns hatası:', error.message);
+    }
+}
+
+// Proje kullanım hata logları (frontend/backend hataları - sunucu ortamında takip için)
+async function initProjeKullanimHataLogsTable() {
+    try {
+        await run(`
+            CREATE TABLE IF NOT EXISTS proje_kullanim_hata_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant_id INTEGER,
+                user_id INTEGER,
+                source TEXT NOT NULL DEFAULT 'frontend',
+                error_message TEXT NOT NULL,
+                error_stack TEXT,
+                url TEXT,
+                http_status INTEGER,
+                endpoint TEXT,
+                user_agent TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        await run(`CREATE INDEX IF NOT EXISTS idx_proje_kullanim_hata_logs_tenant_id ON proje_kullanim_hata_logs(tenant_id)`);
+        await run(`CREATE INDEX IF NOT EXISTS idx_proje_kullanim_hata_logs_created_at ON proje_kullanim_hata_logs(created_at DESC)`);
+        await run(`CREATE INDEX IF NOT EXISTS idx_proje_kullanim_hata_logs_source ON proje_kullanim_hata_logs(source)`);
+        console.log('✅ proje_kullanim_hata_logs tablosu hazır');
+    } catch (error) {
+        console.error('❌ proje_kullanim_hata_logs tablosu oluşturma hatası:', error.message);
     }
 }
 
@@ -5262,15 +5336,53 @@ function execute(sql, params = []) {
     return run(sql, params);
 }
 
+/** tenants_faturalar tablosu yoksa oluşturur; fatura_dongusu kolonu yoksa ekler. Her fatura öncesi çağrılır (cache yok). */
+async function ensureTenantsFaturalarTable() {
+    try {
+        const exists = await query("SELECT name FROM sqlite_master WHERE type='table' AND name='tenants_faturalar'", [], null);
+        if (!exists || exists.length === 0) {
+            await run(`
+                CREATE TABLE IF NOT EXISTS tenants_faturalar (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    tenant_id INTEGER NOT NULL,
+                    fatura_no TEXT NOT NULL UNIQUE,
+                    fatura_tarihi DATE NOT NULL,
+                    plan_id INTEGER,
+                    abonelik_id INTEGER,
+                    ara_toplam INTEGER NOT NULL,
+                    kdv_tutari INTEGER DEFAULT 0,
+                    toplam_tutar INTEGER NOT NULL,
+                    durum TEXT NOT NULL DEFAULT 'beklemede',
+                    odeme_yontemi_id INTEGER,
+                    pdf_yolu TEXT,
+                    odeme_tarihi DATETIME,
+                    vade_tarihi DATE,
+                    olusturma_tarihi DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    guncelleme_tarihi DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+            console.log('✅ tenants_faturalar tablosu oluşturuldu');
+        }
+        const cols = await query('PRAGMA table_info(tenants_faturalar)', [], null);
+        const colNames = (cols || []).map(c => c && c.name).filter(Boolean);
+        if (!colNames.includes('fatura_dongusu')) {
+            await run('ALTER TABLE tenants_faturalar ADD COLUMN fatura_dongusu TEXT DEFAULT \'aylik\'');
+            console.log('✅ tenants_faturalar.fatura_dongusu kolonu eklendi');
+        }
+    } catch (e) {
+        console.error('❌ ensureTenantsFaturalarTable:', e?.message || e, e?.stack || '');
+    }
+}
+
 /**
  * Abonelik plan değişikliği/yeni abonelik sonrası tenant faturası oluşturur.
- * Hem public change-plan hem admin upgrade tarafından kullanılır.
+ * Yedekteki çalışan mantık: plan'dan gelen aylik_ucret (kuruş) doğrudan kullanılır; PDF senkron üretilir.
  * @param {number} tenantId
  * @param {number} abonelikId
  * @param {number} planId
  * @param {string} planAdi
- * @param {number} aylikUcretKurus - Kuruş cinsinden aylık ücret
- * @param {string} [faturaDongusu] - 'aylik' | 'yillik' (ödeme dönemi; fatura kaydına yazılır)
+ * @param {number} aylikUcretKurus - Kuruş cinsinden aylık ücret (plan.aylik_ucret aynen geçirilir)
+ * @param {string} [faturaDongusu] - 'aylik' | 'yillik'
  * @returns {Promise<{ id: number, fatura_no: string }|null>}
  */
 async function createTenantAbonelikFatura(tenantId, abonelikId, planId, planAdi, aylikUcretKurus, faturaDongusu) {
@@ -5283,25 +5395,28 @@ async function createTenantAbonelikFatura(tenantId, abonelikId, planId, planAdi,
     const faturaTarihi = new Date().toISOString().split('T')[0];
 
     try {
+        let odemeYontemiId = null;
+        const pmRows = await query('SELECT odeme_yontemi_id FROM tenants_odeme_yontemleri WHERE tenant_id = ? ORDER BY COALESCE(varsayilan_mi, 0) DESC, id ASC LIMIT 1', [tenantId], null);
+        if (pmRows && pmRows[0] && pmRows[0].odeme_yontemi_id != null) odemeYontemiId = pmRows[0].odeme_yontemi_id;
+
         const hasFaturaDongusu = await query('PRAGMA table_info(tenants_faturalar)', [], null).then(cols => (cols || []).some(c => c && c.name === 'fatura_dongusu'));
         if (hasFaturaDongusu) {
             await run(
-                `INSERT INTO tenants_faturalar (tenant_id, fatura_no, fatura_tarihi, plan_id, abonelik_id, ara_toplam, kdv_tutari, toplam_tutar, fatura_dongusu, durum, olusturma_tarihi, guncelleme_tarihi)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'odendi', datetime('now'), datetime('now'))`,
-                [tenantId, faturaNo, faturaTarihi, planId, abonelikId, araToplam, kdvTutari, toplamTutar, dongu]
+                `INSERT INTO tenants_faturalar (tenant_id, fatura_no, fatura_tarihi, plan_id, abonelik_id, ara_toplam, kdv_tutari, toplam_tutar, fatura_dongusu, odeme_yontemi_id, odeme_tarihi, vade_tarihi, durum, olusturma_tarihi, guncelleme_tarihi)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'odendi', datetime('now'), datetime('now'))`,
+                [tenantId, faturaNo, faturaTarihi, planId, abonelikId, araToplam, kdvTutari, toplamTutar, dongu, odemeYontemiId, faturaTarihi, faturaTarihi]
             );
         } else {
             await run(
-                `INSERT INTO tenants_faturalar (tenant_id, fatura_no, fatura_tarihi, plan_id, abonelik_id, ara_toplam, kdv_tutari, toplam_tutar, durum, olusturma_tarihi, guncelleme_tarihi)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'odendi', datetime('now'), datetime('now'))`,
-                [tenantId, faturaNo, faturaTarihi, planId, abonelikId, araToplam, kdvTutari, toplamTutar]
+                `INSERT INTO tenants_faturalar (tenant_id, fatura_no, fatura_tarihi, plan_id, abonelik_id, ara_toplam, kdv_tutari, toplam_tutar, odeme_yontemi_id, odeme_tarihi, vade_tarihi, durum, olusturma_tarihi, guncelleme_tarihi)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'odendi', datetime('now'), datetime('now'))`,
+                [tenantId, faturaNo, faturaTarihi, planId, abonelikId, araToplam, kdvTutari, toplamTutar, odemeYontemiId, faturaTarihi, faturaTarihi]
             );
         }
         const inserted = await query('SELECT id FROM tenants_faturalar WHERE fatura_no = ?', [faturaNo]);
         const faturaId = Array.isArray(inserted) && inserted[0] ? inserted[0].id : null;
         if (!faturaId) return { id: null, fatura_no: faturaNo };
 
-        // Tenant bilgisi: firma_adi kolonu olmayan DB'ler için sadece name kullan (güvenli SELECT)
         let tenant = null;
         try {
             const cols = await query('PRAGMA table_info(tenants)', [], null);
@@ -5338,20 +5453,19 @@ async function createTenantAbonelikFatura(tenantId, abonelikId, planId, planAdi,
         });
 
         const invoicesDir = path.join(__dirname, 'uploads', 'tenants', String(tenantId), 'invoices');
-        if (!fs.existsSync(invoicesDir)) {
-            fs.mkdirSync(invoicesDir, { recursive: true });
-        }
+        if (!fs.existsSync(invoicesDir)) fs.mkdirSync(invoicesDir, { recursive: true });
         const pdfFileName = `${faturaNo}.pdf`;
         const pdfAbsolutePath = path.join(invoicesDir, pdfFileName);
         const pdfSaved = await generateInvoicePdfFromHtml(invoiceHtml, pdfAbsolutePath);
         if (!pdfSaved) {
-            throw new Error('Fatura PDF oluşturulamadı. Puppeteer kurulu ve çalışır durumda olmalıdır.');
+            console.warn('⚠️ Fatura PDF oluşturulamadı (kayıt mevcut, pdf_yolu boş):', faturaNo);
+        } else {
+            const pdfYolu = `uploads/tenants/${tenantId}/invoices/${pdfFileName}`;
+            await run("UPDATE tenants_faturalar SET pdf_yolu = ?, guncelleme_tarihi = datetime('now') WHERE id = ?", [pdfYolu, faturaId]);
         }
-        const pdfYolu = `uploads/tenants/${tenantId}/invoices/${pdfFileName}`;
-        await run("UPDATE tenants_faturalar SET pdf_yolu = ?, guncelleme_tarihi = datetime('now') WHERE id = ?", [pdfYolu, faturaId]);
         return { id: faturaId, fatura_no: faturaNo };
     } catch (err) {
-        console.error('❌ createTenantAbonelikFatura hatası:', err);
+        console.error('❌ createTenantAbonelikFatura hatası:', err?.message || err);
         return null;
     }
 }
@@ -5922,6 +6036,35 @@ app.post('/api/auth/logout', (req, res) => {
     res.clearCookie('floovon_token', cookieOptions);
     res.clearCookie('floovon_user_id', cookieOptions);
     res.json({ success: true, message: 'Çıkış yapıldı' });
+});
+
+// Frontend / kullanım hatalarını veritabanına kaydet (sunucu ortamında takip için)
+app.post('/api/log-client-error', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        const userId = (req.user && req.user.id) || (req.cookies && req.cookies.floovon_user_id) ? parseInt(req.cookies.floovon_user_id, 10) : null;
+        const { message, stack, url, http_status, endpoint, source } = req.body || {};
+        const errorMessage = (message && String(message).trim()) || 'Bilinmeyen hata';
+        const userAgent = req.get('user-agent') || null;
+        await run(
+            `INSERT INTO proje_kullanim_hata_logs (tenant_id, user_id, source, error_message, error_stack, url, http_status, endpoint, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                tenantId || null,
+                userId || null,
+                (source && String(source).trim()) || 'frontend',
+                errorMessage.substring(0, 2000),
+                (stack && String(stack).trim()) ? String(stack).substring(0, 8000) : null,
+                (url && String(url).trim()) ? String(url).substring(0, 500) : null,
+                http_status != null ? parseInt(http_status, 10) : null,
+                (endpoint && String(endpoint).trim()) ? String(endpoint).substring(0, 500) : null,
+                userAgent ? String(userAgent).substring(0, 500) : null
+            ]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('❌ log-client-error kayıt hatası:', err?.message || err);
+        res.status(500).json({ success: false });
+    }
 });
 
 // Session check - tenant/abonelik geçerliliği (periyodik kontrol için)
@@ -8084,6 +8227,12 @@ app.get('/api/public/business-profile', async (req, res) => {
 app.post('/api/public/purchase', async (req, res) => {
     try {
         const b = req.body || {};
+        const tenantCols = await query('PRAGMA table_info(tenants)', [], null).catch(() => []);
+        const tCols = (tenantCols || []).map(c => c && c.name).filter(Boolean);
+        if (!tCols.includes('address')) await run('ALTER TABLE tenants ADD COLUMN address TEXT').catch(() => {});
+        if (!tCols.includes('tax_office')) await run('ALTER TABLE tenants ADD COLUMN tax_office TEXT').catch(() => {});
+        if (!tCols.includes('tax_number')) await run('ALTER TABLE tenants ADD COLUMN tax_number TEXT').catch(() => {});
+
         const planId = b.plan_id ? parseInt(b.plan_id, 10) : null;
         const planKodu = (b.plan_kodu || '').toString().trim();
         const companyName = (b.company_name || b.companyName || '').toString().trim();
@@ -8143,17 +8292,10 @@ app.post('/api/public/purchase', async (req, res) => {
 
         const hashedPassword = bcrypt.hashSync(password, 10);
 
-        try {
-            await run(
-                `INSERT INTO tenants (name, tenants_no, status, is_active, city, state, phone, email, register_date, created_at, updated_at) VALUES (?, ?, 'aktif', 1, ?, ?, ?, ?, date('now'), datetime('now'), datetime('now'))`,
-                [companyName, tenantsNo, city || null, state || null, phone || null, email || null]
-            );
-        } catch (te) {
-            await run(
-                `INSERT INTO tenants (name, tenants_no, status, is_active, city, state, phone, created_at, updated_at) VALUES (?, ?, 'aktif', 1, ?, ?, ?, datetime('now'), datetime('now'))`,
-                [companyName, tenantsNo, city || null, state || null, phone || null]
-            );
-        }
+        await run(
+            `INSERT INTO tenants (name, tenants_no, status, is_active, city, state, address, phone, email, tax_office, tax_number, register_date, created_at, updated_at) VALUES (?, ?, 'aktif', 1, ?, ?, ?, ?, ?, ?, ?, date('now'), datetime('now'), datetime('now'))`,
+            [companyName, tenantsNo, city || null, state || null, address || null, phone || null, email || null, taxOffice || null, taxNumber || null]
+        );
         const tenantResult = await query('SELECT id FROM tenants WHERE tenants_no = ?', [tenantsNo], null);
         const newTenantId = tenantResult?.[0]?.id;
         if (!newTenantId) return res.status(500).json({ success: false, error: 'Tenant oluşturulamadı' });
@@ -8163,7 +8305,7 @@ app.post('/api/public/purchase', async (req, res) => {
         const surname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
         await run(
-            `INSERT INTO tenants_kullanicilar (name, surname, email, username, phone, role, password, is_active, tenant_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'Sistem Yöneticisi', ?, 1, ?, 'aktif', datetime('now'), datetime('now'))`,
+            `INSERT INTO tenants_kullanicilar (name, surname, email, username, phone, role, password, is_active, is_admin, tenant_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'Sistem Yöneticisi', ?, 1, 1, ?, 'aktif', datetime('now'), datetime('now'))`,
             [firstName, surname, email, username, phone || null, hashedPassword, newTenantId]
         );
 
@@ -8174,14 +8316,85 @@ app.post('/api/public/purchase', async (req, res) => {
             : new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().split('T')[0];
         const faturaDongusu = billingPeriod === 'yearly' ? 'yillik' : 'aylik';
         await run(
-            `INSERT INTO tenants_abonelikler (tenant_id, plan_id, durum, aylik_ucret, max_kullanici, max_depolama_gb, mevcut_donem_baslangic, mevcut_donem_bitis, fatura_dongusu, olusturma_tarihi, guncelleme_tarihi) VALUES (?, ?, 'aktif', ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-            [newTenantId, resolvedPlanId, aylikUcret, maxUsers, maxStorageGb, donemBaslangic, donemBitis, faturaDongusu]
+            `INSERT INTO tenants_abonelikler (tenant_id, plan_id, durum, aylik_ucret, max_kullanici, max_depolama_gb, mevcut_aylik_toplam, sonraki_odeme_tarihi, mevcut_donem_baslangic, mevcut_donem_bitis, fatura_dongusu, olusturma_tarihi, guncelleme_tarihi) VALUES (?, ?, 'aktif', ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+            [newTenantId, resolvedPlanId, aylikUcret, maxUsers, maxStorageGb, aylikUcret, donemBitis, donemBaslangic, donemBitis, faturaDongusu]
         );
+        const abonelikRows = await query('SELECT id FROM tenants_abonelikler WHERE tenant_id = ? ORDER BY id DESC LIMIT 1', [newTenantId], null);
+        const abonelikId = abonelikRows && abonelikRows[0] ? abonelikRows[0].id : null;
+
+        try {
+            const pmExists = await query('SELECT id FROM tenants_odeme_yontemleri WHERE tenant_id = ? LIMIT 1', [newTenantId], null);
+            if (!pmExists || pmExists.length === 0) {
+                const paymentData = b.payment_data || null;
+                let sonDortRakam = '0000';
+                let sonKullanimAyi = '12';
+                let sonKullanimYili = 2030;
+                let kartSahibiAdi = fullName.trim() || 'Hesap Sahibi';
+                if (paymentData && typeof paymentData === 'object') {
+                    const num = (paymentData.number || paymentData.num || '').toString().replace(/\s/g, '');
+                    if (num.length >= 4) {
+                        const last4 = num.slice(-4);
+                        if (/^\d{4}$/.test(last4)) sonDortRakam = last4;
+                    }
+                    const expiry = (paymentData.expiry || paymentData.expiration || '').toString().trim();
+                    if (expiry && expiry.length >= 4) {
+                        const parts = expiry.split(/[/-]/);
+                        if (parts.length >= 2) {
+                            sonKullanimAyi = String(parseInt(parts[0], 10)).padStart(2, '0');
+                            if (sonKullanimAyi.length > 2 || parseInt(sonKullanimAyi, 10) < 1 || parseInt(sonKullanimAyi, 10) > 12) sonKullanimAyi = '12';
+                            let yil = parseInt(parts[1], 10);
+                            if (yil < 100) yil = 2000 + yil;
+                            if (!isNaN(yil) && yil >= 2020) sonKullanimYili = yil;
+                        } else {
+                            const m = expiry.slice(0, 2).replace(/\D/g, '');
+                            const y = expiry.slice(-2);
+                            if (m) sonKullanimAyi = m.padStart(2, '0');
+                            if (y) { let yy = parseInt(y, 10); sonKullanimYili = yy < 100 ? 2000 + yy : yy; }
+                        }
+                    }
+                    const name = (paymentData.name || paymentData.cardName || '').toString().trim();
+                    if (name) kartSahibiAdi = name;
+                }
+                await run(
+                    `INSERT INTO tenants_odeme_yontemleri (tenant_id, odeme_yontemi_id, kart_tipi, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi, varsayilan_mi, aktif_mi) VALUES (?, 1, 'Kredi Kartı', ?, ?, ?, ?, 1, 1)`,
+                    [newTenantId, sonDortRakam, sonKullanimAyi, sonKullanimYili, kartSahibiAdi]
+                );
+            }
+        } catch (e) { /* ignore */ }
+
+        if (abonelikId) {
+            const planAdiRow = await query('SELECT plan_adi FROM tenants_abonelik_planlari WHERE id = ?', [resolvedPlanId], null);
+            const planAdi = planAdiRow && planAdiRow[0] ? planAdiRow[0].plan_adi : '';
+            try {
+                await createTenantAbonelikFatura(newTenantId, abonelikId, resolvedPlanId, planAdi, aylikUcret, faturaDongusu);
+            } catch (e) {
+                console.warn('⚠️ purchase: Fatura oluşturulamadı:', e?.message || e);
+            }
+        }
 
         await run(
             `INSERT INTO tenants_kullanimlar (tenant_id, kullanici_sayisi, kullanilan_depolama_byte, depolama_limit_byte) VALUES (?, 1, 0, ?)`,
             [newTenantId, storageLimitBytes]
         );
+
+        const planAdiRow = await query('SELECT plan_adi FROM tenants_abonelik_planlari WHERE id = ?', [resolvedPlanId], null);
+        const planAdiForMail = planAdiRow && planAdiRow[0] ? planAdiRow[0].plan_adi : '';
+        const faturaNoForMail = abonelikId ? (await query('SELECT fatura_no FROM tenants_faturalar WHERE abonelik_id = ? ORDER BY id DESC LIMIT 1', [abonelikId], null))?.[0]?.fatura_no : null;
+        try {
+            await sendAbonelikMail('yeni', {
+                tenantId: newTenantId,
+                tenantCode: tenantsNo,
+                tenant: { email, name: companyName, firma_adi: companyName },
+                planAdi: planAdiForMail,
+                faturaDongusu,
+                aylikUcretKurus: Math.round(aylikUcret),
+                faturaNo: faturaNoForMail || '',
+                donemBitis,
+                baseUrl: getBaseUrlFromRequest(req)
+            });
+        } catch (mailErr) {
+            console.warn('⚠️ purchase: Hoş geldin maili atlandı:', mailErr?.message || mailErr);
+        }
 
         res.json({
             success: true,
@@ -8342,6 +8555,31 @@ app.get('/api/admin/debug-plan-data', requireAdmin, async (req, res) => {
             dbPath: path.resolve(__dirname, 'floovon_professional.db'),
             plans: plans || [],
             abonelikler: abonelikler || []
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: (e && e.message) || String(e) });
+    }
+});
+
+// Admin debug: Fatura tablosu var mı, kolonlar neler (fatura oluşmuyor teshisi)
+app.get('/api/admin/debug-fatura-table', requireAdmin, async (req, res) => {
+    try {
+        const exists = await query("SELECT name FROM sqlite_master WHERE type='table' AND name='tenants_faturalar'", [], null);
+        const tableExists = exists && exists.length > 0;
+        let columns = [];
+        let rowCount = 0;
+        if (tableExists) {
+            columns = await query('PRAGMA table_info(tenants_faturalar)', [], null) || [];
+            const countRows = await query('SELECT COUNT(*) AS c FROM tenants_faturalar', [], null);
+            rowCount = (countRows && countRows[0] && countRows[0].c != null) ? countRows[0].c : 0;
+        }
+        res.setHeader('Cache-Control', 'no-store');
+        res.json({
+            success: true,
+            tableExists,
+            columns: columns.map(c => c.name),
+            rowCount,
+            hasFaturaDongusu: (columns || []).some(c => c.name === 'fatura_dongusu')
         });
     } catch (e) {
         res.status(500).json({ success: false, error: (e && e.message) || String(e) });
@@ -8538,7 +8776,7 @@ app.put('/api/admin/tenants/:tenantId/users/:userId', requireAdmin, async (req, 
             return res.status(400).json({ success: false, error: 'Geçersiz tenant ID veya user ID' });
         }
 
-        const { name, surname, username, kullaniciadi, email, password, role, phone, status, is_active } = req.body || {};
+        const { name, surname, username, kullaniciadi, email, password, role, phone, status, is_active, is_admin } = req.body || {};
 
         // Kullanıcının gerçekten bu tenant'a ait olduğunu ve is_admin bilgisini al
         const existing = await query(
@@ -8553,6 +8791,9 @@ app.put('/api/admin/tenants/:tenantId/users/:userId', requireAdmin, async (req, 
         const isPrimaryUser = existingUser.is_admin === 1 || existingUser.is_admin === '1';
         if (isPrimaryUser && typeof is_active !== 'undefined' && !is_active) {
             return res.status(403).json({ success: false, error: 'Bu kullanıcı varsayılan/ana kullanıcı olduğu için silinemez.' });
+        }
+        if (isPrimaryUser && typeof status !== 'undefined' && status === 'pasif') {
+            return res.status(403).json({ success: false, error: 'Bu kullanıcı varsayılan/ana kullanıcı olduğu için durumu pasif yapılamaz.' });
         }
 
         const fields = [];
@@ -8592,6 +8833,10 @@ app.put('/api/admin/tenants/:tenantId/users/:userId', requireAdmin, async (req, 
             fields.push('is_active = ?');
             params.push(is_active ? 1 : 0);
         }
+        if (typeof is_admin !== 'undefined') {
+            fields.push('is_admin = ?');
+            params.push(is_admin ? 1 : 0);
+        }
         if (password && password.trim() !== '') {
             const hashedPassword = await bcrypt.hash(password, 10);
             fields.push('password = ?');
@@ -8610,7 +8855,7 @@ app.put('/api/admin/tenants/:tenantId/users/:userId', requireAdmin, async (req, 
         await run(sql, params, null);
 
         const users = await query(
-            `SELECT id, username, email, name, surname, role, phone, is_active, status, created_at
+            `SELECT id, username, email, name, surname, role, phone, is_active, status, is_admin, created_at
              FROM tenants_kullanicilar
              WHERE id = ? AND tenant_id = ?
              LIMIT 1`,
@@ -8810,7 +9055,8 @@ app.post('/api/admin/tenants/:id/abonelik/cancel', requireAdmin, async (req, res
                     tenant: tenantRow,
                     planAdi,
                     donemBitis: sub.mevcut_donem_bitis || null,
-                    cancel_reason: 'Console üzerinden iptal edildi'
+                    cancel_reason: 'Console üzerinden iptal edildi',
+                    baseUrl: getBaseUrlFromRequest(req)
                 });
             }
         } catch (mailErr) {
@@ -8849,6 +9095,47 @@ app.get('/api/admin/tenants/:id/odeme-yontemleri', requireAdmin, async (req, res
         res.json({ success: true, data: odemeler || [] });
     } catch (error) {
         res.json({ success: true, data: [] });
+    }
+});
+
+// Admin tenant ödeme yöntemi ekle (yoksa oluştur)
+app.post('/api/admin/tenants/:tenantId/odeme-yontemleri', requireAdmin, async (req, res) => {
+    try {
+        const tenantId = parseInt(req.params.tenantId, 10);
+        if (!tenantId || isNaN(tenantId)) {
+            return res.status(400).json({ success: false, error: 'Geçersiz tenant ID' });
+        }
+        const { kart_sahibi_adi, kart_numarasi, son_kullanim_ayi, son_kullanim_yili, kart_tipi } = req.body || {};
+        let sonDortRakam = '0000';
+        if (kart_numarasi && String(kart_numarasi).replace(/\s/g, '').length >= 4) {
+            const num = String(kart_numarasi).replace(/\s/g, '');
+            sonDortRakam = num.slice(-4);
+            if (!/^\d{4}$/.test(sonDortRakam)) sonDortRakam = '0000';
+        }
+        let ayStr = '12';
+        let yilInt = 2030;
+        if (son_kullanim_ayi != null && son_kullanim_ayi !== '') {
+            ayStr = String(son_kullanim_ayi).padStart(2, '0');
+            if (parseInt(ayStr, 10) < 1 || parseInt(ayStr, 10) > 12) ayStr = '12';
+        }
+        if (son_kullanim_yili != null && son_kullanim_yili !== '') {
+            yilInt = parseInt(son_kullanim_yili, 10);
+            if (yilInt < 100) yilInt = 2000 + yilInt;
+            if (isNaN(yilInt) || yilInt < 2020) yilInt = 2030;
+        }
+        const kartTipi = (kart_tipi && String(kart_tipi).trim()) || 'Kredi Kartı';
+        const kartSahibi = (kart_sahibi_adi && String(kart_sahibi_adi).trim()) || null;
+        await run(
+            `INSERT INTO tenants_odeme_yontemleri (tenant_id, odeme_yontemi_id, kart_tipi, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi, varsayilan_mi, aktif_mi) VALUES (?, 1, ?, ?, ?, ?, ?, 1, 1)`,
+            [tenantId, kartTipi, sonDortRakam, ayStr, yilInt, kartSahibi]
+        );
+        const inserted = await query('SELECT id FROM tenants_odeme_yontemleri WHERE tenant_id = ? ORDER BY id DESC LIMIT 1', [tenantId], null);
+        const newId = inserted && inserted[0] ? inserted[0].id : null;
+        const row = newId ? (await query('SELECT * FROM tenants_odeme_yontemleri WHERE id = ?', [newId], null))?.[0] : null;
+        return res.json({ success: true, data: row });
+    } catch (error) {
+        console.error('❌ POST /api/admin/tenants/:tenantId/odeme-yontemleri hatası:', error);
+        res.status(500).json({ success: false, error: error.message || 'Ödeme yöntemi eklenemedi' });
     }
 });
 
@@ -9256,6 +9543,21 @@ app.get('/api/public/subscription', async (req, res) => {
         const yearlyPrice = row.yillik_ucret ?? (monthlyPrice * 12);
         const maxUsers = row.max_kullanici != null ? row.max_kullanici : (row.plan_max_kullanici != null ? row.plan_max_kullanici : null);
         const planId = row.plan_id != null ? parseInt(row.plan_id, 10) : null;
+        const sonrakiOdemeTarihi = (row.sonraki_odeme_tarihi != null && row.sonraki_odeme_tarihi !== '') ? row.sonraki_odeme_tarihi : row.mevcut_donem_bitis;
+        let paymentMethod = null;
+        try {
+            const pmRows = await query('SELECT id, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi FROM tenants_odeme_yontemleri WHERE tenant_id = ? ORDER BY varsayilan_mi DESC, id ASC LIMIT 1', [tenantId], null);
+            if (pmRows && pmRows.length > 0) {
+                const pm = pmRows[0];
+                paymentMethod = {
+                    id: pm.id,
+                    last4: pm.son_dort_rakam || '',
+                    expiry_month: pm.son_kullanim_ayi != null ? parseInt(pm.son_kullanim_ayi, 10) : null,
+                    expiry_year: pm.son_kullanim_yili != null ? parseInt(pm.son_kullanim_yili, 10) : null,
+                    card_holder_name: pm.kart_sahibi_adi || ''
+                };
+            }
+        } catch (e) { /* ignore */ }
         res.json({
             success: true,
             data: {
@@ -9265,17 +9567,128 @@ app.get('/api/public/subscription', async (req, res) => {
                 plan_adi: row.plan_adi,
                 mevcut_donem_bitis: row.mevcut_donem_bitis,
                 current_period_start: row.mevcut_donem_baslangic,
-                next_payment_date: row.mevcut_donem_bitis,
+                next_payment_date: sonrakiOdemeTarihi || row.mevcut_donem_bitis,
+                sonraki_odeme_tarihi: sonrakiOdemeTarihi,
                 fatura_dongusu: row.fatura_dongusu,
                 monthly_price: monthlyPrice,
                 yearly_price: yearlyPrice,
                 max_kullanici: maxUsers,
-                max_users: maxUsers
+                max_users: maxUsers,
+                payment_method: paymentMethod,
+                status: (row.durum === 'aktif' || row.durum === 'active') ? 'active' : 'inactive'
             }
         });
     } catch (error) {
         console.error('❌ /api/public/subscription hatası:', error);
         res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Public: Ödeme yöntemi güncelle (landing - tenant_code ile)
+app.put('/api/public/payment-method/:paymentId', async (req, res) => {
+    try {
+        const paymentId = parseInt(req.params.paymentId, 10);
+        const { tenant_code, kart_sahibi_adi, kart_numarasi, son_kullanim_ayi, son_kullanim_yili } = req.body || {};
+        const tenantCode = (tenant_code || '').toString().trim();
+        if (!tenantCode || !paymentId || isNaN(paymentId)) {
+            return res.status(400).json({ success: false, error: 'tenant_code ve geçerli payment id gerekli' });
+        }
+        const tenants = await query('SELECT id FROM tenants WHERE tenants_no = ?', [tenantCode], null);
+        if (!tenants || tenants.length === 0) {
+            return res.status(404).json({ success: false, error: 'Tenant bulunamadı' });
+        }
+        const tenantId = tenants[0].id;
+        const existing = await query('SELECT * FROM tenants_odeme_yontemleri WHERE id = ? AND tenant_id = ?', [paymentId, tenantId], null);
+        if (!existing || existing.length === 0) {
+            return res.status(404).json({ success: false, error: 'Ödeme yöntemi bulunamadı' });
+        }
+        const fields = [];
+        const params = [];
+        if (typeof kart_sahibi_adi !== 'undefined') {
+            fields.push('kart_sahibi_adi = ?');
+            params.push(kart_sahibi_adi || null);
+        }
+        if (typeof kart_numarasi !== 'undefined' && kart_numarasi) {
+            const num = String(kart_numarasi).replace(/\s+/g, '');
+            const last4 = num.slice(-4);
+            if (last4.length === 4 && /^\d{4}$/.test(last4)) {
+                fields.push('son_dort_rakam = ?');
+                params.push(last4);
+            }
+        }
+        if (typeof son_kullanim_ayi !== 'undefined') {
+            const ayStr = son_kullanim_ayi === null || son_kullanim_ayi === '' ? null : String(son_kullanim_ayi).padStart(2, '0');
+            fields.push('son_kullanim_ayi = ?');
+            params.push(ayStr);
+        }
+        if (typeof son_kullanim_yili !== 'undefined') {
+            let yilInt = son_kullanim_yili === null || son_kullanim_yili === '' ? null : parseInt(son_kullanim_yili, 10);
+            if (yilInt != null && yilInt < 100) yilInt = 2000 + yilInt;
+            fields.push('son_kullanim_yili = ?');
+            params.push(yilInt == null || isNaN(yilInt) ? null : yilInt);
+        }
+        if (fields.length === 0) {
+            return res.status(400).json({ success: false, error: 'Güncellenecek alan bulunamadı' });
+        }
+        fields.push("guncelleme_tarihi = datetime('now')");
+        params.push(paymentId, tenantId);
+        await run(`UPDATE tenants_odeme_yontemleri SET ${fields.join(', ')} WHERE id = ? AND tenant_id = ?`, params);
+        const updated = await query('SELECT * FROM tenants_odeme_yontemleri WHERE id = ? AND tenant_id = ?', [paymentId, tenantId], null);
+        return res.json({ success: true, data: { payment_method: updated?.[0] || null } });
+    } catch (error) {
+        console.error('❌ PUT /api/public/payment-method hatası:', error);
+        res.status(500).json({ success: false, error: error.message || 'Ödeme yöntemi güncellenemedi' });
+    }
+});
+
+// Public: Ödeme yöntemi ekle (landing - tenant_code ile, kayıt yoksa)
+app.post('/api/public/payment-method', async (req, res) => {
+    try {
+        const { tenant_code, kart_sahibi_adi, kart_numarasi, son_kullanim_ayi, son_kullanim_yili } = req.body || {};
+        const tenantCode = (tenant_code || '').toString().trim();
+        if (!tenantCode) {
+            return res.status(400).json({ success: false, error: 'tenant_code gerekli' });
+        }
+        const tenants = await query('SELECT id FROM tenants WHERE tenants_no = ?', [tenantCode], null);
+        if (!tenants || tenants.length === 0) {
+            return res.status(404).json({ success: false, error: 'Tenant bulunamadı' });
+        }
+        const tenantId = tenants[0].id;
+        let sonDortRakam = '0000';
+        if (kart_numarasi && String(kart_numarasi).replace(/\s/g, '').length >= 4) {
+            const num = String(kart_numarasi).replace(/\s/g, '');
+            sonDortRakam = num.slice(-4);
+            if (!/^\d{4}$/.test(sonDortRakam)) sonDortRakam = '0000';
+        }
+        let ayStr = '12';
+        let yilInt = 2030;
+        if (son_kullanim_ayi != null && son_kullanim_ayi !== '') {
+            ayStr = String(son_kullanim_ayi).padStart(2, '0');
+            if (parseInt(ayStr, 10) < 1 || parseInt(ayStr, 10) > 12) ayStr = '12';
+        }
+        if (son_kullanim_yili != null && son_kullanim_yili !== '') {
+            yilInt = parseInt(son_kullanim_yili, 10);
+            if (yilInt < 100) yilInt = 2000 + yilInt;
+            if (isNaN(yilInt) || yilInt < 2020) yilInt = 2030;
+        }
+        const kartSahibi = (kart_sahibi_adi && String(kart_sahibi_adi).trim()) || null;
+        await run(
+            `INSERT INTO tenants_odeme_yontemleri (tenant_id, odeme_yontemi_id, kart_tipi, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi, varsayilan_mi, aktif_mi) VALUES (?, 1, 'Kredi Kartı', ?, ?, ?, ?, 1, 1)`,
+            [tenantId, sonDortRakam, ayStr, yilInt, kartSahibi]
+        );
+        const inserted = await query('SELECT * FROM tenants_odeme_yontemleri WHERE tenant_id = ? ORDER BY id DESC LIMIT 1', [tenantId], null);
+        const row = inserted?.[0] || null;
+        const paymentMethod = row ? {
+            id: row.id,
+            last4: row.son_dort_rakam || '',
+            expiry_month: row.son_kullanim_ayi != null ? parseInt(row.son_kullanim_ayi, 10) : null,
+            expiry_year: row.son_kullanim_yili != null ? parseInt(row.son_kullanim_yili, 10) : null,
+            card_holder_name: row.kart_sahibi_adi || ''
+        } : null;
+        return res.json({ success: true, data: { payment_method: paymentMethod } });
+    } catch (error) {
+        console.error('❌ POST /api/public/payment-method hatası:', error);
+        res.status(500).json({ success: false, error: error.message || 'Ödeme yöntemi eklenemedi' });
     }
 });
 
@@ -9293,10 +9706,12 @@ app.get('/api/public/billing-history', async (req, res) => {
         const tenantId = tenants[0].id;
         const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
         const faturalar = await query(
-            `SELECT f.*, p.plan_adi, COALESCE(f.fatura_dongusu, a.fatura_dongusu) AS fatura_dongusu
+            `SELECT f.*, p.plan_adi, COALESCE(f.fatura_dongusu, a.fatura_dongusu) AS fatura_dongusu,
+                    oy.son_dort_rakam AS odeme_son_dort_rakam
              FROM tenants_faturalar f
              LEFT JOIN tenants_abonelik_planlari p ON f.plan_id = p.id
              LEFT JOIN tenants_abonelikler a ON f.abonelik_id = a.id
+             LEFT JOIN tenants_odeme_yontemleri oy ON oy.id = f.odeme_yontemi_id AND oy.tenant_id = f.tenant_id
              WHERE f.tenant_id = ?
              ORDER BY f.fatura_tarihi DESC
              LIMIT ?`,
@@ -9312,12 +9727,115 @@ app.get('/api/public/billing-history', async (req, res) => {
             durum: f.durum,
             fatura_no: f.fatura_no,
             pdf_yolu: f.pdf_yolu,
-            payment_method: f.odeme_yontemi_id ? { last4: '', type_text: 'Kart' } : null
+            payment_method: (f.odeme_yontemi_id || f.odeme_son_dort_rakam) ? { last4: f.odeme_son_dort_rakam || '', type_text: 'Kart' } : null
         }));
         res.json({ success: true, data: invoices });
     } catch (error) {
         console.error('❌ /api/public/billing-history hatası:', error);
         res.json({ success: true, data: [] });
+    }
+});
+
+// Public: Ödeme yöntemi ekle (landing - tenant_code ile, yoksa oluştur)
+app.post('/api/public/payment-method', async (req, res) => {
+    try {
+        const b = req.body || {};
+        const tenantCode = (b.tenant_code || '').toString().trim();
+        if (!tenantCode) {
+            return res.status(400).json({ success: false, error: 'tenant_code gerekli' });
+        }
+        const tenants = await query('SELECT id FROM tenants WHERE tenants_no = ?', [tenantCode], null);
+        if (!tenants || tenants.length === 0) {
+            return res.status(404).json({ success: false, error: 'Tenant bulunamadı' });
+        }
+        const tenantId = tenants[0].id;
+        const { kart_sahibi_adi, kart_numarasi, son_kullanim_ayi, son_kullanim_yili } = b;
+        let sonDortRakam = '0000';
+        if (kart_numarasi && String(kart_numarasi).replace(/\s/g, '').length >= 4) {
+            const num = String(kart_numarasi).replace(/\s/g, '');
+            sonDortRakam = num.slice(-4);
+            if (!/^\d{4}$/.test(sonDortRakam)) sonDortRakam = '0000';
+        }
+        let ayStr = '12';
+        let yilInt = 2030;
+        if (son_kullanim_ayi != null && son_kullanim_ayi !== '') {
+            ayStr = String(son_kullanim_ayi).padStart(2, '0');
+            if (parseInt(ayStr, 10) < 1 || parseInt(ayStr, 10) > 12) ayStr = '12';
+        }
+        if (son_kullanim_yili != null && son_kullanim_yili !== '') {
+            yilInt = parseInt(son_kullanim_yili, 10);
+            if (yilInt < 100) yilInt = 2000 + yilInt;
+            if (isNaN(yilInt) || yilInt < 2020) yilInt = 2030;
+        }
+        const kartSahibi = (kart_sahibi_adi && String(kart_sahibi_adi).trim()) || null;
+        await run(
+            `INSERT INTO tenants_odeme_yontemleri (tenant_id, odeme_yontemi_id, kart_tipi, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi, varsayilan_mi, aktif_mi) VALUES (?, 1, 'Kredi Kartı', ?, ?, ?, ?, 1, 1)`,
+            [tenantId, sonDortRakam, ayStr, yilInt, kartSahibi]
+        );
+        const inserted = await query('SELECT id FROM tenants_odeme_yontemleri WHERE tenant_id = ? ORDER BY id DESC LIMIT 1', [tenantId], null);
+        const newId = inserted && inserted[0] ? inserted[0].id : null;
+        const row = newId ? (await query('SELECT * FROM tenants_odeme_yontemleri WHERE id = ?', [newId], null))?.[0] : null;
+        return res.json({ success: true, data: row });
+    } catch (error) {
+        console.error('❌ POST /api/public/payment-method hatası:', error);
+        res.status(500).json({ success: false, error: error.message || 'Ödeme yöntemi eklenemedi' });
+    }
+});
+
+// Public: Ödeme yöntemi güncelle (landing - tenant_code + paymentId ile)
+app.put('/api/public/payment-method/:paymentId', async (req, res) => {
+    try {
+        const paymentId = parseInt(req.params.paymentId, 10);
+        const b = req.body || {};
+        const tenantCode = (b.tenant_code || '').toString().trim();
+        if (!tenantCode || !paymentId || isNaN(paymentId)) {
+            return res.status(400).json({ success: false, error: 'tenant_code ve geçerli payment ID gerekli' });
+        }
+        const tenants = await query('SELECT id FROM tenants WHERE tenants_no = ?', [tenantCode], null);
+        if (!tenants || tenants.length === 0) {
+            return res.status(404).json({ success: false, error: 'Tenant bulunamadı' });
+        }
+        const tenantId = tenants[0].id;
+        const existing = await query('SELECT * FROM tenants_odeme_yontemleri WHERE id = ? AND tenant_id = ?', [paymentId, tenantId], null);
+        if (!existing || existing.length === 0) {
+            return res.status(404).json({ success: false, error: 'Ödeme yöntemi bulunamadı' });
+        }
+        const { kart_sahibi_adi, kart_numarasi, son_kullanim_ayi, son_kullanim_yili } = b;
+        const fields = [];
+        const params = [];
+        if (typeof kart_sahibi_adi !== 'undefined') {
+            fields.push('kart_sahibi_adi = ?');
+            params.push(kart_sahibi_adi || null);
+        }
+        if (typeof kart_numarasi !== 'undefined' && kart_numarasi) {
+            const num = kart_numarasi.toString().replace(/\s+/g, '');
+            const last4 = num.slice(-4);
+            if (last4 && last4.length === 4 && /^\d{4}$/.test(last4)) {
+                fields.push('son_dort_rakam = ?');
+                params.push(last4);
+            }
+        }
+        if (typeof son_kullanim_ayi !== 'undefined') {
+            const ayStr = son_kullanim_ayi === null || son_kullanim_ayi === '' ? null : String(son_kullanim_ayi).padStart(2, '0');
+            fields.push('son_kullanim_ayi = ?');
+            params.push(ayStr);
+        }
+        if (typeof son_kullanim_yili !== 'undefined') {
+            const yilInt = son_kullanim_yili === null || son_kullanim_yili === '' ? null : parseInt(son_kullanim_yili, 10);
+            fields.push('son_kullanim_yili = ?');
+            params.push(isNaN(yilInt) ? null : yilInt);
+        }
+        if (fields.length === 0) {
+            return res.status(400).json({ success: false, error: 'Güncellenecek alan bulunamadı' });
+        }
+        fields.push("guncelleme_tarihi = datetime('now')");
+        params.push(paymentId, tenantId);
+        await run(`UPDATE tenants_odeme_yontemleri SET ${fields.join(', ')} WHERE id = ? AND tenant_id = ?`, params, null);
+        const updated = await query('SELECT * FROM tenants_odeme_yontemleri WHERE id = ? AND tenant_id = ? LIMIT 1', [paymentId, tenantId], null);
+        return res.json({ success: true, data: updated?.[0] || null });
+    } catch (error) {
+        console.error('❌ PUT /api/public/payment-method hatası:', error);
+        res.status(500).json({ success: false, error: error.message || 'Ödeme yöntemi güncellenemedi' });
     }
 });
 
@@ -9469,7 +9987,8 @@ app.post('/api/public/cancel-subscription', async (req, res) => {
                     tenant: tenantRow,
                     planAdi,
                     donemBitis: sub.mevcut_donem_bitis || null,
-                    cancel_reason: cancelReason || ''
+                    cancel_reason: cancelReason || '',
+                    baseUrl: getBaseUrlFromRequest(req)
                 });
             }
         } catch (mailErr) {
@@ -9570,6 +10089,9 @@ app.post('/api/public/change-plan', async (req, res) => {
         if (abonelikId) {
             try {
                 faturaResult = await createTenantAbonelikFatura(tenantId, abonelikId, planId, plan[0].plan_adi, aylikUcret, faturaDongusu);
+                if (!faturaResult || !faturaResult.id) {
+                    console.warn('⚠️ change-plan: Fatura kaydı dönmedi');
+                }
             } catch (e) {
                 console.warn('⚠️ change-plan: Fatura oluşturulamadı (abonelik güncellendi):', e?.message || e);
             }
@@ -9585,7 +10107,7 @@ app.post('/api/public/change-plan', async (req, res) => {
             const tenantRows = await query(sel, [tenantId], null);
             const tenantRow = tenantRows && tenantRows[0] ? tenantRows[0] : null;
             if (tenantRow) {
-                const aylikKurus = Math.round(Number(aylikUcret) || 0) * 100;
+                const aylikKurus = Math.round(Number(aylikUcret) || 0);
                 if (isNewSubscription) {
                     await sendAbonelikMail('yeni', {
                         tenantId,
@@ -9595,7 +10117,8 @@ app.post('/api/public/change-plan', async (req, res) => {
                         faturaDongusu,
                         aylikUcretKurus: aylikKurus,
                         faturaNo: faturaResult && faturaResult.fatura_no ? faturaResult.fatura_no : null,
-                        donemBitis
+                        donemBitis,
+                        baseUrl: getBaseUrlFromRequest(req)
                     });
                 } else {
                     await sendAbonelikMail('plan_degisikligi', {
@@ -9605,7 +10128,8 @@ app.post('/api/public/change-plan', async (req, res) => {
                         planAdi: plan[0].plan_adi,
                         faturaDongusu,
                         aylikUcretKurus: aylikKurus,
-                        faturaNo: faturaResult && faturaResult.fatura_no ? faturaResult.fatura_no : null
+                        faturaNo: faturaResult && faturaResult.fatura_no ? faturaResult.fatura_no : null,
+                        baseUrl: getBaseUrlFromRequest(req)
                     });
                 }
             }
@@ -9718,12 +10242,18 @@ app.post('/api/admin/tenants/:tenantId/abonelik/upgrade', requireAdmin, async (r
         }
 
         let faturaResult = null;
+        console.log('🔴 [FATURA] admin/upgrade: abonelikId =', abonelikId, 'tenantId =', tenantId, 'planId =', planId);
         if (abonelikId) {
             try {
                 faturaResult = await createTenantAbonelikFatura(tenantId, abonelikId, planId, plan[0].plan_adi, aylikUcret, faturaDongusu);
+                if (!faturaResult || !faturaResult.id) {
+                    console.warn('⚠️ admin/upgrade: Fatura kaydı dönmedi');
+                }
             } catch (e) {
                 console.warn('⚠️ admin/upgrade: Fatura oluşturulamadı (abonelik güncellendi):', e?.message || e);
             }
+        } else {
+            console.warn('⚠️ [FATURA] admin/upgrade: abonelikId yok, fatura atlandı');
         }
 
         try {
@@ -9736,7 +10266,7 @@ app.post('/api/admin/tenants/:tenantId/abonelik/upgrade', requireAdmin, async (r
             const tenantRows = await query(sel, [tenantId], null);
             const tenantRow = tenantRows && tenantRows[0] ? tenantRows[0] : null;
             if (tenantRow) {
-                const aylikKurus = Math.round(Number(aylikUcret) || 0) * 100;
+                const aylikKurus = Math.round(Number(aylikUcret) || 0);
                 if (isNewSubscription) {
                     await sendAbonelikMail('yeni', {
                         tenantId,
@@ -9745,7 +10275,8 @@ app.post('/api/admin/tenants/:tenantId/abonelik/upgrade', requireAdmin, async (r
                         faturaDongusu,
                         aylikUcretKurus: aylikKurus,
                         faturaNo: faturaResult && faturaResult.fatura_no ? faturaResult.fatura_no : null,
-                        donemBitis
+                        donemBitis,
+                        baseUrl: getBaseUrlFromRequest(req)
                     });
                 } else {
                     await sendAbonelikMail('plan_degisikligi', {
@@ -9754,7 +10285,8 @@ app.post('/api/admin/tenants/:tenantId/abonelik/upgrade', requireAdmin, async (r
                         planAdi: plan[0].plan_adi,
                         faturaDongusu,
                         aylikUcretKurus: aylikKurus,
-                        faturaNo: faturaResult && faturaResult.fatura_no ? faturaResult.fatura_no : null
+                        faturaNo: faturaResult && faturaResult.fatura_no ? faturaResult.fatura_no : null,
+                        baseUrl: getBaseUrlFromRequest(req)
                     });
                 }
             }
@@ -9893,12 +10425,12 @@ app.get('/api/organizasyon-kartlar', async (req, res) => {
             ORDER BY ok.organizasyon_teslim_tarih ASC, ok.organizasyon_teslim_saat ASC
         `, [tenantId, tenantId, tenantId, ...weekFilterParams]);
 
-        // Çiçek Sepeti kartları: sipariş sayısı siparisler tablosundan değil organizasyon_siparisler_ciceksepeti'den
+        // Çiçek Sepeti kartları: sipariş sayısı organizasyon_siparisler_ciceksepeti'den; aynı günde birden kart (Etlik/Çekirge) varsa mahalle/ilce ile tekilleştir
         for (const kart of organizasyonKartlari) {
             if (kart.kart_tur === 'Çiçek Sepeti' && kart.teslim_tarih) {
                 const countRows = await query(
-                    'SELECT COUNT(*) as cnt FROM organizasyon_siparisler_ciceksepeti WHERE tenant_id = ? AND teslim_tarihi = ? AND (durum = ? OR durum = ?) AND (COALESCE(arsivli, 0) = 0)',
-                    [tenantId, kart.teslim_tarih, 'beklemede', 'kabul_edildi']
+                    'SELECT COUNT(*) as cnt FROM organizasyon_siparisler_ciceksepeti WHERE tenant_id = ? AND teslim_tarihi = ? AND (durum = ? OR durum = ?) AND (COALESCE(arsivli, 0) = 0) AND COALESCE(teslim_mahalle,\'\') = COALESCE(?, \'\') AND COALESCE(teslim_ilce,\'\') = COALESCE(?, \'\')',
+                    [tenantId, kart.teslim_tarih, 'beklemede', 'kabul_edildi', kart.mahalle || '', kart.organizasyon_ilce || '']
                 );
                 kart.siparis_sayisi = (countRows && countRows[0] && countRows[0].cnt) ? Number(countRows[0].cnt) : 0;
             }
@@ -10402,9 +10934,9 @@ app.patch('/api/organizasyon-kartlar/:id/archive', async (req, res) => {
         
         console.log('📦 Organizasyon kartı arşivleniyor:', { id, arsivleme_sebebi, tenantId });
         
-        // Tenant kontrolü ve kart bilgisi (Çiçek Sepeti için teslim_tarih gerekli)
+        // Tenant kontrolü ve kart bilgisi (Çiçek Sepeti için teslim_tarih + mahalle/ilce gerekli)
         const orgCheck = await query(
-            'SELECT id, organizasyon_kart_tur, organizasyon_teslim_tarih FROM organizasyon_kartlar WHERE id = ? AND tenant_id = ?',
+            'SELECT id, organizasyon_kart_tur, organizasyon_teslim_tarih, organizasyon_mahalle, organizasyon_ilce FROM organizasyon_kartlar WHERE id = ? AND tenant_id = ?',
             [id, tenantId]
         );
         
@@ -10434,7 +10966,53 @@ app.patch('/api/organizasyon-kartlar/:id/archive', async (req, res) => {
             });
         }
         
-        // Kartı arşivle = sadece organizasyon_kartlar. Çiçek Sepeti siparişleri organizasyon_siparisler_ciceksepeti'ne yazılmaz; siparişi arşivle ayrıca sipariş bazlı yapılır.
+        // Çiçek Sepeti kartı ise sadece bu karta ait siparişleri arşivle (teslim_tarihi + mahalle/ilce ile tek kart eşleşmesi; aynı günde Etlik/Çekirge gibi birden kart olunca ikişer kez görünmesin)
+        const kart = orgCheck[0];
+        if (kart.organizasyon_kart_tur === 'Çiçek Sepeti' && kart.organizasyon_teslim_tarih) {
+            try {
+                const cicekResult = await execute(`
+                    UPDATE organizasyon_siparisler_ciceksepeti SET
+                        arsivli = 1,
+                        arsivleme_tarih = ${getTurkeyTimeSQL()},
+                        arsivleme_sebebi = ?,
+                        updated_at = ${getTurkeyTimeSQL()}
+                    WHERE tenant_id = ? AND teslim_tarihi = ?
+                    AND COALESCE(teslim_mahalle, '') = COALESCE(?, '')
+                    AND COALESCE(teslim_ilce, '') = COALESCE(?, '')
+                `, [arsivleme_sebebi || null, tenantId, kart.organizasyon_teslim_tarih, kart.organizasyon_mahalle || '', kart.organizasyon_ilce || '']);
+                if (cicekResult && cicekResult.changes > 0) {
+                    try {
+                        const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId);
+                        if (kullaniciAdi) {
+                            const tableExists = await query(`SELECT name FROM sqlite_master WHERE type='table' AND name='bildirimler'`);
+                            if (tableExists.length > 0) {
+                                await execute(`
+                                    INSERT INTO bildirimler (
+                                        kullanici_adi, tip, baslik, mesaj,
+                                        musteri_unvani, organizasyon_adi, arsivleme_sebebi,
+                                        organizasyon_id, tenant_id, is_read, created_at
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                                `, [
+                                    kullaniciAdi,
+                                    'arsivlendi',
+                                    'Çiçek Sepeti Kartı Arşivlendi',
+                                    `${cicekResult.changes} adet Çiçek Sepeti siparişi arşivlendi`,
+                                    null,
+                                    'Çiçek Sepeti',
+                                    arsivleme_sebebi || null,
+                                    id,
+                                    tenantId
+                                ]);
+                            }
+                        }
+                    } catch (bildirimErr) {
+                        console.error('❌ Çiçek Sepeti kart arşiv bildirim hatası:', bildirimErr.message);
+                    }
+                }
+            } catch (cicekErr) {
+                console.error('❌ Çiçek Sepeti siparişleri arşivlenirken (kart arşivleme):', cicekErr.message);
+            }
+        }
         
         if (isDevelopment) {
             console.log('✅ Organizasyon kartı arşivlendi: ID', id);
@@ -10677,10 +11255,10 @@ app.get('/api/siparis-kartlar/organizasyon/:organizasyonId', async (req, res) =>
             console.warn('⚠️ partner_firma_telefon kolon kontrolü:', alterErr.message);
         }
         
-        // Önce organizasyon kartının türünü ve teslim tarihini al - tenant kontrolü ile
+        // Önce organizasyon kartının türünü, teslim tarihini ve mahalle/ilce al - tenant kontrolü ile (Çiçek Sepeti aynı gün birden kart için)
         const organizasyonKarti = await query(`
-            SELECT organizasyon_kart_tur, organizasyon_teslim_tarih 
-            FROM organizasyon_kartlar 
+            SELECT organizasyon_kart_tur, organizasyon_teslim_tarih, organizasyon_mahalle, organizasyon_ilce
+            FROM organizasyon_kartlar
             WHERE id = ? AND tenant_id = ?
         `, [organizasyonId, tenantId]);
         
@@ -10693,10 +11271,12 @@ app.get('/api/siparis-kartlar/organizasyon/:organizasyonId', async (req, res) =>
         
         const kartTuru = organizasyonKarti[0]?.organizasyon_kart_tur;
         const teslimTarihi = organizasyonKarti[0]?.organizasyon_teslim_tarih;
+        const orgMahalle = organizasyonKarti[0]?.organizasyon_mahalle ?? '';
+        const orgIlce = organizasyonKarti[0]?.organizasyon_ilce ?? '';
         
         let siparisler;
         
-        // Çiçek Sepeti ise organizasyon_siparisler_ciceksepeti tablosundan çek (kart_sira 1'den başlar)
+        // Çiçek Sepeti ise organizasyon_siparisler_ciceksepeti tablosundan çek; aynı günde birden kart varsa sadece bu kartın mahalle/ilce siparişleri
         if (kartTuru === 'Çiçek Sepeti') {
             siparisler = await query(`
                 SELECT 
@@ -10747,8 +11327,9 @@ app.get('/api/siparis-kartlar/organizasyon/:organizasyonId', async (req, res) =>
                 WHERE (co.durum = 'beklemede' OR co.durum = 'kabul_edildi')
                 AND (COALESCE(co.arsivli, 0) = 0)
                 AND co.teslim_tarihi = ?
+                AND COALESCE(co.teslim_mahalle, '') = ? AND COALESCE(co.teslim_ilce, '') = ?
                 ORDER BY co.created_at ASC
-            `, [teslimTarihi]);
+            `, [teslimTarihi, orgMahalle, orgIlce]);
             siparisler.forEach((s, i) => { s.kart_sira = i + 1; });
         } else {
             // Normal siparişler
@@ -10913,6 +11494,7 @@ app.get('/api/siparis-kartlar/archived', async (req, res) => {
                 sk.updated_at,
                 ok.organizasyon_kart_tur,
                 ok.organizasyon_kart_etiket,
+                ok.organizasyon_alt_tur,
                 ok.organizasyon_mahalle as org_mahalle,
                 ok.organizasyon_acik_adres as org_acik_adres,
                 ok.organizasyon_teslimat_konumu,
@@ -11005,7 +11587,7 @@ app.get('/api/siparis-kartlar/archived', async (req, res) => {
                     NULL as partner_firma_telefon,
                     NULL as siparis_teslim_kisisi_baskasi
                 FROM organizasyon_siparisler_ciceksepeti co
-                LEFT JOIN organizasyon_kartlar ok ON ok.tenant_id = co.tenant_id AND ok.organizasyon_kart_tur = 'Çiçek Sepeti' AND ok.organizasyon_teslim_tarih = co.teslim_tarihi
+                LEFT JOIN organizasyon_kartlar ok ON ok.tenant_id = co.tenant_id AND ok.organizasyon_kart_tur = 'Çiçek Sepeti' AND ok.organizasyon_teslim_tarih = co.teslim_tarihi AND COALESCE(ok.organizasyon_mahalle,'') = COALESCE(co.teslim_mahalle,'') AND COALESCE(ok.organizasyon_ilce,'') = COALESCE(co.teslim_ilce,'')
                 WHERE (COALESCE(co.arsivli, 0) = 1) AND co.tenant_id = ?
                 ORDER BY COALESCE(co.arsivleme_tarih, co.updated_at, co.created_at) DESC
             `, [tenantId]);
@@ -12649,6 +13231,70 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
         }
 
         if (!siparisCheck || siparisCheck.length === 0) {
+            // Çiçek Sepeti siparişi olabilir (organizasyon_siparisler_ciceksepeti)
+            const cicekRow = await query(
+                'SELECT id, siparis_veren, teslim_kisi, urun_adi, teslim_tarihi, teslim_mahalle, teslim_ilce FROM organizasyon_siparisler_ciceksepeti WHERE id = ? AND tenant_id = ? AND (COALESCE(arsivli, 0) = 0)',
+                [id, tenantId]
+            );
+            if (cicekRow && cicekRow.length > 0) {
+                await execute(`
+                    UPDATE organizasyon_siparisler_ciceksepeti SET
+                        arsivli = 1,
+                        arsivleme_tarih = datetime('now', 'localtime'),
+                        arsivleme_sebebi = 'Teslim Edildi',
+                        updated_at = datetime('now', 'localtime')
+                    WHERE id = ? AND tenant_id = ?
+                `, [id, tenantId]);
+                try {
+                    const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId);
+                    if (kullaniciAdi) {
+                        const tableExists = await query(`SELECT name FROM sqlite_master WHERE type='table' AND name='bildirimler'`);
+                        if (tableExists.length > 0) {
+                            const row = cicekRow[0];
+                            let orgKartId = null;
+                            if (row.teslim_tarihi) {
+                                const orgKart = await query(
+                                    `SELECT id FROM organizasyon_kartlar WHERE tenant_id = ? AND organizasyon_teslim_tarih = ? AND organizasyon_kart_tur = 'Çiçek Sepeti' AND COALESCE(organizasyon_mahalle,'') = COALESCE(?, '') AND COALESCE(organizasyon_ilce,'') = COALESCE(?, '') LIMIT 1`,
+                                    [tenantId, row.teslim_tarihi, row.teslim_mahalle || '', row.teslim_ilce || '']
+                                );
+                                if (orgKart && orgKart.length > 0) orgKartId = orgKart[0].id;
+                            }
+                            await execute(`
+                                INSERT INTO bildirimler (
+                                    kullanici_adi, tip, baslik, mesaj,
+                                    musteri_unvani, teslim_kisisi, siparis_adi, organizasyon_adi,
+                                    organizasyon_alt_tur, siparis_teslim_kisisi_baskasi, urun_resmi,
+                                    siparis_id, organizasyon_id, arsivleme_sebebi, tenant_id,
+                                    is_read, created_at
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                            `, [
+                                kullaniciAdi,
+                                'teslim_edildi',
+                                'Sipariş Teslim Edildi',
+                                `${row.siparis_veren || 'Müşteri'} siparişi teslim edildi`,
+                                row.siparis_veren || null,
+                                row.teslim_kisi || null,
+                                row.urun_adi || null,
+                                'Çiçek Sepeti',
+                                null,
+                                null,
+                                null,
+                                id,
+                                orgKartId,
+                                'Teslim Edildi',
+                                tenantId
+                            ]);
+                            console.log(`✅ Çiçek Sepeti teslim edildi bildirimi oluşturuldu: Sipariş ID ${id}, Kullanıcı: ${kullaniciAdi}`);
+                        }
+                    }
+                } catch (bildirimErr) {
+                    console.error('❌ Çiçek Sepeti teslim bildirim hatası:', bildirimErr.message);
+                }
+                return res.json({
+                    success: true,
+                    message: 'Sipariş kartı teslim edildi olarak işaretlendi'
+                });
+            }
             return res.status(404).json({
                 success: false,
                 message: 'Sipariş kartı bulunamadı'
@@ -12785,7 +13431,7 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
         // Çiçek Sepeti siparişi ise sadece organizasyon_siparisler_ciceksepeti tablosunu güncelle (id çakışması olmasın)
         if (isCiceksepetiSiparis) {
             const ciceksepetiRow = await query(
-                'SELECT id FROM organizasyon_siparisler_ciceksepeti WHERE id = ? AND tenant_id = ?',
+                'SELECT id, siparis_veren, teslim_kisi, urun_adi, teslim_tarihi, teslim_mahalle, teslim_ilce FROM organizasyon_siparisler_ciceksepeti WHERE id = ? AND tenant_id = ?',
                 [id, tenantId]
             );
             if (ciceksepetiRow && ciceksepetiRow.length > 0) {
@@ -12797,6 +13443,52 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                         updated_at = datetime('now', 'localtime')
                     WHERE id = ? AND tenant_id = ?
                 `, [arsivleme_sebebi || null, id, tenantId]);
+                // Çiçek Sepeti için de bildirim oluştur (işlemler bildirimlere yansısın)
+                try {
+                    const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId);
+                    if (kullaniciAdi) {
+                        const tableExists = await query(`SELECT name FROM sqlite_master WHERE type='table' AND name='bildirimler'`);
+                        if (tableExists.length > 0) {
+                            const row = ciceksepetiRow[0];
+                            let orgKartId = null;
+                            if (row.teslim_tarihi) {
+                                const orgKart = await query(
+                                    `SELECT id FROM organizasyon_kartlar WHERE tenant_id = ? AND organizasyon_teslim_tarih = ? AND organizasyon_kart_tur = 'Çiçek Sepeti' AND COALESCE(organizasyon_mahalle,'') = COALESCE(?, '') AND COALESCE(organizasyon_ilce,'') = COALESCE(?, '') LIMIT 1`,
+                                    [tenantId, row.teslim_tarihi, row.teslim_mahalle || '', row.teslim_ilce || '']
+                                );
+                                if (orgKart && orgKart.length > 0) orgKartId = orgKart[0].id;
+                            }
+                            await execute(`
+                                INSERT INTO bildirimler (
+                                    kullanici_adi, tip, baslik, mesaj,
+                                    musteri_unvani, teslim_kisisi, siparis_adi, organizasyon_adi,
+                                    organizasyon_alt_tur, siparis_teslim_kisisi_baskasi, urun_resmi,
+                                    siparis_id, organizasyon_id, arsivleme_sebebi, tenant_id,
+                                    is_read, created_at
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                            `, [
+                                kullaniciAdi,
+                                'arsivlendi',
+                                'Sipariş Arşivlendi',
+                                `${row.siparis_veren || 'Müşteri'} siparişi arşivlendi`,
+                                row.siparis_veren || null,
+                                row.teslim_kisi || null,
+                                row.urun_adi || null,
+                                'Çiçek Sepeti',
+                                null,
+                                null,
+                                null,
+                                id,
+                                orgKartId,
+                                arsivleme_sebebi || null,
+                                tenantId
+                            ]);
+                            console.log(`✅ Çiçek Sepeti arşivleme bildirimi oluşturuldu: Sipariş ID ${id}, Kullanıcı: ${kullaniciAdi}`);
+                        }
+                    }
+                } catch (bildirimErr) {
+                    console.error('❌ Çiçek Sepeti bildirim oluşturma hatası:', bildirimErr.message);
+                }
                 return res.json({
                     success: true,
                     message: 'Sipariş kartı arşivlendi',
@@ -13099,12 +13791,59 @@ app.patch('/api/siparis-kartlar/:id/unarchive', async (req, res) => {
     try {
         const { id } = req.params;
         const tenantId = req.tenantId || await getTenantId(req);
+        const { ciceksepeti, kart_tur } = req.body || {};
+        const isCiceksepeti = ciceksepeti === true || kart_tur === 'ciceksepeti' || kart_tur === 'Çiçek Sepeti';
         
         if (!tenantId) {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
         }
         
-        // Önce siparisler tablosunda ara
+        // Çiçek Sepeti siparişi ise sadece organizasyon_siparisler_ciceksepeti (id çakışması olmasın)
+        if (isCiceksepeti) {
+            const cicekRow = await query(
+                'SELECT id, teslim_tarihi, teslim_mahalle, teslim_ilce FROM organizasyon_siparisler_ciceksepeti WHERE id = ? AND tenant_id = ? AND (COALESCE(arsivli, 0) = 1)',
+                [id, tenantId]
+            );
+            if (cicekRow && cicekRow.length > 0) {
+                const { teslim_tarihi: teslimTarihi, teslim_mahalle: teslimMahalle, teslim_ilce: teslimIlce } = cicekRow[0];
+                await execute(`
+                    UPDATE organizasyon_siparisler_ciceksepeti SET
+                        arsivli = 0,
+                        arsivleme_tarih = NULL,
+                        arsivleme_sebebi = NULL,
+                        updated_at = datetime('now', 'localtime')
+                    WHERE id = ? AND tenant_id = ?
+                `, [id, tenantId]);
+                // İlgili Çiçek Sepeti organizasyon kartını da geri yükle (sadece bu siparişin mahalle/ilcesine ait kart)
+                if (teslimTarihi) {
+                    try {
+                        await execute(`
+                            UPDATE organizasyon_kartlar SET
+                                is_active = 1,
+                                arsivli = 0,
+                                organizasyon_status = 'aktif',
+                                arsivleme_tarih = NULL,
+                                arsivleme_sebebi = NULL,
+                                updated_at = datetime('now', 'localtime')
+                            WHERE tenant_id = ? AND organizasyon_teslim_tarih = ? AND organizasyon_kart_tur = 'Çiçek Sepeti' AND COALESCE(arsivli, 0) = 1
+                            AND COALESCE(organizasyon_mahalle,'') = COALESCE(?, '') AND COALESCE(organizasyon_ilce,'') = COALESCE(?, '')
+                        `, [tenantId, teslimTarihi, teslimMahalle || '', teslimIlce || '']);
+                    } catch (orgErr) {
+                        console.error('❌ Çiçek Sepeti organizasyon kartı geri yüklenirken:', orgErr.message);
+                    }
+                }
+                return res.json({
+                    success: true,
+                    message: 'Sipariş arşivden geri yüklendi'
+                });
+            }
+            return res.status(404).json({
+                success: false,
+                message: 'Sipariş arşivde bulunamadı veya zaten geri yüklenmiş'
+            });
+        }
+        
+        // Normal sipariş: önce siparisler tablosunda ara
         const siparisCheck = await query(
             `SELECT id, organizasyon_kart_id, arsivleme_sebebi, musteri_unvan, 
                     musteri_isim_soyisim, siparis_veren_telefon, siparis_tutari, 
@@ -13116,10 +13855,11 @@ app.patch('/api/siparis-kartlar/:id/unarchive', async (req, res) => {
         // siparisler'de yoksa Çiçek Sepeti siparişi (organizasyon_siparisler_ciceksepeti) olabilir
         if (siparisCheck.length === 0) {
             const cicekRow = await query(
-                'SELECT id FROM organizasyon_siparisler_ciceksepeti WHERE id = ? AND tenant_id = ? AND (COALESCE(arsivli, 0) = 1)',
+                'SELECT id, teslim_tarihi, teslim_mahalle, teslim_ilce FROM organizasyon_siparisler_ciceksepeti WHERE id = ? AND tenant_id = ? AND (COALESCE(arsivli, 0) = 1)',
                 [id, tenantId]
             );
             if (cicekRow && cicekRow.length > 0) {
+                const { teslim_tarihi: teslimTarihi, teslim_mahalle: teslimMahalle, teslim_ilce: teslimIlce } = cicekRow[0];
                 await execute(`
                     UPDATE organizasyon_siparisler_ciceksepeti SET
                         arsivli = 0,
@@ -13128,6 +13868,23 @@ app.patch('/api/siparis-kartlar/:id/unarchive', async (req, res) => {
                         updated_at = datetime('now', 'localtime')
                     WHERE id = ? AND tenant_id = ?
                 `, [id, tenantId]);
+                if (teslimTarihi) {
+                    try {
+                        await execute(`
+                            UPDATE organizasyon_kartlar SET
+                                is_active = 1,
+                                arsivli = 0,
+                                organizasyon_status = 'aktif',
+                                arsivleme_tarih = NULL,
+                                arsivleme_sebebi = NULL,
+                                updated_at = datetime('now', 'localtime')
+                            WHERE tenant_id = ? AND organizasyon_teslim_tarih = ? AND organizasyon_kart_tur = 'Çiçek Sepeti' AND COALESCE(arsivli, 0) = 1
+                            AND COALESCE(organizasyon_mahalle,'') = COALESCE(?, '') AND COALESCE(organizasyon_ilce,'') = COALESCE(?, '')
+                        `, [tenantId, teslimTarihi, teslimMahalle || '', teslimIlce || '']);
+                    } catch (orgErr) {
+                        console.error('❌ Çiçek Sepeti organizasyon kartı geri yüklenirken:', orgErr.message);
+                    }
+                }
                 return res.json({
                     success: true,
                     message: 'Sipariş arşivden geri yüklendi'
@@ -22636,7 +23393,7 @@ app.post('/api/sicak-satislar', async (req, res) => {
         }
         const miktarVal = parseInt(miktar, 10) || 1;
         const tutarVal = parseFloat(tutar) || 0;
-        const satisTuru = (satis_turu || 'nakit').replace('havale', 'havale_eft');
+        const satisTuru = (satis_turu === 'havale' ? 'havale_eft' : (satis_turu || 'nakit'));
         await run(
             'INSERT INTO sicak_satislar (urun_adi, miktar, aciklama, satis_turu, tutar, tenant_id) VALUES (?, ?, ?, ?, ?, ?)',
             [urun_adi.trim(), miktarVal, 'Sıcak Satış', satisTuru, tutarVal, tenantId]
@@ -22666,7 +23423,7 @@ app.put('/api/sicak-satislar/:id', async (req, res) => {
         if (urun_adi != null) { updates.push('urun_adi = ?'); values.push(urun_adi.trim()); }
         if (miktar != null) { updates.push('miktar = ?'); values.push(parseInt(miktar, 10) || 1); }
         if (tutar != null) { updates.push('tutar = ?'); values.push(parseFloat(tutar) || 0); }
-        if (satis_turu != null) { updates.push('satis_turu = ?'); values.push((satis_turu || 'nakit').replace('havale', 'havale_eft')); }
+        if (satis_turu != null) { updates.push('satis_turu = ?'); values.push(satis_turu === 'havale' ? 'havale_eft' : (satis_turu || 'nakit')); }
         if (updates.length === 0) {
             return res.status(400).json({ success: false, error: 'Güncellenecek alan yok' });
         }

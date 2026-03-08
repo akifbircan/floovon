@@ -1,29 +1,90 @@
 /**
  * Tenant Fatura Şablon Modülü
- * 
- * Bu modül fatura HTML şablonunu oluşturur.
- * Fatura tasarımı ve stilleri burada yönetilir.
- * CSS stilleri tenant-fatura-sablon.css dosyasında tutulur.
+ *
+ * DÜZENLEME YAPMAK İSTERSENİZ:
+ * - HTML şablonu: D:\FLOOVON\sablonlar\tenant-fatura-sablon.html (öncelikli; varsa bu kullanılır)
+ * - Görünüm / stiller: D:\FLOOVON\css\tenant-fatura-sablon.css
+ * - Şablon yoksa: bu dosyadaki inline HTML kullanılır
+ * PDF: backend/utils/tenant-fatura-pdf.js
  */
 
 const fs = require('fs');
 const path = require('path');
 
-// CSS dosyasını oku (sadece bir kez, cache'lenir)
+const SABLON_HTML_PATH = path.join(__dirname, '..', '..', 'sablonlar', 'tenant-fatura-sablon.html');
+
 let invoiceStyles = null;
 function getInvoiceStyles() {
     if (invoiceStyles === null) {
-        // CSS dosyası css/ klasöründe
         const cssPath = path.join(__dirname, '..', '..', 'css', 'tenant-fatura-sablon.css');
         try {
             invoiceStyles = fs.readFileSync(cssPath, 'utf8');
         } catch (error) {
             console.error('❌ Fatura CSS dosyası okunamadı:', cssPath, error);
-            // Fallback: boş string döndür (stil olmadan çalışır)
             invoiceStyles = '';
         }
     }
     return invoiceStyles;
+}
+
+function generateFromSablonFile(params) {
+    const {
+        faturaNo,
+        faturaTarihi,
+        odemeTarihi,
+        company_name,
+        address = '',
+        city = '',
+        state = '',
+        tenantInfo = null,
+        itemDescription,
+        itemDescriptionDetail = '',
+        araToplam,
+        kdvTutari,
+        toplamTutar,
+        kdvOrani = 20
+    } = params;
+
+    const faturaTarihiStr = new Date(faturaTarihi).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
+    const odemeTarihiHTML = odemeTarihi
+        ? `<div class="invoice-date">Ödeme Tarihi: ${new Date(odemeTarihi).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}</div>`
+        : '';
+    const addressHTML = address ? `<p>${address}</p>` : '';
+    let taxInfoHTML = '';
+    if (tenantInfo && tenantInfo[0]) {
+        if (tenantInfo[0].tax_office) taxInfoHTML += `<p><strong>Vergi Dairesi:</strong> ${tenantInfo[0].tax_office}</p>`;
+        if (tenantInfo[0].tax_number) taxInfoHTML += `<p><strong>Vergi No:</strong> ${tenantInfo[0].tax_number}</p>`;
+    }
+    const itemDescriptionDetailHTML = itemDescriptionDetail ? `<div class="item-description">${itemDescriptionDetail}</div>` : '';
+    const araToplamFormatted = (araToplam / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+    const kdvTutariFormatted = (kdvTutari / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+    const toplamTutarFormatted = (toplamTutar / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+    const currentYear = new Date().getFullYear();
+
+    const replacements = {
+        '{{faturaNo}}': faturaNo,
+        '{{invoiceStyles}}': getInvoiceStyles(),
+        '{{faturaTarihi}}': faturaTarihiStr,
+        '{{odemeTarihiHTML}}': odemeTarihiHTML,
+        '{{company_name}}': company_name,
+        '{{addressHTML}}': addressHTML,
+        '{{state}}': state || '',
+        '{{city}}': city || '',
+        '{{taxInfoHTML}}': taxInfoHTML,
+        '{{itemDescription}}': itemDescription,
+        '{{itemDescriptionDetailHTML}}': itemDescriptionDetailHTML,
+        '{{araToplamFormatted}}': araToplamFormatted,
+        '{{kdvOrani}}': String(kdvOrani),
+        '{{kdvTutariFormatted}}': kdvTutariFormatted,
+        '{{toplamTutarFormatted}}': toplamTutarFormatted,
+        '{{currentYear}}': String(currentYear)
+    };
+
+    let html = fs.readFileSync(SABLON_HTML_PATH, 'utf8');
+    for (const [key, value] of Object.entries(replacements)) {
+        html = html.split(key).join(value);
+    }
+    return html;
 }
 
 /**
@@ -45,22 +106,32 @@ function getInvoiceStyles() {
  * @param {number} [params.kdvOrani=20] - KDV oranı (varsayılan: 20)
  * @returns {string} HTML içeriği
  */
-function generateInvoiceHtml({
-    faturaNo,
-    faturaTarihi,
-    odemeTarihi,
-    company_name,
-    address = '',
-    city = '',
-    state = '',
-    tenantInfo = null,
-    itemDescription,
-    itemDescriptionDetail = '',
-    araToplam,
-    kdvTutari,
-    toplamTutar,
-    kdvOrani = 20
-}) {
+function generateInvoiceHtml(params) {
+    const {
+        faturaNo,
+        faturaTarihi,
+        odemeTarihi,
+        company_name,
+        address = '',
+        city = '',
+        state = '',
+        tenantInfo = null,
+        itemDescription,
+        itemDescriptionDetail = '',
+        araToplam,
+        kdvTutari,
+        toplamTutar,
+        kdvOrani = 20
+    } = params;
+
+    if (fs.existsSync(SABLON_HTML_PATH)) {
+        try {
+            return generateFromSablonFile(params);
+        } catch (err) {
+            console.warn('⚠️ sablonlar/tenant-fatura-sablon.html okunamadı, inline şablon kullanılıyor:', err.message);
+        }
+    }
+
     return `
         <!DOCTYPE html>
         <html lang="tr">
@@ -164,7 +235,8 @@ function generateInvoiceHtml({
                 
                 <div class="invoice-footer">
                     <p>Bu fatura elektronik ortamda oluşturulmuştur.</p>
-                    <p class="copyright">Floovon - ${new Date().getFullYear()}</p>
+                    <p>Fatura ve abonelik ile ilgili sorularınız için <a href="mailto:billing@floovon.com" class="footer-email">billing@floovon.com</a> üzerinden bizimle iletişime geçin.</p>
+                    <p class="copyright">Floovon © ${new Date().getFullYear()}</p>
                 </div>
             </div>
         </body>
@@ -173,6 +245,8 @@ function generateInvoiceHtml({
 }
 
 module.exports = {
-    generateInvoiceHtml
+    generateInvoiceHtml,
+    getInvoiceStyles,
+    SABLON_HTML_PATH
 };
 

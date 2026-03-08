@@ -5,6 +5,7 @@
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { getApiBaseUrl, getFrontendOrigin } from './runtime';
+import { logClientError } from './errorLogger';
 
 // Standart API Response formatı
 export interface ApiResponse<T> {
@@ -141,8 +142,6 @@ apiClient.interceptors.response.use(
 
     // 404 Not Found - sessizce handle et (endpoint henüz yoksa normal)
     if (error.response?.status === 404) {
-      // Belirli endpoint'ler için 404 hatalarını sessizce handle et
-      // Bu endpoint'ler henüz backend'de implement edilmemiş olabilir
       const silent404Endpoints = [
         '/raporlar',
         '/siparis-kartlar/arsiv',
@@ -152,41 +151,51 @@ apiClient.interceptors.response.use(
         '/ayarlar/organizasyon-etiketleri',
         '/organizasyon-kartlar/',
       ];
-      
-      const requestUrl = error.config?.url || '';
+      const requestUrl = (error.config?.url || '').toString();
       const shouldSilence = silent404Endpoints.some(ep => requestUrl.includes(ep));
-      
-      // 404 hatasını sessizce fırlat (console'a yazma)
-      // Sayfalar zaten try-catch ile handle ediyor
+      if (!shouldSilence && !requestUrl.includes('/log-client-error')) {
+        logClientError({
+          message: 'Endpoint bulunamadı',
+          http_status: 404,
+          endpoint: requestUrl,
+          source: 'api',
+        });
+      }
       const apiError = new ApiError(
         'Endpoint bulunamadı',
         404,
         'NOT_FOUND',
         error.response?.data
       );
-      
-      // Console'a yazma (sessizce handle et)
-      // Axios'un kendi console log'larını engellemek için
-      // error.config'de bir flag ekleyebiliriz ama şimdilik sessizce fırlat
       return Promise.reject(apiError);
     }
 
-    // Diğer hatalar
+    // Diğer hatalar – sunucu ortamında takip için log-client-error'a gönder (401/403 hariç)
     const data = error.response?.data as { message?: string; error?: string } | undefined;
     const errorMessage =
       data?.message ||
       data?.error ||
       error.message ||
       'Bir hata oluştu';
-    
     const errorCode =
       (error.response?.data as { errorCode?: string })?.errorCode ||
       undefined;
+    const status = error.response?.status;
+    const requestUrl = (error.config?.url || '').toString();
+    if (status && status >= 400 && !requestUrl.includes('/log-client-error')) {
+      logClientError({
+        message: errorMessage,
+        stack: error.stack,
+        http_status: status,
+        endpoint: requestUrl,
+        source: 'api',
+      });
+    }
 
     return Promise.reject(
       new ApiError(
         errorMessage,
-        error.response?.status,
+        status,
         errorCode,
         error.response?.data
       )
@@ -215,12 +224,14 @@ export async function apiRequest<T>(
     });
 
     // Backend response formatı kontrolü
-    // Backend { success: true, data: ... } dönüyorsa sadece data'yı döndür – sayfalar array/object bekliyor
     if (response.data && typeof response.data === 'object' && 'success' in response.data) {
       const apiResponse = response.data as ApiResponse<T>;
       if (apiResponse.success) {
-        // data varsa payload'ı döndür (müşteri listesi, siparişler vb. doğrudan gelir)
-        if (apiResponse.data !== undefined) return apiResponse.data as T;
+        // Backend { success: true, data: X } döndürüyorsa X'i döndür (auth/me, listeler vb. için)
+        // Böylece auth/me çağrısında userData.name / userData.surname doğru çalışır
+        if (apiResponse.data !== undefined) {
+          return apiResponse.data as T;
+        }
         return response.data as T;
       }
       // success: false durumunda hata fırlat (backend bazen error, bazen message döner)

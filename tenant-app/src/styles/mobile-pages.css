@@ -52,6 +52,41 @@
     padding: 0 !important;
   }
 
+  /* Mobilde tüm inputlar aynı font boyutu (zoom engelleme için) */
+  input,
+  textarea,
+  select {
+    font-size: 13px !important;
+  }
+
+  /* Mobilde tooltip gösterme – tıklayınca sabit kalma sorunu önlenir */
+  .tooltip,
+  [data-tooltip] .tooltip,
+  body > .tooltip {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* Toast mobil: kenarlardan boşluk (modallarla aynı 20px) – tüm toast container'ları */
+  body .app-toast-container,
+  body ul.notifications,
+  body > .app-toast-container,
+  body > ul.notifications,
+  .app-toast-container,
+  ul.notifications {
+    left: 20px !important;
+    right: 20px !important;
+    top: 80px !important;
+    width: calc(100vw - 40px) !important;
+    max-width: calc(100vw - 40px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
   /* ========== Ortak sayfa yapısı: page-wrapper, panel-sol, panel-sag ========== */
   .page-wrapper {
     margin-right: 0 !important;
@@ -125,6 +160,7 @@
   .profil-table-wrapper {
     overflow-x: visible;
     margin: 0;
+    background-color: transparent !important;
   }
 
   /* Tablo scroll kaldır: sadece sayfa scroll etsin (dashboard-cards sonradan yüklendiği için modal-styles-important.css’te tekrar override edilir) */
@@ -179,6 +215,7 @@
   .profil-table tbody td {
     display: flex !important;
     align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
     padding: 6px 0 !important;
     border: none !important;
@@ -187,8 +224,21 @@
   .partners-table tbody td > *,
   .campaigns-table tbody td > *,
   .profil-table tbody td > * {
-    flex: 1;
-    min-width: 0;
+    flex: 1 1 0%;
+    min-width: 0 !important;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  .customers-table tbody td .status-badge,
+  .customers-table tbody td .cell-badge,
+  .customers-table tbody td .durum-badge,
+  .partners-table tbody td .status-badge,
+  .partners-table tbody td .cell-badge,
+  .campaigns-table tbody td .status-badge,
+  .campaigns-table tbody td .campaigns-kupon-badge,
+  .profil-table tbody td .status-badge,
+  .profil-table tbody td .cell-badge {
+    flex: none !important;
   }
 
   .customers-table tbody td::before,
@@ -208,10 +258,22 @@
   .partners-table tbody td > *,
   .campaigns-table tbody td > *,
   .profil-table tbody td > * {
-    flex: 1;
+    flex: none;
     min-width: 0;
     order: 1;
+    margin: 0;
   }
+
+  .campaigns-table-wrap.customers-table-wrapper .customers-table tbody td {
+    width: 100%;
+    align-items: center;
+    text-align: right;
+}
+
+.campaigns-tamamlandi-mesaj {
+  text-align: right !important;
+  justify-content: flex-end !important;
+}
 
   .customers-table tbody td .islem-ikonlar,
   .partners-table tbody td .islem-ikonlar,
@@ -245,9 +307,14 @@
   .permissions-table tbody tr.permission-row td {
     display: flex !important;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
     padding: 6px 0 !important;
     border: none !important;
+  }
+  .permissions-table tbody tr.permission-row td .status-badge,
+  .permissions-table tbody tr.permission-row td .cell-badge {
+    flex: none !important;
   }
   .permissions-table tbody tr.permission-row td > * {
     flex: 1;
@@ -344,19 +411,22 @@
   }
   .ayarlar-form-row.ayarlar-form-active .ayarlar-sol-kolon {
     position: fixed !important;
-    inset: 0 !important;
+    top: 16px !important;
+    left: 16px !important;
+    right: 16px !important;
+    bottom: 16px !important;
     z-index: 10001 !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    height: 100% !important;
-    max-height: 100vh !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: calc(100vh - 32px) !important;
     background: var(--white) !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     padding: 16px 20px 80px !important;
     box-sizing: border-box !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
   }
 
   /* Cari / Partner drawer'ları: mobilde ortak modal standardı (modal-styles.css – ortadan, 16px boşluk) */
@@ -436,23 +506,52 @@
 
   .arsiv-tablosu tbody {
     display: block;
+    padding: 10px;
   }
 
   .arsiv-tablosu tr.baslik-satiri {
-    display: block;
-    padding: 8px 12px;
+    display: flex;
+    /* padding: 8px 12px; */
     margin: 8px 0 4px 0;
-    background: var(--gray-light-f2, #f2f2f2);
+    /* background: var(--gray-light-f2, #f2f2f2); */
     border-radius: 8px;
     font-weight: 600;
     color: var(--ana-renk);
+  
   }
 
-  .arsiv-tablosu tr.baslik-satiri .grup-baslik-inner,
+  .arsiv-tablosu td.grup-baslik.organizasyon {
+    border-radius: 10px !important;
+}
+
+.arsiv-tablosu td.grup-baslik.ay {
+    height: auto;
+    border-radius: 10px !important;
+  }
+  .arsiv-tablosu td.hafta-baslik {
+    height: auto;
+    border-radius: 10px !important;
+  }
+
+  .arsiv-tablosu td.grup-baslik.ay .grup-baslik-inner,
+.arsiv-tablosu td.hafta-baslik .grup-baslik-inner {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+
   .arsiv-tablosu tr.baslik-satiri .grup-baslik-icerik {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 8px;
+  }
+
+  .arsiv-tablosu tr.baslik-satiri .grup-baslik-inner {
+    flex-direction: row;
   }
 
   .arsiv-tablosu tr.grup-satir-row {
@@ -468,6 +567,7 @@
   .arsiv-tablosu tr.grup-satir-row td {
     display: flex !important;
     align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
     padding: 6px 0 !important;
     border: none !important;
@@ -475,6 +575,10 @@
   .arsiv-tablosu tr.grup-satir-row td > * {
     flex: 1;
     min-width: 0;
+  }
+  .arsiv-tablosu tr.grup-satir-row td .status-badge,
+  .arsiv-tablosu tr.grup-satir-row td .cell-badge {
+    flex: none !important;
   }
 
   .arsiv-tablosu tr.grup-satir-row td::before {
@@ -488,7 +592,7 @@
     text-align: left;
   }
   .arsiv-tablosu tr.grup-satir-row td > * {
-    flex: 1;
+    flex: none;
     min-width: 0;
     order: 1;
   }
@@ -535,14 +639,44 @@
     font-size: 13px;
   }
 
-  .ayarlar-subtab-nav {
-    overflow-x: auto;
+  .ayarlar-subtab-nav,
+  .profil-page .ayarlar-subtab-nav,
+  .ayarlar-page .ayarlar-subtab-nav {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 2px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-right: 16px;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    -ms-overflow-style: auto;
   }
-  .ayarlar-subtab-nav::-webkit-scrollbar {
-    display: none !important;
+  .ayarlar-subtab-nav::-webkit-scrollbar,
+  .ayarlar-page .ayarlar-subtab-nav::-webkit-scrollbar {
+    height: 6px;
+  }
+  .ayarlar-subtab-nav::-webkit-scrollbar-track,
+  .ayarlar-page .ayarlar-subtab-nav::-webkit-scrollbar-track {
+    background: var(--gray-light-f2, #f2f2f2);
+    border-radius: 3px;
+  }
+  .ayarlar-subtab-nav::-webkit-scrollbar-thumb,
+  .ayarlar-page .ayarlar-subtab-nav::-webkit-scrollbar-thumb {
+    background: var(--gri70, #6b7280);
+    border-radius: 3px;
+  }
+
+  .ayarlar-subtab-btn {
+    flex-shrink: 0 !important;
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
   }
 
   .reports-content .istatistikler {
@@ -598,10 +732,17 @@
   .reports-table tbody tr.reports-table-row td,
   .reports-table.reports-table-musteri tbody tr.reports-table-row td {
     display: flex !important;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: space-between;
     gap: 8px;
     padding: 6px 0 !important;
     border: none !important;
+  }
+  .reports-table tbody tr.reports-table-row td .status-badge,
+  .reports-table tbody tr.reports-table-row td .cell-badge,
+  .reports-table.reports-table-musteri tbody tr.reports-table-row td .status-badge,
+  .reports-table.reports-table-musteri tbody tr.reports-table-row td .cell-badge {
+    flex: none !important;
   }
   .reports-table tbody tr.reports-table-row td > *,
   .reports-table.reports-table-musteri tbody tr.reports-table-row td > * {
@@ -628,6 +769,7 @@
   .reports-table tbody tr.reports-table-row td .islem-ikonlar,
   .reports-table.reports-table-musteri tbody tr.reports-table-row td .islem-ikonlar {
     margin-left: 0;
+    justify-content: flex-end;
   }
 
   /* ========== Sipariş Kart Detay ========== */
@@ -664,9 +806,14 @@
   .siparis-kart-detay-tablosu tbody tr.tablo-satir td {
     display: flex !important;
     align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
     padding: 6px 0 !important;
     border: none !important;
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td .status-badge,
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td .cell-badge {
+    flex: none !important;
   }
   .siparis-kart-detay-tablosu tbody tr.tablo-satir td > * {
     flex: 1;
@@ -808,9 +955,14 @@
   .cari-table tbody td {
     display: flex !important;
     align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
     padding: 6px 0 !important;
     border: none !important;
+  }
+  .cari-table tbody td .status-badge,
+  .cari-table tbody td .cell-badge {
+    flex: none !important;
   }
   .cari-table tbody td > * {
     flex: 1;
@@ -871,25 +1023,45 @@
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   }
+  .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel,
+  .ayarlar-page .ayarlar-sag-kolon .ayarlar-tablosu-wrapper {
+    overflow-x: hidden !important;
+    min-width: 0 !important;
+  }
   .ayarlar-page .ayarlar-tablosu tbody tr td,
   .ayarlar-page table.ayarlar-tablosu tbody tr td {
     display: flex !important;
     align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
     padding: 6px 0 !important;
     border: none !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+
+  .ayarlar-page .ayarlar-tablosu tbody tr td .status-badge,
+  .ayarlar-page .ayarlar-tablosu tbody tr td .table-col-durum .durum-badge,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td .status-badge,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td .table-col-durum .durum-badge {
+    flex: none !important;
   }
   .ayarlar-page .ayarlar-tablosu tbody tr td > *,
   .ayarlar-page table.ayarlar-tablosu tbody tr td > * {
-    flex: 1;
-    min-width: 0;
+    /* flex: 1 1 0%; */
+    min-width: 0 !important;
+    max-width: 100%;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
   .ayarlar-page .ayarlar-tablosu tbody tr td::before,
   .ayarlar-page table.ayarlar-tablosu tbody tr td::before {
     content: attr(data-label);
     font-weight: 600;
     color: var(--gri70);
-    min-width: 100px;
+    min-width: 90px;
+    max-width: 40%;
     flex-shrink: 0;
     font-size: 12px;
     order: 0;
@@ -897,47 +1069,85 @@
   }
   .ayarlar-page .ayarlar-tablosu tbody tr td > *,
   .ayarlar-page table.ayarlar-tablosu tbody tr td > * {
-    flex: 1;
-    min-width: 0;
     order: 1;
   }
   .ayarlar-page .ayarlar-tablosu tbody tr td .islem-ikonlar {
     margin-left: 0;
+    flex: none !important;
+    min-width: 0;
   }
+  .ayarlar-page .ayarlar-tablosu tbody tr td.urunler-ad-hucre,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td.urunler-ad-hucre {
+    word-break: break-word;
+  }
+
+  .ayarlar-page .ayarlar-panel table td.table-col-gorsel > * {
+    margin: 0 !important;
+}
 
   /* ========== Profil Ayarları & Ayarlar ========== */
   .profil-page,
   .ayarlar-page {
     padding: 12px 14px 20px !important;
     padding-bottom: 72px !important;
+    overflow-x: hidden !important;
+    min-width: 0 !important;
   }
 
   .profil-page-inner,
   .ayarlar-page-inner {
     width: 100%;
     max-width: 100%;
+    min-width: 0 !important;
   }
+  .ayarlar-page .ayarlar-tab-nav,
+  .profil-page .profil-tab-nav {
+    flex: 0 0 auto;
+    min-width: 0 !important;
+  }
+
+  .ayarlar-page.page-wrapper {
+    padding-bottom: 20px !important;
+}
 
   .profil-tab-nav,
   .ayarlar-tab-nav {
-    overflow-x: auto;
+    display: flex !important;
+    overflow-x: auto !important;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
-    flex-wrap: nowrap;
+    flex-wrap: nowrap !important;
     margin-bottom: 12px;
+    padding-bottom: 8px;
     border-bottom: 1px solid var(--border-renk);
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    -ms-overflow-style: auto;
   }
   .profil-tab-nav::-webkit-scrollbar,
   .ayarlar-tab-nav::-webkit-scrollbar {
-    display: none !important;
+    height: 6px;
+  }
+  .profil-tab-nav::-webkit-scrollbar-track,
+  .ayarlar-tab-nav::-webkit-scrollbar-track {
+    background: var(--gray-light-f2, #f2f2f2);
+    border-radius: 3px;
+  }
+  .profil-tab-nav::-webkit-scrollbar-thumb,
+  .ayarlar-tab-nav::-webkit-scrollbar-thumb {
+    background: var(--gri70, #6b7280);
+    border-radius: 3px;
   }
 
   .profil-tab-btn,
   .ayarlar-tab-btn {
-    flex-shrink: 0;
-    padding: 10px 14px;
+    flex-shrink: 0 !important;
+    padding: 10px 12px;
     font-size: 13px;
+    white-space: nowrap;
   }
 
   .profil-card,
@@ -946,21 +1156,56 @@
     padding: 14px !important;
   }
 
-  /* Ayarlar: sadece sayfa (main) scroll etsin, wrapper içi scroll yok */
+  /* Ayarlar mobil: sayfa scroll, sekmeler görünsün, tab içerik aşağı kayabilsin */
   .ayarlar-page.page-wrapper {
+    display: block !important;
     height: auto !important;
     min-height: 0 !important;
     overflow: visible !important;
+  }
+  .ayarlar-page .ayarlar-page-inner {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    flex: none !important;
+    min-height: 0 !important;
+  }
+  .ayarlar-page .ayarlar-tab-icerik {
+    overflow: visible !important;
+    min-height: 0 !important;
+    flex: none !important;
+    min-width: 0;
+  }
+  /* Tab içeriği (form/panel) yatay taşmasın, dikey sayfa ile aşağı kayar */
+  .ayarlar-page .ayarlar-tab-icerik > div.ayarlar-form-row,
+  .ayarlar-page .ayarlar-tab-icerik > div.flex {
+    overflow-x: hidden;
+    min-width: 0;
+    overflow-y: visible;
+  }
+  .ayarlar-page .ayarlar-subtab-nav {
+    min-width: 0;
   }
 
   .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel {
     min-height: 0 !important;
     max-height: none !important;
+    overflow-y: visible !important;
   }
 
   .ayarlar-sol-kolon,
   .ayarlar-sag-kolon {
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Ayarlar Veri: mobilde form üstte liste altta, tam genişlik */
+  .ayarlar-page .ayarlar-form-row {
+    flex-direction: column !important;
+  }
+  .ayarlar-page .ayarlar-form-row .ayarlar-sol-kolon,
+  .ayarlar-page .ayarlar-form-row .ayarlar-sag-kolon {
     max-width: 100% !important;
   }
 
@@ -1009,6 +1254,7 @@
   .potansiyel-tablosu tr.potansiyel-table-row td {
     display: flex !important;
     align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
     padding: 6px 0 !important;
     border: none !important;
@@ -1016,6 +1262,10 @@
   .potansiyel-tablosu tr.potansiyel-table-row td > * {
     flex: 1;
     min-width: 0;
+  }
+  .potansiyel-tablosu tr.potansiyel-table-row td .status-badge,
+  .potansiyel-tablosu tr.potansiyel-table-row td .cell-badge {
+    flex: none !important;
   }
 
   .potansiyel-tablosu tr.potansiyel-table-row td::before {

@@ -42,7 +42,10 @@ interface ArchivedOrder {
   partner_siparis_turu?: string;
   organizasyon_kart_tur?: string;
   kart_tur?: string; /* backend alias */
+  /** Gösterim için etiket (örn. Kermes); başlık ve organizasyon kolonunda bu kullanılır */
   organizasyon_kart_etiket?: string;
+  /** Alt tür kodu/adı (örn. Yemek); sadece gruplama/ayırım için, başlıkta gösterilmez */
+  organizasyon_alt_tur?: string;
   org_mahalle?: string;
   org_acik_adres?: string;
   organizasyon_teslimat_konumu?: string;
@@ -316,7 +319,11 @@ export const OrdersPage: React.FC = () => {
       cancelText: 'İptal',
       onConfirm: async () => {
         try {
-          await apiRequest(`/siparis-kartlar/${order.id}/unarchive`, { method: 'PATCH' });
+          const isCiceksepeti = order.organizasyon_kart_tur === 'Çiçek Sepeti' || order.kart_tur === 'ciceksepeti';
+          await apiRequest(`/siparis-kartlar/${order.id}/unarchive`, {
+            method: 'PATCH',
+            data: isCiceksepeti ? { ciceksepeti: true } : undefined,
+          });
           showToast('success', 'Sipariş arşivden geri yüklendi');
           const orgId = order.organizasyon_kart_id ?? (order as any).organizasyon_id;
           const orgIdStr = orgId != null ? String(orgId) : null;
@@ -344,7 +351,7 @@ export const OrdersPage: React.FC = () => {
           ]);
         } catch (err: unknown) {
           const e = err as any;
-          if (e?.status === 404) {
+          if (e?.status === 404 || e?.status === 403) {
             showToast('error', 'Sipariş arşivde bulunamadı veya zaten geri yüklenmiş.');
           } else {
             showToast('error', e?.message || 'İşlem başarısız');
@@ -360,33 +367,42 @@ export const OrdersPage: React.FC = () => {
   };
 
   const getOrganizasyonGrupKey = (o: ArchivedOrder): string => {
-    const tur = o.organizasyon_kart_tur || o.kart_tur || '';
+    const turRaw = String(o.organizasyon_kart_tur || o.kart_tur || '');
+    const tur = turRaw.toLowerCase();
     const tarihFormatted = formatTarihUzun(o.teslim_tarih || o.arsivleme_tarih);
     const konum = o.organizasyon_teslimat_konumu || o.org_mahalle || o.teslim_mahalle || '';
 
-    if (tur === 'aracsusleme') {
-      return `${tarihFormatted} - Araç Süsleme`;
+    if (tur === 'aracsusleme' || tur.includes('araç') || tur.includes('arac')) {
+      return `${tarihFormatted} - Araç Süsleme Randevuları`;
     }
-    if (tur === 'ozelgun' || tur === 'ozelsiparis') {
-      const turAdi = tur === 'ozelgun' ? 'Özel Gün' : 'Özel Sipariş';
+    if (tur === 'ozelgun' || tur === 'ozelsiparis' || tur.includes('özel gün') || tur.includes('özel sipariş')) {
+      const turAdi = tur === 'ozelsiparis' || tur.includes('özel sipariş') ? 'Özel Sipariş' : 'Özel Gün';
       const etiket = o.organizasyon_kart_etiket || '';
       return etiket ? `${tarihFormatted} - ${turAdi} - ${etiket}` : `${tarihFormatted} - ${turAdi}`;
     }
-    const turAdi = tur === 'organizasyon' ? 'Düğün' : tur || 'Organizasyon';
-    return `${tarihFormatted} - ${turAdi} - ${konum || 'Belirtilmemiş'}`;
+    if (tur === 'organizasyon' || tur.includes('organizasyon') || tur.includes('düğün')) {
+      const altTur = o.organizasyon_kart_etiket || 'Organizasyon';
+      return `${tarihFormatted} - ${altTur} - ${konum || 'Belirtilmemiş'}`;
+    }
+    if (tur === 'ciceksepeti' || tur.includes('çiçek') || tur.includes('cicek')) {
+      return `${tarihFormatted} - Çiçek Sepeti${konum ? ` - ${konum}` : ''}`;
+    }
+    const altTur = o.organizasyon_kart_etiket || turRaw || 'Organizasyon';
+    return `${tarihFormatted} - ${altTur} - ${konum || 'Belirtilmemiş'}`;
   };
 
-  const getOrganizasyonDisplayParts = (o: ArchivedOrder): string[] => {
-    const turRaw = o.organizasyon_kart_tur || o.kart_tur || '';
-    const tur = turRaw
-      ? (turRaw === 'organizasyon' ? 'Düğün' :
-         turRaw === 'aracsusleme' ? 'Araç Süsleme' :
-         turRaw === 'ozelgun' ? 'Özel Gün' :
-         turRaw === 'ozelsiparis' ? 'Özel Sipariş' : turRaw)
-      : '';
-    const konum = o.organizasyon_teslimat_konumu || o.org_mahalle || '';
-    const sahip = o.teslim_kisisi || o.musteri_unvan || o.musteri_isim_soyisim || '';
-    return [tur, sahip, konum].filter(Boolean);
+  /** Organizasyon kolonunda sadece kart türü (alt tür dahil): Düğün, Nişan, Özel Gün, Araç Süsleme, Çiçek Sepeti vb. Kişi/adres yok. */
+  const getOrganizasyonKolonLabel = (o: ArchivedOrder): string => {
+    const turRaw = String(o.organizasyon_kart_tur || o.kart_tur || '');
+    const tur = turRaw.toLowerCase();
+    if (tur === 'aracsusleme' || tur.includes('araç') || tur.includes('arac')) return 'Araç Süsleme';
+    if (tur === 'ozelgun' || tur.includes('özel gün')) return 'Özel Gün';
+    if (tur === 'ozelsiparis' || tur.includes('özel sipariş')) return 'Özel Sipariş';
+    if (tur === 'ciceksepeti' || tur.includes('çiçek') || tur.includes('cicek')) return 'Çiçek Sepeti';
+    if (tur === 'organizasyon' || tur.includes('organizasyon') || tur.includes('düğün')) {
+      return (o.organizasyon_kart_etiket || 'Organizasyon').trim() || 'Organizasyon';
+    }
+    return o.organizasyon_kart_etiket || turRaw || 'Organizasyon';
   };
 
   if (isLoading) {
@@ -486,18 +502,18 @@ export const OrdersPage: React.FC = () => {
               <table className="arsiv-tablosu">
                 <thead>
                   <tr>
-                    <th>TARİH</th>
-                    <th>TESLİM SAATİ</th>
-                    <th>ORGANİZASYON</th>
-                    <th>SİPARİŞ VEREN KİŞİ</th>
-                    <th>TESLİM EDİLECEK KİŞİ</th>
-                    <th>ADRES</th>
-                    <th>ÜRÜN</th>
-                    <th>TUTAR VE EK ÜCRETLER</th>
-                    <th>ÖDEME TÜRÜ</th>
-                    <th>PARTNER</th>
-                    <th>ARŞİV SEBEBİ</th>
-                    <th>İŞLEMLER</th>
+                    <th className="th-tarih">TARİH</th>
+                    <th className="th-teslim-saati">TESLİM SAATİ</th>
+                    <th className="th-organizasyon">ORGANİZASYON</th>
+                    <th className="th-siparis-veren">SİPARİŞ VEREN KİŞİ</th>
+                    <th className="th-teslim-edilecek">TESLİM EDİLECEK KİŞİ</th>
+                    <th className="th-adres">ADRES</th>
+                    <th className="th-urun">ÜRÜN</th>
+                    <th className="th-tutar">TUTAR VE EK ÜCRETLER</th>
+                    <th className="th-odeme">ÖDEME TÜRÜ</th>
+                    <th className="th-partner">PARTNER</th>
+                    <th className="th-arsiv-sebebi">ARŞİV SEBEBİ</th>
+                    <th className="th-islemler">İŞLEMLER</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -571,17 +587,7 @@ export const OrdersPage: React.FC = () => {
                                             <td data-label="Tarih">{maybeEmpty(formatTarihKisa(o.teslim_tarih || o.arsivleme_tarih))}</td>
                                             <td data-label="Teslim Saati">{o.teslim_saat || o.organizasyon_teslim_saat || <span className="td-empty">—</span>}</td>
                                             <td data-label="Organizasyon">
-                                              {(() => {
-                                                const parts = getOrganizasyonDisplayParts(o);
-                                                if (!parts.length) return maybeEmpty('');
-                                                return (
-                                                  <div className="arsiv-org-hucre">
-                                                    {parts.map((p, i) => (
-                                                      <span key={i} className="arsiv-org-hucre-satir">{p}</span>
-                                                    ))}
-                                                  </div>
-                                                );
-                                              })()}
+                                              {getOrganizasyonKolonLabel(o) || <span className="td-empty">—</span>}
                                             </td>
                                             <td data-label="Sipariş Veren Kişi">
                                               <div className="td-icerik">
@@ -600,9 +606,13 @@ export const OrdersPage: React.FC = () => {
                                               </div>
                                             </td>
                                             <td data-label="Adres">
-                                              <div className="td-icerik">
-                                                {o.organizasyon_teslimat_konumu && <span style={{ fontWeight: 600 }}>{formatAddressDisplay(o.organizasyon_teslimat_konumu)}</span>}
-                                                <span>{formatAddressDisplay(o.org_mahalle || o.teslim_mahalle) || o.acik_adres || <span className="td-empty">—</span>}</span>
+                                              <div className="td-icerik arsiv-adres-hucre">
+                                                <span>
+                                                  {o.organizasyon_teslimat_konumu
+                                                    ? <span className="arsiv-adres-konum">{formatAddressDisplay(o.organizasyon_teslimat_konumu)}</span>
+                                                    : (formatAddressDisplay(o.org_mahalle || o.teslim_mahalle) || <span className="td-empty">—</span>)}
+                                                </span>
+                                                {o.acik_adres && <span className="arsiv-adres-acik">{o.acik_adres}</span>}
                                               </div>
                                             </td>
                                             <td data-label="Ürün">{o.siparis_urun || o.urun_yazisi || <span className="td-empty">—</span>}</td>

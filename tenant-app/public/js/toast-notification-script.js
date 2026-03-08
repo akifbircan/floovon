@@ -6,17 +6,42 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!document.querySelector(".notifications")) {
     const notifications = document.createElement("ul");
     notifications.className = "notifications";
-    // ✅ display: block olarak başlat (none yapınca toast görünmüyor!)
     notifications.style.setProperty('display', 'block', 'important');
     notifications.style.setProperty('position', 'fixed', 'important');
-    notifications.style.setProperty('top', '20px', 'important');
-    notifications.style.setProperty('right', '20px', 'important');
     notifications.style.setProperty('z-index', '999999', 'important');
     notifications.style.setProperty('list-style', 'none', 'important');
     notifications.style.setProperty('padding', '0', 'important');
     notifications.style.setProperty('margin', '0', 'important');
+    if (window.innerWidth <= 767) {
+      notifications.style.setProperty('top', '80px', 'important');
+      notifications.style.setProperty('left', '20px', 'important');
+      notifications.style.setProperty('right', '20px', 'important');
+      notifications.style.setProperty('width', 'calc(100vw - 40px)', 'important');
+      notifications.style.setProperty('max-width', 'calc(100vw - 40px)', 'important');
+    } else {
+      notifications.style.setProperty('top', '20px', 'important');
+      notifications.style.setProperty('right', '20px', 'important');
+    }
     document.body.appendChild(notifications);
   }
+  // Mobilde toast container konumunu güncelle (resize sonrası)
+  window.addEventListener('resize', function applyToastContainerPosition() {
+    var ul = document.querySelector(".notifications");
+    if (!ul) return;
+    if (window.innerWidth <= 767) {
+      ul.style.setProperty('top', '80px', 'important');
+      ul.style.setProperty('left', '20px', 'important');
+      ul.style.setProperty('right', '20px', 'important');
+      ul.style.setProperty('width', 'calc(100vw - 40px)', 'important');
+      ul.style.setProperty('max-width', 'calc(100vw - 40px)', 'important');
+    } else {
+      ul.style.setProperty('top', '20px', 'important');
+      ul.style.setProperty('right', '20px', 'important');
+      ul.style.removeProperty('left');
+      ul.style.removeProperty('width');
+      ul.style.removeProperty('max-width');
+    }
+  });
   
   // Demo butonlar için (örnek kullanım)
   document.querySelectorAll(".buttons .btn").forEach(btn => {
@@ -505,11 +530,22 @@ function createToast(id, customMessage = null) {
   notifications.style.setProperty('visibility', 'visible', 'important');
   notifications.style.setProperty('opacity', '1', 'important');
   
-  // Z-index ve position'ı da garanti et
+  // Z-index ve position'ı da garanti et (mobilde kenarlardan boşluk)
   notifications.style.setProperty('position', 'fixed', 'important');
-  notifications.style.setProperty('top', '20px', 'important');
-  notifications.style.setProperty('right', '20px', 'important');
   notifications.style.setProperty('z-index', '999999', 'important');
+  if (window.innerWidth <= 767) {
+    notifications.style.setProperty('top', '80px', 'important');
+    notifications.style.setProperty('left', '20px', 'important');
+    notifications.style.setProperty('right', '20px', 'important');
+    notifications.style.setProperty('width', 'calc(100vw - 40px)', 'important');
+    notifications.style.setProperty('max-width', 'calc(100vw - 40px)', 'important');
+  } else {
+    notifications.style.setProperty('top', '20px', 'important');
+    notifications.style.setProperty('right', '20px', 'important');
+    notifications.style.removeProperty('left');
+    notifications.style.removeProperty('width');
+    notifications.style.removeProperty('max-width');
+  }
 
   // Lucide Icons SVG mapping
   const iconSVGMap = {

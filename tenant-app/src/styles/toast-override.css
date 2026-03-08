@@ -76,11 +76,18 @@
   border-left-color: var(--toast-error);
   background-color: var(--toast-bg) !important;
 }
+.toast.error .column .toast-icon,
 .toast.error .toast-icon,
 .toast.error .toast-icon svg {
+  display: flex !important;
+  visibility: visible !important;
   color: var(--toast-error) !important;
   fill: none !important;
   stroke: var(--toast-error) !important;
+}
+.toast.error .toast-icon {
+  min-width: 24px;
+  flex-shrink: 0;
 }
 
 .toast.warning {
@@ -149,7 +156,11 @@
 /* Mobil: toast'lar kenarlardan boşluklu (modallarla aynı 16px) – inline stilleri geçersiz kılmak için !important */
 @media (max-width: 767px) {
   .app-toast-container,
-  [class*="toast"][class*="container"] {
+  [class*="toast"][class*="container"],
+  ul.notifications,
+  body > [id*="toast"],
+  body > [class*="ToastContainer"] {
+    top: 80px !important;
     left: 16px !important;
     right: 16px !important;
     width: calc(100vw - 32px) !important;
@@ -160,7 +171,8 @@
     box-sizing: border-box !important;
   }
   .app-toast-container > div,
-  [class*="toast"][class*="container"] > div {
+  [class*="toast"][class*="container"] > div,
+  ul.notifications {
     margin-left: 0 !important;
     margin-right: 0 !important;
     width: 100% !important;

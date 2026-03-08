@@ -44,6 +44,8 @@
   --console-primary-border: #bfdbfe;
   --console-primary-shadow: rgba(37, 99, 235, 0.2);
   --console-primary-shadow-light: rgba(37, 99, 235, 0.1);
+  --console-plan-bg-gradient-top: #97189d;
+  --console-plan-bg-gradient-bottom: #1d4ed8;
 
   /* Success Colors (Green) */
   --console-success: #10b981;
@@ -265,7 +267,7 @@ html.dark-mode {
   --console-primary: #3b82f6;
   --console-primary-hover: #2563eb;
   --console-primary-light: #1e3a8a;
-  --console-primary-lighter: #1e40af;
+  --console-primary-lighter: #0d1f5c;
   --console-primary-dark: #1d4ed8;
   --console-primary-text: #93c5fd;
   --console-primary-border: #1e40af;
@@ -274,6 +276,8 @@ html.dark-mode {
   /* Tenant Manage Button - Dark Mode için hover renkleri */
   --console-btn-manage-hover-bg-dark: rgba(59, 130, 246, 0.15); /* Dark temada hover zemin rengi */
   --console-btn-manage-hover-text-dark: #93c5fd; /* text-blue-300 - dark temada daha açık mavi */
+  --console-plan-bg-gradient-top: #97189d;
+  --console-plan-bg-gradient-bottom: #2563eb;
 
   /* Success Colors (Green) */
   --console-success: #10b981;

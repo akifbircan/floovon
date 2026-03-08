@@ -101,6 +101,8 @@
   --light-aqua-bg: #e4fbfe;
   --ay-aqua-bg: #b6dee3;
   --hafta-aqua-bg: #ddf7fd;
+  /* Arşiv tablosu - organizasyon grup başlığı zemin rengi (light) */
+  --arsiv-grup-baslik-organizasyon-bg: #f5e6ef;
 
   /* Müşteri detay - Yüklenen dosyalar alanı */
   --customers-detail-files-bg: #f1faff;
@@ -483,6 +485,8 @@ html.dark-mode {
   --light-aqua-bg: #0b1c2b;
   --ay-aqua-bg: #1a3d3d;
   --hafta-aqua-bg: #0f2a2a;
+  /* Arşiv tablosu - organizasyon grup başlığı zemin rengi (dark) */
+  --arsiv-grup-baslik-organizasyon-bg: #2a1f28;
   --light-violet-bg: #2a1f3a;
   --neutral-gray-b1: #666;
   --neutral-gray-e3: #444;

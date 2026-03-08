@@ -286,7 +286,7 @@ export const OrganizasyonKart: React.FC<OrganizasyonKartProps> = ({
             {organizasyonKart.kart_etiket ? (
             <span className="kart-etiket">
                 <Tag className="kart-etiket-icon" aria-hidden />
-              {organizasyonKart.kart_etiket.toUpperCase()}
+              {(organizasyonKart.kart_etiket || '').toLocaleUpperCase('tr-TR')}
             </span>
             ) : null}
           </div>
@@ -367,6 +367,7 @@ export const OrganizasyonKart: React.FC<OrganizasyonKartProps> = ({
                   <Pencil size={16} aria-hidden />{' '}Düzenle
                 </button>
                 )}
+                {kartTur !== 'ciceksepeti' && (
                 <button
                   onClick={() => handleMenuAction('tumunu-teslim-et')}
                   id="tum-kartlari-teslim-edildi-olarak-isaretle"
@@ -374,6 +375,7 @@ export const OrganizasyonKart: React.FC<OrganizasyonKartProps> = ({
                 >
                   <SquareCheck size={16} aria-hidden />{' '}Tümünü teslim edildi işaretle
                 </button>
+                )}
                 <button
                   onClick={() => handleMenuAction('arsivle')}
                   className="karti-arsivle"
@@ -413,11 +415,13 @@ export const OrganizasyonKart: React.FC<OrganizasyonKartProps> = ({
             <i className="icon-toplam-siparis"></i>
             {teslimEdilenSayisi}/{toplamSiparisSayisi}
           </span>
-          {/* Partner Sipariş Sayısı - Her zaman göster, sipariş yoksa 0 */}
+          {/* Partner Sipariş Sayısı - Çiçek Sepeti kartlarına partner sipariş eklenmez, gösterme */}
+          {kartTur !== 'ciceksepeti' && (
           <div className="partner-siparisler" data-tooltip="Bu organizasyondaki partner sipariş sayısı">
             <i className="icon-partner-siparis"></i>
             <span className="partner-siparis-sayisi">{organizasyonKart.partner_siparis_sayisi || 0}</span>
           </div>
+          )}
           {/* Foto Sayısı - Her zaman göster, foto yoksa 0 */}
           <button 
             type="button" 

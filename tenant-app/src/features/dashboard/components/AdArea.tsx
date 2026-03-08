@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { Van } from 'lucide-react';
 
 export const AdArea: React.FC = () => {
 
@@ -31,7 +32,7 @@ export const AdArea: React.FC = () => {
           </div>
           <div className="reklam-feature-item">
             <div className="reklam-feature-icon">
-              <i className="fa-solid fa-truck"></i>
+              <Van size={24} strokeWidth={2} className="vehicle-tracking-lucide-icon" aria-hidden />
             </div>
             <div className="reklam-feature-content">
               <div className="reklam-feature-title">Araç Takip</div>

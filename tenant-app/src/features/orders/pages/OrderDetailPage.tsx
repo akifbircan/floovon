@@ -115,7 +115,7 @@ function siparisToOrder(s: Siparis, organizasyonId: number): Order {
 
 interface OrganizasyonKart {
   id: number;
-  kart_tur?: 'organizasyon' | 'aracsusleme' | 'ozelgun' | 'ozelsiparis';
+  kart_tur?: 'organizasyon' | 'aracsusleme' | 'ozelgun' | 'ozelsiparis' | 'ciceksepeti';
   kart_turu?: string;
   kart_etiket?: string;
   alt_tur?: string;
@@ -192,6 +192,7 @@ function normalizeKartTur(kart_turu?: string): 'organizasyon' | 'aracsusleme' | 
   if (!kart_turu) return 'organizasyon';
   const t = String(kart_turu).toLowerCase();
   if (t.includes('araç') || t.includes('arac') || t === 'aracsusleme') return 'aracsusleme';
+  if (t.includes('çiçek') || t.includes('cicek') || t === 'ciceksepeti') return 'ozelgun'; // Çiçek Sepeti: özel gün detay mantığı (teslim saati, imza)
   if (t.includes('özel gün') || t.includes('ozel gun') || t === 'ozelgun') return 'ozelgun';
   if (t.includes('özel sipariş') || t.includes('ozel siparis') || t === 'ozelsiparis') return 'ozelsiparis';
   return 'organizasyon';
@@ -669,7 +670,7 @@ export const OrderDetailPage: React.FC = () => {
     setArsivSebepOpen(false);
     if (!arsivSiparis) return;
     try {
-      await arsivleSiparis(arsivSiparis.id, sebep);
+      await arsivleSiparis(arsivSiparis.id, sebep, undefined, isCiceksepeti);
       showToast('success', 'Sipariş arşivlendi');
       invalidateOrganizasyonKartQueries(queryClient, id);
       queryClient.invalidateQueries({ queryKey: ['archived-orders'] });
@@ -822,12 +823,11 @@ export const OrderDetailPage: React.FC = () => {
   }
 
   const kartTur = normalizeKartTur(organizasyonKart.kart_turu ?? organizasyonKart.kart_tur);
-  const kartTurDisplay = {
-    organizasyon: 'Organizasyon',
-    aracsusleme: 'Araç Süsleme',
-    ozelgun: 'Özel Gün',
-    ozelsiparis: 'Özel Sipariş',
-  }[kartTur] || (organizasyonKart.kart_turu ?? 'Organizasyon');
+  const rawKartTur = String(organizasyonKart.kart_turu ?? organizasyonKart.kart_tur ?? '').toLowerCase();
+  const isCiceksepeti = rawKartTur.includes('çiçek') || rawKartTur.includes('cicek') || rawKartTur === 'ciceksepeti';
+  const kartTurDisplay = isCiceksepeti
+    ? 'Çiçek Sepeti'
+    : ({ organizasyon: 'Organizasyon', aracsusleme: 'Araç Süsleme', ozelgun: 'Özel Gün', ozelsiparis: 'Özel Sipariş' }[kartTur] || (organizasyonKart.kart_turu ?? 'Organizasyon'));
 
   /* Tablo kolonları organizasyon tipine göre: Özel Gün/Özel Sipariş = TESLİM SAATİ; Araç Süsleme = RANDEVU SAATİ; Organizasyon = ikisi de gizli */
   const showTeslimSaati = kartTur === 'ozelgun' || kartTur === 'ozelsiparis';
@@ -885,10 +885,12 @@ export const OrderDetailPage: React.FC = () => {
         <div className="organizasyon-detaylar">
           <div className="sol-detay-alan">
             <div className="buton-alan">
+              {!isCiceksepeti && (
               <button type="button" className="sp-kart-btn sp-kart-btn-primary" onClick={openYeniSiparis}>
                 <i className="icon-sp-kart-detay-btn-yeni-siparis" aria-hidden />
                 <span>Yeni Sipariş Oluştur</span>
               </button>
+              )}
               <button type="button" className="sp-kart-btn" onClick={openWhatsappList}>
                 <i className="icon-sp-kart-detay-btn-wp-listesi-paylas" aria-hidden />
                 <span>Whatsapp Listesi Paylaş</span>
@@ -909,12 +911,18 @@ export const OrderDetailPage: React.FC = () => {
                   )}
                   <div className="org-bilgiler-wrapper">
                     <div className="kart-header-turler">
-                      <span className="kart-tur">{kartTurDisplay}</span>
+                      <span className="kart-tur">
+                        {isCiceksepeti ? (
+                          <img src="/assets/cicek-sepeti/cicek-sepeti.svg" alt="Çiçek Sepeti" className="kart-tur-ciceksepeti-logo" />
+                        ) : (
+                          kartTurDisplay
+                        )}
+                      </span>
                       {organizasyonKart.alt_tur && <span className="kart-alt-tur">{organizasyonKart.alt_tur}</span>}
                       {organizasyonKart.kart_etiket && (
                         <span className="kart-etiket">
                           <Tag className="kart-etiket-icon" aria-hidden />
-                          {organizasyonKart.kart_etiket.toUpperCase()}
+                          {(organizasyonKart.kart_etiket || '').toLocaleUpperCase('tr-TR')}
                         </span>
                       )}
                     </div>
@@ -933,11 +941,11 @@ export const OrderDetailPage: React.FC = () => {
                         {kartTur === 'aracsusleme' && (
                           <>Araç randevuları için sipariş kartları üzerindeki <span>randevu saatini dikkate alınız</span></>
                         )}
-                        {kartTur === 'ozelsiparis' && (
+                        {kartTur === 'ozelsiparis' && !isCiceksepeti && (
                           <>Özel siparişler için sipariş kartları üzerindeki <span>teslim saatini dikkate alınız</span></>
                         )}
-                        {kartTur === 'ozelgun' && (
-                          <>Özel gün siparişleri için sipariş kartları üzerindeki <span>teslim saatini dikkate alınız</span></>
+                        {(kartTur === 'ozelgun' || isCiceksepeti) && (
+                          <>{isCiceksepeti ? 'Çiçek Sepeti' : 'Özel gün'} siparişleri için sipariş kartları üzerindeki <span>teslim saatini dikkate alınız</span></>
                         )}
                       </div>
                     )}
@@ -1107,11 +1115,15 @@ export const OrderDetailPage: React.FC = () => {
                           <td data-label="SP. NO">#{siparis.kart_sira ?? siparis.id}</td>
                           <td data-label="Sipariş Ürün" className="td-siparis-urun">
                             <div className="siparis-urun-hucre">
-                              {urunGorsel && (
+                              {isCiceksepeti ? (
+                                <div className="siparis-urun-gorsel siparis-urun-ciceksepeti-emblemi">
+                                  <img src="/assets/cicek-sepeti/sp-urun-ciceksepeti.png" alt="" />
+                                </div>
+                              ) : urunGorsel ? (
                                 <div className="siparis-urun-gorsel">
                                   <img src={urunGorsel.startsWith('http') ? urunGorsel : `${backendBase}${urunGorsel.startsWith('/') ? urunGorsel : '/' + urunGorsel}`} alt="" />
                                 </div>
-                              )}
+                              ) : null}
                               <div className="siparis-urun-bilgi">
                                 <span className="siparis-urun-adi">{urunAdi ?? '—'}</span>
                                 {tutar != null && (
@@ -1202,6 +1214,7 @@ export const OrderDetailPage: React.FC = () => {
                                 >
                                   <Eye size={16} aria-hidden />
                                 </button>
+                                {!isCiceksepeti && (
                                 <button
                                   type="button"
                                   className="islem-ikon duzenle-ikon"
@@ -1211,6 +1224,7 @@ export const OrderDetailPage: React.FC = () => {
                                 >
                                   <Pencil size={16} aria-hidden />
                                 </button>
+                                )}
                                 <button
                                   type="button"
                                   className="islem-ikon teslimedildi-ikon"

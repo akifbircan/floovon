@@ -5,7 +5,7 @@ import { apiRequest } from '../../../lib/api';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
 import { showToast } from '../../../shared/utils/toastUtils';
-import { Truck, User as UserIcon } from 'lucide-react';
+import { Van, User as UserIcon } from 'lucide-react';
 
 interface AracTakipModalProps {
   isOpen: boolean;
@@ -271,7 +271,7 @@ export const AracTakipModal: React.FC<AracTakipModalProps> = ({
                   {/* Araç Seçimi */}
                   <div className="modal-react-arac-takip-arac-secimi mb-4">
                     <label className="modal-react-arac-takip-label block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                      <Truck size={16} strokeWidth={2} />
+                      <Van size={16} strokeWidth={2} className="vehicle-tracking-lucide-icon" />
                       <span>Araç Seçiniz</span>
                     </label>
                     <select

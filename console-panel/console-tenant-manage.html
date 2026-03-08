@@ -742,6 +742,16 @@
                 <span class="form-switch-slider"></span>
               </label>
             </div>
+            <div class="form-switch-item">
+              <div class="form-switch-content">
+                <label for="user-admin" class="form-switch-label">Varsayılan / Ana kullanıcı (is_admin)</label>
+                <p class="form-switch-description">Bu kullanıcı silinemez ve durumu pasif yapılamaz</p>
+              </div>
+              <label class="form-switch">
+                <input type="checkbox" id="user-admin" name="is_admin">
+                <span class="form-switch-slider"></span>
+              </label>
+            </div>
           </div>
         </div>
       </form>
@@ -842,6 +852,14 @@
         <button type="button" class="btn-cancel" onclick="tenantManage.closeTenantEditModal()">İptal</button>
         <button type="button" class="btn-save" id="btn-save-tenant-edit">Kaydet</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Plan değişikliği loading overlay (landing dashboard ile aynı davranış) -->
+  <div id="console-manage-plan-loading-overlay" class="console-manage-plan-loading-overlay" style="display: none;">
+    <div class="console-manage-plan-loading-content">
+      <div class="console-manage-plan-loading-spinner"></div>
+      <p class="console-manage-plan-loading-text">Plan değiştiriliyor ve faturanız oluşturuluyor, lütfen bekleyin...</p>
     </div>
   </div>
 

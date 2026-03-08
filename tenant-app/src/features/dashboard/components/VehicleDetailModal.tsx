@@ -10,6 +10,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { apiRequest } from '../../../lib/api';
+import { Van } from 'lucide-react';
 
 /** Araç detay modalında kullanılan minimal araç tipi (useVehicleTracking ile döngüyü önlemek için yerel) */
 interface VehicleDetailVehicle {
@@ -267,8 +268,8 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
       <div className="vehicle-detail-modal detail-modal" onClick={(e) => e.stopPropagation()}>
         <div className="vehicle-detail-modal-header modal-header">
           <div className="vehicle-detail-modal-title modal-title">
-            <div className="vehicle-icon">
-              <i className="fa-solid fa-truck" aria-hidden />
+            <div className="vehicle-icon vehicle-icon-lucide">
+              <Van size={24} strokeWidth={2} className="vehicle-tracking-lucide-icon" aria-hidden />
             </div>
             <div className="title-vehicle-info">
               <div id="vehicle-detail-plate" className="vehicle-detail-plate">

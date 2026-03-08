@@ -833,6 +833,24 @@ if (hasTenantAppDist) {
             res.status(404).end();
         }
     });
+    app.get('/icon-192.png', (req, res) => {
+        const p = path.join(tenantAppDistPath, 'icon-192.png');
+        if (fs.existsSync(p)) {
+            res.type('image/png');
+            res.sendFile(p);
+        } else {
+            res.status(404).end();
+        }
+    });
+    app.get('/icon-512.png', (req, res) => {
+        const p = path.join(tenantAppDistPath, 'icon-512.png');
+        if (fs.existsSync(p)) {
+            res.type('image/png');
+            res.sendFile(p);
+        } else {
+            res.status(404).end();
+        }
+    });
 }
 
 // 3. Uzantısız URL'leri .html dosyasına yönlendir (static middleware'den ÖNCE!)

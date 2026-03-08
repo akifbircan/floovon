@@ -36,7 +36,7 @@ export const AdArea: React.FC = () => {
             </div>
             <div className="reklam-feature-content">
               <div className="reklam-feature-title">Araç Takip</div>
-              <div className="reklam-feature-desc">Canlı araç takibi</div>
+              <div className="reklam-feature-desc">Teslimattaki araçlarınızı takip edin</div>
             </div>
           </div>
           <div className="reklam-feature-item">

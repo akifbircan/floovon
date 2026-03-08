@@ -53,7 +53,7 @@ function createReklamArea() {
                     </div>
                     <div class="reklam-feature-content">
                         <div class="reklam-feature-title">Araç Takip</div>
-                        <div class="reklam-feature-desc">Canlı araç takibi</div>
+                        <div class="reklam-feature-desc">Teslimattaki araçlarınızı takip edin</div>
                     </div>
                 </div>
                 <div class="reklam-feature-item">

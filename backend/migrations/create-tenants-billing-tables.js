@@ -169,22 +169,29 @@ async function createTenantsBillingTables() {
 }
 
 /**
- * Örnek veriler ekle
+ * Örnek veriler ekle (tenants tablosu yoksa atla – ana uygulama ilk çalışmada oluşturur)
  */
 function insertSampleData(db, resolve, reject) {
-    // Önce mevcut tenant'ı kontrol et
-    db.get('SELECT id FROM tenants LIMIT 1', [], (err, tenant) => {
-        if (err) {
-            console.error('❌ Tenant kontrolü hatası:', err);
-            db.close();
-            return reject(err);
-        }
-
-        if (!tenant) {
-            console.log('⚠️ Henüz tenant yok, örnek veriler eklenemiyor');
+    // Önce tenants tablosunun var olup olmadığını kontrol et
+    db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='tenants'", [], (errTable, row) => {
+        if (errTable || !row) {
+            console.log('⚠️ tenants tablosu henüz yok, örnek veriler atlanıyor (ana uygulama ilk çalışmada oluşturur)');
             db.close();
             return resolve();
         }
+        // Mevcut tenant'ı kontrol et
+        db.get('SELECT id FROM tenants LIMIT 1', [], (err, tenant) => {
+            if (err) {
+                console.error('❌ Tenant kontrolü hatası:', err);
+                db.close();
+                return reject(err);
+            }
+
+            if (!tenant) {
+                console.log('⚠️ Henüz tenant yok, örnek veriler eklenemiyor');
+                db.close();
+                return resolve();
+            }
 
         const tenantId = tenant.id;
 
@@ -375,7 +382,7 @@ function insertSampleData(db, resolve, reject) {
                 });
             });
         });
-        });
+    });
     });
 }
 

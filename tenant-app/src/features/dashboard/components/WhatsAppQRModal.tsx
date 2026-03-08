@@ -194,7 +194,7 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
     };
 
     poll();
-    pollIntervalRef.current = setInterval(poll, 5000);
+    pollIntervalRef.current = setInterval(poll, 2000);
 
     return () => {
       if (pollIntervalRef.current) {

@@ -1,7 +1,7 @@
 {
-  "name": "Floovon Panel",
-  "short_name": "Floovon Panel",
-  "description": "Floovon tenant paneli",
+  "name": "Floovon™",
+  "short_name": "Floovon™",
+  "description": "Floovon Tenant Panel",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

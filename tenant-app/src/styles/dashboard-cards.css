@@ -343,6 +343,12 @@
   background-color: var(--whatsapp-green-hover) !important;
   color: var(--whatsapp-text) !important;
 }
+.kart-menu-content button.wp-listesi-paylas:disabled,
+.kart-menu-content .buton.wp-listesi-paylas:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 .kart-menu-content button.wp-listesi-paylas i,
 .kart-menu-content button.wp-listesi-paylas svg,
 .kart-menu-content .buton.wp-listesi-paylas i,

@@ -891,7 +891,13 @@ export const OrderDetailPage: React.FC = () => {
                 <span>Yeni Sipariş Oluştur</span>
               </button>
               )}
-              <button type="button" className="sp-kart-btn" onClick={openWhatsappList}>
+              <button
+                type="button"
+                className="sp-kart-btn"
+                onClick={openWhatsappList}
+                disabled={!siparislerAsOrder.length}
+                title={!siparislerAsOrder.length ? 'Sipariş olmadığı için paylaşılamaz' : 'Whatsapp listesi paylaş'}
+              >
                 <i className="icon-sp-kart-detay-btn-wp-listesi-paylas" aria-hidden />
                 <span>Whatsapp Listesi Paylaş</span>
               </button>

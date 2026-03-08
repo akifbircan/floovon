@@ -144,12 +144,13 @@ export async function createOrganizasyonWhatsAppMessage(
     musteriSatiri = `${musteriTel}\n\n`;
   }
   
-  // Kart türü
+  // Kart türü (başlıkta gösterim)
   const kartTur = (kart.kart_tur_display || kart.kart_tur || 'Organizasyon').toLocaleUpperCase('tr-TR');
-  
-  // Saat
-  const saat = temizle((kart.teslim_saat || '').replace('Saat', ''));
-  
+  const kartTurSlug = (kart.kart_tur || '').toLowerCase().trim();
+  // Saat sadece organizasyon (düğün, nişan vb.) için; özel sipariş, özel gün, çiçek sepeti, araç süslemede sadece tarih
+  const isOrganizasyonKarti = kartTurSlug === 'organizasyon';
+  const saat = isOrganizasyonKarti ? temizle((kart.teslim_saat || '').replace('Saat', '')) : '';
+
   // Sipariş listesi
   // API'den ekstra ücret bilgilerini çek (eğer siparişlerde yoksa)
   const siparislerWithDetails = await Promise.all(
@@ -180,8 +181,9 @@ export async function createOrganizasyonWhatsAppMessage(
     return `(${i + 1}) ${urunVeFiyat}  ✉  ${yazi}`;
   });
   
-  // Mesajı oluştur
-  return `🎉 *${kartTur}*\n${tarih} • Saat: ${saat}\n${orgAdresSatiri}\n${musteriSatiri}Siparişler *(Toplam ${siparisListesi.length} Sipariş)*\n━━━━━━━━━━━━━━━━━━━━━━━\n${siparisListesi.join('\n')}`;
+  // Mesajı oluştur: başlık altında tarih her türde; saat sadece organizasyon kartlarında
+  const tarihSaatSatiri = (tarih || saat) ? `${tarih}${tarih && saat ? ' • ' : ''}${saat ? `Saat: ${saat}` : ''}\n` : '';
+  return `🎉 *${kartTur}*\n${tarihSaatSatiri}${orgAdresSatiri}\n${musteriSatiri}Siparişler *(Toplam ${siparisListesi.length} Sipariş)*\n━━━━━━━━━━━━━━━━━━━━━━━\n${siparisListesi.join('\n')}`;
 }
 
 /**
@@ -230,9 +232,12 @@ export async function createOrderWhatsAppMessage(
     musteriSatiri = `${musteriTel}\n\n`;
   }
   
-  // Organizasyon kartı bilgileri varsa ekle
+  // Organizasyon kartı bilgileri: tarih her türde, saat sadece organizasyon (düğün/nişan vb.)
   let kartBilgileri = '';
   if (organizasyonKart) {
+    const kartTurSlug = (organizasyonKart.kart_tur || '').toLowerCase().trim();
+    const isOrganizasyonKarti = kartTurSlug === 'organizasyon';
+
     let tarih = '';
     if (organizasyonKart.teslim_tarih) {
       const date = new Date(organizasyonKart.teslim_tarih);
@@ -244,13 +249,13 @@ export async function createOrderWhatsAppMessage(
       const dayName = dayNames[date.getDay()];
       tarih = formatTarih(`${day} ${month} ${year} ${dayName}`);
     }
-    
+
     const kartTur = (organizasyonKart.kart_tur_display || organizasyonKart.kart_tur || 'Organizasyon').toLocaleUpperCase('tr-TR');
-    const saat = temizle((organizasyonKart.teslim_saat || '').replace('Saat', ''));
-    
+    const saat = isOrganizasyonKarti ? temizle((organizasyonKart.teslim_saat || '').replace('Saat', '')) : '';
+
     const salon = temizle(organizasyonKart.mahalle || '');
     const orgAdres = temizle(organizasyonKart.acik_adres || '');
-    
+
     let orgAdresSatiri = '';
     if (salon && orgAdres) {
       orgAdresSatiri = `*${formatAdres(salon)}*\n${formatAdres(orgAdres)}`;
@@ -259,12 +264,12 @@ export async function createOrderWhatsAppMessage(
     } else if (orgAdres) {
       orgAdresSatiri = formatAdres(orgAdres);
     }
-    
-    if (tarih || orgAdresSatiri) {
+
+    if (tarih || saat || orgAdresSatiri) {
       kartBilgileri = `🎉 *${kartTur}*\n`;
       if (tarih) kartBilgileri += `${tarih}`;
-      if (saat) kartBilgileri += ` • Saat: ${saat}`;
-      if (kartBilgileri) kartBilgileri += '\n';
+      if (saat) kartBilgileri += `${tarih ? ' • ' : ''}Saat: ${saat}`;
+      if (tarih || saat) kartBilgileri += '\n';
       if (orgAdresSatiri) kartBilgileri += `${orgAdresSatiri}\n`;
       kartBilgileri += '\n';
     }

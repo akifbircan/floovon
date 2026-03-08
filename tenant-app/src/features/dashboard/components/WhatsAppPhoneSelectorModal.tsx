@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface WhatsAppContact {
   isim: string;
@@ -62,7 +63,7 @@ export const WhatsAppPhoneSelectorModal: React.FC<WhatsAppPhoneSelectorModalProp
 
   if (!isOpen) return null;
 
-  return (
+  const overlay = (
     <div
       className="modal-react-whatsapp-phone-overlay"
       onClick={(e) => {
@@ -96,6 +97,8 @@ export const WhatsAppPhoneSelectorModal: React.FC<WhatsAppPhoneSelectorModalProp
       </div>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 };
 
 

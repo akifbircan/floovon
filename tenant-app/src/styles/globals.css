@@ -114,10 +114,11 @@
     z-index: 0;
   }
 
-  /* Tüm tam ekran overlay/modaller header ve sidebar'ın üstünde */
+  /* Tüm tam ekran overlay/modaller header ve sidebar'ın üstünde (body'e portal ile render edilir) */
   .lightbox-overlay,
   .confirm-modal-overlay,
-  .cari-drawer-overlay {
+  .cari-drawer-overlay,
+  .modal-react-whatsapp-phone-overlay {
     z-index: 100000 !important;
   }
   

@@ -392,8 +392,10 @@ export const OrganizasyonKart: React.FC<OrganizasyonKartProps> = ({
                 )}
                 {isBaslangicPlan === false && (
                 <button
-                  onClick={() => handleMenuAction('whatsapp')}
+                  onClick={() => toplamSiparisSayisi > 0 && handleMenuAction('whatsapp')}
                   className="buton wp-listesi-paylas"
+                  disabled={toplamSiparisSayisi === 0}
+                  title={toplamSiparisSayisi === 0 ? 'Sipariş olmadığı için paylaşılamaz' : 'Whatsapp listesi paylaş'}
                 >
                   <i className="icon-sp-kart-detay-btn-wp-listesi-paylas" aria-hidden />{' '}Whatsapp listesi paylaş
                 </button>

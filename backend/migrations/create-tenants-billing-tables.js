@@ -384,6 +384,7 @@ function insertSampleData(db, resolve, reject) {
         });
     });
     });
+    });
 }
 
 // Eğer doğrudan çalıştırılıyorsa

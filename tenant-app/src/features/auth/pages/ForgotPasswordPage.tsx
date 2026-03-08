@@ -36,7 +36,7 @@ export const ForgotPasswordPage: React.FC = () => {
   useEffect(() => {
     applySavedThemeToDocument();
     const onStorage = (e: StorageEvent) => {
-      if (e.key === 'theme') applySavedThemeToDocument();
+      if (e.key === 'tenant_panel_theme') applySavedThemeToDocument();
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);

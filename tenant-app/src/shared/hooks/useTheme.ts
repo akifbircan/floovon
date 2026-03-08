@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 
 const THEME_CHANGED_EVENT = 'floovon-theme-changed';
 
+/** Tenant panel tema anahtarı (console panelinden bağımsız) */
+export const TENANT_PANEL_THEME_KEY = 'tenant_panel_theme';
+
 /** Tema değiştiğinde bileşenlerin yeniden render olması için event dispatch eder */
 export function dispatchThemeChanged(): void {
   window.dispatchEvent(new CustomEvent(THEME_CHANGED_EVENT));
@@ -15,7 +18,14 @@ function isDarkMode(): boolean {
 /** Login / Şifremi Unuttum gibi Header olmayan sayfalarda: localStorage'daki temayı body/html'e uygular */
 export function applySavedThemeToDocument(): void {
   if (typeof document === 'undefined' || typeof localStorage === 'undefined') return;
-  const saved = localStorage.getItem('theme');
+  let saved = localStorage.getItem(TENANT_PANEL_THEME_KEY);
+  if (saved == null) {
+    const legacy = localStorage.getItem('theme');
+    if (legacy != null) {
+      localStorage.setItem(TENANT_PANEL_THEME_KEY, legacy);
+      saved = legacy;
+    }
+  }
   const isDark = saved === 'dark';
   if (isDark) {
     document.body.classList.add('dark-mode');
@@ -57,7 +67,7 @@ export function useTheme(): boolean {
 
     window.addEventListener(THEME_CHANGED_EVENT, update);
     window.addEventListener('storage', (e: StorageEvent) => {
-      if (e.key === 'theme') applyThemeFromStorage(e.newValue);
+      if (e.key === TENANT_PANEL_THEME_KEY) applyThemeFromStorage(e.newValue);
     });
 
     return () => {

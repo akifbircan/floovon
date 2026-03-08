@@ -6,11 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Tenant Yönetimi | Floovon™</title>
 
-  <!-- Tema Kontrolü - CSS yüklenmeden önce çalışır (beyaz flash'ı önlemek için) -->
+  <!-- Tema Kontrolü - CSS yüklenmeden önce çalışır (console panel anahtarı) -->
   <script>
     (function() {
       try {
-        const savedTheme = localStorage.getItem('theme');
+        var savedTheme = localStorage.getItem('console_panel_theme');
+        if (savedTheme == null) {
+          var legacy = localStorage.getItem('theme');
+          if (legacy != null) {
+            localStorage.setItem('console_panel_theme', legacy);
+            savedTheme = legacy;
+          }
+        }
         if (savedTheme === 'dark') {
           // HTML ve body'ye class ekle (CSS yüklenmeden önce çalışır)
           document.documentElement.classList.add('dark-mode');
@@ -66,7 +73,7 @@
 
 
 
-  <!-- CSS yüklendiğinde css-loaded class'ını ekle -->
+  <!-- CSS yüklendiğinde css-loaded class'ını ekle (ilk açılışta içeriğin görünmesi için DOMContentLoaded yedek) -->
   <script>
       (function() {
           function addCssLoadedClass() {
@@ -78,6 +85,12 @@
           const cssFiles = document.querySelectorAll('link[rel="stylesheet"]');
           let loadedCount = 0;
           const totalCssFiles = cssFiles.length;
+          
+          function ensureCssLoadedWhenReady() {
+              if (document.body && !document.body.classList.contains('css-loaded')) {
+                  addCssLoadedClass();
+              }
+          }
           
           if (totalCssFiles === 0) {
               if (document.body) {
@@ -111,13 +124,12 @@
                       };
                   }
               });
-              
-              // Fallback timeout - reduced to 500ms for faster loading
-              setTimeout(function() {
-                  if (document.body && !document.body.classList.contains('css-loaded')) {
-                      addCssLoadedClass();
-                  }
-              }, 500);
+              if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', ensureCssLoadedWhenReady);
+              } else {
+                  ensureCssLoadedWhenReady();
+              }
+              setTimeout(ensureCssLoadedWhenReady, 500);
           }
       })();
   </script>

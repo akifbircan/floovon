@@ -5,11 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Admin Panel | Floovon™</title>
   
-  <!-- Tema Kontrolü - CSS yüklenmeden önce çalışır (beyaz flash'ı önlemek için) -->
+  <!-- Tema Kontrolü - CSS yüklenmeden önce çalışır (console panel anahtarı) -->
   <script>
     (function() {
       try {
-        const savedTheme = localStorage.getItem('theme');
+        var savedTheme = localStorage.getItem('console_panel_theme');
+        if (savedTheme == null) {
+          var legacy = localStorage.getItem('theme');
+          if (legacy != null) {
+            localStorage.setItem('console_panel_theme', legacy);
+            savedTheme = legacy;
+          }
+        }
         if (savedTheme === 'dark') {
           // HTML ve body'ye class ekle (CSS yüklenmeden önce çalışır)
           document.documentElement.classList.add('dark-mode');

@@ -13,7 +13,7 @@ import { WhatsAppConnectionInfoModal } from '../../features/dashboard/components
 import { TeknikDestekModal } from '../../features/dashboard/components/TeknikDestekModal';
 import { formatPhoneNumber } from '../../shared/utils/formatUtils';
 import { getUploadUrl } from '../../shared/utils/urlUtils';
-import { dispatchThemeChanged, useTheme } from '../../shared/hooks/useTheme';
+import { dispatchThemeChanged, useTheme, TENANT_PANEL_THEME_KEY } from '../../shared/hooks/useTheme';
 import { showToast } from '../../shared/utils/toastUtils';
 import { completeAracTakip } from '../../features/dashboard/api/aracTakip';
 import type { AracTakipDurumResponse } from '../../features/dashboard/api/aracTakip';
@@ -299,7 +299,14 @@ export const Header: React.FC = () => {
 
   // ✅ KRİTİK: Sayfa yüklendiğinde localStorage'dan temayı oku ve uygula
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
+    let savedTheme = localStorage.getItem(TENANT_PANEL_THEME_KEY);
+    if (savedTheme == null) {
+      const legacy = localStorage.getItem('theme');
+      if (legacy != null) {
+        localStorage.setItem(TENANT_PANEL_THEME_KEY, legacy);
+        savedTheme = legacy;
+      }
+    }
     if (savedTheme === 'dark') {
       document.body.classList.add('dark-mode');
       document.documentElement.classList.add('dark-mode');
@@ -711,7 +718,7 @@ export const Header: React.FC = () => {
                       const body = document.body;
                       const isNowDark = body.classList.toggle('dark-mode');
                       document.documentElement.classList.toggle('dark-mode', isNowDark);
-                      localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
+                      localStorage.setItem(TENANT_PANEL_THEME_KEY, isNowDark ? 'dark' : 'light');
                       dispatchThemeChanged();
                       const icon = e.currentTarget.querySelector('i');
                       if (icon) {
@@ -977,7 +984,7 @@ export const Header: React.FC = () => {
                   const body = document.body;
                   const isNowDark = body.classList.toggle('dark-mode');
                   document.documentElement.classList.toggle('dark-mode', isNowDark);
-                  localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
+                  localStorage.setItem(TENANT_PANEL_THEME_KEY, isNowDark ? 'dark' : 'light');
                   dispatchThemeChanged();
                   
                   // Icon'u güncelle
@@ -1002,7 +1009,7 @@ export const Header: React.FC = () => {
                   const body = document.body;
                   const isNowDark = body.classList.toggle('dark-mode');
                   document.documentElement.classList.toggle('dark-mode', isNowDark);
-                  localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
+                  localStorage.setItem(TENANT_PANEL_THEME_KEY, isNowDark ? 'dark' : 'light');
                   dispatchThemeChanged();
                   
                   // Icon'u güncelle

@@ -37,9 +37,9 @@ class AdminPanel {
     }
     
     init() {
-        // Tema senkronizasyonu için storage event listener
+        // Tema senkronizasyonu için storage event listener (console panel kendi anahtarı)
         window.addEventListener('storage', (e) => {
-            if (e.key === 'theme') {
+            if (e.key === 'console_panel_theme') {
                 const isDark = e.newValue === 'dark';
                 if (isDark) {
                     document.documentElement.classList.add('dark-mode');
@@ -239,7 +239,7 @@ class AdminPanel {
             const body = document.body;
             const isNowDark = body.classList.toggle('dark-mode');
             document.documentElement.classList.toggle('dark-mode', isNowDark);
-            localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
+            localStorage.setItem('console_panel_theme', isNowDark ? 'dark' : 'light');
             
             // appSettings'i güncelle
             try {
@@ -258,7 +258,7 @@ class AdminPanel {
             
             // Storage event'i tetikle (diğer tab'lar için)
             window.dispatchEvent(new StorageEvent('storage', {
-                key: 'theme',
+                key: 'console_panel_theme',
                 newValue: isNowDark ? 'dark' : 'light',
                 oldValue: isNowDark ? 'light' : 'dark'
             }));
@@ -266,7 +266,7 @@ class AdminPanel {
         
         // Storage event listener (diğer tab'lardan gelen değişiklikler için)
         window.addEventListener('storage', (e) => {
-            if (e.key === 'theme') {
+            if (e.key === 'console_panel_theme') {
                 const isDark = e.newValue === 'dark';
                 if (isDark) {
                     document.documentElement.classList.add('dark-mode');
@@ -3006,13 +3006,20 @@ class AdminPanel {
         const darkModeInput = document.createElement('input');
         darkModeInput.type = 'checkbox';
         darkModeInput.className = 'sr-only peer';
-        // Check localStorage for theme preference
-        const savedTheme = localStorage.getItem('theme');
+        // Check localStorage for theme preference (console panel anahtarı)
+        let savedTheme = localStorage.getItem('console_panel_theme');
+        if (savedTheme == null) {
+            const legacy = localStorage.getItem('theme');
+            if (legacy != null) {
+                localStorage.setItem('console_panel_theme', legacy);
+                savedTheme = legacy;
+            }
+        }
         darkModeInput.checked = savedTheme === 'dark';
         darkModeInput.addEventListener('change', (e) => {
             const isDark = e.target.checked;
             // Save theme preference
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('console_panel_theme', isDark ? 'dark' : 'light');
             // Update appSettings if it exists
             if (appSettings) {
                 appSettings.darkMode = isDark;

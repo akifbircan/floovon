@@ -813,6 +813,28 @@ app.get('/landing/:page', (req, res) => {
     }
 });
 
+// 2b. PWA: manifest ve service worker — tek segmentli route’a düşmesin, doğru MIME ile sun
+if (hasTenantAppDist) {
+    app.get('/tenant-panel.webmanifest', (req, res) => {
+        const p = path.join(tenantAppDistPath, 'tenant-panel.webmanifest');
+        if (fs.existsSync(p)) {
+            res.type('application/manifest+json');
+            res.sendFile(p);
+        } else {
+            res.status(404).end();
+        }
+    });
+    app.get('/sw.js', (req, res) => {
+        const p = path.join(tenantAppDistPath, 'sw.js');
+        if (fs.existsSync(p)) {
+            res.type('application/javascript');
+            res.sendFile(p);
+        } else {
+            res.status(404).end();
+        }
+    });
+}
+
 // 3. Uzantısız URL'leri .html dosyasına yönlendir (static middleware'den ÖNCE!)
 // API, uploads, admin ve landing route'larını hariç tut
 // GET request'leri için
@@ -847,15 +869,6 @@ app.head(/^\/(?!api|uploads|admin|admin-login|admin-tenant-manage|landing)([^/]+
 
 // 4. Root static ÖNCE - console, landing için js/, css/, assets/ (config.js, console-*.css vb.)
 app.use(express.static(staticFilesPath));
-
-// 4b. PWA manifest - her zaman JSON olarak dön (SPA fallback HTML vermesin)
-const tenantManifestPath = path.join(tenantAppDistPath, 'tenant-panel.webmanifest');
-if (hasTenantAppDist && fs.existsSync(tenantManifestPath)) {
-    app.get('/tenant-panel.webmanifest', (req, res) => {
-        res.type('application/manifest+json');
-        res.sendFile(tenantManifestPath);
-    });
-}
 
 // 5. Tenant-app (React) dist - panel asset'leri (tooltip-system.js, /assets/ vb. root'ta yoksa)
 if (hasTenantAppDist) {

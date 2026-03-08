@@ -1,30 +1,32 @@
 /**
- * PWA ikonları: assets/logo-emblem-dark.svg -> icon-192.png, icon-512.png
- * Beyaz arka plan; Sharp ile SVG -> PNG.
+ * PWA ikonları: FLOOVON/favicon içindeki android-chrome-192x192.png ve
+ * android-chrome-512x512.png -> tenant-app/public/icon-192.png, icon-512.png
+ * Yeni ikon kullanacaksan favicon klasöründeki PNG'leri güncelle, sonra bu scripti çalıştır.
  * Çalıştırma: node scripts/generate-pwa-icons.js (tenant-app klasöründen)
  */
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import sharp from 'sharp';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, '..', 'public');
-const svgPath = path.join(publicDir, 'assets', 'logo-emblem-dark.svg');
+const faviconDir = path.join(__dirname, '..', '..', 'favicon');
 
-async function main() {
-  try {
-    const sizes = [192, 512];
-    for (const size of sizes) {
-      await sharp(svgPath)
-        .resize(size, size)
-        .flatten({ background: '#ffffff' })
-        .png()
-        .toFile(path.join(publicDir, `icon-${size}.png`));
-      console.log(`icon-${size}.png yazıldı`);
+const files = [
+  { from: 'android-chrome-192x192.png', to: 'icon-192.png' },
+  { from: 'android-chrome-512x512.png', to: 'icon-512.png' },
+];
+
+function main() {
+  for (const { from, to } of files) {
+    const src = path.join(faviconDir, from);
+    const dest = path.join(publicDir, to);
+    if (!fs.existsSync(src)) {
+      console.error(`Bulunamadı: ${src}`);
+      process.exit(1);
     }
-  } catch (e) {
-    console.error('İkon üretilemedi:', e.message);
-    process.exit(1);
+    fs.copyFileSync(src, dest);
+    console.log(`${to} (favicon/${from} kopyalandı)`);
   }
 }
 

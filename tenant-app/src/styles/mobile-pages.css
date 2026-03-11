@@ -563,10 +563,7 @@ ul.notifications {
     width: 85%;
   }
 
-  /* Yeni Sipariş – Partner siparişi kutusu mobilde yan padding ile hizalansın */
-  .yeni-siparis-container .siparis-form-alan .sol-alan .partner-siparisi-isaretle {
-    margin: 0 20px !important;
-  }
+
 
   /* Mobilde detay/form paneli modal olarak (Kampanya, Müşteriler, Partner) */
   /* Müşteriler / Partner Firmalar: mobilde detay paneli TAM EKRAN overlay (dar kutu değil) */
@@ -610,6 +607,12 @@ ul.notifications {
     width: 100% !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+  }
+
+  /* Müşteri Düzenle modalı açıkken detay paneli arkada kalsın (z-index 10050 modal üstte) */
+  body:has(.overlay-yeni-musteri-container.show) .page-detail-modal-backdrop.campaigns-mobile-modal-backdrop,
+  body:has(.overlay-yeni-musteri-container.show) .page-panel-sag--as-modal.campaigns-mobile-modal {
+    z-index: 10000 !important;
   }
 
   /* Kampanya modalları: mobilde Yeni Müşteri Ekle gibi overlay içinde, kenarlarda ve altta boşluklu */

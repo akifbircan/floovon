@@ -1223,6 +1223,7 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
                       label: u.adi,
                       imageUrl: u.gorsel ? getUploadUrl(u.gorsel) : undefined,
                     }))}
+                    showImagePlaceholder
                     onChange={(urunId) => {
                       setSecilenUrunId(urunId);
                       if (urunId) {

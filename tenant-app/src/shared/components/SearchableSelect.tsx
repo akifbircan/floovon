@@ -23,6 +23,8 @@ interface SearchableSelectProps {
   id?: string;
   className?: string;
   'aria-label'?: string;
+  /** Sadece ürün listesinde: görseli olmayan öğelerde "Görsel yok" kutusu göster. Müşteri/partner listesinde false. */
+  showImagePlaceholder?: boolean;
 }
 
 export const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -34,6 +36,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   id,
   className = '',
   'aria-label': ariaLabel,
+  showImagePlaceholder = false,
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -80,7 +83,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       >
         {displayImageUrl ? (
           <img src={displayImageUrl} alt="" />
-        ) : selectedOption ? (
+        ) : selectedOption && showImagePlaceholder ? (
           <span className="searchable-select-placeholder" aria-hidden>Görsel yok</span>
         ) : null}
         <span className="searchable-select-trigger-text">{displayLabel}</span>
@@ -114,9 +117,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 >
                   {option.imageUrl ? (
                     <img src={option.imageUrl} alt="" />
-                  ) : (
+                  ) : showImagePlaceholder ? (
                     <span className="searchable-select-placeholder" aria-hidden>Görsel yok</span>
-                  )}
+                  ) : null}
                   {option.label}
                 </li>
               ))

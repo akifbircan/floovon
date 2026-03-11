@@ -3058,11 +3058,11 @@ table td:has(.islem-ikonlar) {
 }
 
 /* Detay paneli */
-.page-detail-header,
+/* .page-detail-header,
 .customers-detail-header,
 .partners-detail-header {
   height: 32px;
-}
+} */
 .page-detail-title,
 .customers-detail-title,
 .partners-detail-title {

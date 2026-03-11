@@ -1155,6 +1155,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
 }
 
 /* ========== YENİ MÜŞTERİ MODAL ========== */
+/* z-index 10050: müşteri detay paneli (10003) üzerinde – Düzenle modalı arkada kalmasın */
 .overlay-yeni-musteri-container {
     display: none !important;
     position: fixed !important;
@@ -1163,7 +1164,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     width: 100vw !important;
     height: 100vh !important;
     background-color: var(--overlay-bg-black) !important;
-    z-index: 9999 !important;
+    z-index: 10050 !important;
     align-items: center !important;
     justify-content: center !important;
     overflow-y: auto !important;
@@ -1184,7 +1185,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     color: var(--ana-renk) !important;
     width: 770px !important;
     max-width: 770px !important;
-    z-index: 9999 !important;
+    z-index: 10010 !important;
 }
 
 .yeni-musteri-container.show {
@@ -1538,6 +1539,8 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     color: var(--ana-renk) !important;
     z-index: 9999 !important;
     transition: 250ms ease 0s !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
 }
 
 .yeni-siparis-container.show {
@@ -1548,6 +1551,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     display: flex !important;
     padding-top: 20px !important;
     gap: 10px !important;
+    min-width: 0 !important;
 }
 
 .yeni-siparis-container .siparis-form-alan .sol-alan {
@@ -1556,6 +1560,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     gap: 10px !important;
     height: 100% !important;
     width: 100% !important;
+    min-width: 0 !important;
 }
 
 .yeni-siparis-container .siparis-form-alan .kisi-bilgi-alanlar {
@@ -1574,6 +1579,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     padding: 20px !important;
     width: 100% !important;
     height: 100% !important;
+    min-width: 0 !important;
 }
 
 .yeni-siparis-container .alan-baslik {
@@ -1605,15 +1611,17 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
 .yeni-siparis-container .input-alan {
     display: flex !important;
     flex-direction: column !important;
-    max-width: 320px !important;
+    max-width: 100% !important;
     width: 100% !important;
+    min-width: 0 !important;
     gap: 10px !important;
 }
 
 .yeni-siparis-container .input-grup {
     display: flex !important;
     gap: 10px !important;
-    max-width: 320px !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
 }
 
 .yeni-siparis-container .sag-alan {
@@ -4952,6 +4960,19 @@ color: var(--ana-renk) !important;
     min-height: 0 !important;
   }
 
+  .yeni-siparis-container .alt-alan {
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 16px !important;
+  }
+
+  .yeni-siparis-container .alt-alan .duzenleyen {
+    align-items: flex-end;
+    align-self: flex-start;
+    justify-self: flex-start;
+  }
+
+
   .overlay-yeni-siparis-container .yeni-siparis-container .organizasyon-kutu .kart-gorseli {
     min-width: 0 !important;
     width: 100% !important;
@@ -5370,8 +5391,8 @@ div.yeni-musteri-container.show {
 }
 
 /* ========== OVERLAY VE CONTAINER STILLERİ - EN ÜST SEVIYE ========== */
+/* overlay-yeni-musteri 10050: müşteri detay paneli (10003) üzerinde; kart/sipariş 10010 */
 .overlay-yeni-kart-container,
-.overlay-yeni-musteri-container,
 .overlay-yeni-siparis-container {
     display: none !important;
     position: fixed !important;
@@ -5379,7 +5400,18 @@ div.yeni-musteri-container.show {
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 9999 !important;
+    z-index: 10010 !important;
+    background-color: var(--overlay-bg-black) !important;
+    overflow-y: auto !important;
+}
+.overlay-yeni-musteri-container {
+    display: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 10050 !important;
     background-color: var(--overlay-bg-black) !important;
     overflow-y: auto !important;
 }
@@ -5415,7 +5447,7 @@ div.overlay-yeni-siparis-container div.yeni-siparis-container {
     position: relative !important;
     background: var(--white) !important;
     color: var(--ana-renk) !important;
-    z-index: 9999 !important;
+    z-index: 10010 !important;
     margin: 0 auto !important;
     display: none !important;
 }
@@ -5443,6 +5475,13 @@ body div.overlay-yeni-kart-container div.yeni-kart-container,
 body div.overlay-yeni-musteri-container div.yeni-musteri-container,
 body div.overlay-yeni-siparis-container div.yeni-siparis-container {
     display: none !important;
+}
+
+/* Sipariş formu: içerik form dışına taşmasın */
+.overlay-yeni-siparis-container .yeni-siparis-container,
+body div.overlay-yeni-siparis-container div.yeni-siparis-container {
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
 }
 
 /* Show class'ı ile görünür yap - tek kural, flex column */

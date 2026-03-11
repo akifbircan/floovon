@@ -508,8 +508,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
                 {orderDetails.detayUrl && (
                   <a
                     href={orderDetails.detayUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="modal-react-qr-scanner-action-link modal-react-qr-scanner-detay-link block w-full px-4 py-2 rounded-lg text-center font-medium transition-colors"
                   >
                     Sipariş detayını görüntüle

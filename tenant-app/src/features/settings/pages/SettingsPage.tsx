@@ -333,7 +333,11 @@ function CiceksepetiAyarlariForm() {
               {notifPermission !== 'unsupported' && (
                 <>
                   <small className="ayarlar-help" style={{ display: 'block', marginBottom: '0.5rem' }}>
-                    {notifPermission === 'granted' ? 'Açık — Yeni siparişte telefondaki bildirim çubuğunda uyarı görünür.' : notifPermission === 'denied' ? 'Kapalı — Tarayıcı ayarlarından bildirim iznini açabilirsiniz.' : 'Yeni sipariş geldiğinde telefondaki bildirim ekranında da uyarı görmek için izin verin.'}
+                    {notifPermission === 'granted'
+                      ? 'Açık — Çiçek Sepeti\'nden yeni sipariş geldiğinde telefondaki bildirim çubuğunda (ve kilidi ekranında) uyarı görünür. Uygulama arka planda veya sekme kapalıyken de bildirim gelir.'
+                      : notifPermission === 'denied'
+                        ? 'Kapalı — Tarayıcı ayarlarından bildirim iznini açabilirsiniz.'
+                        : 'Yeni sipariş geldiğinde telefondaki bildirim ekranında da uyarı görmek için izin verin.'}
                   </small>
                   {notifPermission !== 'granted' && (
                     <button
@@ -361,6 +365,42 @@ function CiceksepetiAyarlariForm() {
                       <Bell size={14} style={{ marginRight: 6 }} aria-hidden />
                       {notifPermission === 'denied' ? 'İzin tarayıcıda kapalı' : 'Telefon bildirimlerini aç'}
                     </button>
+                  )}
+                  {notifPermission === 'granted' && (
+                    <>
+                      <button
+                        type="button"
+                        className="ayarlar-btn ayarlar-btn-secondary"
+                        style={{ marginTop: 6, marginRight: 8 }}
+                        onClick={() => {
+                          const integration = (window as any).ciceksepetiIntegration;
+                          if (integration && typeof integration.showSystemNotification === 'function') {
+                            integration.showSystemNotification('Test — Çiçek Sepeti', 'Bildirim ayarı çalışıyor. Yeni siparişte böyle görünecek.');
+                            showToast('success', 'Test bildirimi gönderildi. Bildirim çubuğuna veya kilidi ekranına bakın.');
+                          } else {
+                            try {
+                              new (window as any).Notification('Test — Çiçek Sepeti', { body: 'Bildirim ayarı çalışıyor.' });
+                              showToast('success', 'Test bildirimi gönderildi.');
+                            } catch (err) {
+                              showToast('error', 'Bu cihazda bildirim gösterilemedi. Bazı telefonlarda (örn. iPhone) yalnızca uygulama arka plandayken veya site ana ekrana eklendiyse çalışır.');
+                            }
+                          }
+                        }}
+                      >
+                        Şimdi test bildirimi gönder
+                      </button>
+                      <button
+                        type="button"
+                        className="ayarlar-btn ayarlar-btn-ghost"
+                        style={{ marginTop: 6, fontSize: '0.875rem' }}
+                        onClick={() => showToast('info', 'Bildirimleri kapatmak için tarayıcı veya telefon ayarlarından bu site için bildirim iznini kapatın. (Örn. Chrome: adres çubuğundaki kilit/bilgi simgesi → Site ayarları → Bildirimler)')}
+                      >
+                        Bildirimleri nasıl kapatırım?
+                      </button>
+                      <small className="ayarlar-help" style={{ display: 'block', marginTop: 8 }}>
+                        Görünmüyorsa: Bazı telefonlarda (özellikle iPhone) bildirimler yalnızca sekme arka plandayken veya site ana ekrana eklendiyse çıkar. Opera/Chrome Android’de genelde çalışır.
+                      </small>
+                    </>
                   )}
                 </>
               )}

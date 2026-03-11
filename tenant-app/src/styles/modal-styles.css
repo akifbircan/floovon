@@ -4706,7 +4706,7 @@ color: var(--ana-renk) !important;
   .overlay-yeni-musteri-container .yeni-musteri-container .header-alan,
   .overlay-yeni-siparis-container .yeni-siparis-container .header-alan {
     padding: 0 0 12px 0 !important;
-    margin-bottom: 0 !important;
+    margin-bottom: 16px !important;
     border-bottom: 1px solid var(--border-renk) !important;
     font-size: 18px !important;
     font-weight: 600 !important;
@@ -5894,7 +5894,7 @@ body select.modal-react-arac-takip-select {
         width: 100% !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
+        gap: 0 !important;
     }
     .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici .tab button.tablinks {
         width: 100% !important;
@@ -5902,7 +5902,9 @@ body select.modal-react-arac-takip-select {
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
+        justify-content: center;
         gap: 4px !important;
+        height: 110px;
     }
     .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici .tab button.tablinks .aciklamasatir {
         display: block !important;
@@ -5911,7 +5913,7 @@ body select.modal-react-arac-takip-select {
         width: 100% !important;
         flex: none !important;
         border-left: none !important;
-        border-top: 1px solid var(--border-renk) !important;
+        border-top: none !important;
         padding-top: 16px !important;
     }
     .overlay-yeni-kart-container .yeni-kart-container .tab-kapsayici .tabcontent,
@@ -5933,6 +5935,7 @@ body select.modal-react-arac-takip-select {
         flex-direction: row !important;
         flex-wrap: wrap !important;
         gap: 8px !important;
+        padding: 0 !important;
     }
     .overlay-yeni-kart-container .yeni-kart-container .input-form .label-kapsayici-org-tipler .radio-label {
         width: auto !important;

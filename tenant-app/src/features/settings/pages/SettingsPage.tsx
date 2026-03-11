@@ -412,14 +412,7 @@ function CiceksepetiAyarlariForm() {
               <input
                 type="checkbox"
                 checked={testBildirimi}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  setTestBildirimi(checked);
-                  if (typeof window !== 'undefined') {
-                    localStorage.setItem('ciceksepeti_test_bildirimi', checked ? 'true' : 'false');
-                    window.dispatchEvent(new CustomEvent('ciceksepetiTestBildirimiChanged'));
-                  }
-                }}
+                onChange={(e) => setTestBildirimi(e.target.checked)}
                 className="ayarlar-checkbox"
               />
               Test Sipariş Bildirimlerini Göster

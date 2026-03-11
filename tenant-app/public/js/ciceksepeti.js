@@ -139,7 +139,13 @@ class CiceksepetiFloovonIntegration {
         // Test bildirimi ayarını kontrol et; popup sadece index (anasayfa) sayfasında gösterilir
         const testBildirimiValue = localStorage.getItem('ciceksepeti_test_bildirimi');
         const testBildirimiEnabled = testBildirimiValue === 'true';
-        if (!testBildirimiEnabled || !this.isIndexPage()) return;
+        if (!testBildirimiEnabled) {
+            // Kapalıysa test siparişlerini listeden çıkar ve toast'ı anında güncelle (index’e dönünce boş görünsün)
+            this.pendingOrders = this.pendingOrders.filter(function(o) { return !o.isTest; });
+            this.updateToast(true);
+            return;
+        }
+        if (!this.isIndexPage()) return;
         
         {
             // Toast container'ın var olduğundan emin ol
@@ -447,6 +453,7 @@ class CiceksepetiFloovonIntegration {
         if (!forceShow && !this.isIndexPage()) return;
         const location = this.getRandomLocation();
         const mockOrder = {
+            isTest: true,
             siparisNo: 'CS-' + Date.now(),
             siparisVeren: this.getRandomCustomer(),
             siparisVerenTelefon: '0532 ' + Math.floor(Math.random() * 9000000 + 1000000),

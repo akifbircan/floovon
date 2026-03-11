@@ -3137,6 +3137,15 @@ class AdminPanel {
 // Sayfa yüklendiğinde admin paneli başlat
 let adminPanel;
 document.addEventListener('DOMContentLoaded', function() {
+    const body = document.body;
+    if (body && body.classList.contains('console-page-enter')) {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                body.classList.add('page-enter-active');
+            });
+        });
+    }
+
     adminPanel = new AdminPanel();
     window.adminPanel = adminPanel; // Global erişim için
     

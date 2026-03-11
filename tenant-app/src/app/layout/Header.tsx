@@ -277,7 +277,7 @@ export const Header: React.FC = () => {
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      const dropdownContent = document.getElementById('bildirimlerDropdown');
+      const dropdownContent = document.getElementById('bildirimlerDropdown') ?? document.getElementById('bildirimlerDropdown-mobile');
       const icon = document.querySelector('.ikon-bildirimler .header-icon');
       
       // Eğer tıklama dropdown içindeyse veya icon'a tıklandıysa, hiçbir şey yapma
@@ -633,7 +633,7 @@ export const Header: React.FC = () => {
                 </div>
               )}
               <div className="mobile-header-right-actions">
-                {/* Profil: isim/soyisim + rol solda, avatar sağda (web ile aynı mantık, sıra mobilde: bilgi sol, avatar sağ) */}
+                {/* 1. Profil */}
                 <div className={`profil clickdropdown ${profileDropdownOpen ? 'open' : ''}`}>
                   <div
                     className="kullanici-alan-wrapper clickdropbtn"
@@ -707,7 +707,7 @@ export const Header: React.FC = () => {
                     </div>
                   )}
                 </div>
-                {/* Tema butonu - index headerdaki gibi profilin sağında (mobilde tooltip yok) */}
+                {/* 2. Tema */}
                 <div className="theme-mode">
                   <button
                     type="button"
@@ -740,7 +740,7 @@ export const Header: React.FC = () => {
                     <i className={isDarkTheme ? 'fa-regular fa-sun' : 'fa-solid fa-moon'}></i>
                   </button>
                 </div>
-                {/* Araç Takip - tüm sayfalarda (mobil), premium'da */}
+                {/* 3. Araç Takip - tüm sayfalarda (mobil), premium'da */}
                 {isBaslangicPlan === false && (
                   <div
                     className={`mobile-arac-takip-btn-wrapper ${aracTakipTeslimatta ? 'mobile-arac-takip-btn-wrapper--active' : ''}`}
@@ -764,6 +764,68 @@ export const Header: React.FC = () => {
                     </button>
                   </div>
                 )}
+                {/* 4. Bildirimler */}
+                <div className="ikon-bildirimler ikon-bildirimler-mobil clickdropdown">
+                  <button
+                    type="button"
+                    className="btn-bildirimler-mobil"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (e.nativeEvent) e.nativeEvent.stopImmediatePropagation();
+                      setNotificationsDropdownOpen(prev => !prev);
+                    }}
+                    aria-label="Bildirimler"
+                  >
+                    {unreadCount > 0 && (
+                      <span className="bildirimvar bildirimvar-mobil">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                    <i className="header-icon icon-header-i-bildirimler" />
+                  </button>
+                  {notificationsDropdownOpen && (
+                    <div
+                      className="clickdropdown-content bildirimler-dropdown"
+                      id="bildirimlerDropdown-mobile"
+                      style={{
+                        position: 'fixed',
+                        top: 'calc(var(--header-height, 64px) + 2px)',
+                        left: 'auto',
+                        right: 16,
+                        minWidth: 320,
+                        width: 'min(320px, calc(100vw - 32px))',
+                        maxHeight: 'min(65vh, 400px)',
+                        paddingBottom: 10,
+                        zIndex: 99999,
+                        display: 'block',
+                        visibility: 'visible',
+                        opacity: 1,
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="liste-baslik">Bildirimler</div>
+                      <hr />
+                      <div id="bildirimlerListesi-mobile" onClick={(e) => e.stopPropagation()}>
+                        {renderNotifications}
+                      </div>
+                      {notifications.length > 0 && (
+                        <div className="liste-alt" id="bildirimlerFooter-mobile">
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              markAllAsRead();
+                            }}
+                          >
+                            Tümünü okundu olarak işaretle
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             {isDashboardPage && (
@@ -893,8 +955,12 @@ export const Header: React.FC = () => {
           </div>
           )}
           
-          {/* Bildirimler */}
-          <div className="ikon-bildirimler clickdropdown top-tooltip" data-tooltip="Bildirimler" data-tooltip-pos="bottom">
+          {/* Bildirimler – dropdown açıkken tooltip gösterme (liste üzerine gelince tooltip çıkmasın) */}
+          <div
+            className={`ikon-bildirimler clickdropdown ${notificationsDropdownOpen ? '' : 'top-tooltip'}`}
+            data-tooltip={notificationsDropdownOpen ? undefined : 'Bildirimler'}
+            data-tooltip-pos="bottom"
+          >
             {unreadCount > 0 && (
               <div className="bildirimvar" id="bildirimBadge" style={{ display: 'flex' }}>
                 {unreadCount > 99 ? '99+' : unreadCount}

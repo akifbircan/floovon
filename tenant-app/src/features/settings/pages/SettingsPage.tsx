@@ -701,6 +701,7 @@ function GonderimAyarlariTab() {
       <div className="ayarlar-subtab-nav">
         <button
           type="button"
+          data-subtab="iletisim"
           onClick={() => setGonderimSubTab('iletisim')}
           className={`ayarlar-subtab-btn ${gonderimSubTab === 'iletisim' ? 'active' : ''}`}
         >
@@ -1842,12 +1843,56 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
+  /** Ana sekme değişince tıklanan tab butonunu görünür yap (profil ayarları gibi) */
+  React.useEffect(() => {
+    const tabEl = document.querySelector(`.ayarlar-tab-nav button[data-tab="${activeTab}"]`);
+    if (tabEl && tabEl instanceof HTMLElement) {
+      tabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [activeTab]);
+
+  /** Subtab değişince ilgili subtab butonunu görünür yap */
+  React.useEffect(() => {
+    if (activeTab === 'veri') {
+      const el = document.querySelector(`.ayarlar-tab-icerik .ayarlar-subtab-nav button[data-subtab="${activeSubTab}"]`);
+      if (el && el instanceof HTMLElement) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    } else if (activeTab === 'genel') {
+      const el = document.querySelector(`.ayarlar-tab-icerik .ayarlar-subtab-nav button[data-subtab="${genelSubTab}"]`);
+      if (el && el instanceof HTMLElement) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    } else if (activeTab === 'gonderim') {
+      const el = document.querySelector(`.ayarlar-tab-icerik .ayarlar-subtab-nav button[data-subtab="iletisim"]`);
+      if (el && el instanceof HTMLElement) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    } else if (activeTab === 'arac') {
+      const el = document.querySelector(`.ayarlar-tab-icerik .ayarlar-subtab-nav button[data-subtab="arac"]`);
+      if (el && el instanceof HTMLElement) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [activeTab, activeSubTab, genelSubTab]);
+
+  /** Düzenle tıklanınca forma scroll; formun üstünde sayfa boşluğu kalsın (scroll container: main) */
+  const ayarlarFormActive = !!(editingUrunId || editingUrunGrubuId || editingOrganizasyonTuruId || editingEtiketId || editingTeslimatId || editingAracId);
+  React.useEffect(() => {
+    if (!ayarlarFormActive) return;
+    const formEl = document.querySelector('.ayarlar-form-row.ayarlar-form-active .ayarlar-sol-kolon') as HTMLElement | null;
+    if (!formEl) return;
+    formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const scrollPadding = 32;
+    const timer = setTimeout(() => {
+      const main = document.querySelector('main[data-main-content]');
+      if (main && main instanceof HTMLElement) {
+        const top = main.scrollTop + formEl.getBoundingClientRect().top - scrollPadding;
+        main.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [ayarlarFormActive, editingUrunId, editingUrunGrubuId, editingOrganizasyonTuruId, editingEtiketId, editingTeslimatId, editingAracId]);
+
   return (
     <div className="ayarlar-page page-wrapper">
       <div className="ayarlar-page-inner">
         <div className="ayarlar-tab-nav">
           <button
             type="button"
+            data-tab="veri"
             onClick={() => setActiveTab('veri')}
             className={`ayarlar-tab-btn ${activeTab === 'veri' ? 'active' : ''}`}
           >
@@ -1856,6 +1901,7 @@ export const SettingsPage: React.FC = () => {
           </button>
           <button
             type="button"
+            data-tab="genel"
             onClick={() => setActiveTab('genel')}
             className={`ayarlar-tab-btn ${activeTab === 'genel' ? 'active' : ''}`}
           >
@@ -1864,6 +1910,7 @@ export const SettingsPage: React.FC = () => {
           </button>
           <button
             type="button"
+            data-tab="arac"
             onClick={() => setActiveTab('arac')}
             className={`ayarlar-tab-btn ${activeTab === 'arac' ? 'active' : ''}`}
           >
@@ -1873,6 +1920,7 @@ export const SettingsPage: React.FC = () => {
           {isBaslangicPlan === false && (
             <button
               type="button"
+              data-tab="gonderim"
               onClick={() => setActiveTab('gonderim')}
               className={`ayarlar-tab-btn ${activeTab === 'gonderim' ? 'active' : ''}`}
             >
@@ -1888,6 +1936,7 @@ export const SettingsPage: React.FC = () => {
             <div className="ayarlar-subtab-nav">
               <button
                 type="button"
+                data-subtab="urunler"
                 onClick={() => handleSubTabChange('urunler')}
                 className={`ayarlar-subtab-btn ${activeSubTab === 'urunler' ? 'active' : ''}`}
               >
@@ -1895,6 +1944,7 @@ export const SettingsPage: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-subtab="urun-gruplari"
                 onClick={() => handleSubTabChange('urun-gruplari')}
                 className={`ayarlar-subtab-btn ${activeSubTab === 'urun-gruplari' ? 'active' : ''}`}
               >
@@ -1902,6 +1952,7 @@ export const SettingsPage: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-subtab="organizasyon-turleri"
                 onClick={() => handleSubTabChange('organizasyon-turleri')}
                 className={`ayarlar-subtab-btn ${activeSubTab === 'organizasyon-turleri' ? 'active' : ''}`}
               >
@@ -1909,6 +1960,7 @@ export const SettingsPage: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-subtab="organizasyon-etiketleri"
                 onClick={() => handleSubTabChange('organizasyon-etiketleri')}
                 className={`ayarlar-subtab-btn ${activeSubTab === 'organizasyon-etiketleri' ? 'active' : ''}`}
               >
@@ -2711,11 +2763,11 @@ export const SettingsPage: React.FC = () => {
         {activeTab === 'genel' && (
           <div className="ayarlar-tab-icerik">
             <div className="ayarlar-subtab-nav">
-              <button type="button" onClick={() => setGenelSubTab('isletme')} className={`ayarlar-subtab-btn ${genelSubTab === 'isletme' ? 'active' : ''}`}>İşletme Ayarları</button>
-              <button type="button" onClick={() => setGenelSubTab('konum')} className={`ayarlar-subtab-btn ${genelSubTab === 'konum' ? 'active' : ''}`}>Konum Ayarları</button>
-              <button type="button" onClick={() => setGenelSubTab('teslimat')} className={`ayarlar-subtab-btn ${genelSubTab === 'teslimat' ? 'active' : ''}`}>Teslimat Konumları</button>
-              <button type="button" onClick={() => setGenelSubTab('yazdirma')} className={`ayarlar-subtab-btn ${genelSubTab === 'yazdirma' ? 'active' : ''}`}>Yazdırma Ayarları</button>
-              <button type="button" onClick={() => setGenelSubTab('ciceksepeti')} className={`ayarlar-subtab-btn ${genelSubTab === 'ciceksepeti' ? 'active' : ''}`}>Çiçek Sepeti Ayarları</button>
+              <button type="button" data-subtab="isletme" onClick={() => setGenelSubTab('isletme')} className={`ayarlar-subtab-btn ${genelSubTab === 'isletme' ? 'active' : ''}`}>İşletme Ayarları</button>
+              <button type="button" data-subtab="konum" onClick={() => setGenelSubTab('konum')} className={`ayarlar-subtab-btn ${genelSubTab === 'konum' ? 'active' : ''}`}>Konum Ayarları</button>
+              <button type="button" data-subtab="teslimat" onClick={() => setGenelSubTab('teslimat')} className={`ayarlar-subtab-btn ${genelSubTab === 'teslimat' ? 'active' : ''}`}>Teslimat Konumları</button>
+              <button type="button" data-subtab="yazdirma" onClick={() => setGenelSubTab('yazdirma')} className={`ayarlar-subtab-btn ${genelSubTab === 'yazdirma' ? 'active' : ''}`}>Yazdırma Ayarları</button>
+              <button type="button" data-subtab="ciceksepeti" onClick={() => setGenelSubTab('ciceksepeti')} className={`ayarlar-subtab-btn ${genelSubTab === 'ciceksepeti' ? 'active' : ''}`}>Çiçek Sepeti Ayarları</button>
             </div>
             {/* Teslimat Konumları: Araç Takip gibi – panel başlık/desc yok, doğrudan sol form + sağ tablo */}
             {genelSubTab === 'teslimat' ? (
@@ -2790,7 +2842,7 @@ export const SettingsPage: React.FC = () => {
                           <tbody className="divide-y divide-gray-200">
                             {sortedTeslimatKonumlari.map((k: { id: number; konum_adi: string; il?: string; ilce?: string; mahalle?: string }) => (
                               <tr key={k.id} className="hover:bg-gray-50 ayarlar-table-row">
-                                <td data-label="Konum Adı" className="px-4 py-3 text-sm font-medium text-gray-900">{k.konum_adi}</td>
+                                <td data-label="" className="td-no-mobile-label px-4 py-3 text-sm font-medium text-gray-900">{k.konum_adi}</td>
                                 <td data-label="İl/İlçe" className="px-4 py-3 text-sm text-gray-600">{(k.il || '') + (k.ilce ? ' / ' + k.ilce : '') || '—'}</td>
                                 <td data-label="Mahalle" className="px-4 py-3 text-sm text-gray-600">{k.mahalle || '—'}</td>
                                 <td data-label="İşlemler" className="px-4 py-3 text-sm font-medium table-col-islem">
@@ -2955,6 +3007,7 @@ export const SettingsPage: React.FC = () => {
             <div className="ayarlar-subtab-nav">
               <button
                 type="button"
+                data-subtab="arac"
                 className="ayarlar-subtab-btn active"
               >
                 Araç Yönetimi

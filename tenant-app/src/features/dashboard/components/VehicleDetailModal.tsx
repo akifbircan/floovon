@@ -4,8 +4,9 @@
  * Canlı harita: Leaflet ile OpenStreetMap (eski yapıdaki gibi)
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -89,6 +90,9 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
   const [detail, setDetail] = useState<VehicleDetailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useModalOpenAnimation(open, overlayRef, panelRef);
 
   const vehicleId = vehicle ? String(vehicle.id ?? vehicle.arac_id ?? '') : '';
   const isActive =
@@ -259,13 +263,14 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
 
   const modalContent = (
     <div
+      ref={overlayRef}
       className="vehicle-detail-overlay overlay-arac-takip-detay active"
       role="dialog"
       aria-modal="true"
       aria-labelledby="vehicle-detail-title"
       onClick={handleOverlayClick}
     >
-      <div className="vehicle-detail-modal detail-modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={panelRef} className="vehicle-detail-modal detail-modal" onClick={(e) => e.stopPropagation()}>
         <div className="vehicle-detail-modal-header modal-header">
           <div className="vehicle-detail-modal-title modal-title">
             <div className="vehicle-icon vehicle-icon-lucide">

@@ -52,18 +52,16 @@ export function useWhatsAppShare() {
   const [initializingWhatsApp, setInitializingWhatsApp] = useState(false);
   const initializationToastShownRef = React.useRef(false);
 
-  // WhatsApp durumunu kontrol et
+  // WhatsApp durumunu kontrol et (sayfa ile aynı kriter: kart detay/dashboard paylaş butonları buna göre numara popup açıyor)
   const checkWhatsAppStatus = useCallback(async (): Promise<boolean> => {
     try {
       const response = await apiClient.get('/whatsapp/status');
       const status = response.data;
-      
       return (
-        status.installed &&
-        status.isReady &&
-        status.isAuthenticated &&
-        !status.browserSessionActive &&
-        status.lastDisconnectReason !== 'LOGOUT'
+        !!status?.installed &&
+        !!status?.isReady &&
+        !!status?.isAuthenticated &&
+        status?.lastDisconnectReason !== 'LOGOUT'
       );
     } catch {
       return false;

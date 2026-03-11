@@ -11,7 +11,7 @@ import { deliverAllOrdersInKart } from '../../dashboard/api';
 import { showToast, showToastInteractive } from '../../../shared/utils/toastUtils';
 import { Lightbox, type LightboxImage } from '../../../shared/components/Lightbox';
 import { createPortal } from 'react-dom';
-import { Archive, Pencil, SquareCheck, Eye, Tag, ArrowLeftCircle, X, FileSearch, CheckCircle, FileDown } from 'lucide-react';
+import { Archive, Pencil, SquareCheck, Eye, Tag, ArrowLeftCircle, X, FileSearch, CheckCircle, FileDown, Copy } from 'lucide-react';
 import { SiparisEditModal } from '../../dashboard/components/SiparisEditModal';
 import { ArsivSebepModal } from '../../dashboard/components/ArsivSebepModal';
 import { WhatsAppPhoneSelectorModal } from '../../dashboard/components/WhatsAppPhoneSelectorModal';
@@ -251,6 +251,8 @@ export const OrderDetailPage: React.FC = () => {
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  /** 'davetiye' = sadece davetiye görseli (ileri/geri yok), 'galeri' = sadece teslim fotoları */
+  const [lightboxSource, setLightboxSource] = useState<'davetiye' | 'galeri' | null>(null);
   const [siparisDetayOpen, setSiparisDetayOpen] = useState(false);
   const [siparisDetaySiparis, setSiparisDetaySiparis] = useState<Siparis | null>(null);
   /** Popup açıldığında GET /siparis-kartlar/:id ile çekilen sipariş (siparis_kodu dahil) */
@@ -275,7 +277,7 @@ export const OrderDetailPage: React.FC = () => {
   const onTeslimFotoRef = useRef<(e: React.ChangeEvent<HTMLInputElement>) => void>(() => {});
 
   const { isBaslangicPlan } = usePlan();
-  const { handlePrintKunye } = useExport();
+  const { handlePrintKunye, handlePrintOrderList } = useExport();
   const { shareOrganizasyonKart, showPhoneSelector, contacts: whatsappContacts, sendToContact, setShowPhoneSelector, phoneSelectorTitle } = useWhatsAppShare();
 
   // Organizasyon kartı detayı
@@ -421,8 +423,13 @@ export const OrderDetailPage: React.FC = () => {
       }
     } else if (type === 'print') {
       const kart = getKartForKunye();
-      if (kart) handlePrintKunye(kart);
-      else showToast('warning', 'Yazdırılacak kart bilgisi bulunamadı');
+      if (kart && siparislerAsOrder.length > 0) {
+        handlePrintOrderList(kart, siparislerAsOrder);
+      } else if (kart && (!siparislerAsOrder || siparislerAsOrder.length === 0)) {
+        showToast('warning', 'Yazdırılacak sipariş bulunamadı');
+      } else {
+        showToast('warning', 'Yazdırılacak kart bilgisi bulunamadı');
+      }
     }
     setExportMenuOpen(false);
   };
@@ -912,7 +919,7 @@ export const OrderDetailPage: React.FC = () => {
                 <div className="wrapper">
                   {organizasyonKart.kart_gorsel && (
                     <div className="kart-gorsel" data-lightbox-grup>
-                      <img src={kartGorselUrl} alt="Kart Görseli" onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }} />
+                      <img src={kartGorselUrl} alt="Kart Görseli" onClick={() => { setLightboxSource('davetiye'); setLightboxIndex(0); setLightboxOpen(true); }} />
                     </div>
                   )}
                   <div className="org-bilgiler-wrapper">
@@ -934,8 +941,21 @@ export const OrderDetailPage: React.FC = () => {
                     </div>
                     {kartTur === 'organizasyon' ? (
                       <div className="org-adres-bilgileri">
-                        <div className="konum">{organizasyonKart.mahalle ?? '—'}</div>
-                        <div className="acik-adres">{(organizasyonKart.adres ?? organizasyonKart.acik_adres) ?? '—'}</div>
+                        {/* Index gibi: teslimat konumu varsa konum alanında teslimat konumu, yoksa mahalle */}
+                        <div className="konum">
+                          {(organizasyonKart as any).organizasyon_teslimat_konumu ?? organizasyonKart.mahalle ?? '—'}
+                        </div>
+                        {/* Teslimat konumu + mahalle varsa açık adres = mahalle, açık adres (index orgkart mantığı) */}
+                        <div className="acik-adres">
+                          {(() => {
+                            const teslimatKonumu = (organizasyonKart as any).organizasyon_teslimat_konumu;
+                            const mahalle = organizasyonKart.mahalle;
+                            const acikAdres = organizasyonKart.adres ?? organizasyonKart.acik_adres;
+                            if (teslimatKonumu && mahalle && acikAdres)
+                              return `${mahalle}, ${acikAdres}`;
+                            return acikAdres ?? '—';
+                          })()}
+                        </div>
                         <div className="ilce-il">
                           {(organizasyonKart.organizasyon_ilce ?? organizasyonKart.teslim_ilce) && (organizasyonKart.organizasyon_il ?? organizasyonKart.teslim_il)
                             ? `${organizasyonKart.organizasyon_ilce ?? organizasyonKart.teslim_ilce}/${organizasyonKart.organizasyon_il ?? organizasyonKart.teslim_il}`
@@ -945,13 +965,13 @@ export const OrderDetailPage: React.FC = () => {
                     ) : (
                       <div className="kart-aciklama">
                         {kartTur === 'aracsusleme' && (
-                          <>Araç randevuları için sipariş kartları üzerindeki <span>randevu saatini dikkate alınız</span></>
+                          <>Araç randevuları için sipariş kartları üzerindeki<br /><span>randevu saatini dikkate alınız</span></>
                         )}
                         {kartTur === 'ozelsiparis' && !isCiceksepeti && (
-                          <>Özel siparişler için sipariş kartları üzerindeki <span>teslim saatini dikkate alınız</span></>
+                          <>Özel siparişler için sipariş kartları üzerindeki<br /><span>teslim saatini dikkate alınız</span></>
                         )}
                         {(kartTur === 'ozelgun' || isCiceksepeti) && (
-                          <>{isCiceksepeti ? 'Çiçek Sepeti' : 'Özel gün'} siparişleri için sipariş kartları üzerindeki <span>teslim saatini dikkate alınız</span></>
+                          <>{isCiceksepeti ? 'Çiçek Sepeti' : 'Özel gün'} siparişleri için sipariş kartları üzerindeki<br /><span>teslim saatini dikkate alınız</span></>
                         )}
                       </div>
                     )}
@@ -1027,7 +1047,7 @@ export const OrderDetailPage: React.FC = () => {
                         key={`teslim-foto-${foto.id || index}`}
                         src={foto.url}
                         alt={foto.aciklama || 'Fotoğraf'}
-                        onClick={() => { setLightboxIndex(organizasyonKart.kart_gorsel ? index + 1 : index); setLightboxOpen(true); }}
+                        onClick={() => { setLightboxSource('galeri'); setLightboxIndex(index); setLightboxOpen(true); }}
                         onContextMenu={(e) => {
                           e.preventDefault();
                           showToastInteractive({
@@ -1096,6 +1116,7 @@ export const OrderDetailPage: React.FC = () => {
                     <thead id="tablo-basliklar">
                       <tr>
                         <th className="th-sp-no">SP. NO</th>
+                        <th className="th-siparis-kodu-mobil">SİPARİŞ KODU</th>
                         <th className="th-siparis-urun">SİPARİŞ ÜRÜN</th>
                         <th className="th-arac-bilgileri" style={{ display: showAracBilgileri ? 'table-cell' : 'none' }}>ARAÇ BİLGİLERİ</th>
                         <th className="th-musteri-ve-urun-yazisi">{musteriColumnLabel}</th>
@@ -1119,6 +1140,29 @@ export const OrderDetailPage: React.FC = () => {
                         return (
                         <tr key={siparis.id} className="tablo-satir">
                           <td data-label="SP. NO">#{siparis.kart_sira ?? siparis.id}</td>
+                          <td data-label="Sipariş Kodu" className="td-siparis-kodu-mobil">
+                            {(() => {
+                              const raw = (siparis as any).siparis_kodu ?? (siparis as any).siparisKodu ?? siparis.siparis_kodu ?? '';
+                              const kod = (raw != null && String(raw).trim() !== '') ? String(raw).trim() : '—';
+                              return kod !== '—' ? (
+                                <>
+                                  <span className="siparis-kodu-deger">{kod}</span>
+                                  <button
+                                    type="button"
+                                    className="siparis-kodu-kopyala-btn"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigator.clipboard.writeText(kod).then(() => showToast('success', 'Sipariş kodu kopyalandı')).catch(() => showToast('error', 'Kopyalanamadı'));
+                                    }}
+                                    aria-label="Sipariş kodunu kopyala"
+                                    title="Sipariş kodunu kopyala"
+                                  >
+                                    <Copy size={14} aria-hidden />
+                                  </button>
+                                </>
+                              ) : '—';
+                            })()}
+                          </td>
                           <td data-label="Sipariş Ürün" className="td-siparis-urun">
                             <div className="siparis-urun-hucre">
                               {isCiceksepeti ? (
@@ -1266,13 +1310,14 @@ export const OrderDetailPage: React.FC = () => {
       <Lightbox
         isOpen={lightboxOpen}
         images={(() => {
-          const images: LightboxImage[] = [];
-          if (kartGorselUrl) images.push({ src: kartGorselUrl, alt: 'Kart Görseli' });
-          if (fotograflar?.length) images.push(...fotograflar.map(f => ({ src: f.url, alt: f.aciklama || 'Teslim Fotoğrafı', title: f.aciklama })));
-          return images;
+          if (lightboxSource === 'davetiye' && kartGorselUrl)
+            return [{ src: kartGorselUrl, alt: 'Kart Görseli' }];
+          if (lightboxSource === 'galeri' && fotograflar?.length)
+            return fotograflar.map(f => ({ src: f.url, alt: f.aciklama || 'Teslim Fotoğrafı', title: f.aciklama }));
+          return [];
         })()}
         initialIndex={lightboxIndex}
-        onClose={() => setLightboxOpen(false)}
+        onClose={() => { setLightboxOpen(false); setLightboxSource(null); }}
         enableZoom={true}
         enableSwipe={true}
       />
@@ -1332,6 +1377,18 @@ export const OrderDetailPage: React.FC = () => {
                     <div className="siparis-detay-siparis-no">
                       <span>Sipariş Kodu:</span>
                       <strong>{siparisKodu}</strong>
+                      <button
+                        type="button"
+                        className="siparis-detay-siparis-no-kopyala"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(siparisKodu).then(() => showToast('success', 'Sipariş kodu kopyalandı')).catch(() => showToast('error', 'Kopyalanamadı'));
+                        }}
+                        aria-label="Sipariş kodunu kopyala"
+                        title="Sipariş kodunu kopyala"
+                      >
+                        <Copy size={16} aria-hidden />
+                      </button>
                     </div>
                     <div className="siparis-detay-teslim-zaman">
                       <div className="teslim-zaman-info">

@@ -171,8 +171,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 1px solid var(--arac-takip-teslimat-kenarlık);
-    background: var(--arac-takip-vehicle-item-bg);
+    border: 1px solid var(--header-icon-border);
+    /* background: var(--header-icon-bg); */
     color: var(--ana-renk);
     display: flex;
     align-items: center;
@@ -182,7 +182,7 @@
   }
 
   .mobile-header-right-actions .mobile-arac-takip-btn:hover {
-    background: var(--arac-takip-vehicle-item-bg-hover);
+    background: var(--header-icon-bg-hover);
   }
 
   /* Teslimatta: yeşil vurgu (mobil araç ikonu) */
@@ -197,14 +197,14 @@
     color: var(--success-green);
   }
 
-  /* Mobil header tema butonu - araç takip butonu ile aynı yuvarlak ve boyut (40px) */
+  /* Mobil header tema butonu - genel ikon zemin/kenarlık */
   .mobile-header-right-actions .theme-mode .btn-theme-mode {
     width: 40px;
     height: 40px;
     min-width: 40px;
     border-radius: 50%;
-    border: 1px solid var(--arac-takip-teslimat-kenarlık);
-    background: var(--arac-takip-vehicle-item-bg);
+    border: 1px solid var(--header-icon-border);
+    /* background: var(--header-icon-bg); */
     color: var(--ana-renk);
     display: flex;
     align-items: center;
@@ -215,7 +215,73 @@
     transition: background 0.2s, color 0.2s;
   }
   .mobile-header-right-actions .theme-mode .btn-theme-mode:hover {
-    background: var(--arac-takip-vehicle-item-bg-hover);
+    background: var(--header-icon-bg-hover);
+  }
+
+  /* Mobil bildirim butonu - border/background/hover yok, sadece ikon */
+  .mobile-header-right-actions .ikon-bildirimler-mobil {
+    position: relative;
+  }
+  .mobile-header-right-actions .ikon-bildirimler-mobil .btn-bildirimler-mobil {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    border: 1px solid var(--header-icon-border);
+    color: var(--ana-renk);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+  }
+  .mobile-header-right-actions .ikon-bildirimler-mobil .btn-bildirimler-mobil:hover {
+    background: transparent;
+  
+  }
+  .mobile-header-right-actions .ikon-bildirimler-mobil .btn-bildirimler-mobil .header-icon {
+    font-size: 1rem;
+  }
+  .mobile-header-right-actions .ikon-bildirimler-mobil .bildirimvar-mobil {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 10px;
+    background: var(--notif-badge-bg, #dc3545);
+    
+    color: var(--white-only, #fff);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Mobil bildirim dropdown: ikona yakın, liste alanı scroll (flex yok – içerik görünsün) */
+  .mobile-header-right-actions .ikon-bildirimler-mobil .clickdropdown-content.bildirimler-dropdown {
+    position: fixed !important;
+    top: calc(var(--header-height, 64px) + 2px) !important;
+    left: auto !important;
+    right: 16px !important;
+    margin-top: 0 !important;
+    width: min(320px, calc(100vw - 32px)) !important;
+    max-width: calc(100vw - 32px) !important;
+    max-height: min(65vh, 400px) !important;
+    z-index: 9999 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+  .mobile-header-right-actions .ikon-bildirimler-mobil #bildirimlerListesi-mobile {
+    max-height: 240px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   .mobile-header-right-actions .profil {
@@ -434,6 +500,11 @@
     margin-top: 20px;
   }
 
+  /* Sipariş kartı butonları mobilde her zaman görünsün (hover ile aşağıdan çıkmasın) */
+  .ana-kart .siparis-kart .alt-kart-alan .kart-butonlar {
+    transform: translateY(0) !important;
+  }
+
   /* Dashboard header taşmasın */
   .dashboard-header-mobile {
     max-width: 100%;
@@ -603,6 +674,7 @@
     /* gap: 2px; */
     min-width: 0;
     overflow: hidden;
+    cursor: pointer;
   }
 
   .mobile-baslik-alan .mobile-baslik-hafta-ilk,

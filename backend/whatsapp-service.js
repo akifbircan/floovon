@@ -9,9 +9,45 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const path = require('path');
 const fs = require('fs');
 
-// Veritabanı kullanılmıyor – bağlantı durumu sadece bellek + client (Seçenek B: tablo tamamen kaldırıldı)
+let _db = null;
+/** Restart sonrası client yokken status'ta tekrar tekrar disconnect yazmamak için (tenant_id bazlı) */
+let _disconnectWrittenFromDbTenantIds = new Set();
+
 function setDatabase(db) {
-    if (db) console.log('✅ WhatsApp servisi (DB kullanılmıyor, sadece bellek)');
+    _db = db;
+    if (db) console.log('✅ WhatsApp servisi DB bağlandı (whatsapp_baglantilar_logs)');
+}
+
+/** Türkiye saati (UTC+3) "YYYY-MM-DD HH:mm:ss" */
+function getTurkeyTimeString() {
+    const now = new Date();
+    return new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString().replace('T', ' ').substring(0, 19);
+}
+
+function insertWhatsAppConnectionLog(tenantId, eventType, opts) {
+    const db = _db || (typeof global !== 'undefined' && global.db) || null;
+    if (!db) {
+        console.warn('⚠️ whatsapp_baglantilar_logs: DB yok, log yazılamadı');
+        return Promise.resolve();
+    }
+    const { phone_number, user_name, session_owner_user, disconnect_reason, connection_at, disconnect_at } = opts || {};
+    const turkeyNow = getTurkeyTimeString();
+    const connAt = connection_at != null ? connection_at : (eventType === 'connected' ? turkeyNow : null);
+    const discAt = disconnect_at != null ? disconnect_at : (eventType === 'disconnected' ? turkeyNow : null);
+    return new Promise((resolve) => {
+        db.run(
+            'INSERT INTO whatsapp_baglantilar_logs (tenant_id, event_type, whatsapp_phone_number, whatsapp_user_name, session_owner_user, disconnect_reason, connection_at, disconnect_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [tenantId, eventType, phone_number || null, user_name || null, session_owner_user || null, disconnect_reason || null, connAt, discAt],
+            (err) => {
+                if (err) console.error('❌ whatsapp_baglantilar_logs INSERT hatası:', err.message, err);
+                else {
+                    console.log('✅ whatsapp_baglantilar_logs yazıldı:', eventType, 'tenant_id=', tenantId);
+                    if (eventType === 'connected') _disconnectWrittenFromDbTenantIds.delete(tenantId);
+                }
+                resolve();
+            }
+        );
+    });
 }
 
 /** State machine: uninitialized | initializing | qr | ready | disconnected | auth_failure */
@@ -54,6 +90,14 @@ class WhatsAppService {
         this.lastLogoutAt = null; // Telefondan çıkış sonrası kısa süre auto-init yapılmasın, çıkış algılansın
         this.lastManualInitAt = null; // Manuel initialize sonrası kısa süre status'tan tekrar init tetiklenmesin (QR gelsin)
         this._readyHeartbeatTimer = null; // Bağlıyken telefondan çıkışı hemen algılamak için kısa aralıklı kontrol
+        this._hasLoggedConnectedThisSession = false; // whatsapp_baglantilar_logs 'connected' bu oturumda yazıldı mı (getStatus yedek log için)
+        this._hasLoggedDisconnectThisSession = false; // aynı kesinti için tek satır (event + status çakışmasın)
+        this._hadConnectedSession = false; // bu oturumda en az bir connected log yazıldı mı (client null iken disconnect log yedek için)
+        this.sessionOwnerUser = null; // Oturum sahibi (tenant kullanıcı adı: kimin oturumunda bu bağlantı yapıldı)
+    }
+
+    setSessionOwnerUser(username) {
+        this.sessionOwnerUser = username || null;
     }
 
     _stopReadyHeartbeat() {
@@ -65,39 +109,93 @@ class WhatsAppService {
 
     _startReadyHeartbeat() {
         this._stopReadyHeartbeat();
-        const HEARTBEAT_MS = 1000; // 1 sn – telefondan çıkış çat diye algılansın
+        const HEARTBEAT_MS = 500; // 0.5 sn – telefondan çıkış daha çabuk algılansın (WhatsApp sunucusu gecikmesi yine olabilir)
+        const self = this;
+        const GETSTATE_TIMEOUT_MS = 4000;
         this._readyHeartbeatTimer = setInterval(async () => {
-            if (!this.client || !this.isReady) {
-                this._stopReadyHeartbeat();
+            if (!self.client || !self.isReady) {
+                self._stopReadyHeartbeat();
                 return;
             }
             try {
-                const state = await this.client.getState();
+                const state = await Promise.race([
+                    self.client.getState(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('getState timeout')), GETSTATE_TIMEOUT_MS))
+                ]);
                 const disconnectedStates = ['UNPAIRED', 'DISCONNECTED', 'CONFLICT', 'CLOSED', 'UNLAUNCHED', 'UNPAIRED_IDLE'];
                 if (state && disconnectedStates.includes(state)) {
-                    console.log(`🔌 [Heartbeat] getState()=${state} – çıkış algılandı (bellek güncellendi)`);
-                    this.isReady = false;
-                    this.isAuthenticated = false;
-                    this.lastUpdate = new Date();
-                    this._stopReadyHeartbeat();
+                    console.log(`🔌 [Heartbeat] getState()=${state} – telefondan çıkış algılandı, log yazılıyor ve client temizleniyor`);
+                    self._stopReadyHeartbeat();
+                    self._onHeartbeatDetectedDisconnect(state);
                     return;
                 }
                 if (state === 'CONNECTED' || state === 'READY') {
                     try {
-                        const info = this.client.info;
+                        const info = self.client.info;
                         if (info && typeof info.then === 'function') await info;
                     } catch (infoErr) {
                         console.log(`🔌 [Heartbeat] client.info hata (oturum geçersiz):`, infoErr?.message);
-                        this.isReady = false;
-                        this.isAuthenticated = false;
-                        this.lastUpdate = new Date();
-                        this._stopReadyHeartbeat();
+                        self._stopReadyHeartbeat();
+                        self._onHeartbeatDetectedDisconnect('CLOSED');
                     }
                 }
             } catch (e) {
-                console.log('⚠️ [Heartbeat] Kontrol hatası:', e?.message);
+                if (self.client && self.isReady) {
+                    console.log('🔌 [Heartbeat] getState() timeout veya hata – bağlantı kesilmiş sayılıyor:', e?.message);
+                    self._stopReadyHeartbeat();
+                    self._onHeartbeatDetectedDisconnect('CLOSED');
+                } else {
+                    console.log('⚠️ [Heartbeat] Kontrol hatası:', e?.message);
+                }
             }
         }, HEARTBEAT_MS);
+    }
+
+    /** Heartbeat telefondan çıkış algıladığında: log yaz, client null yap, destroy et – arayüz hemen "bağlantı yok" görsün */
+    _onHeartbeatDetectedDisconnect(reason) {
+        if (!this.client) return;
+        const savedTenantId = this.currentTenantId || this.tenantId || 1;
+        if (!this._hasLoggedDisconnectThisSession) {
+            this.logDisconnectEvent(reason || 'CLOSED');
+        }
+        this.lastLogoutAt = Date.now();
+        this.isReady = false;
+        this.isAuthenticated = false;
+        this.phoneNumber = null;
+        this.userName = null;
+        this.connectedAt = null;
+        this.lastConnectedDbWriteAt = null;
+        this._hasLoggedConnectedThisSession = false;
+        this.qrCode = null;
+        this.lastQr = null;
+        this.lastScannedQrForDb = null;
+        this.status = STATUS.DISCONNECTED;
+        this.lastUpdate = new Date();
+        this.initializing = false;
+        this.browserSessionActive = false;
+        this.firstQrStoredAt = null;
+        const clientToDestroy = this.client;
+        this.client = null;
+        this.destroying = true;
+        setImmediate(async () => {
+            try {
+                if (clientToDestroy) {
+                    try { await clientToDestroy.logout().catch(() => {}); } catch (e) { /* ignore */ }
+                    try { await clientToDestroy.destroy(); } catch (e) { console.log('⚠️ [Heartbeat] destroy hatası:', e?.message); }
+                    await new Promise(r => setTimeout(r, 1500));
+                }
+                if (this.sessionPath && fs.existsSync(this.sessionPath)) {
+                    try {
+                        fs.rmSync(this.sessionPath, { recursive: true, force: true });
+                        fs.mkdirSync(this.sessionPath, { recursive: true, mode: 0o755 });
+                    } catch (e) { /* ignore */ }
+                }
+                this.currentTenantId = savedTenantId;
+                this.lastDisconnectReason = null;
+            } finally {
+                this.destroying = false;
+            }
+        });
     }
 
     /** Derive status from current state */
@@ -149,7 +247,10 @@ class WhatsAppService {
         this.status = STATUS.INITIALIZING;
         this.lastUpdate = new Date();
         this.lastError = null;
-        
+        this._hasLoggedConnectedThisSession = false;
+        this._hasLoggedDisconnectThisSession = false;
+        this._hadConnectedSession = false;
+
         // Tenant ID'yi kaydet
         if (tenantId) {
             this.currentTenantId = tenantId;
@@ -200,11 +301,14 @@ class WhatsAppService {
             return true;
         }
 
-        // Eski client varsa ve henüz bağlı değilsek (QR gösteriliyor veya hata) – popup her açıldığında taze QR için önce temizle
-        const needFreshQr = this.client && !this.isReady && !this.isAuthenticated;
-        if (needFreshQr || this.lastDisconnectReason === 'LOGOUT' || (!this.client && !this.isReady && !this.isAuthenticated)) {
-            if (needFreshQr) console.log('🔄 Mevcut QR/bağlantı yok – taze QR için eski client + session temizleniyor...');
-            else console.log('🔄 LOGOUT veya client null durumu - Temizlik yapılıyor...');
+        // Client var ve QR gösteriyorsa (henüz bağlı değil) – destroy etme, mevcut QR kalsın (popup kapatıp açınca hemen görünsün)
+        if (this.client && !this.isReady && !this.isAuthenticated) {
+            return true;
+        }
+
+        // LOGOUT sonrası veya client yok – temizlik ve yeni client
+        if (this.lastDisconnectReason === 'LOGOUT' || (!this.client && !this.isReady && !this.isAuthenticated)) {
+            if (this.lastDisconnectReason === 'LOGOUT') console.log('🔄 LOGOUT sonrası temizlik...');
             if (this.client) {
                 try {
                     console.log('🗑️ Eski client destroy ediliyor...');
@@ -225,8 +329,8 @@ class WhatsAppService {
             if (this.lastDisconnectReason === 'LOGOUT') {
                 this.lastDisconnectReason = null;
             }
-            // KRİTİK: Session klasörünü temizle – eski/bozuk oturum "giriş yapılamadı" hatasına yol açar
-            if (needFreshQr && this.sessionPath && fs.existsSync(this.sessionPath)) {
+            // Session klasörünü temizle (LOGOUT veya client yok – yeni oturum için)
+            if (this.sessionPath && fs.existsSync(this.sessionPath)) {
                 try {
                     fs.rmSync(this.sessionPath, { recursive: true, force: true });
                     fs.mkdirSync(this.sessionPath, { recursive: true, mode: 0o755 });
@@ -393,13 +497,7 @@ class WhatsAppService {
                     this.initializing = false;
                     this.status = STATUS.READY;
                     this.lastUpdate = new Date();
-                    const getTurkeyTimeFormatted = () => {
-                        const now = new Date();
-                        const turkeyOffset = 3 * 60 * 60 * 1000;
-                        const turkeyTime = new Date(now.getTime() + turkeyOffset);
-                        return turkeyTime.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '').replace('Z', '');
-                    };
-                    this.connectedAt = getTurkeyTimeFormatted();
+                    this.connectedAt = getTurkeyTimeString();
                     this.browserSessionActive = false;
 
                     const tenantIdToSave = this.currentTenantId || this.tenantId || 1;
@@ -416,6 +514,12 @@ class WhatsAppService {
                             connected_at: this.connectedAt
                         };
                         console.log(`✅ WhatsApp bağlandı: ${this.phoneNumber} (${this.userName})`);
+                        if (!this._hasLoggedConnectedThisSession) {
+                            this._hasLoggedConnectedThisSession = true;
+                            this._hadConnectedSession = true;
+                            this._hasLoggedDisconnectThisSession = false;
+                            insertWhatsAppConnectionLog(tenantIdToSave, 'connected', { phone_number: this.phoneNumber, user_name: this.userName, session_owner_user: this.sessionOwnerUser });
+                        }
                     } catch (e) {
                         console.log('⚠️ [Ready] client.info ilk denemede alınamadı:', e?.message || e);
                     }
@@ -598,26 +702,37 @@ class WhatsAppService {
                     console.log(`⚠️ WhatsApp bağlantısı kesildi: ${reason}`);
                     this.lastDisconnectReason = reason;
                     const r = String(reason || '').toUpperCase();
-                    const isTransientOnly = r === 'CONNECTION_LOST' || r === 'TIMEOUT' || r.includes('CONNECTION_LOST') || r.includes('TIMEOUT');
-                    // Sadece bilinen geçici kesintilerde DB güncelleme; telefondan çıkış (LOGOUT/UNPAIRED/DISCONNECTED/CLOSED vb.) hepsinde DB sıfırla
+                    const isTransientOnly = (r === 'CONNECTION_LOST' || r === 'TIMEOUT' || r.includes('CONNECTION_LOST') || r.includes('TIMEOUT')) && r.length > 0;
+
+                    // Her kesintide (geçici dahil) DB'ye bir satır yaz – restart sonrası kayıp olmasın; telefondan çıkış CONNECTION_LOST ile de gelebilir
+                    const savedTenantId = this.currentTenantId || this.tenantId || 1;
+                    const connectionAtForLog = this.connectedAt;
+                    const phoneForLog = this.phoneNumber;
+                    const userForLog = this.userName;
+                    if (!this._hasLoggedDisconnectThisSession) {
+                        this._hasLoggedDisconnectThisSession = true;
+                        insertWhatsAppConnectionLog(savedTenantId, 'disconnected', { disconnect_reason: reason, phone_number: phoneForLog, user_name: userForLog, connection_at: connectionAtForLog, session_owner_user: this.sessionOwnerUser });
+                    }
+
                     if (isTransientOnly) {
-                        console.log(`⚠️ [Disconnected] Geçici kesinti (${reason}) – DB güncellenmiyor, telefonda bağlı kalabilir`);
+                        console.log(`⚠️ [Disconnected] Geçici kesinti (${reason}) – Session korunuyor, telefonda bağlı kalabilir`);
                         this.isReady = false;
                         this.isAuthenticated = false;
                         this.lastUpdate = new Date();
                         return;
                     }
+
                     this.isReady = false;
                     this.isAuthenticated = false;
                     this.qrCode = null;
                     this.lastQr = null;
                     this.lastScannedQrForDb = null;
-                    this.connectedAt = null;
-                    this.connectedMeta = null;
                     this.status = STATUS.DISCONNECTED;
                     this.lastUpdate = new Date();
-                    const savedTenantId = this.currentTenantId || this.tenantId || 1;
+                    this.connectedAt = null;
+                    this.connectedMeta = null;
                     this.lastConnectedDbWriteAt = null;
+                    this._hasLoggedConnectedThisSession = false;
 
                     // Hemen state temizle – status/popup anında "çıkış" görsün, yeni QR akışı takılmasın (telefondan çıkış = buton gibi)
                     this.phoneNumber = null;
@@ -1152,8 +1267,6 @@ class WhatsAppService {
                     };
                 }
                 
-                console.log(`🔍 [WhatsApp getStatus] Tenant ${this.currentTenantId}, State: ${actualState}, isReady: ${this.isReady}, isAuthenticated: ${this.isAuthenticated}`);
-
                 // Telefondan çıkış veya bağlantı yok: sadece bellek güncelle (DB yok)
                 const disconnectedStates = ['UNPAIRED', 'DISCONNECTED', 'CONFLICT', 'CLOSED', 'UNLAUNCHED', 'UNPAIRED_IDLE'];
                 if (actualState && disconnectedStates.includes(actualState)) {
@@ -1180,16 +1293,20 @@ class WhatsAppService {
                                         const turkeyTime = new Date(now.getTime() + turkeyOffset);
                                         this.connectedAt = turkeyTime.toISOString().replace('T', ' ').substring(0, 19);
                                     }
-                                    if (this.phoneNumber || this.userName) {
-                                        console.log(`✅ [WhatsApp getStatus] Kullanıcı bilgileri alındı: ${this.phoneNumber} (${this.userName})`);
-                                    }
                                 }
                             }
                         } catch (infoErr) {
-                            console.log(`⚠️ [WhatsApp getStatus] client.info erişilemedi:`, infoErr.message);
+                            // client.info erişilemedi (sayfa henüz hazır olmayabilir)
                         }
                     }
-                    console.log(`✅ [WhatsApp getStatus] Servis hazır - State: ${actualState}`);
+                    // Bu oturumda henüz "connected" logu yazılmadıysa bir kez yaz (ready event kaçırıldıysa yedek)
+                    if (!this._hasLoggedConnectedThisSession && (this.phoneNumber || this.userName)) {
+                        this._hasLoggedConnectedThisSession = true;
+                        this._hadConnectedSession = true;
+                        this._hasLoggedDisconnectThisSession = false;
+                        const tid = this.currentTenantId || this.tenantId || 1;
+                        insertWhatsAppConnectionLog(tid, 'connected', { phone_number: this.phoneNumber, user_name: this.userName, session_owner_user: this.sessionOwnerUser });
+                    }
                 } else if (actualState === 'PAIRING' || actualState === 'CONNECTING') {
                     this.isAuthenticated = true;
                     const recentlyConnected = this.lastConnectedDbWriteAt && (Date.now() - this.lastConnectedDbWriteAt < 25000);
@@ -1233,7 +1350,6 @@ class WhatsAppService {
                     // CONNECTED/READY değilse isReady ve isAuthenticated false – popup "Bağlantı kuruluyor" takılı kalmasın, QR görünsün
                     this.isReady = false;
                     this.isAuthenticated = false;
-                    console.log(`⚠️ [WhatsApp getStatus] Servis hazır değil - State: ${actualState}`);
                 }
             } catch (err) {
                 actualState = 'CLOSED';
@@ -1283,6 +1399,55 @@ class WhatsAppService {
 
     /** DB kullanılmıyor – no-op (telefon/kullanıcı sadece bellek + getStatus'tan dönüyor) */
     _persistPhoneUserToDb() {}
+
+    /**
+     * Manuel kesinti (API "bağlantıyı kes" / logout) için tabloya disconnected log yaz.
+     * State temizlenmeden önce çağrılmalı (phoneNumber/userName okunabilsin).
+     */
+    logDisconnectEvent(reason) {
+        if (this._hasLoggedDisconnectThisSession) return;
+        this._hasLoggedDisconnectThisSession = true;
+        this._hadConnectedSession = false;
+        const tid = this.currentTenantId || this.tenantId || 1;
+        insertWhatsAppConnectionLog(tid, 'disconnected', {
+            disconnect_reason: reason || 'LOGOUT',
+            phone_number: this.phoneNumber,
+            user_name: this.userName,
+            connection_at: this.connectedAt,
+            session_owner_user: this.sessionOwnerUser
+        });
+        this._hasLoggedConnectedThisSession = false;
+    }
+
+    /**
+     * Client yokken (restart veya telefondan çıkış sonrası) status isteğinde çağrılır.
+     * DB'de bu tenant için son satır 'connected' ise bir 'disconnected' satırı yazar – böylece telefondan çıkışlar restart olsa bile loglanır.
+     */
+    ensureDisconnectLogFromDb(tenantId) {
+        return new Promise((resolve) => {
+            const db = _db || (typeof global !== 'undefined' && global.db) || null;
+            if (!db) return resolve();
+            if (_disconnectWrittenFromDbTenantIds.has(tenantId)) return resolve();
+            db.get(
+                'SELECT id, event_type, connection_at, whatsapp_phone_number, whatsapp_user_name, session_owner_user FROM whatsapp_baglantilar_logs WHERE tenant_id = ? ORDER BY id DESC LIMIT 1',
+                [tenantId],
+                async (err, row) => {
+                    if (err || !row || row.event_type !== 'connected') return resolve();
+                    if (_disconnectWrittenFromDbTenantIds.has(tenantId)) return resolve();
+                    _disconnectWrittenFromDbTenantIds.add(tenantId);
+                    await insertWhatsAppConnectionLog(tenantId, 'disconnected', {
+                        connection_at: row.connection_at,
+                        phone_number: row.whatsapp_phone_number,
+                        user_name: row.whatsapp_user_name,
+                        session_owner_user: row.session_owner_user,
+                        disconnect_reason: 'CLOSED'
+                    });
+                    console.log('✅ whatsapp_baglantilar_logs: telefondan çıkış DB’den tamamlandı (tenant_id=' + tenantId + ')');
+                    resolve();
+                }
+            );
+        });
+    }
 
     /**
      * QR kod al
@@ -1398,6 +1563,43 @@ class WhatsAppService {
             this.firstQrStoredAt = null;
             this.initializing = false;
         }
+    }
+
+    /**
+     * Yeni karekod al: Bağlı değilken (QR/initializing) mevcut client'ı kapatıp state temizler.
+     * Sonrasında initialize() çağrılmalı – yeni QR üretilir. Logout çağrılmaz (henüz bağlı değiliz).
+     */
+    async refreshQR() {
+        if (!this.client || this.isReady) return;
+        this._stopReadyHeartbeat();
+        const clientToDestroy = this.client;
+        this.client = null;
+        this.qrCode = null;
+        this.lastQr = null;
+        this.lastScannedQrForDb = null;
+        this.firstQrStoredAt = null;
+        this.initializing = false;
+        this.isReady = false;
+        this.isAuthenticated = false;
+        this.status = STATUS.UNINITIALIZED;
+        this.lastUpdate = new Date();
+        try {
+            if (clientToDestroy && typeof clientToDestroy.destroy === 'function') {
+                await clientToDestroy.destroy().catch(() => {});
+                await new Promise(r => setTimeout(r, 1500));
+            }
+            if (this.sessionPath && fs.existsSync(this.sessionPath)) {
+                try {
+                    fs.rmSync(this.sessionPath, { recursive: true, force: true });
+                    fs.mkdirSync(this.sessionPath, { recursive: true, mode: 0o755 });
+                } catch (e) {
+                    console.log('⚠️ refreshQR session temizleme:', e?.message);
+                }
+            }
+        } catch (e) {
+            console.log('⚠️ refreshQR:', e?.message);
+        }
+        console.log('✅ Yeni karekod için hazır – initialize() çağrılabilir');
     }
 
     /**

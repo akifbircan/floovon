@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 
 const MOBILE_BREAKPOINT = 767;
 function useIsMobile(): boolean {
@@ -82,6 +83,10 @@ export const CustomersPage: React.FC = () => {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const detailOverlayRef = useRef<HTMLDivElement>(null);
+  const detailPanelRef = useRef<HTMLDivElement>(null);
+  const detailModalOpen = !!(isMobile && selectedCustomerId);
+  useModalOpenAnimation(detailModalOpen, detailOverlayRef, detailPanelRef);
 
   // Müşteri ürün yazısı dosyalarını gerçekten indirir (sekmede açılmasını engeller)
   const triggerFileDownload = async (downloadUrl: string, fileName: string) => {
@@ -412,7 +417,7 @@ export const CustomersPage: React.FC = () => {
       <div className="page-panel-sol w-full md:w-1/2 lg:w-2/5" onClick={(e) => e.stopPropagation()}>
         <div className="p-4 md:p-6">
           {/* Header - Yeni Müşteri Ekle önce, Dışa Aktar en sağda */}
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="musteriler-page-header mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="page-title">
                 Müşteriler {filteredCustomers.length > 0 && <span className="page-title-badge">{filteredCustomers.length}</span>}
@@ -570,7 +575,6 @@ export const CustomersPage: React.FC = () => {
                                   data-tooltip="Müşteriyi Düzenle"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedCustomerId(customer.id);
                                     setEditingCustomer(customer);
                                     setYeniMusteriModalOpen(true);
                                   }}
@@ -633,7 +637,7 @@ export const CustomersPage: React.FC = () => {
         const panelContent = (
             <div className="page-panel-sag-inner">
               <div className="customers-detail-header mb-4 flex items-center justify-between flex-shrink-0">
-                <h2 className="customers-detail-title">Müşteri Detayları</h2>
+                <h2 id="musteri-detay-title" className="customers-detail-title">Müşteri Detayları</h2>
                 <div className="flex items-center gap-2">
                   {selectedCustomer && (
                     <button
@@ -645,17 +649,17 @@ export const CustomersPage: React.FC = () => {
                       }}
                     >
                       <Pencil size={16} aria-hidden />
-                      <span>Müşteriyi Düzenle</span>
+                      <span>{isMobile ? 'Düzenle' : 'Müşteriyi Düzenle'}</span>
                     </button>
                   )}
                   {selectedCustomerId && (
                     <button
                       type="button"
                       onClick={() => setSelectedCustomerId(null)}
-                      className="customers-close-detail md:hidden"
+                      className="customers-close-detail btn-close-modal md:hidden"
                       aria-label="Kapat"
                     >
-                      ✕
+                      <i className="icon-btn-kapat" aria-hidden />
                     </button>
                   )}
                 </div>
@@ -774,7 +778,8 @@ export const CustomersPage: React.FC = () => {
               <div className="customers-detail-files">
                 <div className="customers-detail-files-head flex items-center justify-between">
                   <h3 className="customers-detail-files-title">
-                    Yüklenen Dosyalar{customerFiles.length > 0 ? ` (${customerFiles.length} Dosya)` : ''}
+                    Yüklenen Dosyalar
+                    {customerFiles.length > 0 && <><br />({customerFiles.length} Dosya)</>}
                   </h3>
                   <button
                     type="button"
@@ -857,8 +862,12 @@ export const CustomersPage: React.FC = () => {
         );
         const panel = (
           <div
-            className={`page-panel-sag w-full md:w-1/2 lg:w-3/5 ${isMobile && selectedCustomerId ? 'page-panel-sag--as-modal' : ''}`}
+            ref={isMobile && selectedCustomerId ? detailPanelRef : undefined}
+            className={`page-panel-sag w-full md:w-1/2 lg:w-3/5 ${isMobile && selectedCustomerId ? 'page-panel-sag--as-modal campaigns-mobile-modal' : ''}`}
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal={isMobile && !!selectedCustomerId}
+            aria-labelledby="musteri-detay-title"
           >
             {panelContent}
           </div>
@@ -867,7 +876,15 @@ export const CustomersPage: React.FC = () => {
           return createPortal(
             <>
               <div
-                className="page-detail-modal-backdrop"
+                ref={detailOverlayRef}
+                className="page-detail-modal-backdrop campaigns-mobile-modal-backdrop"
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  zIndex: 10002,
+                  background: 'var(--overlay-bg-black, rgba(0,0,0,0.6))',
+                  pointerEvents: 'auto',
+                }}
                 onClick={() => setSelectedCustomerId(null)}
                 aria-hidden
               />

@@ -404,7 +404,6 @@ export const PartnersPage: React.FC = () => {
                                   aria-label="Düzenle"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedPartnerId(partner.id);
                                     setEditingPartner(partner);
                                     setYeniPartnerModalOpen(true);
                                   }}
@@ -463,7 +462,7 @@ export const PartnersPage: React.FC = () => {
         const panelContent = (
             <div className="page-panel-sag-inner">
               <div className="partners-detail-header mb-4 flex items-center justify-between flex-shrink-0">
-                <h2 className="partners-detail-title">Partner Firma Detayları</h2>
+                <h2 id="partner-detay-title" className="partners-detail-title">Partner Firma Detayları</h2>
                 <div className="flex items-center gap-2">
                   {selectedPartner && (
                     <button
@@ -482,10 +481,10 @@ export const PartnersPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setSelectedPartnerId(null)}
-                      className="partners-close-detail md:hidden"
+                      className="partners-close-detail btn-close-modal md:hidden"
                       aria-label="Kapat"
                     >
-                      ✕
+                      <i className="icon-btn-kapat" aria-hidden />
                     </button>
                   )}
                 </div>
@@ -584,8 +583,11 @@ export const PartnersPage: React.FC = () => {
         );
         const panel = (
           <div
-            className={`page-panel-sag w-full md:w-1/2 lg:w-3/5 ${isMobile && selectedPartnerId ? 'page-panel-sag--as-modal' : ''}`}
+            className={`page-panel-sag w-full md:w-1/2 lg:w-3/5 ${isMobile && selectedPartnerId ? 'page-panel-sag--as-modal campaigns-mobile-modal' : ''}`}
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal={isMobile && !!selectedPartnerId}
+            aria-labelledby="partner-detay-title"
           >
             {panelContent}
           </div>
@@ -594,7 +596,7 @@ export const PartnersPage: React.FC = () => {
           return createPortal(
             <>
               <div
-                className="page-detail-modal-backdrop"
+                className="page-detail-modal-backdrop campaigns-mobile-modal-backdrop"
                 onClick={() => setSelectedPartnerId(null)}
                 aria-hidden
               />

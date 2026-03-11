@@ -34,13 +34,16 @@ export const PlanProvider: React.FC<PlanProviderProps> = ({ children }) => {
   const [maxUsers, setMaxUsers] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchPlan = useCallback(async () => {
+  const fetchPlan = useCallback(async (background = false) => {
     if (!isAuthenticated || !user) {
       setIsBaslangicPlan(null);
       setMaxUsers(null);
+      setIsLoading(false);
       return;
     }
-    setIsLoading(true);
+    if (!background) {
+      setIsLoading(true);
+    }
     try {
       const tenantCode =
         localStorage.getItem('floovon_tenant_code') ||
@@ -87,18 +90,22 @@ export const PlanProvider: React.FC<PlanProviderProps> = ({ children }) => {
       setIsBaslangicPlan(false);
       setMaxUsers(null);
     } finally {
-      setIsLoading(false);
+      if (!background) {
+        setIsLoading(false);
+      }
     }
   }, [isAuthenticated, user]);
 
   useEffect(() => {
-    fetchPlan();
+    void fetchPlan();
   }, [fetchPlan]);
 
   // Sekme odaklandığında planı yeniden çek (admin console'dan plan değişince yansısın)
   useEffect(() => {
     const onVisibility = () => {
-      if (document.visibilityState === 'visible' && isAuthenticated && user) fetchPlan();
+      if (document.visibilityState === 'visible' && isAuthenticated && user) {
+        void fetchPlan(true);
+      }
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
@@ -109,7 +116,9 @@ export const PlanProvider: React.FC<PlanProviderProps> = ({ children }) => {
   useEffect(() => {
     if (!isAuthenticated || !user) return;
     const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') fetchPlan();
+      if (document.visibilityState === 'visible') {
+        void fetchPlan(true);
+      }
     }, PLAN_POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [isAuthenticated, user, fetchPlan]);

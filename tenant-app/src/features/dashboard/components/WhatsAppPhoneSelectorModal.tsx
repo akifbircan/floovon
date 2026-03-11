@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 interface WhatsAppContact {
@@ -25,6 +25,26 @@ export const WhatsAppPhoneSelectorModal: React.FC<WhatsAppPhoneSelectorModalProp
   onClose,
   title = 'Sipariş listesinin gönderileceği Whatsapp gönderim numarasını seçin',
 }) => {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Açıldığında her zaman görünür (animasyon hook bazen ref/gsap ile modalı 0 opacity’te bırakıyordu)
+  useEffect(() => {
+    if (!isOpen) return;
+    const t = setTimeout(() => {
+      if (overlayRef.current) {
+        overlayRef.current.style.opacity = '1';
+        overlayRef.current.style.visibility = 'visible';
+      }
+      if (panelRef.current) {
+        panelRef.current.style.opacity = '1';
+        panelRef.current.style.visibility = 'visible';
+        panelRef.current.style.transform = 'scale(1)';
+      }
+    }, 50);
+    return () => clearTimeout(t);
+  }, [isOpen]);
+
   // ESC tuşu ile kapatma
   useEffect(() => {
     if (!isOpen) return;
@@ -65,14 +85,16 @@ export const WhatsAppPhoneSelectorModal: React.FC<WhatsAppPhoneSelectorModalProp
 
   const overlay = (
     <div
+      ref={overlayRef}
       className="modal-react-whatsapp-phone-overlay"
+      style={{ opacity: 1, visibility: 'visible' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
     >
-      <div className="modal-react-whatsapp-phone-popup" onClick={(e) => e.stopPropagation()}>
+      <div ref={panelRef} className="modal-react-whatsapp-phone-popup" style={{ opacity: 1, visibility: 'visible', transform: 'scale(1)' }} onClick={(e) => e.stopPropagation()}>
         <img src={`${import.meta.env.BASE_URL}assets/whatsapp.svg`} alt="WhatsApp" className="modal-react-whatsapp-phone-logo" />
         <h3 className="modal-react-whatsapp-phone-title">{title}</h3>
         <div className="modal-react-whatsapp-phone-button-group">

@@ -1,0 +1,480 @@
+/* #region Toast Notification - Genel Ayarlar */
+ul.notifications {
+  all: unset;
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  z-index: 2147483645 !important; /* Modal (999999999) üstünde */
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important; /* ✅ block olmalı - none olunca toast görünmüyor! */
+}
+
+/* #endregion */
+
+/* #region Toast Notification - Temel Toast Kartı */
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 250px;
+  max-width: 320px;
+  background-color: var(--toast-bg);
+  color: var(--toast-text);
+  border-left: 5px solid;
+  border-radius: 6px;
+  padding: 12px 16px;
+  /* margin-top: 10px; */
+  box-shadow: 0 4px 12px var(--toast-shadow);
+  animation: slideInUp 0.4s ease;
+  z-index: 2147483645 !important; /* Modal üstünde */
+  border: none;
+}
+
+/* #endregion */
+
+/* #region Toast Notification - İç Yapılar */
+.toast .column {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  flex: 1;
+}
+
+.toast .column i,
+.toast .column .toast-icon {
+  font-size: 18px;
+  margin: 0;
+  padding: 0;
+  color: var(--toast-success);
+}
+
+/* Error: beyaz stroke, daire dolu olmasın (X-içinde-daire ikonu görünsün) */
+.toast.error .column i,
+.toast.error .column .toast-icon {
+  color: var(--toast-text-white) !important;
+}
+.toast.error .column .toast-icon svg {
+  color: var(--toast-text-white) !important;
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+.toast.warning .column i,
+.toast.warning .column .toast-icon {
+  color: var(--toast-warning-text) !important;
+}
+.toast.warning .column .toast-icon svg {
+  stroke: var(--toast-warning-text) !important;
+  fill: none !important;
+}
+.toast.info .column i,
+.toast.info .column .toast-icon {
+  color: var(--toast-text-white) !important;
+}
+.toast.info .column .toast-icon svg {
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+
+.toast.success:not(.interactive) .column .toast-icon,
+.toast.success:not(.interactive) .column .toast-icon svg {
+  color: var(--toast-mor-primary, #6D28D9) !important;
+}
+
+.toast .toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast .toast-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.toast .fa-xmark {
+  cursor: pointer;
+  margin-left: 20px;
+  color: var(--toast-text);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+/* Toast close button - Index panel için (HTML'de .toast-close kullanılıyor) */
+.toast .toast-close {
+  cursor: pointer;
+  margin-left: 20px;
+  color: var(--toast-text);
+  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+
+.toast .toast-close:hover {
+  opacity: 1;
+}
+
+.toast .toast-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* #endregion */
+
+/* #region Toast Notification - Tür Renkleri */
+
+/* Error Toast Stilleri */
+.toast.error:not(.interactive) {
+  border-color: var(--toast-error);
+  background-color: var(--toast-error);
+  color: var(--toast-text-white) !important;
+}
+
+.toast.error:not(.interactive) .column i,
+.toast.error:not(.interactive) .column .toast-icon {
+  color: var(--toast-text-white) !important;
+}
+.toast.error:not(.interactive) .column .toast-icon svg {
+  color: var(--toast-text-white) !important;
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+
+.toast.error .fa-xmark {
+  color: var(--toast-text-white) !important;
+}
+
+.toast.error .toast-close {
+  color: var(--toast-text-white) !important;
+}
+
+.toast.error .toast-close svg {
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+
+/* Success Toast – mor primary sol çizgi ve ikon */
+.toast.success:not(.interactive) {
+  border-left-color: var(--toast-mor-primary, #6D28D9);
+}
+
+/* Warning Toast Stilleri */
+.toast.warning:not(.interactive) {
+  border-color: var(--toast-warning);
+  background-color: var(--toast-warning);
+  color: var(--toast-warning-text) !important;
+}
+
+.toast.warning:not(.interactive) .column i,
+.toast.warning:not(.interactive) .column .toast-icon {
+  color: var(--toast-warning-text) !important;
+}
+.toast.warning:not(.interactive) .column .toast-icon svg {
+  stroke: var(--toast-warning-text) !important;
+  fill: none !important;
+}
+
+.toast.warning .fa-xmark,
+.toast.warning .toast-close {
+  color: var(--toast-warning-text) !important;
+}
+.toast.warning .toast-close svg {
+  stroke: var(--toast-warning-text) !important;
+  fill: none !important;
+}
+
+/* Info Toast Stilleri */
+.toast.info:not(.interactive) {
+  border-color: var(--toast-info);
+  background-color: var(--toast-info);
+  color: var(--toast-text-white) !important;
+}
+
+.toast.info:not(.interactive) .column i,
+.toast.info:not(.interactive) .column .toast-icon {
+  color: var(--toast-text-white) !important;
+}
+.toast.info:not(.interactive) .column .toast-icon svg {
+  stroke: var(--toast-text-white) !important;
+  fill: none !important;
+}
+
+/* customSifreGonderildi Toast Stilleri */
+.toast.customSifreGonderildi:not(.interactive) {
+  border-color: var(--toast-success);
+  background-color: var(--toast-pass-bg);
+  color: var(--toast-success);
+}
+
+.toast.customSifreGonderildi:not(.interactive) .column i,
+.toast.customSifreGonderildi .fa-xmark {
+  color: var(--toast-success);
+}
+
+/* #endregion */
+
+/* #region Toast Notification - Giriş ve Çıkış Animasyonları */
+.toast.hide {
+  animation: fadeOut 0.5s forwards;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* #endregion */
+
+/* #region Toast Notification - Etkileşimli Toast (Evet / Hayır) */
+.toast-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlay-bg-black);
+  z-index: 2147483646 !important; /* Modal (999999999) üstünde */
+}
+
+/* ✅ Toast gösterildiğinde HTML5 validation tooltip'lerini gizle */
+body:has(.toast-interactive),
+body:has(.toast-overlay) {
+  /* HTML5 native validation tooltip'lerini gizle */
+  input:invalid::-webkit-validation-bubble,
+  input:invalid::-webkit-validation-bubble-message,
+  input:invalid::-webkit-validation-bubble-arrow {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    z-index: -1 !important;
+  }
+  
+  /* Tüm validation tooltip'lerini toast'un altında tut */
+  input:invalid::after,
+  input:invalid::before {
+    z-index: 1000000 !important; /* Toast'un altında */
+  }
+  
+  /* Custom tooltip'leri de gizle */
+  .input-error-tooltip {
+    z-index: 1000000 !important; /* Toast'un altında */
+    display: none !important;
+  }
+}
+
+.toast.interactive {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--toast-bg);
+  z-index: 2147483647 !important; /* Modal ve overlay üstünde */
+  max-width: 420px;
+  width: auto;
+  padding: 24px;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px var(--toast-shadow);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--toast-text);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeInCenter 0.3s ease forwards;
+  cursor: default;
+}
+
+.toast.interactive.hide {
+  animation: fadeOutCenter 0.3s ease forwards;
+}
+
+
+.toast-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.toast-message {
+  font-size: 15px;
+  color: var(--toast-text);
+  text-align: center;
+}
+
+/* Onay butonu */
+.toast-btn-confirm,
+.toast-btn-danger {
+  background-color: var(--toast-mor-primary, #6D28D9) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.toast-btn-confirm:hover,
+.toast-btn-danger:hover {
+  filter: brightness(1.1);
+  color: #ffffff !important;
+  opacity: 1;
+}
+
+
+.toast-btn-cancel {
+  background-color: var(--toast-button-cancel);
+  color: var(--toast-text-dark) !important;
+  font-weight: 500;
+  /* border: 1px solid var(--gri70, #d1d5db); */
+}
+
+.toast-btn-cancel:hover {
+  opacity: 0.8;
+}
+
+
+
+@keyframes fadeInCenter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes fadeOutCenter {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+}
+
+/* Toast Interactive - üstte başlık, altta açıklama (sola yaslı), butonlar sağda */
+.toast.interactive {
+  align-items: stretch;
+  width: 100%;
+}
+
+.toast.interactive .toast-interactive-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ana-renk, var(--toast-text, #111827));
+  text-align: left !important;
+}
+
+.toast.interactive .toast-message {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--gri70, var(--toast-text, #6b7280));
+  text-align: left !important;
+}
+
+/* Eski yapıdan kalan mesaj ikonunu gizle; buton ikonları (İptal X, Evet tik) görünsün */
+.toast.interactive .toast-message-icon {
+  display: none !important;
+}
+
+.toast.interactive .toast-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-left: auto;
+}
+
+/* CSS Değişkenleri - Eğer tanımlı değilse varsayılan değerler */
+:root {
+  --toast-bg: #ffffff;
+  --toast-text: #2e3237;
+  --toast-text-white: #ffffff;
+  --toast-text-dark: #1e293b;
+  --toast-shadow: rgba(0, 0, 0, 0.1);
+  --toast-success: #10b981;
+  --toast-error: #ef4444;
+  --toast-warning: #f59e0b;
+  --toast-info: #3b82f6;
+  --toast-warning-text: #2e1200;
+  --toast-pass-bg: #f0fdf4;
+  --toast-button-confirm: #ec0972;
+  --toast-mor-primary: #6D28D9;
+  --toast-button-cancel: #e2e8f0;
+  --overlay-bg-black: rgba(0, 0, 0, 0.5);
+}
+
+/* #endregion */
+
+/* #region Kopyalama bildirimi (ürün yazısı / yazı not - showCopyAlert) */
+.urunyazisi-alert {
+  display: none;
+  position: fixed;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--white, #fff);
+  color: var(--ana-renk, #1e293b);
+  padding: 15px 20px;
+  border: 1px solid var(--border-renk, #e2e8f0);
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  max-width: 320px;
+  min-width: 280px;
+  z-index: 99999;
+}
+
+.urunyazisi-alert .alert-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background-color: rgba(16, 185, 129, 0.2);
+  padding: 8px;
+  border-radius: 50%;
+  margin-right: 10px;
+  color: var(--toast-success, #10b981);
+}
+
+.urunyazisi-alert .alert-message {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--toast-text, #475569);
+}
+
+.urunyazisi-alert .copied-text-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.urunyazisi-alert .copied-text {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  word-wrap: break-word;
+  color: var(--ana-renk, #1e293b);
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+/* #endregion */

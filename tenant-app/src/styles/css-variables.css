@@ -377,7 +377,8 @@
   --notif-badge-bg: var(--success-green);
   --notif-dropdown-bg: var(--white);
   --notif-dropdown-border: var(--border-renk);
-  --notif-dropdown-shadow: var(--box-shadow-light);
+  --notif-dropdown-shadow-color: rgba(0, 0, 0, 0.12);
+  --notif-dropdown-shadow: 0 8px 24px var(--notif-dropdown-shadow-color);
   --notif-status-ok: var(--success-green);
   --notif-status-iptal: var(--kirmizi-sicak);
   --notif-status-arsiv: var(--orange-bright);
@@ -430,8 +431,13 @@
   --scroll-thumb-color-hover: #b3b3b3;
   --scroll-track-color: #f1f1f1;
 
+  /* Mobil header ikon butonları (tema, araç takip vb.) – genel zemin ve kenarlık */
+  --header-icon-border: #e1e5e9;
+  --header-icon-bg: #f1f3f7;
+  --header-icon-bg-hover: #e1e4eb;
+
   /* Araç Takip */
-  --arac-takip-teslimat-kenarlık: #e1e5e9;
+  --arac-takip-teslimat-kenarlık: var(--header-icon-border);
   --arac-takip-beklemede-zemin: #fed7d7;
   --arac-takip-beklemede-metin: #c53030;
   --arac-takip-aktif-zemin: #edfff2;
@@ -439,8 +445,8 @@
   --arac-takip-tamamlandi-zemin: #bee3f8;
   --arac-takip-tamamlandi-metin: #2b6cb0;
   --arac-takip-main-logo-bg: #282c5b;
-  --arac-takip-vehicle-item-bg: #f1f3f7;
-  --arac-takip-vehicle-item-bg-hover: #e1e4eb;
+  --arac-takip-vehicle-item-bg: var(--header-icon-bg);
+  --arac-takip-vehicle-item-bg-hover: var(--header-icon-bg-hover);
 
   /* Yaklaşan Siparişler */
   --yaklasan-siparis-bg: #d8e7ed;
@@ -473,7 +479,7 @@
   --profil-yetki-kart-footer-bg: rgba(0, 0, 0, 0.02);
   --profil-yetki-kart-footer-bg-dark: rgba(255, 255, 255, 0.03);
   --profil-kart-hover-shadow: rgba(109, 40, 217, 0.1);
-  --profil-secure-bg: #fcfcfc;
+  --profil-secure-bg: #f5fbff;
 
   /* Fatura */
   --fatura-kesildi-bg: #d4edda;
@@ -698,7 +704,8 @@ html.dark-mode {
   --notif-badge-bg: var(--success-green);
   --notif-dropdown-bg: var(--white);
   --notif-dropdown-border: #2a2d35;
-  --notif-dropdown-shadow: var(--shadow-gray-soft);
+  --notif-dropdown-shadow-color: rgba(0, 0, 0, 0.4);
+  --notif-dropdown-shadow: 0 8px 24px var(--notif-dropdown-shadow-color);
   --notif-status-ok: var(--success-green);
   --notif-status-iptal: var(--kirmizi-sicak);
   --notif-status-arsiv: var(--orange-bright);
@@ -914,8 +921,13 @@ html.dark-mode {
   --scroll-thumb-color-hover: #abaaaa;
   --scroll-track-color: transparent;
 
+  /* Mobil header ikon butonları - Dark Mode */
+  --header-icon-border: #4a5568;
+  --header-icon-bg: #36353f;
+  --header-icon-bg-hover: #2b2a33;
+
   /* Araç Takip - Dark Mode */
-  --arac-takip-teslimat-kenarlık: #4a5568;
+  --arac-takip-teslimat-kenarlık: var(--header-icon-border);
   --arac-takip-beklemede-zemin: #742a2a;
   --arac-takip-beklemede-metin: #fed7d7;
   --arac-takip-aktif-zemin: #22543d;
@@ -923,8 +935,8 @@ html.dark-mode {
   --arac-takip-tamamlandi-zemin: #2a4365;
   --arac-takip-tamamlandi-metin: #bee3f8;
   --arac-takip-main-logo-bg: #36353f;
-  --arac-takip-vehicle-item-bg: #36353f;
-  --arac-takip-vehicle-item-bg-hover: #2b2a33;
+  --arac-takip-vehicle-item-bg: var(--header-icon-bg);
+  --arac-takip-vehicle-item-bg-hover: var(--header-icon-bg-hover);
 
   /* Yaklaşan Siparişler - Dark Mode */
   --yaklasan-siparis-bg: #223151;

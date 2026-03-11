@@ -1047,10 +1047,9 @@ display: flex;
   display: flex;
   flex-direction: row !important;
   align-items: center;
-  flex-wrap: wrap;
   color: var(--gri70);
   gap: 10px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .yeni-siparis-container .randevu-teslim-saati .saat-ve-aciklama input[type="time"] {
@@ -1060,6 +1059,7 @@ display: flex;
   font-weight: 500;
   height: 36px;
   width: fit-content !important;
+  min-width: 64px !important;
   padding: 0 8px;
   background-color: var(--white);
   border-radius: 4px;

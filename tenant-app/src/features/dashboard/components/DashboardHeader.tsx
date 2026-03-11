@@ -267,7 +267,15 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               >
                 <Calendar size={20} strokeWidth={2} />
               </button>
-              <div className="mobile-baslik-metin-tarihler">
+              <div
+                className="mobile-baslik-metin-tarihler"
+                role="button"
+                tabIndex={0}
+                onClick={() => window.dispatchEvent(new CustomEvent('floovon-open-week-picker'))}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.dispatchEvent(new CustomEvent('floovon-open-week-picker')); } }}
+                aria-label="Hafta seç"
+                title="Hafta seçmek için tıklayın"
+              >
                 <div className="mobile-baslik-ay">
                   {MONTH_NAMES[weekDates[0].date.getMonth()]} {weekDates[0].date.getFullYear()}
                 </div>

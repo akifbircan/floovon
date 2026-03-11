@@ -7,7 +7,7 @@
 @media (max-width: 767px) {
   /* ----- Ana içerik: tüm sayfalar mobilde – scrollbar gizli (mobil uygulama gibi) ----- */
   main[data-main-content] {
-    padding-bottom: 64px !important; /* Mobil navbar yüksekliği */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0)) !important; /* Mobil navbar altı boşluk */
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
     width: 100% !important;
@@ -36,7 +36,7 @@
     margin-right: 0 !important;
     padding-left: 20px !important;
     padding-right: 20px !important;
-    padding-bottom: 64px !important; /* Navbar yüksekliği, yapışık */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0)) !important; /* Navbar altı boşluk, yapışmasın */
     box-sizing: border-box !important;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none !important;
@@ -52,11 +52,83 @@
     padding: 0 !important;
   }
 
-  /* Mobilde tüm inputlar 14px (zoom engelleme + okunaklılık) */
+  /* Mobilde tüm input/textarea/select: 14px = 0.875rem (tek tip, rem ile) */
   input,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="search"],
   textarea,
   select {
-    font-size: 14px !important;
+    font-size: 0.875rem !important; /* 14px */
+  }
+
+  /* Diğer dosyalardaki font-size: 16px/13px !important ezer (profil, modal, cari drawer vb.) */
+  .profil-form-group input,
+  .profil-form-group select,
+  .profil-form-group textarea,
+  .profil-page input,
+  .profil-page select,
+  .profil-page textarea,
+  .cari-drawer-overlay input,
+  .cari-drawer-overlay select,
+  .cari-drawer-overlay textarea,
+  .yeni-kart-container input,
+  .yeni-kart-container select,
+  .yeni-kart-container textarea,
+  .yeni-musteri-container input,
+  .yeni-musteri-container select,
+  .yeni-musteri-container textarea,
+  .yeni-siparis-container input,
+  .yeni-siparis-container select,
+  .yeni-siparis-container textarea,
+  .overlay-yeni-kart-container input,
+  .overlay-yeni-kart-container select,
+  .overlay-yeni-kart-container textarea,
+  .overlay-yeni-musteri-container input,
+  .overlay-yeni-musteri-container select,
+  .overlay-yeni-musteri-container textarea,
+  .overlay-yeni-siparis-container input,
+  .overlay-yeni-siparis-container select,
+  .overlay-yeni-siparis-container textarea,
+  .ayarlar-panel-form input,
+  .ayarlar-panel-form select,
+  .ayarlar-panel-form textarea,
+  .sicak-satis-popup input,
+  .sicak-satis-popup select,
+  .sicak-satis-popup textarea {
+    font-size: 0.875rem !important; /* 14px */
+  }
+
+  /* Kampanya formu: date input'lar select'lerle aynı custom ok stilini kullansın */
+  .campaigns-form-wrap .campaigns-form input[type="date"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    position: relative !important;
+    padding-right: 2.25rem !important;
+    background-color: var(--white) !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.5rem center !important;
+    background-size: 1rem 1rem !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  }
+
+  .campaigns-form-wrap .campaigns-form input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 2.25rem !important;
+    height: 100% !important;
+    cursor: pointer !important;
+  }
+
+  body.dark-mode .campaigns-form-wrap .campaigns-form input[type="date"],
+  html.dark-mode .campaigns-form-wrap .campaigns-form input[type="date"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
   }
 
   /* Mobilde tooltip gösterme – tıklayınca sabit kalma sorunu önlenir */
@@ -82,22 +154,30 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
   }
 
-  /* Toast mobil: kenarlardan boşluk (modallarla aynı 20px) – tüm toast container'ları */
+  /* Toast mobil: header hemen altında, yukarıda kalsın */
   body .app-toast-container,
   body ul.notifications,
   body > .app-toast-container,
   body > ul.notifications,
   .app-toast-container,
-  ul.notifications {
-    left: 20px !important;
+  ul.notifications,
+  body > [id*="toast"],
+  body > [class*="ToastContainer"] {
+    left: auto !important;
     right: 20px !important;
-    top: 80px !important;
-    width: calc(100vw - 40px) !important;
-    max-width: calc(100vw - 40px) !important;
+    top: calc(var(--header-height, 64px) - 8px) !important;
+    width: auto !important;
+    max-width: min(340px, calc(100vw - 40px)) !important;
     margin: 0 !important;
     padding: 0 !important;
     transform: none !important;
     box-sizing: border-box !important;
+  }
+  .app-toast-container > div,
+  [class*="toast"][class*="container"] > div,
+  ul.notifications {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
   }
 
   /* ========== Ortak sayfa yapısı: page-wrapper, panel-sol, panel-sag ========== */
@@ -149,6 +229,23 @@
 
   .page-wrapper .mb-6.flex.flex-col.sm\:flex-row {
     gap: 12px;
+  }
+
+  /* Müşteriler sayfası: başlık ve buton mobilde yan yana, iki köşeye yaslı */
+  .musteriler-page-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  .musteriler-page-header .page-title {
+    margin-bottom: 0 !important;
+  }
+  .page-wrapper .musteriler-page-header .flex.items-center.gap-2 {
+    width: auto !important;
+    flex-shrink: 0 !important;
   }
 
   .page-wrapper .flex.items-center.gap-2 {
@@ -274,6 +371,11 @@
     order: 0;
     text-align: left;
   }
+  .customers-table tbody td.td-no-mobile-label::before,
+  .campaigns-table-wrap .customers-table tbody td.td-no-mobile-label::before {
+    content: none !important;
+    display: none !important;
+  }
   .customers-table tbody td > *,
   .partners-table tbody td > *,
   .campaigns-table tbody td > *,
@@ -288,7 +390,28 @@
     width: 100%;
     align-items: center;
     text-align: right;
-}
+  }
+
+  /* Müşteriler sayfası: Ünvan & Yetkili, İletişim hücreleri mobilde sütun (bilgiler sığsın) */
+  .customers-table-wrapper .customers-table tbody td[data-label="Müşteri Ünvanı & Yetkili Kişi"],
+  .customers-table-wrapper .customers-table tbody td[data-label="İletişim Bilgileri"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  .customers-table-wrapper .customers-table tbody td[data-label="Müşteri Ünvanı & Yetkili Kişi"] > *,
+  .customers-table-wrapper .customers-table tbody td[data-label="İletişim Bilgileri"] > * {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .customers-table-wrapper .customers-table tbody td[data-label="Müşteri Ünvanı & Yetkili Kişi"] .customers-cell-stack,
+  .customers-table-wrapper .customers-table tbody td[data-label="İletişim Bilgileri"] .customers-cell-stack {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
 
 .campaigns-tamamlandi-mesaj {
   text-align: right !important;
@@ -299,6 +422,21 @@
   .partners-table tbody td .islem-ikonlar,
   .profil-table tbody td .islem-ikonlar {
     margin-left: 0;
+  }
+
+  /* Profil yönetimi tablosu kart görünümü: Kullanıcı sütununda data-label gizle */
+  .profil-table tbody td[data-label="Kullanıcı"]::before {
+    content: none !important;
+    display: none !important;
+  }
+  /* Profil tablosu: E-posta & Telefon hücresi mobilde alt alta (column) */
+  .profil-table tbody td[data-label="E-posta & Telefon"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  .profil-table tbody td[data-label="E-posta & Telefon"]::before {
+    min-width: 0;
   }
 
   /* Yetkilendirme tablosu – mobilde kart görünümü */
@@ -355,6 +493,23 @@
     min-width: 0;
     order: 1;
   }
+  /* İzin hücresindeki ikon sağa yasla */
+  .permissions-table .permission-cell {
+    justify-content: flex-end !important;
+  }
+  .permissions-table .permission-cell .permission-icon-wrapper {
+    flex-shrink: 0;
+    justify-content: flex-end !important;
+  }
+  /* Mobilde permission ikonunda hover etkisi yok */
+  .permissions-table .permission-cell .permission-icon-wrapper:hover {
+    background-color: transparent !important;
+  }
+
+  /* Profil sayfası: rol badge mobilde daha kompakt */
+  .profil-badge.profil-badge-role {
+    padding: 4px 10px !important;
+  }
 
   /* Kampanya tablosu da customers-table kullanıyor; kart görünümü aynı */
   .campaigns-table-wrap .customers-table tbody tr {
@@ -366,19 +521,28 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   }
 
-  /* Detay paneli kapat butonu */
+  /* Kart görünümündeki tablolarda son satırın altındaki boşluğu kaldır (navbar ile çift boşluk olmasın) */
+  .customers-table tbody tr:last-child,
+  .partners-table tbody tr:last-child,
+  .campaigns-table tbody tr:last-child,
+  .profil-table tbody tr:last-child,
+  .campaigns-table-wrap .customers-table tbody tr:last-child,
+  .permissions-table tbody tr.permission-row:last-child,
+  .reports-table tbody tr.reports-table-row:last-child,
+  .reports-table.reports-table-musteri tbody tr.reports-table-row:last-child,
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir:last-child,
+  .cari-table tbody tr:last-child,
+  .ayarlar-page .ayarlar-tablosu tbody tr.ayarlar-table-row:last-child,
+  .ayarlar-page .ayarlar-tablosu tbody tr[data-table-row]:last-child,
+  .ayarlar-page table.ayarlar-tablosu tbody tr:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  /* Detay paneli kapat butonu: ortak .btn-close-modal stili (müşteri ekle ile aynı), sadece mobilde görünsün */
   .customers-close-detail.md\:hidden,
-  .partners-close-detail.md\:hidden {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    border: 1px solid var(--border-renk);
-    background: var(--white);
-    color: var(--ana-renk);
-    cursor: pointer;
+  .partners-close-detail.md\:hidden,
+  .campaigns-close-detail.md\:hidden {
+    display: flex !important;
   }
 
   .page-empty-detail {
@@ -387,6 +551,11 @@
 
   .page-empty-detail-inner {
     width: 85%;
+  }
+
+  /* Yeni Sipariş – Partner siparişi kutusu mobilde yan padding ile hizalansın */
+  .yeni-siparis-container .siparis-form-alan .sol-alan .partner-siparisi-isaretle {
+    margin: 0 20px !important;
   }
 
   /* Mobilde detay/form paneli modal olarak (Kampanya, Müşteriler, Partner) */
@@ -433,37 +602,152 @@
     box-shadow: none !important;
   }
 
-  /* Ayarlar: mobilde ekle/düzenle formu modal gibi (müşteri düzenle gibi) */
-  .ayarlar-form-row.ayarlar-form-active {
-    position: relative;
-  }
-  .ayarlar-form-row.ayarlar-form-active::before {
-    content: '';
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 10000 !important;
-    background: var(--overlay-bg-black) !important;
-    pointer-events: auto;
-  }
-  .ayarlar-form-row.ayarlar-form-active .ayarlar-sol-kolon {
-    position: fixed !important;
+  /* Kampanya modalları: mobilde Yeni Müşteri Ekle gibi overlay içinde, kenarlarda ve altta boşluklu */
+  body .page-panel-sag--as-modal.campaigns-mobile-modal,
+  .page-wrapper .page-panel-sag.page-panel-sag--as-modal.campaigns-mobile-modal {
     top: 16px !important;
     left: 16px !important;
     right: 16px !important;
     bottom: 16px !important;
-    z-index: 10001 !important;
     width: auto !important;
+    min-width: 0 !important;
     max-width: none !important;
     height: auto !important;
-    max-height: calc(100vh - 32px) !important;
+    max-height: calc(100dvh - 32px) !important;
     background: var(--white) !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-    padding: 16px 20px 80px !important;
-    box-sizing: border-box !important;
     border-radius: 12px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+    overflow: hidden !important;
+    padding: 16px 16px 20px !important;
+    padding-bottom: 20px !important;
   }
+
+  body .page-panel-sag--as-modal.campaigns-mobile-modal .page-panel-sag-inner,
+  .page-panel-sag--as-modal.campaigns-mobile-modal .page-panel-sag-inner {
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 68px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  /* Müşteri/Partner detay modal header: mobilde sabit yükseklik kaldırılsın */
+  .page-panel-sag--as-modal.campaigns-mobile-modal .customers-detail-header,
+  .page-panel-sag--as-modal.campaigns-mobile-modal .partners-detail-header {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .campaigns-mobile-modal .customers-detail-card.campaigns-form-card,
+  .campaigns-mobile-modal .customers-detail-card.campaigns-detail-card {
+    border-radius: 12px !important;
+    overflow: visible !important;
+    padding-bottom: 20px !important;
+  }
+
+  .campaigns-mobile-modal .campaigns-form-wrap.campaigns-form-card {
+    display: block !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .campaigns-mobile-modal .campaigns-form-wrap .campaigns-form {
+    display: block !important;
+    flex: none !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .campaigns-mobile-modal .campaigns-form-wrap .campaigns-form-scroll,
+  .campaigns-mobile-modal .customers-detail-card-top {
+    flex: none !important;
+    min-height: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .campaigns-mobile-modal .campaigns-form-footer.form-actions.butonlar {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    justify-content: stretch !important;
+    align-items: center !important;
+    padding: 20px 0 0 !important;
+    margin-top: 0 !important;
+    border-top: none !important;
+    background: transparent !important;
+  }
+
+  .campaigns-mobile-modal .campaigns-form-footer.form-actions.butonlar .btn-vazgec {
+    order: 2 !important;
+  }
+
+  .campaigns-mobile-modal .campaigns-form-footer.form-actions.butonlar .btn-kaydet,
+  .campaigns-mobile-modal .campaigns-form-footer.form-actions.butonlar .btn-guncelle {
+    order: 1 !important;
+  }
+
+  .campaigns-mobile-modal .campaigns-form-footer.form-actions.butonlar button,
+  .campaigns-mobile-modal .campaigns-form-footer.form-actions.butonlar .btn-vazgec,
+  .campaigns-mobile-modal .campaigns-form-footer.form-actions.butonlar .btn-kaydet,
+  .campaigns-mobile-modal .campaigns-form-footer.form-actions.butonlar .btn-guncelle {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+    margin: 0 !important;
+  }
+
+  /* Araç Takip form modalı: mobilde ekranı dengeli kullan, ortada */
+  .modal-react-arac-takip-overlay {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+  }
+  .modal-react-arac-takip-container {
+    width: 100% !important;
+    max-width: min(440px, calc(100vw - 40px)) !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25) !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* WhatsApp numara seçici popup: mobilde her zaman görünür, tüm overlay’lerin üstünde */
+  .modal-react-whatsapp-phone-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 100002 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+    background-color: var(--popup-overlay-bg, rgba(0, 0, 0, 0.5)) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+  .modal-react-whatsapp-phone-overlay .modal-react-whatsapp-phone-popup {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: scale(1) !important;
+    max-width: min(360px, calc(100vw - 32px)) !important;
+  }
+
+  /* Ayarlar: mobilde ekle/düzenle formu web ile aynı mantık – form üstte, düzenle tıklanınca scroll oraya (overlay yok) */
+  .ayarlar-form-row.ayarlar-form-active {
+    position: relative;
+  }
+
 
   /* Cari / Partner drawer'ları: mobilde ortak modal standardı (modal-styles.css – ortadan, 16px boşluk) */
   .cari-drawer-overlay .cari-drawer {
@@ -647,6 +931,7 @@
     flex: none;
     min-width: 0;
     order: 1;
+    align-items: flex-end;
   }
 
   .arsiv-btn-filtre-reset {
@@ -798,6 +1083,11 @@
   .reports-table.reports-table-musteri tbody tr.reports-table-row td .cell-badge {
     flex: none !important;
   }
+
+  .reports-content { 
+    gap: 10px !important;
+  }
+
   .reports-table tbody tr.reports-table-row td > *,
   .reports-table.reports-table-musteri tbody tr.reports-table-row td > * {
     flex: 1;
@@ -929,6 +1219,54 @@
     min-width: 120px;
   }
 
+  .sol-detay-alan .galeri-container .teslim-edilen-siparis-foto-galeri .headerbox {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+  /* Kart detay sol alan: teslim edilen foto galerisi mobilde görünsün; grid ve fotoğraflar çökmesin */
+  .kart-detay-container .sol-detay-alan .galeri-container {
+    display: block !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    min-height: auto !important;
+    flex: none !important;
+    margin-bottom: 0 !important;
+  }
+  .kart-detay-container .sol-detay-alan .galeri-container .teslim-edilen-siparis-foto-galeri {
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    min-height: auto !important;
+    flex: none !important;
+    padding: 16px !important;
+  }
+  .kart-detay-container .sol-detay-alan .galeri-container .teslim-edilen-siparis-foto-galeri .galeri-grid {
+    display: grid !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    min-height: auto !important;
+    flex: none !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+    align-content: start !important;
+    margin-top: 12px !important;
+    padding: 0 !important;
+  }
+  .kart-detay-container .sol-detay-alan .galeri-container .galeri-grid img {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    object-fit: cover !important;
+    border-radius: 6px !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+
   /* Organizasyon kutusu (orgkart organizasyon) mobilde: içerik alt alta, dikeyde ortalı – sadece mobil */
   .kart-detay-container .organizasyon-kutu.orgkart.organizasyon {
     display: flex !important;
@@ -971,6 +1309,12 @@
   .kart-detay-container .organizasyon-kutu.orgkart.organizasyon .sahip-ve-zaman .teslim-zaman {
     align-items: center !important;
     text-align: center !important;
+  }
+
+  /* Sipariş kart detay: sahip-ve-zaman alanında organizasyon sahibi ve tarih/saat ikonlarını mobilde gizle */
+  .kart-detay-container .organizasyon-kutu .sahip-ve-zaman .organizasyon-sahibi .ikon,
+  .kart-detay-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman .ikon {
+    display: none !important;
   }
 
   /* Sipariş listesi başlık + butonlar */
@@ -1036,7 +1380,7 @@
     flex-direction: column !important;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 8px;
+    gap: 0;
     padding: 6px 0 !important;
     border: none !important;
     min-width: 0 !important;
@@ -1057,6 +1401,10 @@
     overflow-wrap: break-word;
   }
 
+  /* Tabloda masaüstünde gizli kolonlar mobilde de gizli kalsın (inline display:none olan hücreler) */
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td[style*="display: none"] {
+    display: none !important;
+  }
   .siparis-kart-detay-tablosu tbody tr.tablo-satir td::before {
     content: attr(data-label);
     font-weight: 600;
@@ -1069,20 +1417,83 @@
     text-align: left;
   }
 
+  /* SP. NO, Sipariş Kodu, Ödeme, Sipariş Durumu: data-label ve değer yan yana */
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td[data-label="SP. NO"],
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-siparis-kodu-mobil,
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td[data-label="Ödeme"],
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-teslim-durum {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td[data-label="SP. NO"]::before,
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-siparis-kodu-mobil::before,
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td[data-label="Ödeme"]::before,
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-teslim-durum::before {
+    max-width: none !important;
+    min-width: auto !important;
+  }
+
+  /* Sipariş Kodu hücresi: değer + kopyala butonu */
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-siparis-kodu-mobil .siparis-kodu-deger {
+    font-size: 13px;
+    font-weight: 500;
+    word-break: break-all;
+    text-align: right;
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-siparis-kodu-mobil .siparis-kodu-kopyala-btn {
+    flex: none !important;
+    flex-shrink: 0;
+    min-width: 28px;
+    max-width: 28px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: var(--border-renk);
+    color: var(--ana-renk);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--gri70);
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-siparis-kodu-mobil .siparis-kodu-kopyala-btn:hover {
+    background: var(--mor-primary);
+    color: var(--white);
+  }
+
   .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-siparis-urun .siparis-urun-hucre {
     margin-left: 0;
     flex: 1 1 0%;
     min-width: 0;
   }
 
+  /* İşlemler hücresi: data-label ve ikonlar yan yana */
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-islem {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+  }
+  .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-islem::before {
+    max-width: none !important;
+    min-width: auto !important;
+  }
   .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-islem .islem-ikonlar {
     margin-left: 0;
     flex: none !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
   }
-
   .siparis-kart-detay-tablosu tbody tr.tablo-satir td.td-islem .teslim-edildi-bilgi-mesaji {
-    flex: 1 1 100%;
-    font-size: 12px;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    font-size: 12px !important;
   }
 
   /* Sipariş detay popup – mobilde tam ekran yakın, kenar boşluklu */
@@ -1120,6 +1531,7 @@
     padding: 12px 14px 20px;
     overflow-x: hidden;
     overflow-y: auto !important;
+    gap: 20px;
   }
 
   .cari-sol {
@@ -1130,23 +1542,38 @@
     margin: 0 !important;
   }
 
-  /* Cari sağ panel: sekmeler + tablo alanı her zaman görünsün */
+  /* Cari sağ panel: sekmeler + tablo alanı – min-height kaldırıldı (mobilde taşma/boşluk sorunu) */
   .cari-sag {
     flex: 1 1 auto;
-    min-height: 280px !important;
+    /* min-height: 0 !important; */
     overflow: visible !important;
     display: flex !important;
     flex-direction: column;
     visibility: visible !important;
   }
 
-  /* Cari: sadece sayfa scroll etsin, sağ panel içi scroll yok */
+  /* Cari: sadece sayfa scroll etsin, sağ panel içi scroll yok; padding kaldırıldı */
   .cari-sag-inner {
     min-height: 0;
     overflow: visible !important;
     display: flex !important;
     flex-direction: column !important;
     flex: 1 1 auto;
+    padding: 0 !important;
+  }
+
+  /* Cari sayfaları toolbar mobilde tam genişlik */
+  .cari-tablo-toolbar {
+    width: 100% !important;
+  }
+
+  /* Cari sayfaları search kutusu mobilde tam genişlik (400px sabit genişlik kaldırıldı) */
+  .cari-tablo-toolbar .search-input-wrapper,
+  .search-input-wrapper.search-input-wrapper-with-icon {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .cari-tabs {
@@ -1184,6 +1611,7 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
+    padding: 0 16px !important;
   }
   .cari-table-wrapper::-webkit-scrollbar {
     display: none !important;
@@ -1212,7 +1640,7 @@
   }
   .cari-table tbody td {
     display: flex !important;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 8px;
     padding: 6px 0 !important;
@@ -1237,12 +1665,33 @@
     text-align: left;
   }
   .cari-table tbody td > * {
-    flex: 1;
+    flex: none !important;
     min-width: 0;
     order: 1;
   }
   .cari-table tbody td .islem-ikonlar {
     margin-left: 0;
+  }
+
+  /* Ürün Adı ve Organizasyon Bilgileri: data-label ve içerik alt alta (flex column) */
+  .cari-table tbody td[data-label="Ürün Adı"],
+  .cari-table tbody td[data-label="Organizasyon Bilgileri"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  .cari-table tbody td[data-label="Ürün Adı"]::before,
+  .cari-table tbody td[data-label="Organizasyon Bilgileri"]::before {
+    min-width: 0;
+  }
+
+  /* Müşteri cari faturalar tablosu: Fatura İşlemleri kart görünümünde data-label gizle, işlem ikonları sağa yasla */
+  .cari-table tbody td[data-label="Fatura İşlemleri"]::before {
+    content: none !important;
+    display: none !important;
+  }
+  .cari-table tbody td[data-label="Fatura İşlemleri"] {
+    justify-content: flex-end !important;
   }
 
   .cari-ozet-row {
@@ -1289,7 +1738,7 @@
   .ayarlar-page .ayarlar-tablosu tbody tr td,
   .ayarlar-page table.ayarlar-tablosu tbody tr td {
     display: flex !important;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 8px;
     padding: 6px 0 !important;
@@ -1325,6 +1774,11 @@
     order: 0;
     text-align: left;
   }
+  .ayarlar-page .ayarlar-tablosu tbody tr td.td-no-mobile-label::before,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td.td-no-mobile-label::before {
+    content: none !important;
+    display: none !important;
+  }
   .ayarlar-page .ayarlar-tablosu tbody tr td > *,
   .ayarlar-page table.ayarlar-tablosu tbody tr td > * {
     order: 1;
@@ -1341,9 +1795,27 @@
 
   .ayarlar-page .ayarlar-panel table td.table-col-gorsel > * {
     margin: 0 !important;
-}
+  }
+
+  .ayarlar-page .ayarlar-panel table th.table-col-organizasyon-turu,
+  .ayarlar-page .ayarlar-panel table td.table-col-organizasyon-turu {
+    min-width: unset !important;
+    max-width: none !important;
+  }
+
+  /* Çiçek Sepeti ayarları – mobil */
+  .ayarlar-ciceksepeti-sol,
+  .ayarlar-ciceksepeti-sag {
+    padding: 0.5rem !important;
+  }
+  .ayarlar-ciceksepeti-test-butonlar {
+    grid-template-columns: 1fr !important;
+  }
 
   /* ========== Profil Ayarları & Ayarlar ========== */
+  .profil-page.page-wrapper {
+    padding-bottom: 20px !important;
+  }
   .profil-page,
   .ayarlar-page {
     padding: 12px 14px 20px !important;
@@ -1375,7 +1847,7 @@
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap !important;
-    margin-bottom: 12px;
+    margin-bottom: 0.5rem !important;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--border-renk);
     width: 100% !important;
@@ -1412,6 +1884,35 @@
   .ayarlar-panel,
   .ayarlar-panel-form {
     padding: 14px !important;
+  }
+
+  /* Profil yetki grid: mobilde alanlar alt alta */
+  .profil-yetki-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Profil ayarlar: sekmelerin altında ve tablo/kartların altında fazla boşluk olmasın */
+  .profil-page {
+    padding-bottom: 48px !important;
+  }
+  .profil-page .profil-card,
+  .profil-page .ayarlar-panel {
+    margin-bottom: 0 !important;
+  }
+  .profil-page .profil-yetkilendirme-content,
+  .profil-page .profil-yetkilendirme-sayfa-izinleri {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .profil-page .permissions-table-container {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .profil-page .permissions-table tbody tr.permission-row:last-child {
+    margin-bottom: 0 !important;
+  }
+  .profil-page .profil-yetki-grid {
+    margin-bottom: 0.75rem !important;
   }
 
   /* Ayarlar mobil: sayfa scroll, sekmeler görünsün, tab içerik aşağı kayabilsin */
@@ -1667,5 +2168,40 @@
   }
   body .modal-react-qr-scanner-action-link {
     display: block !important;
+  }
+  /* Yeni Sipariş modalı – sağ alan ayırıcısı (mobilde daha sıkı boşluk) */
+  .yeni-siparis-container .sag-alan hr {
+    margin: 6px 0 !important;
+  }
+
+  /* Yeni Sipariş – Partner siparişi checkbox hizası (mobilde input taşmasın) */
+  .overlay-yeni-siparis-container .yeni-siparis-container .partner-siparisi-isaretle .cbox-alan input.cbox-partner-order {
+    flex: 0 0 16px !important;
+    width: 16px !important;
+    min-width: 16px !important;
+    max-width: 16px !important;
+  }
+  .overlay-yeni-siparis-container .yeni-siparis-container .partner-siparisi-isaretle .cbox-alan {
+    align-items: flex-start !important;
+  }
+
+  /* Müşteri Ekle/Düzenle – radyo butonları mobilde width 100% ile yayılmasın, yan yana kalsın */
+  .overlay-yeni-musteri-container .yeni-musteri-container .radio-buttons {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+  .overlay-yeni-musteri-container .yeni-musteri-container .radio-buttons .radio-button {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+  .overlay-yeni-musteri-container .yeni-musteri-container .radio-buttons input[type="radio"] {
+    width: 16px !important;
+    min-width: 16px !important;
+    max-width: 16px !important;
+    flex: 0 0 16px !important;
   }
 }

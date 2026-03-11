@@ -1,4 +1,5 @@
 import React, { ReactNode, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Header } from './Header';
@@ -213,32 +214,35 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </div>
       </div>
 
-      {/* Toast notifications */}
-      <Toaster
-        position="top-center"
-        containerClassName="app-toast-container"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
+      {/* Toast notifications: body'ye portal ile render edilir; sipariş detay overlay (z-index: 2147483646) üstünde görünsün */}
+      {createPortal(
+        <Toaster
+          position="top-center"
+          containerClassName="app-toast-container"
+          toastOptions={{
             duration: 3000,
-            iconTheme: {
-              primary: '#4ade80',
-              secondary: '#fff',
+            style: {
+              background: '#363636',
+              color: '#fff',
             },
-          },
-          error: {
-            duration: 4000,
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
+            success: {
+              duration: 3000,
+              iconTheme: {
+                primary: '#4ade80',
+                secondary: '#fff',
+              },
             },
-          },
-        }}
-      />
+            error: {
+              duration: 4000,
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />,
+        document.body
+      )}
     </div>
   );
 };

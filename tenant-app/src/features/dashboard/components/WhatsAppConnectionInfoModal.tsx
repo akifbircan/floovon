@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { apiClient } from '@/lib/api';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { showToast, showToastInteractive } from '../../../shared/utils/toastUtils';
 import { formatPhoneNumber } from '../../../shared/utils/formatUtils';
+import { broadcastWhatsAppDisconnected } from '../hooks/useWhatsAppStatus';
 
 interface WhatsAppConnectionInfoModalProps {
   isOpen: boolean;
@@ -27,6 +29,9 @@ export const WhatsAppConnectionInfoModal: React.FC<WhatsAppConnectionInfoModalPr
   const [status, setStatus] = React.useState<WhatsAppStatus | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [disconnecting, setDisconnecting] = React.useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef);
 
   React.useEffect(() => {
     if (!isOpen) {
@@ -84,6 +89,7 @@ export const WhatsAppConnectionInfoModal: React.FC<WhatsAppConnectionInfoModalPr
         try {
           const response = await apiClient.post('/whatsapp/disconnect');
           if (response.data.success) {
+            broadcastWhatsAppDisconnected();
             showToast('success', 'WhatsApp bağlantısı başarıyla kesildi');
             onClose();
             if (onDisconnected) {
@@ -212,6 +218,7 @@ export const WhatsAppConnectionInfoModal: React.FC<WhatsAppConnectionInfoModalPr
 
   const overlay = (
     <div
+      ref={overlayRef}
       className={`modal-react-whatsapp-info-overlay ${isOpen ? 'show' : ''}`}
       onClick={onClose}
       style={{
@@ -228,6 +235,7 @@ export const WhatsAppConnectionInfoModal: React.FC<WhatsAppConnectionInfoModalPr
       }}
     >
       <div
+        ref={panelRef}
         className="modal-react-whatsapp-info-content"
         onClick={(e) => e.stopPropagation()}
         style={{

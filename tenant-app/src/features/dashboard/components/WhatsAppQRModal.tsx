@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { apiClient } from '@/lib/api';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import QRCode from 'qrcode';
 
 interface WhatsAppQRModalProps {
@@ -38,6 +39,16 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
   /** Sabit akış: loading → qr → pairing → success. Geri dönüş yok (disconnected hariç). Sekme biter. */
   const displayPhaseRef = useRef<'loading' | 'qr' | 'pairing' | 'success'>('loading');
 
+  const [isMobileView, setIsMobileView] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(max-width: 767px)').matches : false
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const handler = () => setIsMobileView(mq.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   const LOADING_MSG = 'QR kod yükleniyor...';
   const QR_MSG = 'QR kodu telefonunuzla tarayın';
   const PAIRING_MSG = 'Bağlantı kuruluyor...';
@@ -64,9 +75,7 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
-    // Bağlantı başarılı gösterildiyse effect tekrar çalışmasın (onClose/onConnected değişince) – karekod ve mesaj sabit kalsın
-    if (displayPhaseRef.current === 'success' || callbackExecutedRef.current) return;
-
+    // Popup her açıldığında (ilk açılış veya LOGOUT/CLOSED sonrası yeniden açılış) sıfırdan başla
     callbackExecutedRef.current = false;
     lastPollStRef.current = null;
     lastPollQrRef.current = null;
@@ -78,6 +87,7 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
     setQrCode(null);
     setShowReconnect(false);
 
+    // Popup her açıldığında (kapandıktan sonra yeniden açıldığında) yeni karekod: refresh-qr eski client’ı temizleyip yeniden init eder
     initCalledRef.current = true;
     apiClient.post('/whatsapp/initialize').catch(() => {});
 
@@ -114,10 +124,10 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
             pollIntervalRef.current = null;
           }
           setPhase('success');
-          // Karekodu ekrandan kaldırma – kalsın ki "QR kod yükleniyor" boş alanda görünmesin
+          // Önce onConnected (paylaşım/teslim akışı pending state'i kullanır), sonra onClose (modal kapatılır)
           setTimeout(() => {
-            onCloseRef.current();
             onConnectedRef.current?.();
+            onCloseRef.current();
           }, 1500);
           return;
         }
@@ -140,6 +150,7 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
               if (firstQrShownAtRef.current === null) firstQrShownAtRef.current = now;
               return qr;
             });
+            lastDrawnQrRef.current = null; // yeniden çizilsin (popup kapatıp açınca canvas güncellensin)
             if (displayPhaseRef.current === 'loading') setPhase('qr');
           }
           setLoading(false);
@@ -229,19 +240,32 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
     }
   };
 
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef);
+
   if (!isOpen) return null;
 
   const isSuccess = statusMessage.includes('Bağlantı başarılı');
 
   const overlay = (
-    <div className="modal-react-whatsapp-qr-overlay">
+    <div ref={overlayRef} className="modal-react-whatsapp-qr-overlay">
       <div
-        className="modal-react-whatsapp-qr-content"
+        ref={panelRef}
+        className={`modal-react-whatsapp-qr-content${isMobileView ? ' is-mobile' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="modal-react-whatsapp-qr-title">WhatsApp Bağlantısı</h2>
         <p className="modal-react-whatsapp-qr-instruction">Telefonunuzla QR kodu tarayın:</p>
 
+        {isMobileView && !isSuccess && (
+          <div className="modal-react-whatsapp-qr-mobile-notice">
+            <i className="fa-solid fa-mobile-screen" aria-hidden />
+            <p>WhatsApp bağlantısını bilgisayar veya tabletten yapmanız gerekiyor. Tarayıcıda masaüstü görünümünde veya bilgisayardan giriş yapıp telefonunuzdaki WhatsApp ile okutun.</p>
+          </div>
+        )}
+
+        {!isMobileView && (
         <div className={`modal-react-whatsapp-qr-area ${isSuccess ? 'modal-react-whatsapp-qr-area-success-passive' : ''}`}>
           {loading && !qrCode && !isSuccess && (
             <div className="modal-react-whatsapp-qr-loading">
@@ -252,6 +276,7 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
             <canvas ref={canvasRef} id="modal-react-whatsapp-qr-canvas" className="modal-react-whatsapp-qr-canvas" />
           )}
         </div>
+        )}
 
         {statusMessage && (
           <div
@@ -259,18 +284,20 @@ export const WhatsAppQRModal: React.FC<WhatsAppQRModalProps> = ({
               statusMessage.includes('Bağlantı başarılı') || statusMessage.includes('tarayın') ? 'success' : statusMessage.includes('hatası') || statusMessage.includes('başarısız') ? 'error' : 'success'
             }`}
           >
-            {statusMessage}
+            {isMobileView && statusMessage.includes('tarayın') ? 'Masaüstü veya Tablet üzerinden QR kodu telefonunuzla tarayın.' : statusMessage}
           </div>
         )}
 
         <p className="modal-react-whatsapp-qr-help">WhatsApp &gt; Ayarlar &gt; Bağlı Cihazlar &gt; Cihaz Bağla</p>
 
+        {!isMobileView && (
         <div className="modal-react-whatsapp-qr-info">
           <i className="fa-solid fa-circle-info" aria-hidden></i>
           <span>
             Karekodu okuturken sorun yaşarsanız veya WhatsApp uygulamanız &quot;Giriş Yapılamadı&quot; veya &quot;Karekod okunamadı&quot; uyarı verirse; telefonunuzdaki WhatsApp uygulamanızı sonlandırıp tekrar girdikten sonra karekodu okutun.
           </span>
         </div>
+        )}
 
         {showReconnect && (
           <button

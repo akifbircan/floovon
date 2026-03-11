@@ -3,8 +3,9 @@
  * Sipariş veya organizasyon kartı arşivlenirken sebep seçimi için
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { 
   Archive, 
   AlertTriangle, 
@@ -75,6 +76,9 @@ export const ArsivSebepModal: React.FC<ArsivSebepModalProps> = ({
   onCancel,
 }) => {
   const [selectedSebep, setSelectedSebep] = useState<string>('');
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef);
 
   useEffect(() => {
     if (isOpen) {
@@ -102,6 +106,7 @@ export const ArsivSebepModal: React.FC<ArsivSebepModalProps> = ({
 
   const overlay = (
     <div
+      ref={overlayRef}
       className={`modal-react-arsiv-sebep-overlay ${isOpen ? 'show' : ''}`}
       role="dialog"
       aria-modal="true"
@@ -113,6 +118,7 @@ export const ArsivSebepModal: React.FC<ArsivSebepModalProps> = ({
       }}
     >
       <div
+        ref={panelRef}
         className="modal-react-arsiv-sebep-popup"
         onClick={(e) => e.stopPropagation()}
       >

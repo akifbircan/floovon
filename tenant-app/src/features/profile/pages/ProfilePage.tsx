@@ -65,6 +65,14 @@ export const ProfilePage: React.FC = () => {
     if (activeTab !== 'yonetim') refetchPlanWhenOnYonetim.current = false;
   }, [activeTab, refetchPlan]);
 
+  /** Sekme değişince tıklanan tab butonunu görünür yap (kısmen görünür sekme tıklanınca tam görünsün) */
+  React.useEffect(() => {
+    const tabEl = document.querySelector(`.profil-tab-nav button[data-tab="${activeTab}"]`);
+    if (tabEl && tabEl instanceof HTMLElement) {
+      tabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [activeTab]);
+
   const [formData, setFormData] = useState({
     ad: '',
     soyad: '',
@@ -647,6 +655,7 @@ export const ProfilePage: React.FC = () => {
             type="button"
             data-tab="profil"
             onClick={(e) => { e.stopPropagation(); setActiveTab('profil'); }}
+            aria-selected={activeTab === 'profil'}
             className={`profil-tab-btn ${activeTab === 'profil' ? 'active' : ''}`}
           >
             <User size={18} />
@@ -656,6 +665,7 @@ export const ProfilePage: React.FC = () => {
             type="button"
             data-tab="yonetim"
             onClick={(e) => { e.stopPropagation(); setActiveTab('yonetim'); }}
+            aria-selected={activeTab === 'yonetim'}
             className={`profil-tab-btn ${activeTab === 'yonetim' ? 'active' : ''}`}
           >
             <Users size={18} />
@@ -665,6 +675,7 @@ export const ProfilePage: React.FC = () => {
             type="button"
             data-tab="yetkilendirme"
             onClick={(e) => { e.stopPropagation(); setActiveTab('yetkilendirme'); }}
+            aria-selected={activeTab === 'yetkilendirme'}
             className={`profil-tab-btn ${activeTab === 'yetkilendirme' ? 'active' : ''}`}
           >
             <Shield size={18} />

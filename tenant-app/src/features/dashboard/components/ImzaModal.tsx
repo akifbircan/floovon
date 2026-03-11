@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 
 interface ImzaModalProps {
   isOpen: boolean;
@@ -19,6 +20,9 @@ export const ImzaModal: React.FC<ImzaModalProps> = ({
   const [hasSignature, setHasSignature] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef);
 
   // Her açılışta formu sıfırla: Kendisi seçili, başkası alanı boş, imza temiz
   useEffect(() => {
@@ -147,6 +151,7 @@ export const ImzaModal: React.FC<ImzaModalProps> = ({
 
   return createPortal(
     <div 
+      ref={overlayRef}
       className="modal-react-imza-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -155,6 +160,7 @@ export const ImzaModal: React.FC<ImzaModalProps> = ({
       }}
     >
       <div 
+        ref={panelRef}
         className="modal-react-imza-container"
         onClick={(e) => e.stopPropagation()}
       >

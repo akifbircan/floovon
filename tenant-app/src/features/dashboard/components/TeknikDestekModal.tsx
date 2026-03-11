@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { apiRequest } from '../../../lib/api';
 import { showToast } from '../../../shared/utils/toastUtils';
@@ -24,6 +25,9 @@ export const TeknikDestekModal: React.FC<TeknikDestekModalProps> = ({
     mesaj: '',
   });
   const [showSuccess, setShowSuccess] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef);
 
   // Modal açıldığında formu sıfırla
   useEffect(() => {
@@ -105,6 +109,7 @@ export const TeknikDestekModal: React.FC<TeknikDestekModalProps> = ({
 
   return createPortal(
     <div
+      ref={overlayRef}
       className="modal-react-teknik-destek-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -113,6 +118,7 @@ export const TeknikDestekModal: React.FC<TeknikDestekModalProps> = ({
       }}
     >
       <div
+        ref={panelRef}
         className="modal-react-teknik-destek-modal"
         onClick={(e) => e.stopPropagation()}
       >

@@ -5,8 +5,8 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { gsap } from 'gsap';
 import { useQueryClient } from '@tanstack/react-query';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { createMusteri, updateMusteri, type MusteriFormData } from '../api/formActions';
 import { invalidateCustomerQueries } from '../../../lib/invalidateQueries';
 import { useAddressSelect } from '../hooks/useAddressSelect';
@@ -168,41 +168,9 @@ export const YeniMusteriModal: React.FC<YeniMusteriModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, mode, customer]);
 
-  // GSAP: ortadaki modal – ilk karede gizli, sonra merkezden pop (scale + overshoot)
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const hasAnimatedOpen = useRef(false);
-
-  useEffect(() => {
-    if (!isOpen) {
-      hasAnimatedOpen.current = false;
-      return;
-    }
-    const overlay = overlayRef.current;
-    const panel = panelRef.current;
-    if (!overlay || !panel || hasAnimatedOpen.current) return;
-    hasAnimatedOpen.current = true;
-
-    const tl = gsap.timeline({ overwrite: true });
-    tl.to(overlay, { opacity: 1, duration: 0.2, ease: 'power2.out' })
-      .fromTo(
-        panel,
-        { opacity: 1, scale: 0.99 },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.35,
-          ease: 'back.out(1.2)',
-          onComplete: () => setOpenAnimationDone(true),
-        },
-        0.05
-      );
-
-    return () => {
-      gsap.killTweensOf([overlay, panel]);
-      gsap.set([overlay, panel], { clearProps: 'all' });
-    };
-  }, [isOpen]);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef, { onOpenComplete: () => setOpenAnimationDone(true) });
 
   // Hatalı alanı odakla; toast ile birlikte tarayıcının kendi uyarı balonunda da mesaj gösterilir (setCustomValidity + reportValidity)
   const focusInvalidField = useCallback((id: string, nativeMessage?: string) => {
@@ -334,7 +302,7 @@ export const YeniMusteriModal: React.FC<YeniMusteriModalProps> = ({
     <div 
       ref={overlayRef}
       className={`overlay-yeni-musteri-container ${isOpen ? 'show' : ''}`}
-      style={isOpen && !openAnimationDone ? { opacity: 0.5 } : undefined}
+      style={isOpen && !openAnimationDone ? { opacity: 0 } : undefined}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           requestClose();
@@ -344,7 +312,7 @@ export const YeniMusteriModal: React.FC<YeniMusteriModalProps> = ({
       <div 
         ref={panelRef}
         className={`yeni-musteri-container ${isOpen ? 'show' : ''}`}
-        style={isOpen && !openAnimationDone ? { opacity: 0.5, transform: 'scale(0.95)' } : undefined}
+        style={isOpen && !openAnimationDone ? { opacity: 0, transform: 'scale(0.99)' } : undefined}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="header-alan">

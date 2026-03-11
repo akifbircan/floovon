@@ -2662,43 +2662,124 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
         }
     }
     
-    // WhatsApp bağlantı durumları tablosu (whatsapp_baglantilar)
+    // WhatsApp bağlantı log tablosu: connection_at, disconnect_at (Türkiye saati), session_owner_user (oturum sahibi kullanıcı)
     async function initializeWhatsAppConnectionsTable() {
-        // RENAME aynı isme yapılmaz (SQLITE_ERROR); tablo zaten doğru isimdeyse atla.
         return new Promise((resolve, reject) => {
-            db.run(`
-                CREATE TABLE IF NOT EXISTS whatsapp_baglantilar (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    tenant_id INTEGER NOT NULL,
-                    is_connected INTEGER DEFAULT 0,
-                    phone_number TEXT,
-                    user_name TEXT,
-                    connected_at TEXT,
-                    qr_code TEXT,
-                    son_okutulan_qr TEXT,
-                    last_disconnect_reason TEXT,
-                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                    UNIQUE(tenant_id)
-                )
-            `, (err) => {
-                if (err) {
-                    console.error('❌ whatsapp_baglantilar tablosu oluşturulurken hata:', err);
-                    reject(err);
-                } else {
-                    db.run('CREATE INDEX IF NOT EXISTS idx_whatsapp_baglantilar_tenant ON whatsapp_baglantilar(tenant_id)', (idxErr) => {
-                        if (idxErr) { reject(idxErr); return; }
-                        db.all("PRAGMA table_info(whatsapp_baglantilar)", [], (pragmaErr, cols) => {
-                            const hasSonOkutulanQr = cols && cols.some(c => c.name === 'son_okutulan_qr');
-                            if (!pragmaErr && !hasSonOkutulanQr) {
-                                db.run('ALTER TABLE whatsapp_baglantilar ADD COLUMN son_okutulan_qr TEXT', (alterErr) => {
-                                    if (!alterErr && isDevelopment) console.log('✅ whatsapp_baglantilar: son_okutulan_qr kolonu eklendi');
+            db.run('DROP TABLE IF EXISTS whatsapp_baglantilar', (dropErr) => {
+                if (dropErr) console.warn('⚠️ whatsapp_baglantilar kaldırılırken uyarı:', dropErr.message);
+                db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='whatsapp_baglantilar_logs'", [], (err, existing) => {
+                    if (err) { reject(err); return; }
+                    if (existing) {
+                        db.all("PRAGMA table_info(whatsapp_baglantilar_logs)", [], (pErr, cols) => {
+                            if (!pErr && cols && cols.some(c => c.name === 'connection_at')) {
+                                const colNames = (cols || []).map(c => c.name);
+                                const hasOldNames = colNames.includes('phone_number') && !colNames.includes('whatsapp_phone_number');
+                                const ensureIndexes = () => {
+                                    db.run('CREATE INDEX IF NOT EXISTS idx_whatsapp_baglantilar_logs_tenant ON whatsapp_baglantilar_logs(tenant_id)', () => {
+                                        db.run('CREATE INDEX IF NOT EXISTS idx_whatsapp_baglantilar_logs_connection_at ON whatsapp_baglantilar_logs(connection_at)', () => resolve());
+                                    });
+                                };
+                                if (hasOldNames) {
+                                    db.run('ALTER TABLE whatsapp_baglantilar_logs RENAME COLUMN phone_number TO whatsapp_phone_number', (e1) => {
+                                        if (e1) console.warn('⚠️ RENAME COLUMN phone_number:', e1.message);
+                                        db.run('ALTER TABLE whatsapp_baglantilar_logs RENAME COLUMN user_name TO whatsapp_user_name', (e2) => {
+                                            if (e2) console.warn('⚠️ RENAME COLUMN user_name:', e2.message);
+                                            ensureIndexes();
+                                        });
+                                    });
+                                } else {
+                                    ensureIndexes();
+                                }
+                                return;
+                            }
+                            runMigration();
+                        });
+                        return;
+                    }
+                    runMigration();
+                    function runMigration() {
+                        const hasOld = !!existing;
+                        db.run(`
+                    CREATE TABLE IF NOT EXISTS whatsapp_baglantilar_logs_new (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        tenant_id INTEGER NOT NULL,
+                        event_type TEXT NOT NULL,
+                        whatsapp_phone_number TEXT,
+                        whatsapp_user_name TEXT,
+                        session_owner_user TEXT,
+                        disconnect_reason TEXT,
+                        connection_at TEXT,
+                        disconnect_at TEXT
+                    )
+                `, (createErr) => {
+                        if (createErr) { reject(createErr); return; }
+                        if (hasOld) {
+                            db.get("SELECT COUNT(*) as c FROM whatsapp_baglantilar_logs", [], (cErr, row) => {
+                                if (cErr || !row || row.c === 0) {
+                                    finishMigration();
+                                    return;
+                                }
+                                db.run(`
+                                INSERT INTO whatsapp_baglantilar_logs_new (id, tenant_id, event_type, whatsapp_phone_number, whatsapp_user_name, session_owner_user, disconnect_reason, connection_at, disconnect_at)
+                                SELECT id, tenant_id, event_type, phone_number, user_name, NULL,
+                                    disconnect_reason,
+                                    CASE WHEN event_type = 'connected' THEN COALESCE(happened_at, created_at) ELSE NULL END,
+                                    CASE WHEN event_type = 'disconnected' THEN COALESCE(happened_at, created_at) ELSE NULL END
+                                FROM whatsapp_baglantilar_logs
+                                `, (insErr) => {
+                                    if (insErr) console.warn('⚠️ whatsapp_baglantilar_logs migrate:', insErr.message);
+                                    finishMigration();
+                                });
+                            });
+                        } else {
+                            finishMigration();
+                        }
+                        function finishMigration() {
+                            if (hasOld) {
+                                db.run('DROP TABLE whatsapp_baglantilar_logs', (dErr) => {
+                                    if (dErr) console.warn('⚠️ DROP whatsapp_baglantilar_logs:', dErr.message);
+                                    renameNew();
+                                });
+                            } else {
+                                db.run('DROP TABLE IF EXISTS whatsapp_baglantilar_logs_new', () => {
+                                    db.run(`
+                                    CREATE TABLE IF NOT EXISTS whatsapp_baglantilar_logs (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        tenant_id INTEGER NOT NULL,
+                                        event_type TEXT NOT NULL,
+                                        whatsapp_phone_number TEXT,
+                                        whatsapp_user_name TEXT,
+                                        session_owner_user TEXT,
+                                        disconnect_reason TEXT,
+                                        connection_at TEXT,
+                                        disconnect_at TEXT
+                                    )
+                                    `, (e2) => {
+                                        if (e2) { reject(e2); return; }
+                                        createIndexes();
+                                    });
+                                });
+                                return;
+                            }
+                        }
+                        function renameNew() {
+                            db.run('ALTER TABLE whatsapp_baglantilar_logs_new RENAME TO whatsapp_baglantilar_logs', (rErr) => {
+                                if (rErr) { reject(rErr); return; }
+                                createIndexes();
+                            });
+                        }
+                        function createIndexes() {
+                            db.run('CREATE INDEX IF NOT EXISTS idx_whatsapp_baglantilar_logs_tenant ON whatsapp_baglantilar_logs(tenant_id)', (idxErr) => {
+                                if (idxErr) { reject(idxErr); return; }
+                                db.run('CREATE INDEX IF NOT EXISTS idx_whatsapp_baglantilar_logs_connection_at ON whatsapp_baglantilar_logs(connection_at)', (idxErr2) => {
+                                    if (idxErr2) { reject(idxErr2); return; }
                                     resolve();
                                 });
-                            } else { resolve(); }
-                        });
+                            });
+                        }
                     });
-                }
+                    }
+                });
             });
         });
     }
@@ -4275,6 +4356,27 @@ async function getTenantIdInternal(req) {
     
     // GÜVENLİK: Fallback tenant ID kullanma - kullanıcı bilgileri yoksa null döndür
     return null;
+}
+
+// Oturum sahibi kullanıcı adı (WhatsApp log: session_owner_user – kimin oturumunda bağlantı yapıldı)
+async function getSessionUsername(req) {
+    if (!req || !req.cookies || !req.cookies.floovon_user_id) return null;
+    const userId = parseInt(req.cookies.floovon_user_id);
+    if (isNaN(userId) || userId <= 0) return null;
+    try {
+        const cols = await new Promise((resolve, reject) => {
+            db.all('PRAGMA table_info(tenants_kullanicilar)', [], (err, r) => { if (err) reject(err); else resolve((r || []).map(c => c.name)); });
+        });
+        const usernameCol = (cols && cols.includes('kullaniciadi')) ? 'kullaniciadi' : ((cols && cols.includes('username')) ? 'username' : null);
+        if (!usernameCol) return null;
+        const row = await new Promise((resolve, reject) => {
+            db.get(`SELECT ${usernameCol} FROM tenants_kullanicilar WHERE id = ? AND is_active = 1`, [userId], (err, r) => { if (err) reject(err); else resolve(r); });
+        });
+        const val = row && row[usernameCol];
+        return (val != null && String(val).trim() !== '') ? String(val).trim() : null;
+    } catch (e) {
+        return null;
+    }
 }
 
 // ✅ PLAN KONTROL: Tenant'ın plan_id'sini al
@@ -11395,6 +11497,7 @@ app.get('/api/siparis-kartlar/organizasyon/:organizasyonId', async (req, res) =>
                 SELECT 
                     co.id,
                     1 as kart_sira,
+                    co.siparis_no as siparis_kodu,
                     ${organizasyonId} as organizasyon_kart_id,
                     co.siparis_veren as musteri_unvan,
                     co.siparis_veren as musteri_isim_soyisim,
@@ -11460,6 +11563,7 @@ app.get('/api/siparis-kartlar/organizasyon/:organizasyonId', async (req, res) =>
                 SELECT DISTINCT
                     sk.id,
                     sk.kart_sira,
+                    sk.siparis_kodu,
                     sk.organizasyon_kart_id,
                     sk.musteri_unvan,
                     sk.musteri_isim_soyisim,
@@ -20019,12 +20123,22 @@ app.get('/api/whatsapp/status', async (req, res) => {
         if (!tenantId) {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
         }
-        console.log('🔍 /api/whatsapp/status çağrıldı - Tenant ID:', tenantId);
-        
         // Tenant bazlı WhatsApp servisi instance'ını al (DB kullanılmıyor – sadece servis/bellek)
         const whatsappService = getWhatsAppService(tenantId);
-        
+        const sessionUser = await getSessionUsername(req);
+        if (sessionUser) whatsappService.setSessionOwnerUser(sessionUser);
+
         const inQrOrInitializing = !!(whatsappService.qrCode || whatsappService.initializing);
+
+        // Client yoksa: DB’de son satır 'connected' ise disconnected yaz (telefondan çıkış restart sonrası da loglansın)
+        if (!inQrOrInitializing && !whatsappService.client) {
+            await whatsappService.ensureDisconnectLogFromDb(tenantId);
+            if (whatsappService._hadConnectedSession && !whatsappService._hasLoggedDisconnectThisSession) {
+                whatsappService.logDisconnectEvent(whatsappService.lastDisconnectReason || 'CLOSED');
+                whatsappService.lastLogoutAt = Date.now();
+            }
+        }
+
         const logoutCooldownMs = 60000;
         const withinLogoutCooldown = whatsappService.lastLogoutAt && (Date.now() - whatsappService.lastLogoutAt < logoutCooldownMs);
         const manualInitCooldownMs = 20000;
@@ -20044,7 +20158,7 @@ app.get('/api/whatsapp/status', async (req, res) => {
             });
             await new Promise(resolve => setTimeout(resolve, 500));
         }
-        
+
         if (!inQrOrInitializing && !whatsappService.client) {
             console.log(`🔌 [Status] Client yok – disconnected (Tenant ${tenantId})`);
             return res.json({
@@ -20066,17 +20180,24 @@ app.get('/api/whatsapp/status', async (req, res) => {
                 initializing: false
             });
         }
-        
-        // ÖNCE getState() – telefondan çıkışı anında yakala; SADECE CONNECTED/READY bağlı sayılır
+
+        // ÖNCE getState() – telefondan çıkışı anında yakala; timeout ile takılı bağlantıyı CLOSED say (QR varken atlama – okutunca ready dönmeli)
+        const GETSTATE_TIMEOUT_MS = 4000;
         let stateFromClient = null;
         if (whatsappService.client && typeof whatsappService.client.getState === 'function') {
             try {
-                stateFromClient = await whatsappService.client.getState();
-                if (stateFromClient) console.log(`🔍 [Status] client.getState() = ${stateFromClient} (Tenant ${tenantId})`);
+                stateFromClient = await Promise.race([
+                    whatsappService.client.getState(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('getState timeout')), GETSTATE_TIMEOUT_MS))
+                ]);
             } catch (e) {
-                // evaluate/null hatası = sayfa henüz hazır değil, client'ı yok etme (QR gelecek)
-                stateFromClient = null;
-                console.log('⚠️ [Status] getState() henüz hazır değil (client yükleniyor):', e?.message);
+                if (whatsappService.isReady || whatsappService.phoneNumber || whatsappService.userName) {
+                    stateFromClient = 'CLOSED';
+                    console.log('🔌 [Status] getState() hata veya timeout (telefondan çıkış):', e?.message);
+                } else {
+                    stateFromClient = null;
+                    console.log('⚠️ [Status] getState() henüz hazır değil (client yükleniyor):', e?.message);
+                }
             }
         }
         const ONLY_CONNECTED_STATES = ['CONNECTED', 'READY'];
@@ -20101,6 +20222,7 @@ app.get('/api/whatsapp/status', async (req, res) => {
         const shouldDestroyClient = !inQrOrInitializing && !hasQrNow && stateFromClient && DISCONNECTED_STATES_FOR_DESTROY.includes(String(stateFromClient)) && !isActuallyConnected && !justConnected && !authenticatedWaitingReady;
         if (shouldDestroyClient) {
             console.log(`🔌 [Status] Telefondan çıkış veya bağlantı yok (getState=${stateFromClient}), disconnected (Tenant ${tenantId})`);
+            whatsappService.logDisconnectEvent(stateFromClient || 'DISCONNECTED');
             whatsappService.lastLogoutAt = Date.now();
             whatsappService.isReady = false;
             whatsappService.isAuthenticated = false;
@@ -20162,7 +20284,6 @@ app.get('/api/whatsapp/status', async (req, res) => {
         const pairingButReady = (stateFromClient === 'PAIRING' || stateFromClient === 'CONNECTING') && whatsappStatus.isReady && whatsappStatus.isAuthenticated && whatsappService.client;
 
         if (treatAsReady) {
-            console.log(`✅ [Status] justConnected – ready (Tenant ${tenantId}, getState=${stateFromClient})`);
             let ph = whatsappStatus.phoneNumber || null;
             let un = whatsappStatus.userName || null;
             if ((!ph || !un) && whatsappService.client) {
@@ -20296,6 +20417,8 @@ app.post('/api/whatsapp/initialize', async (req, res) => {
         
         // Tenant bazlı WhatsApp servisi instance'ını al
         const whatsappService = getWhatsAppService(tenantId);
+        const sessionUser = await getSessionUsername(req);
+        if (sessionUser) whatsappService.setSessionOwnerUser(sessionUser);
         
         // Manuel QR/tekrar bağlanma: cooldown kaldır; disconnect sonrası kafası yerine gelsin, karekod hemen istensin
         const justDisconnected = whatsappService.lastLogoutAt && (Date.now() - whatsappService.lastLogoutAt < 20000);
@@ -20440,6 +20563,12 @@ app.post('/api/whatsapp/disconnect', async (req, res) => {
         console.log('🔌 /api/whatsapp/disconnect çağrıldı - Tenant ID:', tenantId);
         
         const whatsappService = getWhatsAppService(tenantId);
+        const sessionUser = await getSessionUsername(req);
+        if (sessionUser) whatsappService.setSessionOwnerUser(sessionUser);
+        // State temizlenmeden önce tabloya disconnected log yaz (API üzerinden kesinti)
+        if (whatsappService.client && (whatsappService.phoneNumber || whatsappService.userName)) {
+            whatsappService.logDisconnectEvent('LOGOUT');
+        }
         // Hemen işaretle: status "bağlantı başarılı" dönmesin (kullanıcı hemen popup açarsa sahte ready olmasın)
         whatsappService.lastLogoutAt = Date.now();
         whatsappService.lastConnectedDbWriteAt = null;
@@ -20482,6 +20611,43 @@ app.post('/api/whatsapp/disconnect', async (req, res) => {
     }
 });
 
+// Yeni karekod al (QR gösterilirken / popup yeniden açıldığında – mevcut client temizlenir, yeni QR üretilir)
+app.post('/api/whatsapp/refresh-qr', async (req, res) => {
+    if (!getWhatsAppService) {
+        return res.status(503).json({ success: false, message: 'WhatsApp servisi kurulu değil.' });
+    }
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) {
+            return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        }
+        const whatsappService = getWhatsAppService(tenantId);
+        if (whatsappService.isReady) {
+            return res.json({
+                success: true,
+                message: 'Zaten bağlı – yeni karekod gerekmez.',
+                alreadyConnected: true
+            });
+        }
+        await whatsappService.refreshQR();
+        whatsappService.initialize(tenantId).catch(err => {
+            console.error('❌ refresh-qr sonrası initialize:', err?.message);
+        });
+        res.json({
+            success: true,
+            message: 'Yeni karekod isteniyor...',
+            alreadyConnected: false
+        });
+    } catch (error) {
+        console.error('❌ WhatsApp refresh-qr hatası:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Yeni karekod alınamadı',
+            message: error.message
+        });
+    }
+});
+
 // WhatsApp logout: destroy + clear session, status=disconnected (alias for disconnect)
 app.post('/api/whatsapp/logout', async (req, res) => {
     if (!getWhatsAppService) {
@@ -20493,6 +20659,11 @@ app.post('/api/whatsapp/logout', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
         }
         const whatsappService = getWhatsAppService(tenantId);
+        const sessionUser = await getSessionUsername(req);
+        if (sessionUser) whatsappService.setSessionOwnerUser(sessionUser);
+        if (whatsappService.client && (whatsappService.phoneNumber || whatsappService.userName)) {
+            whatsappService.logDisconnectEvent('LOGOUT');
+        }
         if (whatsappService.client) {
             try {
                 await whatsappService.client.logout();

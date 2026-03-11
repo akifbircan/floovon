@@ -1,5 +1,21 @@
 /* Toast override: mor primary, beyaz yazı, büyük harf butonlar, daha belirgin tasarım */
 
+/* Toast: sipariş detay overlay (999999) ve modallerin üstünde; konum her zaman viewport üstü (modal içinde bile) */
+.app-toast-container,
+body > div[class*="toast"],
+body > div[class*="Toast"] {
+  z-index: 1000000 !important;
+  position: fixed !important;
+  top: var(--header-height, 64px) !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  width: auto !important;
+  max-width: min(400px, calc(100vw - 32px)) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 /* Onay butonu → mor primary, beyaz yazı */
 .toast-btn-confirm,
 .toast .toast-btn.toast-btn-confirm,
@@ -28,13 +44,25 @@
   color: var(--white-only) !important;
 }
 
-/* Toast aksiyon butonları - normal casing (İptal, Evet, Sil) */
+/* Toast aksiyon butonları - normal casing (İptal, Evet, Sil), ikon + metin */
 .toast .toast-actions .toast-btn,
 .toast-btn-cancel {
   font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+}
+.toast .toast-btn-icon,
+.toast-btn .toast-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.toast .toast-btn-icon svg,
+.toast-btn .toast-btn-icon svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* İptal butonu: açık zemin, koyu yazı (mevcut gibi) */
@@ -78,7 +106,11 @@
 }
 .toast.error .column .toast-icon,
 .toast.error .toast-icon,
-.toast.error .toast-icon svg {
+.toast.error .toast-icon svg,
+.toast.error:not(.interactive) .column .toast-icon,
+.toast.error:not(.interactive) .column .toast-icon svg,
+body .toast.error:not(.interactive) .column .toast-icon,
+body .toast.error:not(.interactive) .column .toast-icon svg {
   display: flex !important;
   visibility: visible !important;
   color: var(--toast-error) !important;
@@ -88,6 +120,16 @@
 .toast.error .toast-icon {
   min-width: 24px;
   flex-shrink: 0;
+}
+.toast.error .toast-close,
+.toast.error .toast-close svg,
+.toast.error:not(.interactive) .toast-close,
+.toast.error:not(.interactive) .toast-close svg,
+body .toast.error .toast-close,
+body .toast.error .toast-close svg {
+  color: var(--toast-text) !important;
+  fill: none !important;
+  stroke: var(--toast-text) !important;
 }
 
 .toast.warning {
@@ -108,8 +150,17 @@
   border-left-color: var(--toast-info);
   background-color: var(--toast-bg) !important;
 }
+/* Info toast: ikon rengi --toast-info (tenant-toast’taki --toast-text-white zeminle aynı olduğu için görünmüyordu) */
+.toast.info .column .toast-icon,
 .toast.info .toast-icon,
-.toast.info .toast-icon svg {
+.toast.info .toast-icon svg,
+body .toast.info .column .toast-icon,
+body .toast.info .column .toast-icon svg,
+.toast.info:not(.interactive) .column .toast-icon,
+.toast.info:not(.interactive) .column .toast-icon svg {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
   color: var(--toast-info) !important;
   fill: none !important;
   stroke: var(--toast-info) !important;
@@ -153,28 +204,32 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
-/* Mobil: toast'lar kenarlardan boşluklu (modallarla aynı 16px) – inline stilleri geçersiz kılmak için !important */
+/* Mobil: toast header hemen altında, biraz yukarıda kalsın */
 @media (max-width: 767px) {
   .app-toast-container,
   [class*="toast"][class*="container"],
   ul.notifications,
   body > [id*="toast"],
   body > [class*="ToastContainer"] {
-    top: 80px !important;
-    left: 16px !important;
-    right: 16px !important;
-    width: calc(100vw - 32px) !important;
-    max-width: calc(100vw - 32px) !important;
+    top: calc(var(--header-height, 64px) - 8px) !important;
+    left: auto !important;
+    right: 20px !important;
+    width: auto !important;
+    max-width: min(340px, calc(100vw - 40px)) !important;
     margin: 0 !important;
     padding: 0 !important;
     transform: none !important;
     box-sizing: border-box !important;
   }
+  /* Kütüphanenin eklediği margin/padding’i sıfırla; toasts yukarıda kalsın */
   .app-toast-container > div,
   [class*="toast"][class*="container"] > div,
   ul.notifications {
-    margin-left: 0 !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-left: auto !important;
     margin-right: 0 !important;
+    padding-top: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
   }

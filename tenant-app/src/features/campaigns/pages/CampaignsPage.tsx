@@ -526,7 +526,7 @@ export const CampaignsPage: React.FC = () => {
                             <span className="campaigns-gorsel-placeholder">—</span>
                           )}
                         </td>
-                        <td className="customers-td-code" data-label="Kampanya Adı">{c.ad || '—'}</td>
+                        <td className="customers-td-code td-no-mobile-label" data-label="">{c.ad || '—'}</td>
                         <td className="customers-td-grubu" data-label="Müşteri Grubu">{getMusteriGrubuText(c.musteri_grubu || '')}</td>
                         <td data-label="Kupon Kodu">
                           <span className="campaigns-kupon-badge">{c.kupon_kodu || '—'}</span>
@@ -587,7 +587,7 @@ export const CampaignsPage: React.FC = () => {
         createPortal(
           <>
             <div
-              className="page-detail-modal-backdrop"
+              className="page-detail-modal-backdrop campaigns-mobile-modal-backdrop"
               onClick={() => {
                 setShowNewForm(false);
                 setSelectedCampaignId(null);
@@ -595,7 +595,7 @@ export const CampaignsPage: React.FC = () => {
               aria-hidden
             />
             <div
-              className="page-panel-sag page-panel-sag--as-modal w-full"
+              className="page-panel-sag page-panel-sag--as-modal campaigns-mobile-modal w-full"
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
@@ -611,10 +611,10 @@ export const CampaignsPage: React.FC = () => {
                       setShowNewForm(false);
                       setSelectedCampaignId(null);
                     }}
-                    className="customers-close-detail md:hidden"
+                    className="customers-close-detail btn-close-modal md:hidden"
                     aria-label="Kapat"
                   >
-                    ✕
+                    <i className="icon-btn-kapat" aria-hidden />
                   </button>
                 )}
               </div>

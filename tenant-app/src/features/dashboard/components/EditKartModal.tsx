@@ -3,10 +3,10 @@
  * Eski sistemdeki gibi YeniKartModal ile aynı yapıyı kullanır, sadece düzenleme modunda
  */
 
-import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { gsap } from 'gsap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import {
   updateOrganizasyonKart,
   getOrganizasyonTurleri,
@@ -266,34 +266,10 @@ export const EditKartModal: React.FC<EditKartModalProps> = ({
     }
   }, [isOpen]);
 
-  // GSAP: sağdan kayarak açılış animasyonu (YeniKartModal ile aynı)
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const hasAnimatedOpen = useRef(false);
   const davetiyeInputRef = useRef<HTMLInputElement>(null);
-
-  useLayoutEffect(() => {
-    if (!isOpen) {
-      hasAnimatedOpen.current = false;
-      return;
-    }
-    const overlay = overlayRef.current;
-    const panel = panelRef.current;
-    if (!overlay || !panel || hasAnimatedOpen.current) return;
-    hasAnimatedOpen.current = true;
-
-    gsap.set(overlay, { opacity: 0 });
-    gsap.set(panel, { xPercent: 100 });
-
-    const tl = gsap.timeline({ overwrite: true });
-    tl.to(overlay, { opacity: 1, duration: 0.25, ease: 'power2.out' })
-      .to(panel, { xPercent: 0, duration: 0.35, ease: 'power2.out' }, 0);
-
-    return () => {
-      gsap.killTweensOf([overlay, panel]);
-      gsap.set(panel, { clearProps: 'xPercent' });
-    };
-  }, [isOpen]);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef);
 
   // Davetiye görseli: tıklama veya sürükle-bırak ile tek dosya ("Dosya Seç" butonu yok)
   const applyDavetiyeFile = (file: File) => {

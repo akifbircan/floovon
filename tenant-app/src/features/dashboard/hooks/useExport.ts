@@ -11,7 +11,7 @@ import {
   getPrintLogoMarkup,
   getPrintDateDDMMYYYY
 } from '../utils/exportUtils';
-import type { OrganizasyonKart } from '../types';
+import type { OrganizasyonKart, Order } from '../types';
 
 /**
  * Export hook'u - Yazdırma ve Excel export işlemleri
@@ -349,10 +349,39 @@ export function useExport() {
     }
   }, []);
 
+  /** Kart detay sayfası: index’teki gibi sipariş listesi yazdır (künye değil) */
+  const handlePrintOrderList = useCallback(async (kart: OrganizasyonKart, siparisler: Order[]) => {
+    try {
+      if (!siparisler || siparisler.length === 0) {
+        showToast('warning', 'Yazdırılacak sipariş bulunamadı');
+        return;
+      }
+      const filteredOrders = siparisler.map((siparis) => ({ kart, siparis }));
+      let tarihBilgisiYazisi = 'Bu organizasyon kartına ait sipariş listesi.';
+      if (kart.teslim_tarih) {
+        try {
+          const d = new Date(kart.teslim_tarih);
+          if (!isNaN(d.getTime())) {
+            const formatted = formatDateForExport(d);
+            tarihBilgisiYazisi = `<span class="tarih-vurgulu">${formatted}</span> tarihli kart sipariş listesi.`;
+          }
+        } catch (_) {}
+      }
+      const logoMarkup = await getPrintLogoMarkup();
+      const html = await generatePrintHTML(tarihBilgisiYazisi, logoMarkup, filteredOrders);
+      const title = `Sipariş Teslim Listesi – ${getPrintDateDDMMYYYY()}`;
+      openPrintWindow(html, title, tarihBilgisiYazisi);
+    } catch (error: any) {
+      console.error('❌ Yazdırma hatası:', error);
+      showToast('error', error?.message || 'Yazdırma işlemi başarısız');
+    }
+  }, []);
+
   return {
     handlePrint,
     handleExcelExport,
     handlePrintKunye,
+    handlePrintOrderList,
   };
 }
 

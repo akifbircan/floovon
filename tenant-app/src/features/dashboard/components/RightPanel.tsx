@@ -382,6 +382,25 @@ const RightPanelComponent: React.FC<RightPanelProps> = ({
     // ✅ DÜZELTME: Seçili gün parent'tan yönetiliyor, burada sıfırlamaya gerek yok
   }, [selectedWeek]);
 
+  // Mobil başlıkta "mobile-baslik-metin-tarihler" tıklanınca week picker açılsın
+  useEffect(() => {
+    const openWeekPicker = () => {
+      if (weekPickerRef.current) {
+        if (typeof weekPickerRef.current.showPicker === 'function') {
+          try {
+            weekPickerRef.current.showPicker();
+          } catch {
+            weekPickerRef.current.focus();
+          }
+        } else {
+          weekPickerRef.current.focus();
+        }
+      }
+    };
+    window.addEventListener('floovon-open-week-picker', openWeekPicker);
+    return () => window.removeEventListener('floovon-open-week-picker', openWeekPicker);
+  }, []);
+
   // ✅ KRİTİK: Sayfa yenilenmesini engelle - Legacy JS event listener'larını kaldır
   useEffect(() => {
     // ✅ KRİTİK: initTakvimSistemi fonksiyonunu tamamen devre dışı bırak

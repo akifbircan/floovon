@@ -4,8 +4,9 @@
  * Backend: POST /api/sicak-satislar (urun_adi, miktar, tutar, satis_turu)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { showToast } from '../../../shared/utils/toastUtils';
 import { parseTL, formatTutarInputLive, formatTutarInputKeyDown } from '../../../shared/utils/formatUtils';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
@@ -27,6 +28,9 @@ export const SicakSatisModal: React.FC<SicakSatisModalProps> = ({
   const [adet, setAdet] = useState('1');
   const [fiyat, setFiyat] = useState('');
   const [satisTuru, setSatisTuru] = useState<'nakit' | 'havale' | 'pos' | ''>('');
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,10 +81,11 @@ export const SicakSatisModal: React.FC<SicakSatisModalProps> = ({
 
   const overlay = (
     <div
+      ref={overlayRef}
       className={`sicak-satis-overlay ${isOpen ? 'show' : ''}`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="sicak-satis-popup" onClick={(e) => e.stopPropagation()}>
+      <div ref={panelRef} className="sicak-satis-popup" onClick={(e) => e.stopPropagation()}>
         <div className="header-alan">
           <div className="sicak-satis-modal-baslik">
             <i className="fas fa-fire" aria-hidden />

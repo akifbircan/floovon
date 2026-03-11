@@ -14,10 +14,10 @@ document.addEventListener("DOMContentLoaded", function () {
     notifications.style.setProperty('margin', '0', 'important');
     if (window.innerWidth <= 767) {
       notifications.style.setProperty('top', '80px', 'important');
-      notifications.style.setProperty('left', '20px', 'important');
+      notifications.style.setProperty('left', 'auto', 'important');
       notifications.style.setProperty('right', '20px', 'important');
-      notifications.style.setProperty('width', 'calc(100vw - 40px)', 'important');
-      notifications.style.setProperty('max-width', 'calc(100vw - 40px)', 'important');
+      notifications.style.setProperty('width', 'auto', 'important');
+      notifications.style.setProperty('max-width', Math.min(340, window.innerWidth - 40) + 'px', 'important');
     } else {
       notifications.style.setProperty('top', '20px', 'important');
       notifications.style.setProperty('right', '20px', 'important');
@@ -30,10 +30,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!ul) return;
     if (window.innerWidth <= 767) {
       ul.style.setProperty('top', '80px', 'important');
-      ul.style.setProperty('left', '20px', 'important');
+      ul.style.setProperty('left', 'auto', 'important');
       ul.style.setProperty('right', '20px', 'important');
-      ul.style.setProperty('width', 'calc(100vw - 40px)', 'important');
-      ul.style.setProperty('max-width', 'calc(100vw - 40px)', 'important');
+      ul.style.setProperty('width', 'auto', 'important');
+      ul.style.setProperty('max-width', Math.min(340, window.innerWidth - 40) + 'px', 'important');
     } else {
       ul.style.setProperty('top', '20px', 'important');
       ul.style.setProperty('right', '20px', 'important');
@@ -535,10 +535,10 @@ function createToast(id, customMessage = null) {
   notifications.style.setProperty('z-index', '999999', 'important');
   if (window.innerWidth <= 767) {
     notifications.style.setProperty('top', '80px', 'important');
-    notifications.style.setProperty('left', '20px', 'important');
+    notifications.style.setProperty('left', 'auto', 'important');
     notifications.style.setProperty('right', '20px', 'important');
-    notifications.style.setProperty('width', 'calc(100vw - 40px)', 'important');
-    notifications.style.setProperty('max-width', 'calc(100vw - 40px)', 'important');
+    notifications.style.setProperty('width', 'auto', 'important');
+    notifications.style.setProperty('max-width', Math.min(340, window.innerWidth - 40) + 'px', 'important');
   } else {
     notifications.style.setProperty('top', '20px', 'important');
     notifications.style.setProperty('right', '20px', 'important');
@@ -702,9 +702,11 @@ function createToastInteractive({ title, message, confirmText = "Evet", cancelTe
   const toast = document.createElement("li");
   toast.className = "toast interactive";
   
-  // Yeni layout: üstte başlık (bold), altta açıklama, butonlar sağda - ikon yok
+  // Yeni layout: üstte başlık (bold), altta açıklama, butonlar sağda – ikonlu (sunucu ile aynı)
   const displayTitle = title || 'Onay';
   const confirmBtnClass = confirmButtonClass ? ` ${confirmButtonClass}` : '';
+  var cancelIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+  var confirmIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
   
   let formattedMessage = message;
   if (message.includes('var!') && message.includes('Değişiklikleri')) {
@@ -713,10 +715,10 @@ function createToastInteractive({ title, message, confirmText = "Evet", cancelTe
   
   toast.innerHTML = `
     <h3 class="toast-interactive-title">${displayTitle}</h3>
-    <p class="toast-interactive-message">${formattedMessage}</p>
+    <p class="toast-message">${formattedMessage}</p>
     <div class="toast-actions">
-      <button type="button" class="toast-btn toast-btn-cancel">${cancelText}</button>
-      <button type="button" class="toast-btn toast-btn-confirm${confirmBtnClass}">${confirmText}</button>
+      <button type="button" class="toast-btn toast-btn-cancel"><span class="toast-btn-icon">${cancelIcon}</span><span class="toast-btn-text">${cancelText}</span></button>
+      <button type="button" class="toast-btn toast-btn-confirm${confirmBtnClass}"><span class="toast-btn-icon">${confirmIcon}</span><span class="toast-btn-text">${confirmText}</span></button>
     </div>
   `;
   var wrapperId = 'floovon-toast-interactive-' + Date.now();

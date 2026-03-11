@@ -1,15 +1,35 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
+const OVERLAY_DURATION = 0.2;
+const PANEL_DURATION = 0.35;
+const PANEL_EASE = 'back.out(1.2)' as const;
+const OVERLAY_EASE = 'power2.out';
+
 /**
- * Modal açılış animasyonu
+ * Tüm modallarda tek tip açılış animasyonu:
+ * - Overlay: opacity 0 → 1
+ * - Panel: scale 0.99 → 1 (back.out)
+ * panelRef verilmezse overlayRef.current içinde [data-modal-content] aranır.
  */
 export const useModalOpenAnimation = (
   isOpen: boolean,
-  modalRef: React.RefObject<HTMLElement>,
-  backdropRef?: React.RefObject<HTMLElement>
+  overlayRef: React.RefObject<HTMLElement | null>,
+  panelRef?: React.RefObject<HTMLElement | null> | null,
+  options?: { onOpenComplete?: () => void }
 ) => {
   const hasAnimated = useRef(false);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const overlay = overlayRef.current;
+    const panel =
+      panelRef?.current ??
+      (overlayRef.current?.querySelector?.('[data-modal-content]') as HTMLElement) ??
+      overlayRef.current;
+    if (overlay) gsap.set(overlay, { opacity: 0 });
+    if (panel) gsap.set(panel, { opacity: 0, scale: 0.99 });
+  }, [isOpen, overlayRef, panelRef]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -17,39 +37,30 @@ export const useModalOpenAnimation = (
       return;
     }
 
-    if (!modalRef.current) return;
-    if (hasAnimated.current) return;
+    const overlay = overlayRef.current;
+    const panel =
+      panelRef?.current ??
+      (overlay?.querySelector?.('[data-modal-content]') as HTMLElement) ??
+      overlay;
+    if (!overlay || !panel || hasAnimated.current) return;
     hasAnimated.current = true;
-
-    // Backdrop fade in (light, short)
-    const backdrop = backdropRef?.current || modalRef.current.querySelector('[data-modal-backdrop]') as HTMLElement;
-    if (backdrop) {
-      gsap.fromTo(
-        backdrop,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.3, ease: 'power2.out' }
-      );
-    }
-
-    // Modal content scale + fade (light, short, fluid - 0.3-0.5s)
-    const content = modalRef.current.querySelector('[data-modal-content]') as HTMLElement || modalRef.current;
-    if (content) {
-      gsap.fromTo(
-        content,
-        { 
-          opacity: 0, 
-          scale: 0.96, // Light scale
-          y: 8 // Light translate
+    const tl = gsap.timeline({ overwrite: true });
+    tl.to(overlay, { opacity: 1, duration: OVERLAY_DURATION, ease: OVERLAY_EASE })
+      .to(
+        panel,
+        {
+          opacity: 1,
+          scale: 1,
+          duration: PANEL_DURATION,
+          ease: PANEL_EASE,
+          onComplete: options?.onOpenComplete,
         },
-        { 
-          opacity: 1, 
-          scale: 1, 
-          y: 0,
-          duration: 0.35, // Light, short, fluid (0.3-0.5s)
-          ease: 'power2.out' 
-        }
+        0.05
       );
-    }
-  }, [isOpen, modalRef, backdropRef]);
-};
 
+    return () => {
+      gsap.killTweensOf([overlay, panel]);
+      gsap.set([overlay, panel], { clearProps: 'all' });
+    };
+  }, [isOpen, overlayRef, panelRef, options?.onOpenComplete]);
+};

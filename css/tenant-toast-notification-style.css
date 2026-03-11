@@ -25,7 +25,7 @@ ul.notifications {
   border-left: 5px solid;
   border-radius: 6px;
   padding: 12px 16px;
-  margin-top: 10px;
+  /* margin-top: 10px; */
   box-shadow: 0 4px 12px var(--toast-shadow);
   animation: slideInUp 0.4s ease;
   z-index: 2147483645 !important; /* Modal üstünde */
@@ -383,16 +383,15 @@ body:has(.toast-overlay) {
   text-align: left !important;
 }
 
-.toast.interactive .toast-interactive-message {
+.toast.interactive .toast-message {
   font-size: 15px;
   line-height: 1.5;
   color: var(--gri70, var(--toast-text, #6b7280));
   text-align: left !important;
 }
 
-/* İkonlar kaldırıldı - eski yapıdan kalan varsa gizle */
-.toast.interactive .toast-message-icon,
-.toast.interactive .toast-btn-icon {
+/* Eski yapıdan kalan mesaj ikonunu gizle; buton ikonları (İptal X, Evet tik) görünsün */
+.toast.interactive .toast-message-icon {
   display: none !important;
 }
 

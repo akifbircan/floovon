@@ -2,6 +2,34 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiClient } from '@/lib/api';
 import { usePlan } from '@/app/providers/PlanProvider';
 
+export const WHATSAPP_STATUS_CHANNEL = 'floovon-whatsapp-status';
+
+/** Başka sekmelerdeki header’ın hemen pasif görünmesi için (disconnect/çıkış sonrası) çağrılabilir */
+export function broadcastWhatsAppDisconnected() {
+  if (typeof BroadcastChannel === 'undefined') return;
+  try {
+    const ch = new BroadcastChannel(WHATSAPP_STATUS_CHANNEL);
+    ch.postMessage({
+      type: 'disconnected',
+      status: {
+        installed: true,
+        isReady: false,
+        isAuthenticated: false,
+        hasQRCode: false,
+        browserSessionActive: false,
+        lastDisconnectReason: 'LOGOUT',
+        phoneNumber: null,
+        userName: null,
+        connectedAt: null,
+        warning: null,
+        status: 'disconnected',
+        initializing: false,
+      } as WhatsAppStatus,
+    });
+    ch.close();
+  } catch (_) {}
+}
+
 interface WhatsAppStatus {
   installed: boolean;
   isReady: boolean;
@@ -18,10 +46,28 @@ interface WhatsAppStatus {
   initializing?: boolean;
 }
 
+function parseStatusFromApi(statusData: Record<string, unknown>): WhatsAppStatus {
+  return {
+    installed: !!(statusData.installed ?? true),
+    isReady: !!(statusData.isReady ?? false),
+    isAuthenticated: !!(statusData.isAuthenticated ?? false),
+    hasQRCode: !!(statusData.hasQRCode ?? false),
+    browserSessionActive: !!(statusData.browserSessionActive ?? false),
+    lastDisconnectReason: (statusData.lastDisconnectReason as string) ?? null,
+    phoneNumber: (statusData.phoneNumber ?? statusData.phone_number) as string ?? null,
+    userName: (statusData.userName ?? statusData.user_name ?? statusData.username) as string ?? null,
+    connectedAt: (statusData.connectedAt as string) ?? null,
+    warning: (statusData.warning as string) ?? null,
+    status: statusData.status as string | undefined,
+    initializing: !!(statusData.initializing ?? false),
+  };
+}
+
 /**
  * WhatsApp bağlantı durumu hook'u
  * Header'da durum göstergesi için kullanılır.
  * Bağlı değilse sayfa açılır açılmaz arka planda initialize tetiklenir – popup açıldığında karekod hazır olsun.
+ * Diğer sekmelerde çıkış yapıldığında header'ın pasif görünmesi için BroadcastChannel ile senkronize edilir.
  */
 export function useWhatsAppStatus() {
   const { isBaslangicPlan } = usePlan();
@@ -38,23 +84,19 @@ export function useWhatsAppStatus() {
     }
     try {
       const response = await apiClient.get('/whatsapp/status');
-      const statusData = response.data;
-      
-      // DB'ye yazılmamış olsa bile arayüzde görünsün: API camelCase veya snake_case dönebilir
-      setStatus({
-        installed: statusData.installed || false,
-        isReady: statusData.isReady || false,
-        isAuthenticated: statusData.isAuthenticated || false,
-        hasQRCode: statusData.hasQRCode || false,
-        browserSessionActive: statusData.browserSessionActive || false,
-        lastDisconnectReason: statusData.lastDisconnectReason || null,
-        phoneNumber: statusData.phoneNumber || statusData.phone_number || null,
-        userName: statusData.userName || statusData.user_name || statusData.username || null,
-        connectedAt: statusData.connectedAt || null,
-        warning: statusData.warning || null,
-        status: statusData.status ?? undefined,
-        initializing: statusData.initializing ?? false,
-      });
+      const statusData = response.data as Record<string, unknown>;
+      const nextStatus = parseStatusFromApi(statusData);
+      setStatus(nextStatus);
+
+      // Bir sekmede çıkış algılandığında diğer sekmelere yayınla – header’lar hemen pasif görünsün
+      const isDisconnected = !nextStatus.isReady && (nextStatus.status === 'disconnected' || !nextStatus.isAuthenticated);
+      if (isDisconnected && typeof BroadcastChannel !== 'undefined') {
+        try {
+          const ch = new BroadcastChannel(WHATSAPP_STATUS_CHANNEL);
+          ch.postMessage({ type: 'disconnected', status: nextStatus });
+          ch.close();
+        } catch (_) {}
+      }
 
       // "connecting" = DB'de bağlı, backend session'ı diskten yüklüyor (restart sonrası) – initialize zaten status'ta tetikleniyor, tekrar çağırma
       const isReconnecting = statusData.status === 'connecting' || (!!statusData.installed && !!statusData.initializing && !!(statusData.phoneNumber || statusData.phone_number));
@@ -95,20 +137,37 @@ export function useWhatsAppStatus() {
   }, [isBaslangicPlan]);
 
   const isReconnecting = !!(status?.installed && !status?.isReady && (status?.status === 'connecting' || (status?.initializing && status?.phoneNumber)));
-  const isConnected = !!(status?.installed && 
-                      status?.isReady && 
-                      status?.isAuthenticated && 
+  const isConnected = !!(status?.installed &&
+                      status?.isReady &&
+                      status?.isAuthenticated &&
                       !status?.browserSessionActive &&
                       status?.lastDisconnectReason !== 'LOGOUT');
+
+  // Diğer sekmelerde çıkış yapıldığında bu sekmede de header’ı pasif yap
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return;
+    const ch = new BroadcastChannel(WHATSAPP_STATUS_CHANNEL);
+    const onMessage = (ev: MessageEvent) => {
+      if (ev.data?.type === 'disconnected' && ev.data?.status) {
+        setStatus(ev.data.status as WhatsAppStatus);
+      }
+    };
+    ch.addEventListener('message', onMessage);
+    return () => {
+      ch.removeEventListener('message', onMessage);
+      ch.close();
+    };
+  }, []);
 
   useEffect(() => {
     checkStatus();
     if (isBaslangicPlan === true) return;
-    // Restart sonrası session yüklenirken 2 sn'de bir poll; bağlıyken 100ms; değilse 5 sn
-    const intervalMs = isConnected ? 100 : isReconnecting ? 2000 : 5000;
+    // QR açıkken veya bağlanırken sık poll (karekod okutulunca popup hızlı güncellensin); bağlıyken 100ms; değilse 5 sn
+    const hasQROrConnecting = !!(status?.hasQRCode || isReconnecting);
+    const intervalMs = isConnected ? 100 : hasQROrConnecting ? 800 : 5000;
     const interval = setInterval(checkStatus, intervalMs);
     return () => clearInterval(interval);
-  }, [checkStatus, isBaslangicPlan, isConnected, isReconnecting]);
+  }, [checkStatus, isBaslangicPlan, isConnected, isReconnecting, status?.hasQRCode]);
 
   return {
     status,

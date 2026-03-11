@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { startAracTakip } from '../api/aracTakip';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { apiRequest } from '../../../lib/api';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
@@ -29,9 +30,12 @@ export const AracTakipModal: React.FC<AracTakipModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const modalRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  useModalOpenAnimation(isOpen, overlayRef, panelRef);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [araclar, setAraclar] = useState<Arac[]>([]);
@@ -201,7 +205,7 @@ export const AracTakipModal: React.FC<AracTakipModalProps> = ({
 
   const overlay = (
     <div
-      ref={modalRef}
+      ref={overlayRef}
       className="modal-react-arac-takip-overlay"
       aria-labelledby="modal-title"
       role="dialog"
@@ -222,11 +226,10 @@ export const AracTakipModal: React.FC<AracTakipModalProps> = ({
     >
       <div ref={backdropRef} aria-hidden style={{ display: 'none' }} />
       <div
+        ref={panelRef}
         className="modal-react-arac-takip-container relative overflow-hidden rounded-lg bg-white text-left shadow-xl sm:my-8 sm:w-full sm:max-w-lg"
         style={{
           background: '#fff',
-          minWidth: 320,
-          maxWidth: 512,
           maxHeight: '90vh',
           overflow: 'auto',
         }}

@@ -779,6 +779,20 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
 .sag-detay-alan .siparis-listesi table .td-teslim-kisisi,
 .sag-detay-alan .siparis-listesi table .td-arac-bilgileri { text-align: left !important; }
 .sag-detay-alan .siparis-listesi table .td-sp-no { font-size: 14px; font-weight: 600; }
+
+/* Sipariş Kodu sütunu: sadece mobilde görünsün; masaüstünde gizle */
+@media (min-width: 768px) {
+  .sag-detay-alan .siparis-listesi table .th-siparis-kodu-mobil,
+  .sag-detay-alan .siparis-listesi table .td-siparis-kodu-mobil {
+    display: none !important;
+  }
+}
+
+/* Web görünümü: SP. NO hücre içeriği yatay ve dikey ortada (ilk sütun) */
+.sag-detay-alan .siparis-listesi table tbody tr td:first-child {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
 .sag-detay-alan .siparis-listesi table .td-teslim-saati,
 .sag-detay-alan .siparis-listesi table .td-randevu-saati {
   font-size: 15px;
@@ -971,7 +985,7 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
   width: 100%;
   height: 100%;
   background-color: var(--popup-overlay-bg);
-  z-index: 2147483646;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1052,16 +1066,45 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
 
 .siparis-detay-siparis-no {
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .siparis-detay-siparis-no span {
   color: var(--gray-popup-secondary);
-  margin-right: 6px;
+  margin-right: 0;
 }
 
 .siparis-detay-siparis-no strong {
   color: var(--ana-renk);
   font-weight: 600;
+}
+
+.siparis-detay-siparis-no-kopyala {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--gri70);
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.siparis-detay-siparis-no-kopyala:hover {
+  background: var(--extra-light-bg, #f5f5f5);
+  color: var(--ana-renk);
+}
+
+.siparis-detay-siparis-no-kopyala:focus-visible {
+  outline: 2px solid var(--ana-renk);
+  outline-offset: 2px;
 }
 
 .siparis-detay-teslim-zaman {

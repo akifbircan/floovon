@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 
 interface TeslimFotoModalProps {
   isOpen: boolean;
@@ -19,6 +20,9 @@ export const TeslimFotoModal: React.FC<TeslimFotoModalProps> = ({
   const [status, setStatus] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef);
 
   useEffect(() => {
     if (isOpen && fileInputRef.current) {
@@ -61,6 +65,7 @@ export const TeslimFotoModal: React.FC<TeslimFotoModalProps> = ({
 
   return createPortal(
     <div 
+      ref={overlayRef}
       className="modal-react-teslim-foto-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -69,6 +74,7 @@ export const TeslimFotoModal: React.FC<TeslimFotoModalProps> = ({
       }}
     >
       <div 
+        ref={panelRef}
         className="modal-react-teslim-foto-container"
         onClick={(e) => e.stopPropagation()}
       >

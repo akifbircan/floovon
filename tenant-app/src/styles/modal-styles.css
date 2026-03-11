@@ -6,7 +6,10 @@
 /* ========== ORTAK MODAL KAPAT BUTONU (WhatsApp QR yeşil kapat hariç) ========== */
 .btn-close-modal,
 .whatsapp-info-modal-close-btn,
-.btn-close-form {
+.btn-close-form,
+.customers-close-detail,
+.partners-close-detail,
+.campaigns-close-detail {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -15,12 +18,17 @@
     border-radius: 5px;
     cursor: pointer;
     background-color: transparent;
-    padding: 13px;
+    padding: 0;
+    border: none;
     font-size: 13px;
+    color: var(--gri70);
 }
 .btn-close-modal:hover,
 .whatsapp-info-modal-close-btn:hover,
-.btn-close-form:hover {
+.btn-close-form:hover,
+.customers-close-detail:hover,
+.partners-close-detail:hover,
+.campaigns-close-detail:hover {
     background-color: var(--light-gray) !important;
     color: var(--ana-renk) !important;
 }
@@ -3384,6 +3392,36 @@ color: var(--ana-renk) !important;
     flex: 1 !important;
 }
 
+.modal-react-whatsapp-qr-mobile-notice {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+    padding: 16px !important;
+    background: linear-gradient(135deg, var(--notif-whatsapp-connected-bg, #e8f5e9) 0%, var(--gray-light-ee, #eee) 100%) !important;
+    border: 1px solid var(--whatsapp-green, #25d366) !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    color: var(--ana-renk, #333) !important;
+    text-align: left !important;
+}
+.modal-react-whatsapp-qr-mobile-notice i {
+    flex-shrink: 0 !important;
+    margin-top: 2px !important;
+    color: var(--whatsapp-green, #25d366) !important;
+    font-size: 20px !important;
+}
+.modal-react-whatsapp-qr-mobile-notice p {
+    margin: 0 !important;
+    flex: 1 !important;
+}
+
+.modal-react-whatsapp-qr-content.is-mobile .modal-react-whatsapp-qr-instruction,
+.modal-react-whatsapp-qr-content.is-mobile .modal-react-whatsapp-qr-help {
+    display: none !important;
+}
+
 .modal-react-whatsapp-qr-actions {
     margin-top: 20px !important;
     display: flex !important;
@@ -3921,6 +3959,7 @@ color: var(--ana-renk) !important;
 
 .modal-react-qr-scanner-order-details .modal-react-qr-scanner-order-value {
     font-size: 14px !important;
+    font-weight: 600 !important;
     line-height: 1.4 !important;
     color: var(--ana-renk) !important;
 }
@@ -4490,6 +4529,7 @@ color: var(--ana-renk) !important;
   .modal-react-sicak-satis-overlay,
   .modal-react-whatsapp-qr-overlay,
   .modal-react-whatsapp-info-overlay,
+  .modal-react-whatsapp-phone-overlay,
   .modal-react-teknik-destek-overlay,
   .modal-react-arac-takip-overlay,
   .confirm-modal-overlay,
@@ -4526,6 +4566,7 @@ color: var(--ana-renk) !important;
   .modal-react-sicak-satis-overlay,
   .modal-react-whatsapp-qr-overlay,
   .modal-react-whatsapp-info-overlay,
+  .modal-react-whatsapp-phone-overlay,
   .modal-react-teknik-destek-overlay,
   .confirm-modal-overlay,
   .overlay-yeni-kart-container,
@@ -4564,6 +4605,7 @@ color: var(--ana-renk) !important;
   .modal-react-sicak-satis-overlay > div,
   .modal-react-whatsapp-qr-overlay > div,
   .modal-react-whatsapp-info-overlay > div,
+  .modal-react-whatsapp-phone-overlay > div,
   .confirm-modal-overlay > div,
   .overlay-yeni-kart-container .yeni-kart-container,
   .overlay-yeni-musteri-container .yeni-musteri-container,
@@ -4808,6 +4850,15 @@ color: var(--ana-renk) !important;
     box-sizing: border-box !important;
   }
 
+  /* Mobilde Yeni Müşteri: radio butonları 100% genişlemeyip normal daire kalsın */
+  .overlay-yeni-musteri-container .yeni-musteri-container .radio-buttons input[type="radio"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    max-width: 16px !important;
+    flex: 0 0 16px !important;
+  }
+
   .overlay-yeni-musteri-container .yeni-musteri-container .input-icerik-grup input {
     flex: 1 1 120px !important;
     min-width: 0 !important;
@@ -4844,7 +4895,7 @@ color: var(--ana-renk) !important;
   .overlay-yeni-siparis-container .yeni-siparis-container .organizasyon-kutu .kart-gorseli {
     min-width: 0 !important;
     width: 100% !important;
-    max-width: 280px !important;
+    /* max-width: 280px !important; */
     height: 200px !important;
     min-height: 200px !important;
   }
@@ -5008,17 +5059,12 @@ color: var(--ana-renk) !important;
 
   /* Organizasyon alt türü radyolar: mobilde tek sütun, kutu görünümü korunsun */
   .overlay-yeni-kart-container .yeni-kart-container .input-form .label-kapsayici-org-tipler {
-    width: 100% !important;
-    flex-direction: column !important;
-    flex-wrap: nowrap !important;
+    flex-wrap: wrap !important;
     gap: 8px !important;
   }
 
   .overlay-yeni-kart-container .yeni-kart-container .input-form .label-kapsayici-org-tipler .radio-label {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    padding: 10px 14px !important;
+    padding: 4px 10px !important;
   }
 
   .overlay-yeni-kart-container .yeni-kart-container .btn-yeni-ekle.btn-yeni-tur {
@@ -5113,24 +5159,41 @@ color: var(--ana-renk) !important;
   .ayarlar-form-group {
     width: 100% !important;
     max-width: 100% !important;
-    align-items: center;
+    align-items: flex-start;
   }
 
 
 
   .ayarlar-form-group input,
   .ayarlar-form-group select,
-  .ayarlar-form-group textarea {
-    /* width: 100% !important; */
+  .ayarlar-form-group textarea,
+  .ayarlar-page .ayarlar-isletme-kolon input,
+  .ayarlar-page .ayarlar-isletme-kolon select,
+  .ayarlar-page .ayarlar-isletme-kolon textarea {
+    width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     font-size: 14px !important; /* zoom önlemek için */
+  }
+  /* Checkbox’a width:100% uygulanmasın; kare kalsın */
+  .ayarlar-form-group input[type="checkbox"],
+  .ayarlar-form-group input.ayarlar-checkbox {
+    width: 1rem !important;
+    min-width: 1rem !important;
+    max-width: 1rem !important;
+    height: 1rem !important;
+    flex-shrink: 0 !important;
   }
   .ayarlar-form-group .ayarlar-label,
   .ayarlar-form-group label {
     font-size: 13px !important;
     text-align: center !important;
     width: fit-content !important;
+  }
+  /* Çiçek Sepeti checkbox kutularında etiket sola hizalı ve checkbox ile düzgün hizada kalsın (diğer sekmeler değişmez) */
+  .ayarlar-ciceksepeti-checkbox-kutu .ayarlar-form-group .ayarlar-label,
+  .ayarlar-ciceksepeti-checkbox-kutu .ayarlar-form-group label {
+    text-align: left !important;
   }
   .ayarlar-form-actions {
     flex-wrap: wrap !important;
@@ -5158,7 +5221,7 @@ color: var(--ana-renk) !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    font-size: 16px !important;
+    font-size: 0.875rem !important; /* 14px mobil */
   }
 
   /* ========== KAMPANYA FORMU – mobil ========== */
@@ -5211,7 +5274,7 @@ color: var(--ana-renk) !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    font-size: 16px !important;
+    font-size: 0.875rem !important; /* 14px mobil */
   }
 
   .cari-drawer-overlay .partner-modal-drawer-header {

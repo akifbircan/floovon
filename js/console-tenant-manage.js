@@ -35,6 +35,13 @@ class TenantManage {
         
         this.init();
     }
+
+    getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
     
     switchTab(tabName) {
         // Update tab buttons
@@ -105,13 +112,31 @@ class TenantManage {
             document.body.classList.add('dark-mode');
         }
         
-        this.initNotifications();
-        
-        // Admin giriş kontrolü
-        if (!this.adminUserId || !this.adminToken) {
+        // Admin giriş kontrolü - localStorage ve cookie kontrolü
+        let adminUserId = localStorage.getItem('admin_user_id');
+        let adminToken = localStorage.getItem('admin_token');
+
+        if (!adminUserId || !adminToken) {
+            adminUserId = adminUserId || this.getCookie('floovon_admin_user_id');
+            adminToken = adminToken || this.getCookie('floovon_admin_token');
+
+            if (adminUserId && !localStorage.getItem('admin_user_id')) {
+                localStorage.setItem('admin_user_id', adminUserId);
+            }
+            if (adminToken && !localStorage.getItem('admin_token')) {
+                localStorage.setItem('admin_token', adminToken);
+            }
+        }
+
+        if (!adminUserId || !adminToken) {
             window.location.href = '/console-login';
             return;
         }
+
+        this.adminUserId = adminUserId;
+        this.adminToken = adminToken;
+
+        this.initNotifications();
         
         // Tenant ID'yi URL'den al - hem 'id' hem 'tenant_id' parametrelerini kontrol et
         const urlParams = new URLSearchParams(window.location.search);
@@ -7822,6 +7847,34 @@ class TenantManage {
 // Sayfa yüklendiğinde tenant yönetimini başlat
 let tenantManage;
 document.addEventListener('DOMContentLoaded', function() {
+    const body = document.body;
+    if (body && body.classList.contains('console-page-enter')) {
+        const activateEntrance = () => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    body.classList.add('page-enter-active');
+                });
+            });
+        };
+
+        if (body.classList.contains('css-loaded')) {
+            activateEntrance();
+        } else {
+            const cssReadyObserver = new MutationObserver(() => {
+                if (body.classList.contains('css-loaded')) {
+                    cssReadyObserver.disconnect();
+                    activateEntrance();
+                }
+            });
+
+            cssReadyObserver.observe(body, { attributes: true, attributeFilter: ['class'] });
+            setTimeout(() => {
+                cssReadyObserver.disconnect();
+                activateEntrance();
+            }, 700);
+        }
+    }
+
     // ✅ Console sayfaları için telefon input maskesi uygula
     // HTML'deki TÜM telefon input'larına console telefon maskesi uygula
     function applyPhoneFormatting() {
@@ -8062,7 +8115,11 @@ if (typeof TenantManage !== 'undefined') {
             }
             
             const response = await fetch(url, {
-                credentials: 'include'
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${this.adminToken}`,
+                    'Content-Type': 'application/json'
+                }
             });
             
             if (!response.ok) {
@@ -8085,7 +8142,11 @@ if (typeof TenantManage !== 'undefined') {
             if (updateBadgesOnly) {
                 // Tüm bildirimleri yükle (filtre olmadan) badge'ler için
                 const allNotificationsResponse = await fetch(`${this.apiBase}/admin/notifications?limit=1000`, {
-                    credentials: 'include'
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${this.adminToken}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
                 if (allNotificationsResponse.ok) {
                     const allResult = await allNotificationsResponse.json();
@@ -8109,7 +8170,11 @@ if (typeof TenantManage !== 'undefined') {
             
             // Filtre butonlarına okunmamış bildirim sayısını ekle (tüm bildirimlerle)
             const allNotificationsResponse = await fetch(`${this.apiBase}/admin/notifications?limit=1000`, {
-                credentials: 'include'
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${this.adminToken}`,
+                    'Content-Type': 'application/json'
+                }
             });
             if (allNotificationsResponse.ok) {
                 const allResult = await allNotificationsResponse.json();
@@ -8144,7 +8209,11 @@ if (typeof TenantManage !== 'undefined') {
             // Sadece sayıyı güncelle (console sayfasındaki gibi)
             try {
                 const response = await fetch(`${this.apiBase}/admin/notifications?limit=1&unread_only=true`, {
-                    credentials: 'include'
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${this.adminToken}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
                 if (response.ok) {
@@ -8255,7 +8324,11 @@ if (typeof TenantManage !== 'undefined') {
         try {
             const response = await fetch(`${this.apiBase}/admin/notifications/${notificationId}/read`, {
                 method: 'PUT',
-                credentials: 'include'
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${this.adminToken}`,
+                    'Content-Type': 'application/json'
+                }
             });
             
             if (!response.ok) {
@@ -8287,7 +8360,11 @@ if (typeof TenantManage !== 'undefined') {
         try {
             const response = await fetch(`${this.apiBase}/admin/notifications/read-all`, {
                 method: 'PUT',
-                credentials: 'include'
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${this.adminToken}`,
+                    'Content-Type': 'application/json'
+                }
             });
             
             if (!response.ok) {

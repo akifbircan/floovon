@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { useQueryClient } from '@tanstack/react-query';
 import { updateSiparis, createSiparis, type SiparisFormData } from '../api/siparisActions';
 import { invalidateSiparisGuncellemeQueries } from '../../../lib/invalidateQueries';
@@ -127,6 +128,9 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
   const addressSelect = useAddressSelect(selectedIl, selectedIlce, selectedMahalle);
   const orderIdRef = React.useRef<string | number | null>(null);
   const davetiyeHizliYukleRef = React.useRef<HTMLInputElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef);
   const [davetiyeYukleniyor, setDavetiyeYukleniyor] = useState(false);
 
   // Organizasyon verilerini yükle
@@ -496,6 +500,7 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
 
   return createPortal(
     <div 
+      ref={overlayRef}
       className={`overlay-yeni-siparis-container ${isOpen ? 'show' : ''}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -504,6 +509,7 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
       }}
     >
       <div 
+        ref={panelRef}
         className={`yeni-siparis-container ${isOpen ? 'show' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >

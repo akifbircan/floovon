@@ -22,7 +22,8 @@ export const OrderActionModal: React.FC<OrderActionModalProps> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
-  useModalOpenAnimation(isOpen, modalRef, backdropRef);
+  const contentRef = useRef<HTMLDivElement>(null);
+  useModalOpenAnimation(isOpen, backdropRef, contentRef);
 
   if (!isOpen || !order) return null;
 
@@ -53,6 +54,7 @@ export const OrderActionModal: React.FC<OrderActionModalProps> = ({
       {/* Backdrop */}
       <div
         ref={backdropRef}
+        data-modal-backdrop
         className="modal-react-order-action-backdrop fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
         onClick={onClose}
       />
@@ -60,6 +62,8 @@ export const OrderActionModal: React.FC<OrderActionModalProps> = ({
       {/* Modal */}
       <div className="modal-react-order-action-wrapper flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div
+          ref={contentRef}
+          data-modal-content
           className="modal-react-order-action-container relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
         >
           {/* Header */}

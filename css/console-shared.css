@@ -709,7 +709,7 @@ body:not(.dark-mode) .theme-toggle-icon.theme-icon-moon {
     flex: 1 1 100% !important;
     order: 2 !important;
     justify-content: flex-end !important;
-    gap: 1rem !important;
+    gap: 8px !important;
   }
   
   /* Notification Dropdown Responsive */
@@ -1596,5 +1596,41 @@ select.form-input:focus {
   
   .form-group-half {
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body.console-page-enter .console-panel-main,
+  body.console-page-enter .admin-tenant-tabs-wrapper,
+  body.console-page-enter .admin-tenant-main {
+    will-change: opacity, transform;
+  }
+
+  body.console-page-enter:not(.page-enter-active) .console-panel-main {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  body.console-page-enter.page-enter-active .console-panel-main {
+    opacity: 1;
+    transform: none;
+    transition: opacity 220ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  body.console-page-enter.css-loaded:not(.page-enter-active) .admin-tenant-tabs-wrapper,
+  body.console-page-enter.css-loaded:not(.page-enter-active) .admin-tenant-main {
+    opacity: 0 !important;
+    transform: translateY(4px);
+  }
+
+  body.console-page-enter.css-loaded.page-enter-active .admin-tenant-tabs-wrapper,
+  body.console-page-enter.css-loaded.page-enter-active .admin-tenant-main {
+    opacity: 1 !important;
+    transform: none;
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  body.console-page-enter.css-loaded.page-enter-active .admin-tenant-main {
+    transition-delay: 40ms;
   }
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { buildAddressForMapsQuery } from '../../../shared/utils/formatUtils';
 import { formatDateToDisplay } from '../../../shared/utils/dateUtils';
 import type { Order } from '../types';
@@ -39,7 +40,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   const scannerRef = useRef<any | null>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+  const hasAnimatedOpen = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scannedOrder, setScannedOrder] = useState<Order | null>(null);
@@ -327,6 +330,8 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     };
   }, [isOpen, onScanSuccess, onScanError]);
 
+  useModalOpenAnimation(isOpen, modalRef, panelRef);
+
   if (!isOpen) return null;
 
   const overlay = (
@@ -356,6 +361,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         style={{ display: 'none' }}
       />
       <div
+        ref={panelRef}
         className="modal-react-qr-scanner-container relative overflow-hidden rounded-lg text-left sm:my-8 sm:w-full sm:max-w-lg"
         style={{
           maxHeight: '90vh',

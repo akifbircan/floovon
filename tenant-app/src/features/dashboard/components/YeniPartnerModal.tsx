@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { apiRequest } from '../../../lib/api';
 import { invalidatePartnerQueries } from '../../../lib/invalidateQueries';
 import { getApiBaseUrl } from '../../../lib/runtime';
@@ -68,10 +69,18 @@ export const YeniPartnerModal: React.FC<YeniPartnerModalProps> = ({
   const [logoIsNewUpload, setLogoIsNewUpload] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
   const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
+  const [openAnimationDone, setOpenAnimationDone] = useState(false);
   const blobUrlRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const addressSelect = useAddressSelect();
+  useModalOpenAnimation(isOpen, overlayRef, panelRef, { onOpenComplete: () => setOpenAnimationDone(true) });
+
+  useEffect(() => {
+    if (!isOpen) setOpenAnimationDone(false);
+  }, [isOpen]);
 
   const revokeLogoBlob = useCallback(() => {
     if (blobUrlRef.current) {
@@ -254,13 +263,19 @@ export const YeniPartnerModal: React.FC<YeniPartnerModalProps> = ({
 
   return createPortal(
     <div
+      ref={overlayRef}
       className="partner-modal-drawer-overlay"
+      style={isOpen && !openAnimationDone ? { opacity: 0 } : undefined}
       onClick={(e) => e.target === e.currentTarget && requestClose()}
       role="dialog"
       aria-modal="true"
       aria-labelledby="partner-modal-title"
     >
-      <div className="partner-modal-drawer">
+      <div
+        ref={panelRef}
+        className="partner-modal-drawer"
+        style={isOpen && !openAnimationDone ? { opacity: 0, transform: 'scale(0.99)' } : undefined}
+      >
         <div className="partner-modal-drawer-header">
           <h2 id="partner-modal-title" className="partner-modal-drawer-title">
             {mode === 'edit' ? 'Partner Firmayı Düzenle' : 'Yeni Partner Firma Ekle'}

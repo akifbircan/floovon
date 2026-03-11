@@ -1980,22 +1980,17 @@ export const SettingsPage: React.FC = () => {
     }
   }, [activeTab, activeSubTab, genelSubTab]);
 
-  /** Düzenle tıklanınca forma scroll; formun üstünde sayfa boşluğu kalsın (scroll container: main) */
+  /** Düzenle tıklanınca scroll: panel + main (layout’ta hangisi scroll ediyorsa o hareket etsin) */
   const ayarlarFormActive = !!(editingUrunId || editingUrunGrubuId || editingOrganizasyonTuruId || editingEtiketId || editingTeslimatId || editingAracId);
   React.useEffect(() => {
     if (!ayarlarFormActive) return;
-    const formEl = document.querySelector('.ayarlar-form-row.ayarlar-form-active .ayarlar-sol-kolon') as HTMLElement | null;
-    if (!formEl) return;
-    formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    const scrollPadding = 32;
-    const timer = setTimeout(() => {
-      const main = document.querySelector('main[data-main-content]');
-      if (main && main instanceof HTMLElement) {
-        const top = main.scrollTop + formEl.getBoundingClientRect().top - scrollPadding;
-        main.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-      }
-    }, 350);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => {
+      const pageWrapper = document.querySelector('.ayarlar-page.page-wrapper') as HTMLElement | null;
+      if (pageWrapper) pageWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+      const main = document.querySelector('main[data-main-content]') as HTMLElement | null;
+      if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 50);
+    return () => clearTimeout(t);
   }, [ayarlarFormActive, editingUrunId, editingUrunGrubuId, editingOrganizasyonTuruId, editingEtiketId, editingTeslimatId, editingAracId]);
 
   return (

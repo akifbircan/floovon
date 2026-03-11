@@ -31,7 +31,7 @@ body > div[class*="toast"]:not(.ciceksepeti-toast-container),
 body > div[class*="Toast"]:not(.ciceksepeti-toast-container) {
   z-index: 2147483647 !important;
 }
-/* İç wrapper: toast listesi ortada, max genişlik */
+/* İç wrapper: toast listesi ortada, max genişlik (toast arası boşluk Toaster gutter prop ile) */
 div[data-rht-toaster] > div,
 .app-toast-container > div,
 body > div[class*="toast"] > div,
@@ -100,6 +100,10 @@ body > div[class*="Toast"] > div {
 .toast {
   background-color: var(--toast-bg) !important;
   color: var(--toast-text) !important;
+  margin-bottom: 10px !important;
+}
+.toast:last-child {
+  margin-bottom: 0 !important;
 }
 .toast .column span {
   color: var(--toast-text) !important;

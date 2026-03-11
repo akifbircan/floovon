@@ -268,7 +268,7 @@ ul.notifications {
   .reports-sorgu-baslik {
     flex-direction: column;
     border: none;
-        border-top: 3px solid var(--mavi-renk);
+        border-top: 1px solid var(--mavi-renk);
   }
 
   /* Tablolar: mobilde kart görünümü (data-label ile) */
@@ -375,7 +375,8 @@ ul.notifications {
     text-align: left;
   }
   .customers-table tbody td.td-no-mobile-label::before,
-  .campaigns-table-wrap .customers-table tbody td.td-no-mobile-label::before {
+  .campaigns-table-wrap .customers-table tbody td.td-no-mobile-label::before,
+  .campaigns-table tbody td.td-no-mobile-label::before {
     content: none !important;
     display: none !important;
   }
@@ -393,6 +394,12 @@ ul.notifications {
     width: 100%;
     align-items: center;
     text-align: right;
+  }
+
+  /* Kampanya sayfası mobil: kampanya adı hücresi tamamen sola yaslı */
+  .campaigns-table tbody td.customers-td-code {
+    text-align: left !important;
+    justify-content: flex-start !important;
   }
 
   /* Müşteriler sayfası: Ünvan & Yetkili, İletişim hücreleri mobilde sütun (bilgiler sığsın) */
@@ -621,14 +628,13 @@ ul.notifications {
     border-radius: 12px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
     overflow: hidden !important;
-    /* padding: 16px 16px 20px !important; */
-    padding: 16px 0px 20px 20px !important;
+    padding: 16px 0 16px 16px !important;
     padding-bottom: 20px !important;
   }
 
   body .page-panel-sag--as-modal.campaigns-mobile-modal .page-panel-sag-inner,
   .page-panel-sag--as-modal.campaigns-mobile-modal .page-panel-sag-inner {
-    padding: 0 !important;
+    padding: 0;
     height: auto !important;
     min-height: 0 !important;
     max-height: calc(100dvh - 68px) !important;
@@ -638,7 +644,13 @@ ul.notifications {
     background: transparent !important;
   }
 
-  /* Müşteri/Partner detay modal header: mobilde sabit yükseklik kaldırılsın */
+  .page-panel-sag--as-modal.campaigns-mobile-modal .page-panel-sag-inner {
+    padding: 0 !important;
+    padding-right: 12px !important;
+  }
+
+
+
   .page-panel-sag--as-modal.campaigns-mobile-modal .customers-detail-header,
   .page-panel-sag--as-modal.campaigns-mobile-modal .partners-detail-header {
     height: auto !important;
@@ -750,6 +762,9 @@ ul.notifications {
   /* Ayarlar: mobilde ekle/düzenle formu web ile aynı mantık – form üstte, düzenle tıklanınca scroll oraya (overlay yok) */
   .ayarlar-form-row.ayarlar-form-active {
     position: relative;
+  }
+  .ayarlar-form-row.ayarlar-form-active .ayarlar-sol-kolon {
+    scroll-margin-top: 88px;
   }
 
 

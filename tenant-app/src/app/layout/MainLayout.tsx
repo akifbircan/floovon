@@ -224,6 +224,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <Toaster
             position="top-center"
             containerClassName="app-toast-container"
+            gutter={12}
             toastOptions={{
             duration: 3000,
             style: {

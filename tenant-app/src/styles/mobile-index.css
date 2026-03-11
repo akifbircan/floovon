@@ -772,6 +772,12 @@
     min-width: 0;
   }
 
+  /* Hızlı İşlemler FAB – en üstte (header dropdown, toast, modal üstünde) */
+  .hizli-islemler-fab-wrapper {
+    position: relative;
+    z-index: 10001;
+  }
+
   /* Hızlı İşlemler FAB (buton-hizli-islemler) - mobilde navbar + adres çubuğu/safe-area hesaba katılarak */
   .buton-hizli-islemler,
   .qr-fab-index {
@@ -779,7 +785,7 @@
     right: calc(20px + env(safe-area-inset-right, 0px)) !important;
     width: 72px !important;
     height: 72px !important;
-    z-index: 100;
+    z-index: 10001;
     border-radius: 50%;
     background-color: var(--mor-primary);
     color: var(--white-only);
@@ -802,12 +808,12 @@
     box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--mor-primary) !important;
   }
 
-  /* Hızlı İşlemler menü – ikonlu liste, butonun üstünde */
+  /* Hızlı İşlemler menü – ikonlu liste, butonun üstünde; en üstte */
   .hizli-islemler-menu {
     position: fixed !important;
     bottom: calc(80px + 72px + 12px + env(safe-area-inset-bottom, 0px)) !important;
     right: calc(20px + env(safe-area-inset-right, 0px)) !important;
-    z-index: 99;
+    z-index: 10001;
     min-width: 220px;
     background: var(--white);
     border-radius: 12px;

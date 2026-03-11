@@ -21,12 +21,17 @@
   max-width: 100%;
 }
 
-/* Ayarlar: sayfa scroll yok, scroll sadece tab içeriklerinde */
+/* Ayarlar: sayfa scrollu main'de olsun (layout-custom main overflow:hidden eziyor, burada geri açıyoruz) */
+main[data-main-content]:has(.ayarlar-page) {
+  overflow: auto !important;
+}
+
+/* Ayarlar: sayfa scrollu .ayarlar-page.page-wrapper'da (düzenle tıklanınca bunu kaydırıyoruz) */
 .ayarlar-page.page-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100%;
+  overflow: auto;
 }
 .ayarlar-page-inner {
   max-width: 100%;
@@ -484,6 +489,17 @@
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 } */
+/* Veri tanımları: düzenle formu (.ayarlar-panel-form) her zaman 1px border (transparent) ki yeşil gelince layout kaymasın */
+.ayarlar-page .ayarlar-form-row .ayarlar-sol-kolon .ayarlar-panel-form {
+  border: 2px solid transparent;
+  border-radius: 8px;
+}
+.ayarlar-page .ayarlar-form-row.ayarlar-form-active .ayarlar-sol-kolon .ayarlar-panel-form {
+  border-color: var(--success-green);
+}
+.ayarlar-form-row.ayarlar-form-active .ayarlar-sol-kolon {
+  scroll-margin-top: 88px;
+}
 .ayarlar-form-row-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -557,6 +573,7 @@
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  margin-bottom: 10px;
 }
 .ayarlar-logo-placeholder {
   min-height: 80px;

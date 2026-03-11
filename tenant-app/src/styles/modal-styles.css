@@ -5248,7 +5248,7 @@ color: var(--ana-renk) !important;
   }
 
   .ayarlar-logo-alan-inline {
-    justify-content: center;
+    justify-content: flex-start;
 }
 
   .ayarlar-form-actions button {

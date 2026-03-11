@@ -80,6 +80,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       >
         {displayImageUrl ? (
           <img src={displayImageUrl} alt="" />
+        ) : selectedOption ? (
+          <span className="searchable-select-placeholder" aria-hidden>Görsel yok</span>
         ) : null}
         <span className="searchable-select-trigger-text">{displayLabel}</span>
         <i className="fa-solid fa-chevron-down searchable-select-arrow" aria-hidden />
@@ -112,7 +114,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 >
                   {option.imageUrl ? (
                     <img src={option.imageUrl} alt="" />
-                  ) : null}
+                  ) : (
+                    <span className="searchable-select-placeholder" aria-hidden>Görsel yok</span>
+                  )}
                   {option.label}
                 </li>
               ))

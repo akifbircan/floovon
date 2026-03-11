@@ -14,6 +14,7 @@ import { getUploadUrl } from '../../../shared/utils/urlUtils';
 import { getApiBaseUrl } from '../../../lib/runtime';
 import { Pencil, Trash2 } from 'lucide-react';
 import { TableSortHeader } from '../../../shared/components/TableSortHeader';
+import { Lightbox } from '../../../shared/components/Lightbox';
 
 interface Campaign {
   id: number;
@@ -123,6 +124,7 @@ export const CampaignsPage: React.FC = () => {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [formData, setFormData] = useState(defaultFormData);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [campaignImageLightboxOpen, setCampaignImageLightboxOpen] = useState(false);
 
   const { data: campaigns, isLoading, error } = useQuery({
     queryKey: ['campaigns'],
@@ -779,7 +781,14 @@ export const CampaignsPage: React.FC = () => {
             <div className="page-detail-card campaigns-detail-card" data-card-item>
               <div className="page-detail-card-top custom-scrollbar">
                 {(selectedCampaign.gorsel_path || selectedCampaign.gorsel) ? (
-                  <div className="kampanya-gorsel-preview mb-4">
+                  <div
+                    className="kampanya-gorsel-preview mb-4 cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setCampaignImageLightboxOpen(true)}
+                    onKeyDown={(e) => e.key === 'Enter' && setCampaignImageLightboxOpen(true)}
+                    title="Görseli büyüt"
+                  >
                     <img
                       key={selectedCampaign.id}
                       src={`${getUploadUrl(selectedCampaign.gorsel_path || selectedCampaign.gorsel)}?t=${selectedCampaign.id}`}
@@ -897,7 +906,14 @@ export const CampaignsPage: React.FC = () => {
               <div className="page-detail-card customers-detail-card campaigns-detail-card" data-card-item>
                 <div className="page-detail-card-top customers-detail-card-top custom-scrollbar">
                   {(selectedCampaign.gorsel_path || selectedCampaign.gorsel) && (
-                    <div className="kampanya-gorsel-preview mb-4">
+                    <div
+                      className="kampanya-gorsel-preview mb-4 cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setCampaignImageLightboxOpen(true)}
+                      onKeyDown={(e) => e.key === 'Enter' && setCampaignImageLightboxOpen(true)}
+                      title="Görseli büyüt"
+                    >
                       <img src={`${getUploadUrl(selectedCampaign.gorsel_path || selectedCampaign.gorsel)}?t=${selectedCampaign.id}`} alt={selectedCampaign.ad} className="max-w-full max-h-48 rounded" />
                     </div>
                   )}
@@ -921,6 +937,15 @@ export const CampaignsPage: React.FC = () => {
 
       {exportMenuOpen && (
         <div className="fixed inset-0 z-10" onClick={() => setExportMenuOpen(false)} aria-hidden />
+      )}
+
+      {selectedCampaign && (selectedCampaign.gorsel_path || selectedCampaign.gorsel) && (
+        <Lightbox
+          isOpen={campaignImageLightboxOpen}
+          images={[{ src: `${getUploadUrl(selectedCampaign.gorsel_path || selectedCampaign.gorsel)}?t=${selectedCampaign.id}`, alt: selectedCampaign.ad }]}
+          onClose={() => setCampaignImageLightboxOpen(false)}
+          enableZoom
+        />
       )}
     </div>
   );

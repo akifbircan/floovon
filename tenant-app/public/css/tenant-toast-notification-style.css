@@ -1,4 +1,17 @@
 /* #region Toast Notification - Genel Ayarlar */
+
+/* React-hot-toast konteyneri + interaktif toast: her şeyin üstünde (inline z-index:9999 ezilir) */
+div[data-rht-toaster],
+div[data-rht-toaster].app-toast-container,
+.app-toast-container {
+  z-index: 2147483647 !important;
+}
+[data-floovon-interactive-toast],
+[data-floovon-interactive-toast] .toast-overlay,
+[data-floovon-interactive-toast] .toast.interactive {
+  z-index: 2147483647 !important;
+}
+
 ul.notifications {
   all: unset;
   position: fixed !important;
@@ -320,7 +333,7 @@ body:has(.toast-overlay) {
 .toast-message {
   font-size: 15px;
   color: var(--toast-text);
-  text-align: center;
+  text-align: left;
 }
 
 /* Onay butonu */
@@ -374,13 +387,17 @@ body:has(.toast-overlay) {
 .toast.interactive {
   align-items: stretch;
   width: 100%;
+  text-align: left;
 }
 
-.toast.interactive .toast-interactive-title {
+.toast.interactive .toast-interactive-title,
+body .toast.interactive .toast-interactive-title {
   font-size: 18px;
   font-weight: 600;
   color: var(--ana-renk, var(--toast-text, #111827));
   text-align: left !important;
+  display: block;
+  width: 100%;
 }
 
 .toast.interactive .toast-message {

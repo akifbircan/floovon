@@ -6,7 +6,7 @@ div[data-rht-toaster].app-toast-container,
 .app-toast-container,
 body > div[class*="toast"],
 body > div[class*="Toast"] {
-  z-index: 1000000 !important;
+  z-index: 2147483647 !important;
   position: fixed !important;
   top: var(--header-height, 64px) !important;
   left: 20px !important;
@@ -211,13 +211,24 @@ body .toast.info .column .toast-icon svg,
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
+/* Interaktif toast (Müşteri Sil vb.) overlay’in üstünde; wrapper + overlay + kutu */
+[data-floovon-interactive-toast],
+[data-floovon-interactive-toast] .toast-overlay,
+[data-floovon-interactive-toast] .toast.interactive {
+  z-index: 2147483647 !important;
+}
+
 .toast.interactive {
   width: auto !important;
   min-width: min(360px, calc(100vw - 40px)) !important;
   max-width: min(440px, calc(100vw - 40px)) !important;
-  align-items: center !important;
+  align-items: flex-start !important;
   border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+.toast.interactive .toast-interactive-title,
+.toast.interactive .toast-message {
+  text-align: left !important;
 }
 
 /* Mobil: toast header hemen altında, biraz yukarıda kalsın */

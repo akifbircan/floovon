@@ -30,40 +30,7 @@ nav[data-sidebar] {
   }
 }
 
-/* Modal/overlay açıkken sidebar her zaman overlay'ın altında kalmalı – tek kural, tüm overlay/dialog sınıfları */
-body:has(.overlay-yeni-kart-container.show) nav[data-sidebar],
-body:has(.overlay-yeni-musteri-container.show) nav[data-sidebar],
-body:has(.overlay-yeni-siparis-container.show) nav[data-sidebar],
-body:has(.overlay-yeni-etiket-popup-overlay) nav[data-sidebar],
-body:has(.arsiv-sebep-overlay.show) nav[data-sidebar],
-body:has(.overlay-whatsapp-info-container.show) nav[data-sidebar],
-body:has(.sicak-satis-overlay.show) nav[data-sidebar],
-body:has(.lightbox-overlay) nav[data-sidebar],
-body:has(.modal-react-teslim-foto-overlay) nav[data-sidebar],
-body:has(.modal-react-imza-overlay) nav[data-sidebar],
-body:has(.modal-react-arsiv-sebep-overlay.show) nav[data-sidebar],
-body:has(.modal-react-arsiv-sebep-overlay) nav[data-sidebar],
-body:has(.modal-react-sicak-satis-overlay.show) nav[data-sidebar],
-body:has(.modal-react-arac-takip-overlay) nav[data-sidebar],
-body:has(.modal-react-whatsapp-qr-overlay) nav[data-sidebar],
-body:has(.modal-react-whatsapp-info-overlay.show) nav[data-sidebar],
-body:has(.modal-react-whatsapp-phone-overlay) nav[data-sidebar],
-body:has(.modal-react-qr-scanner-overlay) nav[data-sidebar],
-body:has(.modal-react-order-action-overlay) nav[data-sidebar],
-body:has(.modal-react-teknik-destek-overlay) nav[data-sidebar],
-body:has(.confirm-modal-overlay) nav[data-sidebar],
-body:has(.rapor-detay-overlay) nav[data-sidebar],
-body:has(.siparis-detay-overlay) nav[data-sidebar],
-body:has(.cari-drawer-overlay) nav[data-sidebar],
-body:has(.sag-panel-overlay.active) nav[data-sidebar] {
-  z-index: 0 !important;
-  isolation: auto !important;
-}
-
-/* Modal/overlay açıkken header da overlay'ın altında (sadece tam ekran overlay'lar; genel [role="dialog"] sidebar'ı gizlemesin) */
-body:has(.cari-drawer-overlay) .header {
-  z-index: 0 !important;
-}
+/* Modal/overlay açıkken sidebar overlay altında: kurallar modal-styles.css sonunda (tek dosyada toplandı) */
 
 /* Sağ taraf container - Header ve Main Content için (sadece MainLayout'taki doğrudan child) */
 .min-h-screen.flex.overflow-hidden > .flex-1.flex.flex-col.overflow-hidden {
@@ -145,5 +112,69 @@ main[data-main-content] {
   .min-h-screen.flex.overflow-hidden > .flex-1.flex.flex-col.overflow-hidden {
     margin-left: 0 !important;
   }
+}
+
+/* ========== MOBİL: Tablo içi scroll YOK, sayfa scroll; scrollbar GİZLİ (eski modal-styles-important’tan taşındı) ========== */
+@media (max-width: 767px) {
+  main[data-main-content] .customers-table-scroll,
+  main[data-main-content] .partners-table-scroll,
+  main[data-main-content] .campaigns-table-scroll,
+  main[data-main-content] .reports-table-scroll,
+  main[data-main-content] .profil-table-scroll,
+  main[data-main-content] .customers-table-scroll.table-scrollbar,
+  main[data-main-content] .partners-table-scroll.table-scrollbar,
+  .page-wrapper .customers-table-scroll,
+  .page-wrapper .partners-table-scroll,
+  .page-wrapper .campaigns-table-scroll,
+  .page-wrapper .reports-table-scroll,
+  .page-wrapper .profil-table-scroll {
+    max-height: none !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    padding-right: 0 !important;
+  }
+  html,
+  body,
+  main[data-main-content],
+  main[data-main-content] * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  main[data-main-content]::-webkit-scrollbar,
+  main[data-main-content] *::-webkit-scrollbar {
+    display: none !important;
+  }
+  .dashboard-container-wrapper .grid-container .grid-item.main .items {
+    scrollbar-width: thin !important;
+    -ms-overflow-style: auto !important;
+  }
+  .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar {
+    display: block !important;
+    height: 8px;
+  }
+  .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-track {
+    background: var(--scroll-track-color);
+    border-radius: 4px;
+  }
+  .dashboard-container-wrapper .grid-container .grid-item.main .items::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb-color);
+    border-radius: 4px;
+  }
+}
+
+/* ========== SAĞ PANEL AÇIKKEN (tablet) HEADER VE SIDEBAR ALTTA KALSIN (eski modal-styles-important’tan taşındı) ========== */
+body:has(.sag-panel-overlay.active) .header,
+body:has(.sag-panel.tablet-open) .header {
+  z-index: 0 !important;
+  isolation: auto !important;
+}
+body:has(.sag-panel-overlay.active) nav[data-sidebar],
+body:has(.sag-panel.tablet-open) nav[data-sidebar] {
+  z-index: 0 !important;
+  isolation: auto !important;
 }
 

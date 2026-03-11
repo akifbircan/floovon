@@ -8,15 +8,25 @@ import { Smartphone, RotateCw, Tablet, Monitor } from 'lucide-react';
 const PHONE_LANDSCAPE_MEDIA = '(orientation: landscape) and (max-height: 500px)';
 /** Tablet dikeyde → "yatay kullanın" */
 const TABLET_PORTRAIT_MEDIA = '(orientation: portrait) and (min-width: 768px) and (max-width: 1439px)';
-/** Ara ekran: çok dar (telefon altı) veya çok kısa → desteklenmeyen boyut uyarısı */
+/** Ara ekran: çok dar (telefon altı) veya çok kısa → desteklenmeyen boyut uyarısı.
+ * Yükseklik 280px altı: klavye açıkken viewport küçüldüğü için 499px kullanılmıyor (Opera vb. yanlış tetiklenirdi). */
 const UNSUPPORTED_WIDTH_MEDIA = '(max-width: 359px)';
-const UNSUPPORTED_HEIGHT_MEDIA = '(max-height: 499px)';
+const UNSUPPORTED_HEIGHT_MEDIA = '(max-height: 279px)';
+
+const isInputFocused = () => {
+  const el = document.activeElement;
+  if (!el || !(el instanceof HTMLElement)) return false;
+  const tag = el.tagName.toLowerCase();
+  const role = el.getAttribute?.('role');
+  return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable || role === 'textbox' || role === 'combobox';
+};
 
 export const PhoneLandscapeWarning: React.FC = () => {
   const [phoneLandscape, setPhoneLandscape] = useState(false);
   const [tabletPortrait, setTabletPortrait] = useState(false);
   const [unsupportedWidth, setUnsupportedWidth] = useState(false);
   const [unsupportedHeight, setUnsupportedHeight] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
 
   useEffect(() => {
     const mqPhone = window.matchMedia(PHONE_LANDSCAPE_MEDIA);
@@ -42,7 +52,21 @@ export const PhoneLandscapeWarning: React.FC = () => {
     };
   }, []);
 
-  const unsupportedViewport = unsupportedWidth || unsupportedHeight;
+  useEffect(() => {
+    const onFocusIn = () => setInputFocused(true);
+    const onFocusOut = () => {
+      requestAnimationFrame(() => setInputFocused(isInputFocused()));
+    };
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('focusout', onFocusOut);
+    return () => {
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('focusout', onFocusOut);
+    };
+  }, []);
+
+  /* Klavye açıkken (input odaktayken) sadece yükseklik küçüldüyse "desteklenmeyen boyut" gösterme */
+  const unsupportedViewport = unsupportedWidth || (unsupportedHeight && !inputFocused);
   const show = unsupportedViewport || phoneLandscape || tabletPortrait;
   if (!show) return null;
 

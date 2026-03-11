@@ -4,12 +4,13 @@
  * Eski JS'teki createToast fonksiyonunu kullanır
  */
 
-/**
- * Plan yükseltme toast'ı göster
- */
+/** Plan yükseltme mesajı – WhatsApp vb. özellikler için tek metin */
+export const PLAN_UPGRADE_MESSAGE = 'Bu özellik için abonelik planınızı yükseltebilirsiniz';
+
+/** Plan yükseltme toast'ı göster */
 export function showPlanUpgradeToast() {
   if (typeof (window as any).createToast === 'function') {
-    (window as any).createToast('warning', 'Bu özellik için daha yüksek bir plan gereklidir. Lütfen paketinizi yükseltin.');
+    (window as any).createToast('warning', PLAN_UPGRADE_MESSAGE);
   } else {
     console.warn('Toast sistemi bulunamadı');
   }

@@ -150,7 +150,7 @@
     width: 260px !important;
     max-width: calc(100vw - 32px) !important;
     margin-top: 0 !important;
-    z-index: 9999 !important;
+    z-index: 99999999999 !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
   }
 
@@ -173,12 +173,12 @@ body > [class*="ToastContainer"] {
   transform: none !important;
   box-sizing: border-box !important;
 }
-.app-toast-container > div,
-[class*="toast"][class*="container"] > div,
+.app-toast-container > div:not(.ciceksepeti-toast),
+[class*="toast"][class*="container"] > div:not(.ciceksepeti-toast),
 ul.notifications {
   margin-top: 0 !important;
   padding-top: 0 !important;
-}  /* Toast konteyner: top/left/right kaldırıldı (sorun çıkarıyordu) */
+}  /* Toast konteyner: top/left/right kaldırıldı (sorun çıkarıyordu); ciceksepeti-toast padding'i korunur */
 
 
   /* ========== Ortak sayfa yapısı: page-wrapper, panel-sol, panel-sag ========== */
@@ -282,6 +282,7 @@ ul.notifications {
   }
 
   /* Tablo scroll kaldır: sadece sayfa scroll etsin (dashboard-cards sonradan yüklendiği için modal-styles-important.css’te tekrar override edilir) */
+  .page-table-scroll,
   .customers-table-scroll,
   .partners-table-scroll,
   .campaigns-table-scroll,
@@ -290,6 +291,7 @@ ul.notifications {
     max-height: none !important;
     overflow-x: visible !important;
     overflow-y: visible !important;
+    padding-right: 0;
   }
 
   .customers-table,
@@ -619,7 +621,8 @@ ul.notifications {
     border-radius: 12px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
     overflow: hidden !important;
-    padding: 16px 16px 20px !important;
+    /* padding: 16px 16px 20px !important; */
+    padding: 16px 0px 20px 20px !important;
     padding-bottom: 20px !important;
   }
 
@@ -1976,9 +1979,9 @@ ul.notifications {
     overflow: visible !important;
   }
 
-  .campaigns-table {
+  /* .campaigns-table {
     min-width: 500px;
-  }
+  } */
 
   /* ========== Potansiyel Partnerler – kart görünümü ========== */
   .potansiyel-table-wrapper {

@@ -18,7 +18,7 @@ import { showToast } from '../../shared/utils/toastUtils';
 import { completeAracTakip } from '../../features/dashboard/api/aracTakip';
 import type { AracTakipDurumResponse } from '../../features/dashboard/api/aracTakip';
 import { AracTakipModal } from '../../features/dashboard/components/AracTakipModal';
-import { Truck, Clock, Timer } from 'lucide-react';
+import { Truck, Clock, Timer, Sun, Moon } from 'lucide-react';
 
 /** Başlangıç zamanını okunaklı formata çevir */
 function formatBaslangicZamani(iso?: string): string {
@@ -314,16 +314,6 @@ export const Header: React.FC = () => {
       document.documentElement.classList.remove('dark-mode');
     }
     dispatchThemeChanged();
-    // Icon'u güncelle
-    const isDark = savedTheme === 'dark';
-    document.querySelectorAll('.btn-theme-mode').forEach((btn: any) => {
-      const btnIcon = btn.querySelector('i');
-      if (btnIcon) {
-        btnIcon.className = '';
-        btnIcon.classList.add(isDark ? 'fa-regular' : 'fa-solid');
-        btnIcon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
-      }
-    });
   }, []);
 
   // Dashboard sayfasında mıyız?
@@ -410,12 +400,9 @@ export const Header: React.FC = () => {
     document.title = pageTitle === 'Floovon' ? 'Floovon™' : `${pageTitle} | Floovon™`;
   }, [location.pathname]);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
+  const handleSearch = (query: string) => {
     setSearchQuery(query);
-    // ✅ REACT: Arama query'sini window'a yaz (DashboardPage'den okunacak)
     (window as any).__REACT_SEARCH_QUERY__ = query;
-    // Custom event dispatch et (DashboardPage dinleyecek)
     window.dispatchEvent(new CustomEvent('searchQueryChanged', { detail: { query } }));
   };
 
@@ -722,24 +709,10 @@ export const Header: React.FC = () => {
                       document.documentElement.classList.toggle('dark-mode', isNowDark);
                       localStorage.setItem(TENANT_PANEL_THEME_KEY, isNowDark ? 'dark' : 'light');
                       dispatchThemeChanged();
-                      const icon = e.currentTarget.querySelector('i');
-                      if (icon) {
-                        icon.className = '';
-                        icon.classList.add(isNowDark ? 'fa-regular' : 'fa-solid');
-                        icon.classList.add(isNowDark ? 'fa-sun' : 'fa-moon');
-                      }
-                      document.querySelectorAll('.btn-theme-mode').forEach((btn: any) => {
-                        const btnIcon = btn.querySelector('i');
-                        if (btnIcon) {
-                          btnIcon.className = '';
-                          btnIcon.classList.add(isNowDark ? 'fa-regular' : 'fa-solid');
-                          btnIcon.classList.add(isNowDark ? 'fa-sun' : 'fa-moon');
-                        }
-                      });
                     }}
                     aria-label="Temayı değiştir"
                   >
-                    <i className={isDarkTheme ? 'fa-regular fa-sun' : 'fa-solid fa-moon'}></i>
+                    {isDarkTheme ? <Sun size={20} /> : <Moon size={20} />}
                   </button>
                 </div>
                 {/* 3. Araç Takip - tüm sayfalarda (mobil), premium'da */}
@@ -837,13 +810,23 @@ export const Header: React.FC = () => {
                 <div className="search-box-title">
                   <i className="icon-search"></i>
                   <input
+                    id="search-box"
                     className="web-search-input"
                     type="search"
-                    id="search-box"
                     placeholder="Sipariş, organizasyon veya müşteri arayın"
                     value={searchQuery}
-                    onChange={handleSearch}
+                    onChange={(e) => handleSearch(e.target.value)}
                   />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      className="search-input-clear"
+                      onClick={() => handleSearch('')}
+                      aria-label="Temizle"
+                    >
+                      <i className="icon-btn-kapat" aria-hidden />
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="olustur-butonlar">
@@ -874,13 +857,23 @@ export const Header: React.FC = () => {
                   <div className="search-box-title">
                     <i className="icon-search"></i>
                     <input
+                      id="search-box"
                       className="web-search-input"
                       type="search"
-                      id="search-box"
                       placeholder="Sipariş, organizasyon veya müşteri arayın"
                       value={searchQuery}
-                      onChange={handleSearch}
+                      onChange={(e) => handleSearch(e.target.value)}
                     />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        className="search-input-clear"
+                        onClick={() => handleSearch('')}
+                        aria-label="Temizle"
+                      >
+                        <i className="icon-btn-kapat" aria-hidden />
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="olustur-butonlar">
@@ -1050,52 +1043,14 @@ export const Header: React.FC = () => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // ✅ REACT: Tema değiştirme - eski sistem fonksiyonunu kullan
-                if (typeof (window as any).initDarkThemeToggle === 'function') {
-                  // Eski sistem fonksiyonu var, ama buton zaten event listener'a sahip olabilir
-                  // Direkt tema değiştirme mantığını çalıştır
-                  const body = document.body;
-                  const isNowDark = body.classList.toggle('dark-mode');
-                  document.documentElement.classList.toggle('dark-mode', isNowDark);
-                  localStorage.setItem(TENANT_PANEL_THEME_KEY, isNowDark ? 'dark' : 'light');
-                  dispatchThemeChanged();
-                  
-                  // Icon'u güncelle
-                  const icon = e.currentTarget.querySelector('i');
-                  if (icon) {
-                    icon.className = '';
-                    icon.classList.add(isNowDark ? 'fa-regular' : 'fa-solid');
-                    icon.classList.add(isNowDark ? 'fa-sun' : 'fa-moon');
-                  }
-                  
-                  // Tüm tema butonlarını güncelle
-                  document.querySelectorAll('.btn-theme-mode').forEach((btn: any) => {
-                    const btnIcon = btn.querySelector('i');
-                    if (btnIcon) {
-                      btnIcon.className = '';
-                      btnIcon.classList.add(isNowDark ? 'fa-regular' : 'fa-solid');
-                      btnIcon.classList.add(isNowDark ? 'fa-sun' : 'fa-moon');
-                    }
-                  });
-                } else {
-                  // Fallback: Direkt tema değiştirme
-                  const body = document.body;
-                  const isNowDark = body.classList.toggle('dark-mode');
-                  document.documentElement.classList.toggle('dark-mode', isNowDark);
-                  localStorage.setItem(TENANT_PANEL_THEME_KEY, isNowDark ? 'dark' : 'light');
-                  dispatchThemeChanged();
-                  
-                  // Icon'u güncelle
-                  const icon = e.currentTarget.querySelector('i');
-                  if (icon) {
-                    icon.className = '';
-                    icon.classList.add(isNowDark ? 'fa-regular' : 'fa-solid');
-                    icon.classList.add(isNowDark ? 'fa-sun' : 'fa-moon');
-                  }
-                }
+                const body = document.body;
+                const isNowDark = body.classList.toggle('dark-mode');
+                document.documentElement.classList.toggle('dark-mode', isNowDark);
+                localStorage.setItem(TENANT_PANEL_THEME_KEY, isNowDark ? 'dark' : 'light');
+                dispatchThemeChanged();
               }}
             >
-              <i className="fa-solid fa-moon"></i>
+              {isDarkTheme ? <Sun size={24} /> : <Moon size={24} />}
             </button>
           </div>
         </div>

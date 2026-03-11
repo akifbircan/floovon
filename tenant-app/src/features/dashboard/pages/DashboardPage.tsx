@@ -1801,7 +1801,11 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Mobil Özellikler - QR FAB navbar üstünde (mobile-index.css) */}
-      <QRScannerFAB onOpen={handleOpenQRScanner} className="qr-fab-index" />
+      <QRScannerFAB
+        onOpen={handleOpenQRScanner}
+        onOpenSicakSatis={() => setSicakSatisModalOpen(true)}
+        className="qr-fab-index"
+      />
 
       {/* Modals */}
       <QRScannerModal

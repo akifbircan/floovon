@@ -105,6 +105,8 @@
 
   .mobile-navbar .menu-ikon {
     flex-direction: row !important;
+    height: 48px;
+    width: 48px;
   }
 
   .mobile-navbar .menu-ikon i {
@@ -253,9 +255,8 @@
     height: 16px;
     padding: 0 4px;
     border-radius: 10px;
-    background: var(--notif-badge-bg, #dc3545);
-    
-    color: var(--white-only, #fff);
+    background: var(--notif-badge-bg);
+    color: var(--white-only);
     font-size: 10px;
     font-weight: 600;
     line-height: 16px;
@@ -361,7 +362,7 @@
     width: 260px !important;
     max-width: calc(100vw - 32px) !important;
     margin-top: 0 !important;
-    z-index: 9999 !important;
+    z-index: 99999999999 !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
   }
   .mobile-header-right-actions .clickdropdown-content {
@@ -610,7 +611,8 @@
     align-items: center;
     justify-content: center;
     gap: 5px;
-    background-color: var(--border-renk);
+    background-color: var(--white);
+    border: 1px solid var(--gray-ultra-light);
     padding: 12px;
     font-size: 13px;
     font-weight: 500;
@@ -618,7 +620,6 @@
     color: var(--ikincil-renk);
     height: 40px;
     min-width: 40px;
-    border: none;
     cursor: pointer;
   }
 
@@ -715,10 +716,14 @@
     color: var(--ana-renk);
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
   }
 
-  .mobile-baslik-alan .mobile-baslik-nav-btn:hover {
-    background: var(--gray-light-f2);
+  .mobile-baslik-alan .mobile-baslik-nav-btn:hover,
+  .mobile-baslik-alan .mobile-baslik-nav-btn:active,
+  .mobile-baslik-alan .mobile-baslik-nav-btn:focus {
+    background: var(--white);
   }
 
   /* Gizle/Göster butonu - mobil navbar'da */
@@ -767,8 +772,8 @@
     min-width: 0;
   }
 
-  /* QR FAB (buton-siparis-karekod) - mobilde navbar + adres çubuğu/safe-area hesaba katılarak */
-  .buton-siparis-karekod,
+  /* Hızlı İşlemler FAB (buton-hizli-islemler) - mobilde navbar + adres çubuğu/safe-area hesaba katılarak */
+  .buton-hizli-islemler,
   .qr-fab-index {
     bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
     right: calc(20px + env(safe-area-inset-right, 0px)) !important;
@@ -776,15 +781,99 @@
     height: 72px !important;
     z-index: 100;
     border-radius: 50%;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
-    /* Dinamik viewport: adres çubuğu açıkken de buton görünür alanda kalsın */
+    background-color: var(--mor-primary);
+    color: var(--white-only);
+    box-shadow: 0 4px 18px var(--black-alpha-15);
     position: fixed !important;
   }
 
-  .buton-siparis-karekod svg,
+  .buton-hizli-islemler svg,
   .qr-fab-index svg {
     width: 36px;
     height: 36px;
+  }
+
+  .buton-hizli-islemler:hover {
+    background-color: var(--mor-primary) !important;
+  }
+
+  .buton-hizli-islemler:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--mor-primary) !important;
+  }
+
+  /* Hızlı İşlemler menü – ikonlu liste, butonun üstünde */
+  .hizli-islemler-menu {
+    position: fixed !important;
+    bottom: calc(80px + 72px + 12px + env(safe-area-inset-bottom, 0px)) !important;
+    right: calc(20px + env(safe-area-inset-right, 0px)) !important;
+    z-index: 99;
+    min-width: 220px;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    border: 1px solid var(--border-renk);
+    padding: 6px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hizli-islemler-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--ana-renk);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-radius: 8px;
+    margin: 0 4px;
+  }
+
+  .hizli-islemler-menu-item:hover,
+  .hizli-islemler-menu-item:focus {
+    background: var(--gray-light-f2, #f2f2f2);
+    outline: none;
+  }
+
+  .hizli-islemler-menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--gray-light-f2, #f2f2f2);
+    color: var(--mor-primary-text);
+    flex-shrink: 0;
+  }
+
+  .hizli-islemler-menu-item:hover .hizli-islemler-menu-icon,
+  .hizli-islemler-menu-item:focus .hizli-islemler-menu-icon {
+    background: rgba(109, 40, 217, 0.12);
+  }
+
+  /* Dark tema: menü ikon kutusu mor zemin, ikon beyaz */
+  body.dark-mode .hizli-islemler-menu-icon,
+  html.dark-mode .hizli-islemler-menu-icon {
+    background-color: var(--mor-primary);
+    color: var(--white-only);
+  }
+
+  body.dark-mode .hizli-islemler-menu-item:hover .hizli-islemler-menu-icon,
+  body.dark-mode .hizli-islemler-menu-item:focus .hizli-islemler-menu-icon,
+  html.dark-mode .hizli-islemler-menu-item:hover .hizli-islemler-menu-icon,
+  html.dark-mode .hizli-islemler-menu-item:focus .hizli-islemler-menu-icon {
+    background-color: var(--mor-primary);
+    filter: brightness(1.15);
+    color: var(--white-only);
   }
 
 }

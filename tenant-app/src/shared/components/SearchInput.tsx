@@ -73,7 +73,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           aria-label="Aramayı temizle"
           tabIndex={-1}
         >
-          <span aria-hidden>×</span>
+          <i className="icon-btn-kapat" aria-hidden />
         </button>
       )}
     </div>

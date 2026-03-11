@@ -120,7 +120,8 @@ class CiceksepetiFloovonIntegration {
             container = document.createElement('div');
             container.id = 'ciceksepetiToastContainer';
             container.className = 'ciceksepeti-toast-container';
-            document.body.appendChild(container);
+            var root = document.getElementById('root');
+            (root || document.body).appendChild(container);
         }
     }
     

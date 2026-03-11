@@ -146,7 +146,8 @@ function CiceksepetiAyarlariForm() {
       container.id = 'ciceksepetiToastContainer';
       container.className = 'ciceksepeti-toast-container';
       container.setAttribute('aria-live', 'polite');
-      document.body.appendChild(container);
+      const root = document.getElementById('root');
+      (root || document.body).appendChild(container);
     }
     /* Container varsayılan gizli; test toast göstermek için sadece bu anda aç */
     (container as HTMLElement).style.display = 'flex';
@@ -560,11 +561,14 @@ function YazdirmaAyarlariForm() {
 
 function GonderimAyarlariTab() {
   const queryClient = useQueryClient();
-  const [gonderimSubTab, setGonderimSubTab] = useState<'iletisim'>('iletisim');
+  const { isBaslangicPlan } = usePlan();
+  const [gonderimSubTab, setGonderimSubTab] = useState<'iletisim' | 'mesaj-sablonlari'>('iletisim');
   const [yeniAd, setYeniAd] = useState('');
   const iletisimTelInput = usePhoneInput('');
   const [editingIletisimKey, setEditingIletisimKey] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [mesajSablonuValue, setMesajSablonuValue] = useState('');
+  const [savingSablon, setSavingSablon] = useState(false);
 
   const { data: gonderimData, isLoading } = useQuery({
     queryKey: ['ayarlar-gonderim'],
@@ -593,6 +597,11 @@ function GonderimAyarlariTab() {
     tel: (k?.tel || k?.telefon || '').trim(),
   })).filter((k) => k.ad || k.tel);
 
+  React.useEffect(() => {
+    const raw = gonderimData?.data?.musteri_sablonu_whatsapp;
+    setMesajSablonuValue(typeof raw === 'string' ? raw.trim() : '');
+  }, [gonderimData?.data?.musteri_sablonu_whatsapp]);
+
   const [gonderimSortField, setGonderimSortField] = useState<string | null>(null);
   const [gonderimSortDir, setGonderimSortDir] = useState<'asc' | 'desc'>('asc');
   const sortedKisiler = React.useMemo(() => {
@@ -612,6 +621,20 @@ function GonderimAyarlariTab() {
   const handleGonderimSort = (field: string, dir: 'asc' | 'desc') => {
     setGonderimSortField(field);
     setGonderimSortDir(dir);
+  };
+
+  const handleMesajSablonuKaydet = async () => {
+    setSavingSablon(true);
+    try {
+      await apiClient.put('/ayarlar/gonderim', { musteri_sablonu_whatsapp: mesajSablonuValue.trim() || null });
+      queryClient.invalidateQueries({ queryKey: ['ayarlar-gonderim'] });
+      showToast('success', 'Mesaj şablonu kaydedildi.');
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Mesaj şablonu kaydedilemedi.');
+    } finally {
+      setSavingSablon(false);
+    }
   };
 
   const handleEkle = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -707,6 +730,16 @@ function GonderimAyarlariTab() {
         >
           İletişim Ayarları
         </button>
+        {isBaslangicPlan === false && (
+          <button
+            type="button"
+            data-subtab="mesaj-sablonlari"
+            onClick={() => setGonderimSubTab('mesaj-sablonlari')}
+            className={`ayarlar-subtab-btn ${gonderimSubTab === 'mesaj-sablonlari' ? 'active' : ''}`}
+          >
+            Mesaj Şablonları
+          </button>
+        )}
       </div>
       {gonderimSubTab === 'iletisim' && (
         <div className={`flex flex-col lg:flex-row gap-6 ayarlar-form-row ${editingIletisimKey ? 'ayarlar-form-active' : ''}`}>
@@ -714,7 +747,7 @@ function GonderimAyarlariTab() {
             <div className="ayarlar-panel-form">
               <h3 className="ayarlar-panel-form-title">{editingIletisimKey ? 'Kişiyi Düzenle' : 'Yeni Kişi / Numara Ekle'}</h3>
               <p className="ayarlar-panel-desc ayarlar-panel-desc-iletisim">
-                Kart menüsündeki &quot;WhatsApp Sipariş Listesi Gönder&quot; ve &quot;Müşteri Sipariş Şablonu Gönder&quot; butonlarında seçilecek numaralar. WhatsApp bağlantısı için üst menüdeki WhatsApp butonunu kullanın.
+                Kart menüsündeki &quot;WhatsApp Sipariş Listesi Gönder&quot; ve &quot;Sipariş Şablonu ve IBAN Bilgisi Gönder&quot; butonlarında seçilecek numaralar. WhatsApp bağlantısı için üst menüdeki WhatsApp butonunu kullanın.
               </p>
               {isLoading ? (
                 <div className="ayarlar-loading"><LoadingSpinner size="md" /></div>
@@ -777,6 +810,38 @@ function GonderimAyarlariTab() {
               )}
             </div>
           </div>
+        </div>
+      )}
+      {isBaslangicPlan === false && gonderimSubTab === 'mesaj-sablonlari' && (
+        <div className="ayarlar-panel">
+          <div className="ayarlar-panel-header">
+            <h3 className="ayarlar-panel-form-title">Müşteri Sipariş Şablonu</h3>
+            <p className="ayarlar-panel-desc">
+              WhatsApp &quot;Sipariş Şablonu ve IBAN Bilgisi Gönder&quot; butonu ile gönderilen mesaj. Veritabanında ne kayıtlıysa o kullanılır; boşsa boş gönderilir.
+            </p>
+          </div>
+          {isLoading ? (
+            <div className="ayarlar-loading"><LoadingSpinner size="md" /></div>
+          ) : (
+            <div className="ayarlar-form">
+              <div className="ayarlar-form-group">
+                <label className="ayarlar-label">Şablon metni</label>
+                <textarea
+                  className="ayarlar-input ayarlar-textarea-mesaj-sablonu"
+                  value={mesajSablonuValue}
+                  onChange={(e) => setMesajSablonuValue(e.target.value)}
+                  placeholder="Mesaj metnini buraya yazın. Kaydedince veritabanına yazılır."
+                  rows={14}
+                  style={{ resize: 'vertical', minHeight: 280 }}
+                />
+              </div>
+              <div className="ayarlar-form-actions">
+                <button type="button" className="ayarlar-btn ayarlar-btn-primary" onClick={handleMesajSablonuKaydet} disabled={savingSablon}>
+                  {savingSablon ? 'KAYDEDİLİYOR...' : 'KAYDET'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -856,6 +921,13 @@ export const SettingsPage: React.FC = () => {
   const [aracSortField, setAracSortField] = useState<string | null>(null);
   const [aracSortDir, setAracSortDir] = useState<'asc' | 'desc'>('asc');
   const [veriSearchQuery, setVeriSearchQuery] = useState('');
+
+  // Başlangıç planında (plan_id=1) Araç Takip ve Çiçek Sepeti gizli; açıksa başka sekmeye al
+  useEffect(() => {
+    if (isBaslangicPlan !== true) return;
+    if (activeTab === 'arac') setActiveTab('genel');
+    if (genelSubTab === 'ciceksepeti') setGenelSubTab('isletme');
+  }, [isBaslangicPlan, activeTab, genelSubTab]);
 
   // Düzenleme modları (Veri Tanımları alt sekmeleri)
   const [editingUrunId, setEditingUrunId] = useState<number | null>(null);
@@ -1908,15 +1980,17 @@ export const SettingsPage: React.FC = () => {
             <Settings size={18} />
             Genel Ayarlar
           </button>
-          <button
-            type="button"
-            data-tab="arac"
-            onClick={() => setActiveTab('arac')}
-            className={`ayarlar-tab-btn ${activeTab === 'arac' ? 'active' : ''}`}
-          >
-            <Truck size={18} />
-            Araç Takip Ayarları
-          </button>
+          {isBaslangicPlan === false && (
+            <button
+              type="button"
+              data-tab="arac"
+              onClick={() => setActiveTab('arac')}
+              className={`ayarlar-tab-btn ${activeTab === 'arac' ? 'active' : ''}`}
+            >
+              <Truck size={18} />
+              Araç Takip Ayarları
+            </button>
+          )}
           {isBaslangicPlan === false && (
             <button
               type="button"
@@ -2767,7 +2841,9 @@ export const SettingsPage: React.FC = () => {
               <button type="button" data-subtab="konum" onClick={() => setGenelSubTab('konum')} className={`ayarlar-subtab-btn ${genelSubTab === 'konum' ? 'active' : ''}`}>Konum Ayarları</button>
               <button type="button" data-subtab="teslimat" onClick={() => setGenelSubTab('teslimat')} className={`ayarlar-subtab-btn ${genelSubTab === 'teslimat' ? 'active' : ''}`}>Teslimat Konumları</button>
               <button type="button" data-subtab="yazdirma" onClick={() => setGenelSubTab('yazdirma')} className={`ayarlar-subtab-btn ${genelSubTab === 'yazdirma' ? 'active' : ''}`}>Yazdırma Ayarları</button>
-              <button type="button" data-subtab="ciceksepeti" onClick={() => setGenelSubTab('ciceksepeti')} className={`ayarlar-subtab-btn ${genelSubTab === 'ciceksepeti' ? 'active' : ''}`}>Çiçek Sepeti Ayarları</button>
+              {isBaslangicPlan === false && (
+                <button type="button" data-subtab="ciceksepeti" onClick={() => setGenelSubTab('ciceksepeti')} className={`ayarlar-subtab-btn ${genelSubTab === 'ciceksepeti' ? 'active' : ''}`}>Çiçek Sepeti Ayarları</button>
+              )}
             </div>
             {/* Teslimat Konumları: Araç Takip gibi – panel başlık/desc yok, doğrudan sol form + sağ tablo */}
             {genelSubTab === 'teslimat' ? (
@@ -2867,13 +2943,13 @@ export const SettingsPage: React.FC = () => {
                   {genelSubTab === 'isletme' && 'İşletme Ayarları'}
                   {genelSubTab === 'konum' && 'Konum Ayarları'}
                   {genelSubTab === 'yazdirma' && 'Yazdırma Ayarları'}
-                  {genelSubTab === 'ciceksepeti' && 'Çiçek Sepeti Ayarları'}
+                  {genelSubTab === 'ciceksepeti' && !isBaslangicPlan && 'Çiçek Sepeti Ayarları'}
                 </h2>
                 <p className="ayarlar-panel-desc">
                   {genelSubTab === 'isletme' && 'İşletme bilgileri, logo ve iletişim bilgileri'}
                   {genelSubTab === 'konum' && 'Sipariş ve formlarda tanımlı olarak listelenecek il/ilçe bilgilerinizi buradan tanımlayın.'}
                   {genelSubTab === 'yazdirma' && 'Yazdırma çıktılarında kullanılacak logo (PNG, şeffaf arka plan önerilir)'}
-                  {genelSubTab === 'ciceksepeti' && 'Çiçek Sepeti platformu API entegrasyonu'}
+                  {genelSubTab === 'ciceksepeti' && !isBaslangicPlan && 'Çiçek Sepeti platformu API entegrasyonu'}
                 </p>
               </div>
               {genelSubTab === 'isletme' && (
@@ -2993,7 +3069,7 @@ export const SettingsPage: React.FC = () => {
               {genelSubTab === 'yazdirma' && (
                 <YazdirmaAyarlariForm />
               )}
-              {genelSubTab === 'ciceksepeti' && (
+              {genelSubTab === 'ciceksepeti' && isBaslangicPlan !== true && (
                 <CiceksepetiAyarlariForm />
               )}
             </div>
@@ -3001,8 +3077,8 @@ export const SettingsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Araç Takip Ayarları Tab – Araç Yönetimi alt tab */}
-        {activeTab === 'arac' && (
+        {/* Araç Takip Ayarları Tab – Araç Yönetimi alt tab (sadece plan_id !== 1) */}
+        {isBaslangicPlan === false && activeTab === 'arac' && (
           <div className="ayarlar-tab-icerik">
             <div className="ayarlar-subtab-nav">
               <button

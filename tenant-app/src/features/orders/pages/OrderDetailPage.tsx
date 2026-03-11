@@ -8,7 +8,7 @@ import { EmptyState } from '../../../shared/components/EmptyState';
 import { usePageAnimations } from '../../../shared/hooks/usePageAnimations';
 import { arsivleOrganizasyonKart, teslimEtSiparis, arsivleSiparis } from '../../dashboard/api/siparisActions';
 import { deliverAllOrdersInKart } from '../../dashboard/api';
-import { showToast, showToastInteractive } from '../../../shared/utils/toastUtils';
+import { showToast, showToastInteractive, PLAN_UPGRADE_MESSAGE } from '../../../shared/utils/toastUtils';
 import { Lightbox, type LightboxImage } from '../../../shared/components/Lightbox';
 import { createPortal } from 'react-dom';
 import { Archive, Pencil, SquareCheck, Eye, Tag, ArrowLeftCircle, X, FileSearch, CheckCircle, FileDown, Copy } from 'lucide-react';
@@ -778,6 +778,10 @@ export const OrderDetailPage: React.FC = () => {
   }, [siparisler, id]);
 
   const openWhatsappList = async () => {
+    if (isBaslangicPlan === true) {
+      showToast('warning', PLAN_UPGRADE_MESSAGE);
+      return;
+    }
     const kart = getKartForKunye();
     if (!kart) { showToast('warning', 'Kart bilgisi bulunamadı'); return; }
     let isWhatsAppConnected = false;
@@ -794,6 +798,10 @@ export const OrderDetailPage: React.FC = () => {
     shareOrganizasyonKart(kart, siparislerAsOrder, { mode: 'list' });
   };
   const openWhatsappTemplate = async () => {
+    if (isBaslangicPlan === true) {
+      showToast('warning', PLAN_UPGRADE_MESSAGE);
+      return;
+    }
     const kart = getKartForKunye();
     if (!kart) { showToast('warning', 'Kart bilgisi bulunamadı'); return; }
     let isWhatsAppConnected = false;
@@ -902,15 +910,21 @@ export const OrderDetailPage: React.FC = () => {
                 type="button"
                 className="sp-kart-btn"
                 onClick={openWhatsappList}
-                disabled={!siparislerAsOrder.length}
-                title={!siparislerAsOrder.length ? 'Sipariş olmadığı için paylaşılamaz' : 'Whatsapp listesi paylaş'}
+                disabled={isBaslangicPlan === true || !siparislerAsOrder.length}
+                title={isBaslangicPlan === true ? PLAN_UPGRADE_MESSAGE : !siparislerAsOrder.length ? 'Sipariş olmadığı için paylaşılamaz' : 'Whatsapp listesi paylaş'}
               >
                 <i className="icon-sp-kart-detay-btn-wp-listesi-paylas" aria-hidden />
                 <span>Whatsapp Listesi Paylaş</span>
               </button>
-              <button type="button" className="sp-kart-btn" onClick={openWhatsappTemplate}>
+              <button
+                type="button"
+                className="sp-kart-btn"
+                onClick={openWhatsappTemplate}
+                disabled={isBaslangicPlan === true || !siparislerAsOrder.length}
+                title={isBaslangicPlan === true ? PLAN_UPGRADE_MESSAGE : !siparislerAsOrder.length ? 'Sipariş olmadığı için gönderilemez' : 'Sipariş şablonu ve IBAN bilgisi gönder'}
+              >
                 <i className="icon-sp-kart-detay-btn-musteri-wp-sablon" aria-hidden />
-                <span>Müşteri Sipariş Şablonu Gönder</span>
+                <span>Sipariş Şablonu ve IBAN Bilgisi Gönder</span>
               </button>
             </div>
 

@@ -22,19 +22,6 @@
     font-size: 11px;
 }
 
-  /* Dashboard header: Sıcak Satış, Kartları Sırala sadece ikon */
-  .dashboard-container .dashboard-header .butonlar .btn-sicak-satis-button .btn-text,
-  .dashboard-container .dashboard-header-mobile .butonlar .btn-sicak-satis-button .btn-text {
-    display: none !important;
-  }
-  .dashboard-container .dashboard-header .butonlar .btn-sicak-satis-button,
-  .dashboard-container .dashboard-header-mobile .butonlar .btn-sicak-satis-button {
-    padding: 12px !important;
-  }
-  .dashboard-container .dashboard-header .butonlar .buton-sirala,
-  .dashboard-container .dashboard-header-mobile .butonlar .buton-sirala {
-    padding: 12px !important;
-  }
   /* Layout header: Yeni Kart Oluştur / Müşteri Ekle sadece ikon */
   .header .olustur-butonlar .btn-yeni-kart-ekle .btn-text,
   .header .olustur-butonlar .btn-yeni-musteri-ekle .btn-text {

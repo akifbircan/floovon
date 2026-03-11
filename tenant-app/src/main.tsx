@@ -23,11 +23,9 @@ import './styles/buttons-common.css';
 import './styles/profil-ayarlari.css';
 import './styles/ciceksepeti-toast.css';
 import './styles/ciceksepeti-modal.css';
-/* Modal stilleri en son yüklenmeli - diğer stillerden sonra */
-/* ÖNEMLİ: Bu dosyaların sırası kritik - modal-styles-important.css en son olmalı */
+/* Modal stilleri: tek dosyada (modal-styles.css = base + override + responsive + body:has); modal-styles-important içeriği buraya taşındı */
 import './styles/modal-styles.css';
 import './styles/siparis-modal-legacy.css';
-import './styles/modal-styles-important.css';
 import './styles/toast-override.css';
 import './styles/phone-landscape-warning.css';
 import './styles/tablet-notebook.css';

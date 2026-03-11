@@ -19,6 +19,9 @@
   --mor-renk-hover: #4338ca; /* mor koyu hover */
   --mor-primary-text: var(--mor-primary); /* light: mor; dark temada metin için beyaz (body.dark-mode'ta #fff) */
   --gri70: #707070;
+  /* Çiçek Sepeti popup: info-label / info-value (gri70 ve ana-renk değerleri, diğer alanları etkilemesin diye ayrı) */
+  --ciceksepeti-info-label: #707070;
+  --ciceksepeti-info-value: #2E3237;
   --border-renk: #f1f3f7;
   --search-input-border: #c8cbd4;
   --filter-input-border: #c8cbd4;
@@ -274,6 +277,7 @@
   --cckspt-primary-text: #0a5191;
   --cckspt-bg-left: #fff;
   --cckspt-modal-bottom: #fff3cd;
+  --cckspt-modal-panel-link-color: var(--mavi-renk);
   --cckspt-bg-datetime: #00ff440d;
   --cckspt-border-datetime: #00ff44;
   --cckspt-text-datetime: #00370F;
@@ -323,6 +327,11 @@
   --toast-pass-bg: #e6ffe8;
   --toast-button-confirm: #28a745;
   --toast-button-cancel: #f0f0f0;
+  /* Confirm butonu: zemin ve yazı rengi (Evet / Onayla vb.) */
+  --toast-confirm-btn-bg: var(--mor-primary);
+  --toast-confirm-btn-text: var(--white-only);
+  /* Cancel butonu: açık zemin (#f0f0f0) üzerinde okunaklı koyu yazı (light/dark aynı) */
+  --toast-cancel-btn-text: #212529;
   --toast-overlay-bg: rgba(0, 0, 0, 0.6);
   --toast-error-hover: #c82333;
   --toast-success-hover: #218838;
@@ -526,6 +535,8 @@ html.dark-mode {
   --mor-primary-text: #ffffff; /* dark temada mor yazılar okunabilsin diye beyaz */
   --mor-primary-flex: #ffffff; /* dark'ta mor yerine beyaz (tab active, vurgu metin vb.) */
   --gri70: #c8c8c8;
+  --ciceksepeti-info-label: #707070;
+  --ciceksepeti-info-value: #2E3237;
   --border-renk: #36353F;
   --profil-secure-bg: #252830;
   --search-input-border: #505060;
@@ -805,6 +816,7 @@ html.dark-mode {
   --cckspt-primary-text: #fff;
   --cckspt-bg-left: #26292e;
   --cckspt-modal-bottom: #26292e;
+  --cckspt-modal-panel-link-color: #b4d4ff;
   --cckspt-bg-datetime: #00ff440d;
   --cckspt-border-datetime: #00ff44;
   --cckspt-text-datetime: #fff;
@@ -854,6 +866,10 @@ html.dark-mode {
   --toast-pass-bg: #003805;
   --toast-button-confirm: #28a745;
   --toast-button-cancel: #f0f0f0;
+  /* Confirm butonu (dark): zemin ve yazı rengi */
+  --toast-confirm-btn-bg: var(--mor-primary);
+  --toast-confirm-btn-text: var(--white-only);
+  --toast-cancel-btn-text: #212529;
   --toast-overlay-bg: rgba(0, 0, 0, 0.8);
   --toast-error-hover: #e04545;
   --toast-success-hover: #2ea352;
@@ -882,20 +898,20 @@ html.dark-mode {
   --mor-alpha-10: rgba(109, 40, 217, 0.15);
   --violet-alpha-04: rgba(124, 58, 237, 0.08);
   --purple-50-bg: rgba(109, 40, 217, 0.2);
-  --purple-700: var(--mor-primary);
-  --emerald-50-bg: var(--accent-green-alpha);
-  --emerald-600: var(--success-green);
-  --gray-200-bg: var(--gray-light-v2);
-  --gray-600: var(--gray-soft-dark);
-  --toast-text-primary: var(--ana-renk);
-  --toast-success-solid: var(--toast-success);
-  --toast-text-muted: var(--gray-popup-secondary);
-  --toast-text-dark: var(--ana-renk);
-  --toast-error-solid: var(--toast-error);
-  --toast-success-border: var(--toast-success);
+  --purple-700: #6D28D9;
+  --emerald-50-bg: #1a3d2e;
+  --emerald-600: #44d46b;
+  --gray-200-bg: #31323b;
+  --gray-600: #999;
+  --toast-text-primary: #e5e5e5;
+  --toast-success-solid: #44d46b;
+  --toast-text-muted: #b4b4be;
+  --toast-text-dark: #e5e5e5;
+  --toast-error-solid: #dc3545;
+  --toast-success-border: #44d46b;
   --white-50: rgba(255, 255, 255, 0.5);
   --white-80: rgba(255, 255, 255, 0.8);
-  --text-heading-dark: var(--ana-renk);
+  --text-heading-dark: #e5e5e5;
   --border-white-60: rgba(255, 255, 255, 0.6);
   --bg-white-20: rgba(255, 255, 255, 0.2);
   --text-white-90: rgba(255, 255, 255, 0.9);

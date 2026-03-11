@@ -3,6 +3,13 @@
  * Eski yapıdaki legacy-style.css modal stilleri ile uyumlu.
  */
 
+/* Modal açıkken tüm uygulama (#root) en üste: toast body'ye doğrudan ekleniyor, #root'tan sonra geliyor; stacking context ile root'u üste alıyoruz */
+body:has(.ciceksepeti-modal-overlay.show) #root {
+  position: relative !important;
+  z-index: 2147483647 !important;
+  isolation: isolate;
+}
+
 .ciceksepeti-modal-overlay {
   position: fixed;
   top: 0;
@@ -10,7 +17,26 @@
   width: 100%;
   height: 100%;
   background-color: var(--overlay-bg-black);
-  z-index: 10002;
+  z-index: 2147483646 !important;
+}
+
+/* Modal açıkken toast konteynerleri (body'nin çocukları) kesinlikle arkada */
+body:has(.ciceksepeti-modal-overlay.show) .app-toast-portal-wrapper,
+body:has(.ciceksepeti-modal-overlay.show) .app-toast-container,
+body:has(.ciceksepeti-modal-overlay.show) .ciceksepeti-toast-container,
+body:has(.ciceksepeti-modal-overlay.show) #ciceksepetiToastContainer,
+body:has(.ciceksepeti-modal-overlay.show) > div[class*="toast"],
+body:has(.ciceksepeti-modal-overlay.show) > div[class*="Toast"],
+body:has(.modal-react-qr-scanner-overlay) .app-toast-portal-wrapper,
+body:has(.modal-react-qr-scanner-overlay) .ciceksepeti-toast-container,
+body:has(.modal-react-qr-scanner-overlay) #ciceksepetiToastContainer,
+body:has(.sicak-satis-overlay.show) .app-toast-portal-wrapper,
+body:has(.sicak-satis-overlay.show) .ciceksepeti-toast-container,
+body:has(.sicak-satis-overlay.show) #ciceksepetiToastContainer {
+  z-index: 1 !important;
+}
+
+.ciceksepeti-modal-overlay {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,6 +94,11 @@
   height: 32px;
 }
 
+body.dark-mode .ciceksepeti-modal .ciceksepeti-modal-header .ciceksepeti-modal-logo,
+html.dark-mode .ciceksepeti-modal .ciceksepeti-modal-header .ciceksepeti-modal-logo {
+  filter: brightness(0) invert(1);
+}
+
 .ciceksepeti-modal-header .ciceksepeti-modal-title {
   color: var(--cckspt-primary-text);
   font-size: 20px;
@@ -82,7 +113,7 @@
 }
 
 .ciceksepeti-modal-header .ciceksepeti-panel-link {
-  color: var(--mavi-renk);
+  color: var(--cckspt-modal-panel-link-color);
   font-size: 12px;
   text-decoration: none;
   display: flex;
@@ -324,9 +355,8 @@
   padding: 20px 24px;
   border-top: 1px solid var(--border-renk);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: stretch;
   gap: 12px;
 }
 
@@ -350,6 +380,7 @@
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .ciceksepeti-modal-actions button {
@@ -377,6 +408,114 @@
 
 .ciceksepeti-modal-actions .ciceksepeti-btn-approve:hover {
   background: var(--toast-success-hover);
+}
+
+/* ========== Mobil (max-width: 767px) ========== */
+@media (max-width: 767px) {
+  .ciceksepeti-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .ciceksepeti-modal {
+    width: 100%;
+    max-width: none;
+    max-height: 92vh;
+    max-height: 92dvh;
+    border-radius: 16px;
+    margin: 0;
+  }
+
+  .ciceksepeti-modal-header {
+    padding: 16px 16px 12px;
+    gap: 10px;
+  }
+
+  .ciceksepeti-modal-header .ciceksepeti-modal-logo {
+    height: 28px;
+  }
+
+  .ciceksepeti-modal-header .ciceksepeti-modal-title {
+    font-size: 17px;
+  }
+
+  .ciceksepeti-modal-header .ciceksepeti-panel-link {
+    font-size: 11px;
+  }
+
+  .ciceksepeti-modal-header .ciceksepeti-modal-close {
+    height: 36px;
+    width: 36px;
+    padding: 10px;
+  }
+
+  .ciceksepeti-modal-content {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+
+  .ciceksepeti-modal-main {
+    min-height: 280px;
+  }
+
+  .ciceksepeti-modal-left,
+  .ciceksepeti-modal-right {
+    padding: 16px;
+  }
+
+  .ciceksepeti-teslim-zaman {
+    padding: 12px;
+    min-height: 64px;
+  }
+
+  .ciceksepeti-teslim-zaman .teslim-zaman-info .teslim-tarih {
+    font-size: 14px;
+  }
+
+  .ciceksepeti-urun-section {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .ciceksepeti-urun-section .urun-image {
+    width: 52px;
+    height: 52px;
+  }
+
+  .ciceksepeti-urun-section .urun-name {
+    font-size: 15px;
+  }
+
+  .ciceksepeti-info-section .info-label,
+  .ciceksepeti-info-section .info-value {
+    font-size: 13px;
+  }
+
+  .ciceksepeti-modal-footer {
+    flex-direction: column;
+    padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+    gap: 16px;
+  }
+
+  .ciceksepeti-modal-warning {
+    font-size: 11px;
+    width: 100%;
+  }
+
+  .ciceksepeti-modal-actions {
+    width: 100%;
+    justify-content: stretch;
+    gap: 10px;
+    order: 0;
+  }
+
+  .ciceksepeti-modal-actions button {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 13px;
+  }
 }
 
 /* Reddet onay modalı – "Bu siparişi reddetmek istediğinize emin misiniz?" */

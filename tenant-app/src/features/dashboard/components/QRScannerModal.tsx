@@ -344,7 +344,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 10002,
+        zIndex: 10010,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

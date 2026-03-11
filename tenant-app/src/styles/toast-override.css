@@ -23,11 +23,12 @@
 }
 
 /* Toast: konteyner react-hot-toast'ın div[data-rht-toaster] + containerClassName; kenarlarda boşluk burada */
+/* Çiçek Sepeti toast'ı hariç: .ciceksepeti-toast-container kendi z-index:1 ile modalların altında kalsın */
 div[data-rht-toaster],
 div[data-rht-toaster].app-toast-container,
 .app-toast-container,
-body > div[class*="toast"],
-body > div[class*="Toast"] {
+body > div[class*="toast"]:not(.ciceksepeti-toast-container),
+body > div[class*="Toast"]:not(.ciceksepeti-toast-container) {
   z-index: 2147483647 !important;
 }
 /* İç wrapper: toast listesi ortada, max genişlik */
@@ -40,12 +41,12 @@ body > div[class*="Toast"] > div {
   max-width: 400px !important;
 }
 
-/* Onay butonu → mor primary, beyaz yazı */
+/* Onay butonu → özel variable ile (--toast-confirm-btn-bg, --toast-confirm-btn-text) */
 .toast-btn-confirm,
 .toast .toast-btn.toast-btn-confirm,
 .toast-btn.toast-btn-confirm {
-  background-color: var(--mor-primary) !important;
-  color: var(--white-only) !important;
+  background-color: var(--toast-confirm-btn-bg, var(--mor-primary)) !important;
+  color: var(--toast-confirm-btn-text, var(--white-only)) !important;
   font-weight: 600;
 }
 
@@ -55,27 +56,28 @@ body > div[class*="Toast"] > div {
   color: var(--white) !important;
 } */
 
-/* Danger buton da mor primary + beyaz */
+/* Danger buton da aynı confirm variable’ları ile */
 .toast-btn-danger,
 .toast .toast-btn.toast-btn-danger {
-  background-color: var(--mor-primary) !important;
-  color: var(--white-only) !important;
+  background-color: var(--toast-confirm-btn-bg, var(--mor-primary)) !important;
+  color: var(--toast-confirm-btn-text, var(--white-only)) !important;
   font-weight: 600;
 }
 
 .toast-btn-danger:hover {
   filter: brightness(1.1);
-  color: var(--white-only) !important;
+  color: var(--toast-confirm-btn-text, var(--white-only)) !important;
 }
 
 /* Toast aksiyon butonları - normal casing (İptal, Evet, Sil), ikon + metin */
 .toast .toast-actions .toast-btn,
 .toast-btn-cancel {
-  font-weight: 500;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  text-transform: uppercase !important;
 }
 .toast .toast-btn-icon,
 .toast-btn .toast-btn-icon {
@@ -89,9 +91,9 @@ body > div[class*="Toast"] > div {
   height: 14px;
 }
 
-/* İptal butonu: açık zemin, koyu yazı (mevcut gibi) */
+/* İptal butonu: açık zemin, koyu yazı (light/dark aynı – açık zeminde okunaklı) */
 .toast-btn-cancel {
-  color: var(--toast-text-dark) !important;
+  color: var(--toast-cancel-btn-text) !important;
 }
 
 /* Toast: zemin tema rengi (light=beyaz, dark=koyu); yazı ve ikonlar renkli (tema değişkenleri) */

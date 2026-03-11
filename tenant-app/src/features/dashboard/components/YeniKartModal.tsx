@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { gsap } from 'gsap';
 import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import {
   createOrganizasyonKart,
@@ -149,8 +150,36 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const tabContentRef = useRef<HTMLDivElement>(null);
   const davetiyeInputRef = useRef<HTMLInputElement>(null);
-  useModalOpenAnimation(isOpen, overlayRef, panelRef);
+  const prevActiveTabRef = useRef<KartTuru | null>(null);
+  useModalOpenAnimation(isOpen, overlayRef, panelRef, { variant: 'right', contentRef: tabContentRef });
+
+  // Sekme geçişlerinde içeriğe aynı animasyon (aşağıdan yukarı + fade) – sadece masaüstü, ilk açılış hariç
+  useEffect(() => {
+    if (!isOpen) {
+      prevActiveTabRef.current = null;
+      return;
+    }
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 767;
+    if (isMobile) return;
+    const tabIds: Record<KartTuru, string> = {
+      organizasyon: 'organizasyon-kart',
+      aracsusleme: 'aracsusleme-kart',
+      ozelsiparis: 'ozelsiparis-kart',
+      ozelgun: 'ozelgun-kart',
+    };
+    const tabId = tabIds[activeTab];
+    const el = tabId ? document.getElementById(tabId) : null;
+    if (el && prevActiveTabRef.current !== null && prevActiveTabRef.current !== activeTab) {
+      gsap.fromTo(
+        el,
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.36, ease: 'power2.out' }
+      );
+    }
+    prevActiveTabRef.current = activeTab;
+  }, [isOpen, activeTab]);
 
   // Organizasyon türleri ve etiketleri
   const { data: organizasyonTurleri = [], refetch: refetchTurler } = useQuery<OrganizasyonTuru[]>({
@@ -657,7 +686,7 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
                 <div className="aciklamasatir">Anneler Günü vb. özel gün organizasyonları için kart oluşturun.</div>
               </button>
             </div>
-            <div className="tab-content-alan">
+            <div className="tab-content-alan" ref={tabContentRef}>
               <form ref={formRef} onSubmit={handleSubmit}>
                 {/* Organizasyon Kartı Form */}
                 {activeTab === 'organizasyon' && (

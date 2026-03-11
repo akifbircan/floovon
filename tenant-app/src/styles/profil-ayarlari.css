@@ -421,14 +421,33 @@
   gap: 1.25rem 1.5rem;
 }
 
-/* Profil Bilgileri: 2x2 grid (İsim/Soyisim/Kullanıcı Adı | E-posta/Telefon; Yetkilendirme/Şifre tam genişlik) */
-.profil-form-grid.profil-form-grid-cols3 {
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  align-items: start;
+/* Profil Bilgileri: masaüstünde 3 kolon (İsim/Soyisim/Kullanıcı Adı | E-posta/Telefon | Yetkilendirme/Şifre) */
+@media (min-width: 1025px) {
+  .profil-form-grid.profil-form-grid-cols3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .profil-form-grid-cols3 .profil-form-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
 }
-.profil-form-grid-cols3 .profil-form-col-3 {
-  grid-column: 1 / -1;
+@media (max-width: 1024px) {
+  .profil-form-grid.profil-form-grid-cols3 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .profil-form-grid-cols3 .profil-form-col-3 {
+    grid-column: 1 / -1;
+  }
+  .profil-form-grid-cols3 .profil-form-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
 }
 .profil-form-grid-cols3 .profil-form-col {
   display: flex;

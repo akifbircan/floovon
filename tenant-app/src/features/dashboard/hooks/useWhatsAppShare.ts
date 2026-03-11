@@ -6,32 +6,6 @@ import { createOrganizasyonWhatsAppMessage, createOrderWhatsAppMessage } from '.
 
 export type WhatsAppShareMode = 'list' | 'template';
 
-/** Eski sistemdeki varsayılan müşteri sipariş şablonu (IBAN + bilgi formu) */
-const DEFAULT_MUSTERI_SIPARIS_SABLONU = `Sayın müşterimiz,
-Lütfen siparişiniz ile ilgili aşağıdaki alanları bize iletiniz.
-
-
-*• Teslim Edilecek Kişi/Organizasyon İsim Soyisim*
-*• Teslim Edilecek Kişi/Organizasyon Telefon Numarası*
-*• Teslim Edilecek Açık Adres* _ve varsa lütfen konum paylaşınız_
-*• Sipariş Ürününüz*
-*• Sipariş Notunuz* _(Lütfen tek parça ve imla kurallarına uygun yazınız)_
-
-///////////////////////
-
-Sipariş ücretini aşağıdaki IBAN hesaplarımıza gönderebilirsiniz:
-
-🏦 Ziraat Bankası (TL Hesabı)
-Alıcı Adı: *Azmi Bircan*
-TR 5400 0100 0265 4015 4601 5001
-
-
-🏦 DenizBank (TL Hesabı)
-Alıcı Adı: *Azmi Bircan*
-TR 8200 1340 0000 8120 7570 0002
-
-
-_Lütfen EFT/Havale işlemi açıklamasına isminizi ve sipariş detayını yazınız._`;
 import type { OrganizasyonKart, Order } from '../types';
 
 interface WhatsAppContact {
@@ -100,7 +74,7 @@ export function useWhatsAppShare() {
     }
   }, [checkWhatsAppStatus]);
 
-  const musteriSablonRef = React.useRef<string>(DEFAULT_MUSTERI_SIPARIS_SABLONU);
+  const musteriSablonRef = React.useRef<string>('');
 
   // Gönderim ayarlarından telefon numaralarını ve müşteri şablonunu yükle
   const loadContacts = useCallback(async (): Promise<WhatsAppContact[]> => {
@@ -110,7 +84,7 @@ export function useWhatsAppShare() {
       
       if (result.success && result.data) {
         const ayarlar = result.data;
-        musteriSablonRef.current = (ayarlar.musteri_sablonu_whatsapp || '').trim() || DEFAULT_MUSTERI_SIPARIS_SABLONU;
+        musteriSablonRef.current = (ayarlar.musteri_sablonu_whatsapp || '').trim();
         const kisiler: WhatsAppContact[] = [];
         
         // siparis_listesi_whatsapp alanını parse et
@@ -385,7 +359,7 @@ export function useWhatsAppShare() {
   }, [sendMessage]);
 
   const phoneSelectorTitle = shareMode === 'template'
-    ? 'Müşteri sipariş şablonunun gönderileceği WhatsApp numarasını seçin'
+    ? 'Sipariş şablonu ve IBAN bilgisinin gönderileceği WhatsApp numarasını seçin'
     : 'Sipariş listesinin gönderileceği WhatsApp gönderim numarasını seçin';
 
   return {

@@ -8,7 +8,7 @@
   position: fixed;
   top: 64px;
   right: 20px;
-  z-index: 10001;
+  z-index: 1; /* Modalların ve formların altında kalsın (modal/overlay’ler genelde 9999+) */
   display: none;
   flex-direction: column;
   gap: 10px;
@@ -19,7 +19,7 @@
 @media (max-width: 768px) {
   .ciceksepeti-toast-container {
     position: fixed !important;
-    top: 0 !important;
+    top: 18px !important;
     right: 12px !important;
     bottom: 0 !important;
     left: 12px !important;
@@ -35,12 +35,12 @@
     padding-top: 7vh !important;
     padding-right: calc(12px + env(safe-area-inset-right, 0));
     padding-left: calc(12px + env(safe-area-inset-left, 0));
-    z-index: 10002;
+    z-index: 1;
     pointer-events: none;
   }
   .ciceksepeti-toast-container .ciceksepeti-toast {
     pointer-events: auto;
-    max-width: 300px;
+    max-width: 380px;
     width: 100%;
   }
 }
@@ -180,13 +180,13 @@
 }
 
 .ciceksepeti-order-info .info-label {
-  color: var(--toast-text-muted);
+  color: var(--ciceksepeti-info-label);
   font-weight: 500;
   margin-right: 8px;
 }
 
 .ciceksepeti-order-info .info-value {
-  color: var(--toast-text-dark);
+  color: var(--ciceksepeti-info-value);
   font-weight: 500;
 }
 
@@ -281,7 +281,7 @@
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 10015;
+  z-index: 1; /* #root ve dropdown'ların altında; modallar üstte */
   display: flex;
   flex-direction: column;
   gap: 10px;

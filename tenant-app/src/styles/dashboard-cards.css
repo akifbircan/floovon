@@ -2864,8 +2864,8 @@ table td:has(.islem-ikonlar) {
   right: 0.5rem;
   top: 50%;
   transform: translateY(-50%);
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2875,7 +2875,7 @@ table td:has(.islem-ikonlar) {
   color: var(--gri70);
   cursor: pointer;
   border-radius: 4px;
-  font-size: 1.25rem;
+  font-size: 0.5rem;
   line-height: 1;
   transition: color 0.15s, background-color 0.15s;
 }
@@ -2883,8 +2883,10 @@ table td:has(.islem-ikonlar) {
   color: var(--ana-renk);
   background-color: var(--gray-light-ec);
 }
-.search-input-clear span {
+.search-input-clear span,
+.search-input-clear .icon-btn-kapat {
   display: block;
+  font-size: 0.5rem;
 }
 
 .page-table-wrapper,

@@ -109,6 +109,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               aria-label="Sıcak Satış Ekle"
             >
               <i className="fas fa-fire"></i>
+              <span className="btn-text">Sıcak Satış</span>
             </button>
           )}
 
@@ -131,6 +132,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSortMenuOpen(!sortMenuOpen); } }}
               >
                 <i className="fas fa-sort-amount-down"></i>
+                <span className="btn-text">Kartları Sırala</span>
                 {sortMenuOpen && (
                   <div className="siparis-sirala clickdropdown-content" style={{ display: 'block' }}>
                     <div className="liste-baslik">Sipariş Kartlarını Sırala</div>
@@ -242,6 +244,16 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   value={searchQuery}
                   onChange={(e) => onSearchChange?.(e.target.value)}
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className="search-input-clear"
+                    onClick={() => onSearchChange?.('')}
+                    aria-label="Temizle"
+                  >
+                    <i className="icon-btn-kapat" aria-hidden />
+                  </button>
+                )}
               </div>
             </div>
             <div className="olustur-butonlar">

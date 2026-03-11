@@ -17963,6 +17963,92 @@ app.post('/api/ayarlar/yazdirma/logo', (req, res, next) => {
     }
 });
 
+// Tablo: ayarlar_gonderim_mesaj_sablonlari (tenant_id, created_at, updated_at – diğer tablolarla uyumlu)
+const MESAJ_SABLONLARI_TABLE = 'ayarlar_gonderim_mesaj_sablonlari';
+const MESAJ_SABLONLARI_TABLE_NEW = 'ayarlar_gonderim_mesaj_sablonlari_new';
+const MUSTERI_SIPARIS_SABLONU_TURU = 'musteri_siparis_sablonu';
+// Yeni tenant / boş tablo için tek seferlik migration: tenant kendi IBAN bilgisini yazabilsin diye placeholder’lı şablon
+const DEFAULT_MUSTERI_SIPARIS_SABLONU = `Sayın müşterimiz,
+Lütfen siparişiniz ile ilgili aşağıdaki alanları bize iletiniz.
+
+
+*• Teslim Edilecek Kişi/Organizasyon İsim Soyisim*
+*• Teslim Edilecek Kişi/Organizasyon Telefon Numarası*
+*• Teslim Edilecek Açık Adres* _ve varsa lütfen konum paylaşınız_
+*• Sipariş Ürününüz*
+*• Sipariş Notunuz* _(Lütfen tek parça ve imla kurallarına uygun yazınız)_
+
+///////////////////////
+
+Sipariş ücretini aşağıdaki IBAN hesaplarımıza gönderebilirsiniz:
+
+-----------------------
+"Bu alana banka hesap ve IBAN bilgilerinizi yazabilirsiniz."
+-----------------------
+
+_Lütfen EFT/Havale işlemi açıklamasına isminizi ve sipariş detayını yazınız._`;
+
+async function ensureMesajSablonlariTable() {
+    const tableExists = await query(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`, [MESAJ_SABLONLARI_TABLE]);
+    const newSchemaSql = `
+        CREATE TABLE ${MESAJ_SABLONLARI_TABLE_NEW} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tenant_id INTEGER,
+            sablon_turu TEXT NOT NULL,
+            mesaj_metni TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(tenant_id, sablon_turu)
+        )
+    `;
+
+    if (tableExists.length === 0) {
+        await run(`
+            CREATE TABLE IF NOT EXISTS ${MESAJ_SABLONLARI_TABLE} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant_id INTEGER,
+                sablon_turu TEXT NOT NULL,
+                mesaj_metni TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(tenant_id, sablon_turu)
+            )
+        `);
+        return;
+    }
+
+    const cols = await query(`PRAGMA table_info(${MESAJ_SABLONLARI_TABLE})`);
+    const colNames = (cols || []).map(c => String(c.name));
+    const hasTenantId = colNames.includes('tenant_id');
+    const hasCreatedAt = colNames.includes('created_at');
+    const hasUpdatedAt = colNames.includes('updated_at');
+    if (hasTenantId && hasCreatedAt && hasUpdatedAt) {
+        return;
+    }
+
+    // Eski şema: kiracı_id / olusturma_tarihi / guncelleme_tarihi -> yeni tabloya kopyalayıp geç
+    const tenantCol = colNames.find(n => n === 'tenant_id' || n === 'kiracı_id' || n === 'kiraci_id');
+    const createdCol = colNames.find(n => n === 'created_at' || n === 'olusturma_tarihi');
+    const updatedCol = colNames.find(n => n === 'updated_at' || n === 'guncelleme_tarihi');
+    const quote = (name) => (name ? `"${String(name).replace(/"/g, '""')}"` : null);
+    const selTenant = tenantCol ? quote(tenantCol) : 'NULL';
+    const selCreated = createdCol ? quote(createdCol) : 'CURRENT_TIMESTAMP';
+    const selUpdated = updatedCol ? quote(updatedCol) : 'CURRENT_TIMESTAMP';
+    try {
+        await run(newSchemaSql);
+        await run(`
+            INSERT INTO ${MESAJ_SABLONLARI_TABLE_NEW} (id, tenant_id, sablon_turu, mesaj_metni, created_at, updated_at)
+            SELECT id, ${selTenant}, sablon_turu, mesaj_metni, ${selCreated}, ${selUpdated}
+            FROM ${MESAJ_SABLONLARI_TABLE}
+        `);
+        await run(`DROP TABLE ${MESAJ_SABLONLARI_TABLE}`);
+        await run(`ALTER TABLE ${MESAJ_SABLONLARI_TABLE_NEW} RENAME TO ${MESAJ_SABLONLARI_TABLE}`);
+    } catch (migErr) {
+        console.error('Mesaj şablonları tablo migration (yeni tablo + kopyala):', migErr);
+        try { await run(`DROP TABLE IF EXISTS ${MESAJ_SABLONLARI_TABLE_NEW}`); } catch (_) {}
+    }
+}
+
 // Gönderim ayarları endpoint (WhatsApp sipariş listesi numaraları vb.)
 app.get('/api/ayarlar/gonderim', async (req, res) => {
     try {
@@ -17972,16 +18058,43 @@ app.get('/api/ayarlar/gonderim', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
         }
         
+        await ensureMesajSablonlariTable();
+        
         const tableExists = await query(`
             SELECT name FROM sqlite_master WHERE type='table' AND name='ayarlar_genel_gonderim_ayarlari'
         `);
         
+        let musteri_sablonu_whatsapp = null;
+        let hasTenantRow = false;
+        try {
+            const tenantSablonRows = await query(
+                `SELECT mesaj_metni FROM ${MESAJ_SABLONLARI_TABLE} WHERE tenant_id = ? AND sablon_turu = ? LIMIT 1`,
+                [tenantId, MUSTERI_SIPARIS_SABLONU_TURU]
+            );
+            if (tenantSablonRows.length > 0 && tenantSablonRows[0].mesaj_metni != null) {
+                musteri_sablonu_whatsapp = tenantSablonRows[0].mesaj_metni;
+                hasTenantRow = true;
+            }
+        } catch (e) {
+            // Tablo yeni oluşmuş olabilir, kolon adları farklı olabilir
+        }
+        
         if (tableExists.length === 0) {
+            if (!hasTenantRow) {
+                const seedValue = musteri_sablonu_whatsapp != null ? musteri_sablonu_whatsapp : DEFAULT_MUSTERI_SIPARIS_SABLONU;
+                try {
+                    await run(
+                        `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+                        [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, seedValue]
+                    );
+                    musteri_sablonu_whatsapp = seedValue;
+                } catch (err) { console.error('Mesaj şablonu seed hatası:', err); }
+            }
             return res.json({
                 success: true,
                 data: {
                     siparis_listesi_whatsapp: null,
-                    musteri_sablonu_whatsapp: null,
+                    musteri_sablonu_whatsapp: musteri_sablonu_whatsapp,
                     haftalik_rapor_eposta: null,
                     haftalik_rapor_gun: '1',
                     haftalik_rapor_saat: '18:00'
@@ -18007,12 +18120,26 @@ app.get('/api/ayarlar/gonderim', async (req, res) => {
             settings = await query('SELECT * FROM ayarlar_genel_gonderim_ayarlari WHERE id = 1 LIMIT 1');
         }
         
+        if (musteri_sablonu_whatsapp == null && settings.length > 0) {
+            musteri_sablonu_whatsapp = settings[0].musteri_sablonu_whatsapp || null;
+        }
+        if (!hasTenantRow) {
+            const seedValue = musteri_sablonu_whatsapp != null ? musteri_sablonu_whatsapp : DEFAULT_MUSTERI_SIPARIS_SABLONU;
+            try {
+                await run(
+                    `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+                    [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, seedValue]
+                );
+                musteri_sablonu_whatsapp = seedValue;
+            } catch (err) { console.error('Mesaj şablonu seed hatası:', err); }
+        }
+        
         if (settings.length === 0) {
             return res.json({
                 success: true,
                 data: {
                     siparis_listesi_whatsapp: null,
-                    musteri_sablonu_whatsapp: null,
+                    musteri_sablonu_whatsapp: musteri_sablonu_whatsapp,
                     haftalik_rapor_eposta: null,
                     haftalik_rapor_gun: '1',
                     haftalik_rapor_saat: '18:00'
@@ -18025,7 +18152,7 @@ app.get('/api/ayarlar/gonderim', async (req, res) => {
             success: true,
             data: {
                 siparis_listesi_whatsapp: row.siparis_listesi_whatsapp || null,
-                musteri_sablonu_whatsapp: row.musteri_sablonu_whatsapp || null,
+                musteri_sablonu_whatsapp: musteri_sablonu_whatsapp != null ? musteri_sablonu_whatsapp : (row.musteri_sablonu_whatsapp || null),
                 haftalik_rapor_eposta: row.haftalik_rapor_eposta || null,
                 haftalik_rapor_gun: row.haftalik_rapor_gun || '1',
                 haftalik_rapor_saat: row.haftalik_rapor_saat || '18:00'
@@ -18049,18 +18176,47 @@ app.put('/api/ayarlar/gonderim', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
         }
         
+        const { siparis_listesi_whatsapp, musteri_sablonu_whatsapp, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat } = req.body || {};
+        
+        if (musteri_sablonu_whatsapp !== undefined) {
+            await ensureMesajSablonlariTable();
+            const mevcut = await query(
+                `SELECT id FROM ${MESAJ_SABLONLARI_TABLE} WHERE tenant_id = ? AND sablon_turu = ? LIMIT 1`,
+                [tenantId, MUSTERI_SIPARIS_SABLONU_TURU]
+            );
+            if (mevcut.length > 0) {
+                await run(
+                    `UPDATE ${MESAJ_SABLONLARI_TABLE} SET mesaj_metni = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                    [musteri_sablonu_whatsapp || null, mevcut[0].id]
+                );
+            } else {
+                await run(
+                    `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+                    [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, musteri_sablonu_whatsapp || null]
+                );
+            }
+        }
+        
         const tableExists = await query(`
             SELECT name FROM sqlite_master WHERE type='table' AND name='ayarlar_genel_gonderim_ayarlari'
         `);
         
         if (tableExists.length === 0) {
-            return res.status(500).json({
-                success: false,
-                error: 'ayarlar_genel_gonderim_ayarlari tablosu bulunamadı'
+            const sablonRow = await query(
+                `SELECT mesaj_metni FROM ${MESAJ_SABLONLARI_TABLE} WHERE sablon_turu = ? AND (tenant_id = ? OR tenant_id IS NULL) ORDER BY tenant_id DESC LIMIT 1`,
+                [MUSTERI_SIPARIS_SABLONU_TURU, tenantId]
+            ).catch(() => []);
+            return res.json({
+                success: true,
+                data: {
+                    siparis_listesi_whatsapp: null,
+                    musteri_sablonu_whatsapp: sablonRow[0]?.mesaj_metni ?? null,
+                    haftalik_rapor_eposta: null,
+                    haftalik_rapor_gun: '1',
+                    haftalik_rapor_saat: '18:00'
+                }
             });
         }
-        
-        const { siparis_listesi_whatsapp, musteri_sablonu_whatsapp, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat } = req.body || {};
         
         const columns = await query('PRAGMA table_info(ayarlar_genel_gonderim_ayarlari)');
         const hasTenantId = columns.some(col => col.name === 'tenant_id');
@@ -18114,11 +18270,19 @@ app.put('/api/ayarlar/gonderim', async (req, res) => {
         );
         
         const row = result[0] || {};
+        let musteriSablonResponse = row.musteri_sablonu_whatsapp || null;
+        try {
+            const sablonRows = await query(
+                `SELECT mesaj_metni FROM ${MESAJ_SABLONLARI_TABLE} WHERE sablon_turu = ? AND (tenant_id = ? OR tenant_id IS NULL) ORDER BY tenant_id DESC LIMIT 1`,
+                [MUSTERI_SIPARIS_SABLONU_TURU, tenantId]
+            );
+            if (sablonRows.length > 0 && sablonRows[0].mesaj_metni != null) musteriSablonResponse = sablonRows[0].mesaj_metni;
+        } catch (_) {}
         res.json({
             success: true,
             data: {
                 siparis_listesi_whatsapp: row.siparis_listesi_whatsapp || null,
-                musteri_sablonu_whatsapp: row.musteri_sablonu_whatsapp || null,
+                musteri_sablonu_whatsapp: musteriSablonResponse,
                 haftalik_rapor_eposta: row.haftalik_rapor_eposta || null,
                 haftalik_rapor_gun: row.haftalik_rapor_gun || '1',
                 haftalik_rapor_saat: row.haftalik_rapor_saat || '18:00'

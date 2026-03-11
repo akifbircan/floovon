@@ -29,6 +29,8 @@ import './styles/modal-styles.css';
 import './styles/siparis-modal-legacy.css';
 import './styles/modal-styles-important.css';
 import './styles/toast-override.css';
+import './styles/phone-landscape-warning.css';
+import './styles/tablet-notebook.css';
 /* Select Lucide ok – en sonda yüklenir, tüm select’lere uygulanır */
 import './styles/select-arrow-global.css';
 

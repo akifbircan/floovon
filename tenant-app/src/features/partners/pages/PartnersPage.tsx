@@ -302,9 +302,9 @@ export const PartnersPage: React.FC = () => {
               description={partners?.length ? 'Farklı bir arama terimi deneyin.' : 'Henüz partner firma kaydı bulunmamaktadır.'}
             />
           ) : (
-            <div className="partners-table-wrapper">
-              <div className="partners-table-scroll table-scrollbar">
-                <table className="w-full partners-table">
+            <div className="page-table-wrapper partners-table-wrapper">
+              <div className="page-table-scroll partners-table-scroll table-scrollbar">
+                <table className="w-full page-table partners-table">
                   <thead>
                     <tr>
                       <th className="partners-th-logo">Logo</th>
@@ -332,11 +332,11 @@ export const PartnersPage: React.FC = () => {
                       return (
                         <tr
                           key={partner.id}
-                          className={`partners-table-row ${selectedPartnerId === partner.id ? 'partners-table-row-selected' : ''}`}
+                          className={`page-table-row partners-table-row ${selectedPartnerId === partner.id ? 'page-table-row-selected partners-table-row-selected' : ''}`}
                           onClick={() => setSelectedPartnerId(partner.id)}
                           data-table-row
                         >
-                          <td className="partners-td-logo" data-label="Logo">
+                          <td className="page-table-cell partners-td-logo" data-label="Logo">
                             {logoUrl ? (
                               <img
                                 src={logoUrl}
@@ -356,7 +356,7 @@ export const PartnersPage: React.FC = () => {
                               —
                             </span>
                           </td>
-                          <td className="partners-td-code" data-label="Partner Kodu">
+                          <td className="page-table-cell partners-td-code" data-label="Partner Kodu">
                             {partner.partner_kodu || partner.id}
                           </td>
                           <td data-label="Partner Ünvanı & Yetkili Kişi">

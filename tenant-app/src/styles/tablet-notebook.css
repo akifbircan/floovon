@@ -1,0 +1,446 @@
+/**
+ * Tablet benzeri görünüm: 768–1439px (dashboard yapısına göre; standart web breakpoint’i değil).
+ * Masaüstü: 1440px ve üzeri.
+ * Mevcut @media (max-width: 767px) mobil kurallarına dokunulmaz.
+ */
+
+/* Tablet benzeri (768–1439): toggle panel, ikon-only butonlar, kart görünümleri vb. */
+@media (min-width: 768px) and (max-width: 1439px) {
+  /* Sayfa wrapper: tablette sağ margin yok (tam genişlik) */
+  .page-wrapper,
+  .page-wrapper--full {
+    margin-right: 0 !important;
+  }
+
+  /* Başlık alanı: "tarihleri arasındaki siparişleriniz:" metnini tablette gizle */
+  .dashboard-container .dashboard-header .baslik-alan .baslik-tarih-aciklama,
+  .dashboard-container .dashboard-header-mobile .baslik-alan .baslik-tarih-aciklama {
+    display: none !important;
+  }
+  .dashboard-container .dashboard-header .kart-filtreler {
+
+    font-size: 11px;
+}
+
+  /* Dashboard header: Sıcak Satış, Kartları Sırala sadece ikon */
+  .dashboard-container .dashboard-header .butonlar .btn-sicak-satis-button .btn-text,
+  .dashboard-container .dashboard-header-mobile .butonlar .btn-sicak-satis-button .btn-text {
+    display: none !important;
+  }
+  .dashboard-container .dashboard-header .butonlar .btn-sicak-satis-button,
+  .dashboard-container .dashboard-header-mobile .butonlar .btn-sicak-satis-button {
+    padding: 12px !important;
+  }
+  .dashboard-container .dashboard-header .butonlar .buton-sirala,
+  .dashboard-container .dashboard-header-mobile .butonlar .buton-sirala {
+    padding: 12px !important;
+  }
+  /* Layout header: Yeni Kart Oluştur / Müşteri Ekle sadece ikon */
+  .header .olustur-butonlar .btn-yeni-kart-ekle .btn-text,
+  .header .olustur-butonlar .btn-yeni-musteri-ekle .btn-text {
+    display: none !important;
+  }
+
+  /* Kart filtreler: tablette daha kompakt */
+  .dashboard-container .dashboard-header .kart-filtreler li {
+    gap: 7px;
+  }
+  .dashboard-container .dashboard-header .kart-filtreler .kartin-tur-adi::after {
+    margin-left: 0;
+    height: 10px;
+    width: 10px;
+    padding: 8px;
+  }
+
+  /* Ortak liste sayfaları başlık alanı (Müşteriler / Partnerler / Kampanyalar): tablette üst üste, sol hizalı */
+  .page-wrapper .page-panel-sol .mb-6.flex {
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+    gap: 5px;
+  }
+
+  /* Başlığın altındaki arama blokları (.mb-6) – tablette 0.75rem boşluk */
+  .page-wrapper .page-panel-sol .mb-6:not(.flex) {
+    margin-bottom: 0.75rem;
+  }
+
+  /* ========== Raporlar sayfası: filtreler tablette 2 sütun grid ========== */
+  .reports-content .reports-filtreler {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 48px;
+    align-items: end;
+  }
+  .reports-content .reports-filtreler .flex {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .reports-filtreler label {
+    max-width: 130px;
+    min-width: 130px;
+}
+
+  .reports-content .reports-filtreler input[type="date"],
+  .reports-content .reports-filtreler input[type="text"],
+  .reports-content .reports-filtreler select {
+    flex: 1;
+    min-width: 0;
+  }
+  .reports-content .reports-filtreler .btn-filtre-reset {
+    grid-column: span 2;
+    justify-self: start;
+    width: 100%;
+  }
+
+  /* ========== Raporlar sayfası: istatistik kartları 2x2 grid (4 kutu) ========== */
+  .reports-content .istatistikler {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* ========== Raporlar sayfası: tablolar tablette kart grid görünümü ========== */
+  .reports-content .reports-table-wrapper {
+    background-color: transparent;
+    border: none;
+    overflow: visible;
+    margin: 0;
+  }
+  .reports-content .reports-table-scroll {
+    max-height: none;
+    overflow: visible;
+  }
+  .reports-content .reports-table,
+  .reports-content .reports-table.reports-table-musteri {
+    display: block;
+    font-size: 13px;
+  }
+  .reports-content .reports-table thead,
+  .reports-content .reports-table.reports-table-musteri thead {
+    display: none;
+  }
+  .reports-content .reports-table tbody,
+  .reports-content .reports-table.reports-table-musteri tbody {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 12px;
+  }
+  .reports-content .reports-table tbody tr.reports-table-row,
+  .reports-content .reports-table.reports-table-musteri tbody tr.reports-table-row {
+    display: block;
+    padding: 12px 14px;
+    margin: 0;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .reports-content .reports-table tbody tr.reports-table-row td,
+  .reports-content .reports-table.reports-table-musteri tbody tr.reports-table-row td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 0;
+    border: none;
+  }
+  .reports-content .reports-table tbody tr.reports-table-row td::before,
+  .reports-content .reports-table.reports-table-musteri tbody tr.reports-table-row td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 12px;
+    text-align: left;
+  }
+  .reports-content .reports-table tbody tr.reports-table-row td > *,
+  .reports-content .reports-table.reports-table-musteri tbody tr.reports-table-row td > * {
+    /* flex: 1; */
+    min-width: 0;
+  }
+  .reports-content .reports-table tbody tr.reports-table-row td .islem-ikonlar,
+  .reports-content .reports-table.reports-table-musteri tbody tr.reports-table-row td .islem-ikonlar {
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+
+  /* ========== Ortak liste sayfaları (müşteriler/partnerler/kampanyalar): tablette sol/sağ panel eşit genişlik (50% / 50%) ========== */
+  .page-wrapper:has(.page-table) .page-panel-sol,
+  .page-wrapper:has(.page-table) .page-panel-sag {
+    width: 50% !important;
+    max-width: 50% !important;
+    min-width: 0;
+  }
+
+  /* ========== Ortak liste sayfaları: tablette tablo → kart görünümü ========== */
+  .page-wrapper:has(.page-table) .page-table thead {
+    display: none;
+  }
+  .page-wrapper:has(.page-table) .page-table tbody tr {
+    display: block;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-renk);
+    background-color: var(--white);
+    padding: 12px 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.15s, box-shadow 0.15s;
+  }
+  .page-wrapper:has(.page-table) .page-table tbody tr:hover {
+    background-color: var(--white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .page-wrapper:has(.page-table) .page-table tbody tr.page-table-row-selected {
+    border-color: var(--mor-primary-text);
+    background-color: var(--blue-transparent);
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+  }
+  .page-wrapper:has(.page-table) .page-table tbody td {
+    display: block;
+    padding: 6px 0;
+    border: none;
+    vertical-align: top;
+  }
+  .page-wrapper:has(.page-table) .page-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.7rem;
+    color: var(--gri70);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .page-wrapper:has(.page-table) .page-table tbody td.customers-td-code,
+  .page-wrapper:has(.page-table) .page-table tbody td.customers-td-tipi,
+  .page-wrapper:has(.page-table) .page-table tbody td.customers-td-grubu {
+    padding-top: 8px;
+  }
+  .page-wrapper:has(.page-table) .page-table tbody td.text-center {
+    padding-top: 10px;
+    border-top: 1px solid var(--border-renk);
+    margin-top: 4px;
+  }
+  .page-wrapper:has(.page-table) .page-table tbody td.text-center::before {
+    margin-bottom: 6px;
+  }
+  .page-wrapper:has(.page-table) .page-table-wrapper {
+    border: none;
+    background-color: transparent;
+  }
+  .page-wrapper:has(.page-table) .page-table-scroll {
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+    overflow-x: visible;
+  }
+
+  /* Detay kartı: scroll top yerine card'da olsun (tablette takılma olmasın) */
+  .page-wrapper:has(.page-table) .page-detail-card {
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .page-wrapper:has(.page-table) .page-detail-card-top.custom-scrollbar {
+    overflow: visible !important;
+    flex: none;
+    min-height: auto;
+  }
+
+  /* ========== Profil: Profil Yönetimi tablosu kart görünümü (3 sığmazsa 2 kolon) ========== */
+  .profil-page .profil-table-wrapper {
+    overflow: visible;
+  }
+  .profil-page .profil-table-scroll {
+    overflow: visible;
+    max-height: none;
+  }
+  .profil-page .profil-table.customers-table {
+    display: block;
+  }
+  .profil-page .profil-table thead {
+    display: none;
+  }
+  .profil-page .profil-table tbody {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+  }
+  .profil-page .profil-table tbody tr.profil-table-row {
+    display: block;
+    padding: 12px 14px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .profil-page .profil-table tbody tr.profil-table-row td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 0;
+    border: none;
+  }
+  .profil-page .profil-table tbody tr.profil-table-row td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+
+  /* ========== Ayarlar: Veri tanımları / Teslimat konumları / Araç listesi tabloları kart görünümü ========== */
+  .ayarlar-page .ayarlar-tablosu,
+  .ayarlar-page table.ayarlar-tablosu {
+    display: block;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .ayarlar-page .ayarlar-tablosu thead,
+  .ayarlar-page table.ayarlar-tablosu thead {
+    display: none;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody,
+  .ayarlar-page table.ayarlar-tablosu tbody {
+    display: block;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr.ayarlar-table-row,
+  .ayarlar-page .ayarlar-tablosu tbody tr[data-table-row],
+  .ayarlar-page table.ayarlar-tablosu tbody tr {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel,
+  .ayarlar-page .ayarlar-sag-kolon .ayarlar-tablosu-wrapper {
+    overflow-x: hidden !important;
+    min-width: 0 !important;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 0 !important;
+    border: none !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td::before,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 90px;
+    max-width: 40%;
+    flex-shrink: 0;
+    font-size: 12px;
+    order: 0;
+    text-align: left;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td.td-no-mobile-label::before,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td.td-no-mobile-label::before {
+    content: none !important;
+    display: none !important;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td > *,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td > * {
+    order: 1;
+  }
+
+  /* ========== Arşiv Siparişler: filtreler grid ========== */
+  .arsiv-baslik-alan {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px 16px;
+    align-items: center;
+  }
+  .arsiv-filtreler {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px 16px;
+    align-items: end;
+  }
+  .arsiv-filtreler .arsiv-filtre-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .arsiv-filtreler .arsiv-filtre-item input,
+  .arsiv-filtreler .arsiv-filtre-item select {
+    flex: 1;
+    min-width: 0;
+  }
+  .arsiv-filtreler .arsiv-btn-filtre-reset {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+  .arsiv-baslik-alan .arsiv-sag-alan.arsiv-search-wrapper {
+    align-self: center;
+  }
+
+  /* ========== Arşiv Siparişler: tablo kart görünümü ========== */
+  .arsiv-table-wrapper {
+    overflow: visible;
+    background: transparent;
+    border: none;
+  }
+  .arsiv-table-scroll {
+    overflow: visible;
+    max-height: none;
+  }
+  .arsiv-tablosu {
+    display: block;
+  }
+  .arsiv-tablosu thead {
+    display: none;
+  }
+  .arsiv-tablosu tbody {
+    display: block;
+  }
+  .arsiv-tablosu tr.baslik-satiri {
+    display: block;
+    margin-bottom: 8px;
+  }
+  .arsiv-tablosu tr.baslik-satiri td {
+    display: block;
+    width: 100%;
+  }
+  .arsiv-tablosu tbody tr.grup-satir-row {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--white);
+    border: 1px solid var(--border-renk);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .arsiv-tablosu tbody tr.grup-satir-row td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 0;
+    border: none;
+  }
+  .arsiv-tablosu tbody tr.grup-satir-row td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gri70);
+    min-width: 110px;
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+}

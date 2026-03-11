@@ -3899,13 +3899,12 @@ color: var(--ana-renk) !important;
 }
 
 .modal-react-qr-scanner-loading-spinner {
-    animation: spin 1s linear infinite !important;
+    animation: spin 0.8s linear infinite !important;
     border-radius: 50% !important;
     height: 32px !important;
     width: 32px !important;
-    border-width: 2px !important;
-    border-bottom-width: 2px !important;
-    border-color: var(--mavi-renk) !important;
+    border: 3px solid var(--gray-light-ee, #eee) !important;
+    border-top-color: var(--mavi-renk, #2563eb) !important;
 }
 
 .modal-react-qr-scanner-loading-text {

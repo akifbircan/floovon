@@ -59,10 +59,14 @@
 .ayarlar-tab-icerik > div.flex {
   flex-direction: row;
 }
-/* Panel doğrudan tab içeriğindeyse (Genel: İşletme, Konum, Yazdırma, Çiçek Sepeti) scroll panelde */
+/* Panel doğrudan tab içeriğindeyse (Genel: İşletme, Konum, Yazdırma, Çiçek Sepeti) scroll panelde; scrollbar sağ kenarda */
 .ayarlar-tab-icerik > div.ayarlar-panel {
   overflow-y: auto !important;
   overflow-x: hidden;
+  padding-right: 0;
+}
+.ayarlar-tab-icerik > div.ayarlar-panel > * {
+  padding-right: 10px;
 }
 .ayarlar-page .ayarlar-sol-kolon {
   min-height: 0;
@@ -154,7 +158,7 @@
 
 /* (Ayarlar sayfa scroll yukarıda .ayarlar-page.page-wrapper ile tanımlı) */
 
-/* Ayarlar kartları (sağ kolon tablo paneli) – scroll panel içinde */
+/* Ayarlar kartları (sağ kolon tablo paneli) – scroll panel içinde; scrollbar sağ kenarda */
 .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel {
   flex: 1;
   min-height: 200px;
@@ -162,12 +166,14 @@
   overflow-y: auto !important;
   display: flex;
   flex-direction: column;
+  padding-right: 0;
 }
 
-/* Sağ kolon panel: başlık sabit, içerik alanı kalan yüksekliği kaplasın */
+/* Sağ kolon panel: başlık sabit, içerik alanı kalan yüksekliği kaplasın; sağ boşluk içerikte */
 .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel .ayarlar-panel-header {
   flex-shrink: 0;
   flex-direction: column;
+  padding-right: 10px;
 }
 
 .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel > *:nth-child(2) {
@@ -175,6 +181,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  padding-right: 10px;
 }
 
 .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel > .empty-state {
@@ -281,9 +288,9 @@
 }
 
 .ayarlar-panel-header .search-input-wrapper {
-  width: fit-content;
-  min-width: 340px;
-  flex: 0;
+  width: 100%;
+  min-width: 0;
+  flex: 1;
 }
 
 .ayarlar-panel-header .ayarlar-panel-title {
@@ -414,11 +421,14 @@
   gap: 1.25rem 1.5rem;
 }
 
-/* Profil Bilgileri: 3 kolon (İsim/Soyisim/Kullanıcı Adı | E-posta/Telefon | Yetkilendirme/Şifre) */
+/* Profil Bilgileri: 2x2 grid (İsim/Soyisim/Kullanıcı Adı | E-posta/Telefon; Yetkilendirme/Şifre tam genişlik) */
 .profil-form-grid.profil-form-grid-cols3 {
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
   align-items: start;
+}
+.profil-form-grid-cols3 .profil-form-col-3 {
+  grid-column: 1 / -1;
 }
 .profil-form-grid-cols3 .profil-form-col {
   display: flex;
@@ -437,14 +447,6 @@
   gap: 1.25rem;
 }
 
-@media (max-width: 960px) {
-  .profil-form-grid.profil-form-grid-cols3 {
-    grid-template-columns: 1fr 1fr;
-  }
-  .profil-form-grid-cols3 .profil-form-col-3 {
-    grid-column: 1 / -1;
-  }
-}
 @media (max-width: 640px) {
   .profil-form-grid {
     grid-template-columns: 1fr;
@@ -483,10 +485,10 @@
   margin-bottom: 0;
 }
 
-/* İşletme ayarları: 3 kolon (1-4, 5-8, 9-11) */
+/* İşletme ayarları: 2 kolon */
 .ayarlar-isletme-3kolon {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 .ayarlar-isletme-kolon {
@@ -496,11 +498,6 @@
 }
 .ayarlar-isletme-kolon .ayarlar-form-group {
   margin-bottom: 0;
-}
-@media (max-width: 900px) {
-  .ayarlar-isletme-3kolon {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 @media (max-width: 600px) {
   .ayarlar-isletme-3kolon {
@@ -923,7 +920,7 @@
 .profil-drawer-body {
   flex: 1;
   overflow-y: auto;
-  padding: 1.25rem;
+  padding: 1.25rem 10px 1.25rem 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -1032,7 +1029,13 @@
   min-width: 32px;
 }
 
-/* Tablo */
+/* Tablo – scrollbar sağ kenarda */
+.profil-card:has(.profil-table-wrapper) {
+  padding-right: 0;
+}
+.profil-card:has(.profil-table-wrapper) .profil-card-header {
+  padding-right: 10px;
+}
 .profil-table-wrapper {
   background-color: var(--white);
   border-radius: 8px;
@@ -1043,6 +1046,7 @@
   max-height: calc(100vh - 280px);
   overflow-x: auto;
   overflow-y: auto;
+  padding-right: 10px;
 }
 
 .profil-table {
@@ -1555,9 +1559,8 @@ html.dark-mode .profil-yetki-kart-footer {
 }
 
 @media (max-width: 1024px) {
-  .ayarlar-page .ayarlar-sol-kolon,
-  .ayarlar-page .ayarlar-sag-kolon {
-    flex: 1 1 100%;
-    max-width: 100%;
+  .ayarlar-page .ayarlar-sol-kolon {
+    flex: 1 1 35%; 
+    max-width: 35%;
   }
 }

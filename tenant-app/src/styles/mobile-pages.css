@@ -1018,6 +1018,7 @@ ul.notifications {
   }
 
   .reports-content .istatistikler {
+    display: flex !important;
     flex-direction: column;
     align-items: stretch;
     gap: 12px;

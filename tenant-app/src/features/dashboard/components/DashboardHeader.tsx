@@ -106,9 +106,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               data-tooltip="Sıcak Satış Ekle"
               data-tooltip-pos="bottom"
               onClick={onSicakSatis}
+              aria-label="Sıcak Satış Ekle"
             >
               <i className="fas fa-fire"></i>
-              <span className="btn-text">Sıcak Satış</span>
             </button>
           )}
 
@@ -123,9 +123,14 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               <div
                 className="buton-sirala clickdropbtn"
                 onClick={() => setSortMenuOpen(!sortMenuOpen)}
+                title="Kartları Sırala"
+                data-tooltip="Kartları Sırala"
+                data-tooltip-pos="bottom"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSortMenuOpen(!sortMenuOpen); } }}
               >
                 <i className="fas fa-sort-amount-down"></i>
-                Kartları Sırala
                 {sortMenuOpen && (
                   <div className="siparis-sirala clickdropdown-content" style={{ display: 'block' }}>
                     <div className="liste-baslik">Sipariş Kartlarını Sırala</div>

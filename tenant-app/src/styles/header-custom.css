@@ -39,7 +39,8 @@ body:has(.modal-react-teknik-destek-overlay) .header,
 body:has(.confirm-modal-overlay) .header,
 body:has(.rapor-detay-overlay) .header,
 body:has(.siparis-detay-overlay) .header,
-body:has(.cari-drawer-overlay) .header {
+body:has(.cari-drawer-overlay) .header,
+body:has(.sag-panel-overlay.active) .header {
   z-index: 0 !important;
   isolation: auto !important;
 }
@@ -138,10 +139,10 @@ body:has(.cari-drawer-overlay) .header {
   font-size: 16px;
 }
 
+/* Sadece ikon; yazı yok (tooltip ile anlam korunuyor) */
 .header .olustur-butonlar button::after {
-  content: attr(data-value);
-  color: inherit;
-  white-space: nowrap;
+  content: none;
+  display: none;
 }
 
 /* Sağ Taraf */
@@ -488,6 +489,26 @@ body:has(.cari-drawer-overlay) .header {
   text-decoration: underline;
 }
 
+.liste-alt button.liste-alt-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--mor-primary-text);
+  text-decoration: underline;
+  padding: 0 0 0 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.liste-alt button.liste-alt-btn:hover {
+  background-color: inherit;
+  text-decoration: underline;
+}
+
 /* Bildirim stilleri */
 .bildirim-bos-mesaj {
   padding: 20px;
@@ -677,7 +698,7 @@ body:has(.cari-drawer-overlay) .header {
 /* Responsive */
 @media (max-width: 1024px) {
   .search-box-title .web-search-input {
-    width: 300px;
+    width: 280px;
   }
 }
 

@@ -492,9 +492,9 @@ export const CampaignsPage: React.FC = () => {
               description={campaigns?.length ? 'Farklı bir arama terimi deneyin.' : 'Henüz kampanya kaydı bulunmamaktadır.'}
             />
           ) : (
-            <div className="customers-table-wrapper campaigns-table-wrap">
-              <div className="customers-table-scroll table-scrollbar">
-                <table className="w-full customers-table" id="kampanyalar-tablo-export">
+            <div className="page-table-wrapper campaigns-table-wrapper campaigns-table-wrap">
+              <div className="page-table-scroll campaigns-table-scroll table-scrollbar">
+                <table className="w-full page-table campaigns-table" id="kampanyalar-tablo-export">
                   <thead>
                     <tr>
                       <th className="campaigns-th-gorsel">Görsel</th>
@@ -511,7 +511,7 @@ export const CampaignsPage: React.FC = () => {
                     {sortedCampaigns.map((c) => (
                       <tr
                         key={c.id}
-                        className={`customers-table-row ${selectedCampaignId === c.id ? 'customers-table-row-selected' : ''}`}
+                        className={`page-table-row campaigns-table-row ${selectedCampaignId === c.id ? 'page-table-row-selected campaigns-table-row-selected' : ''}`}
                         onClick={() => setSelectedCampaignId(c.id)}
                         data-table-row
                       >
@@ -601,9 +601,9 @@ export const CampaignsPage: React.FC = () => {
               aria-modal="true"
               aria-labelledby="kampanya-modal-title"
             >
-              <div className="page-panel-sag-inner">
-              <div className="customers-detail-header mb-4 flex items-center justify-between flex-shrink-0">
-                <h2 id="kampanya-modal-title" className="customers-detail-title">{showForm ? formTitle : 'Kampanya Detayları'}</h2>
+          <div className="page-panel-sag-inner">
+          <div className="page-detail-header mb-4 flex items-center justify-between flex-shrink-0">
+              <h2 id="kampanya-modal-title" className="page-detail-title">{showForm ? formTitle : 'Kampanya Detayları'}</h2>
                 {(selectedCampaignId || showForm) && (
                   <button
                     type="button"
@@ -776,8 +776,8 @@ export const CampaignsPage: React.FC = () => {
               </form>
             </div>
           ) : selectedCampaign ? (
-            <div className="customers-detail-card campaigns-detail-card" data-card-item>
-              <div className="customers-detail-card-top custom-scrollbar">
+            <div className="page-detail-card campaigns-detail-card" data-card-item>
+              <div className="page-detail-card-top custom-scrollbar">
                 {(selectedCampaign.gorsel_path || selectedCampaign.gorsel) ? (
                   <div className="kampanya-gorsel-preview mb-4">
                     <img
@@ -788,35 +788,35 @@ export const CampaignsPage: React.FC = () => {
                     />
                   </div>
                 ) : null}
-                <div className="customers-detail-block customers-detail-block-sep">
-                  <p className="customers-detail-label">Kampanya Adı</p>
-                  <p className="customers-detail-value">{selectedCampaign.ad}</p>
+                <div className="page-detail-block page-detail-block-sep">
+                  <p className="page-detail-label">Kampanya Adı</p>
+                  <p className="page-detail-value">{selectedCampaign.ad}</p>
                 </div>
-                <div className="customers-detail-block customers-detail-block-sep">
-                  <p className="customers-detail-label">Müşteri Grubu</p>
-                  <p className="customers-detail-value">{getMusteriGrubuText(selectedCampaign.musteri_grubu || '')}</p>
+                <div className="page-detail-block page-detail-block-sep">
+                  <p className="page-detail-label">Müşteri Grubu</p>
+                  <p className="page-detail-value">{getMusteriGrubuText(selectedCampaign.musteri_grubu || '')}</p>
                 </div>
-                <div className="customers-detail-block customers-detail-block-sep">
-                  <p className="customers-detail-label">Kupon Kodu</p>
-                  <p className="customers-detail-value"><code>{selectedCampaign.kupon_kodu || '—'}</code></p>
+                <div className="page-detail-block page-detail-block-sep">
+                  <p className="page-detail-label">Kupon Kodu</p>
+                  <p className="page-detail-value"><code>{selectedCampaign.kupon_kodu || '—'}</code></p>
                 </div>
-                <div className="customers-detail-block customers-detail-block-sep">
-                  <p className="customers-detail-label">Tarihler</p>
-                  <p className="customers-detail-value">
+                <div className="page-detail-block page-detail-block-sep">
+                  <p className="page-detail-label">Tarihler</p>
+                  <p className="page-detail-value">
                     {selectedCampaign.baslangic_tarihi && new Date(selectedCampaign.baslangic_tarihi).toLocaleDateString('tr-TR')} –{' '}
                     {selectedCampaign.bitis_tarihi && new Date(selectedCampaign.bitis_tarihi).toLocaleDateString('tr-TR')}
                   </p>
                 </div>
-                <div className="customers-detail-block customers-detail-block-sep">
-                  <p className="customers-detail-label">Durum</p>
+                <div className="page-detail-block page-detail-block-sep">
+                  <p className="page-detail-label">Durum</p>
                   <span className={`status-badge status-${selectedCampaign.durum || 'taslak'}`}>
                     {getStatusText(selectedCampaign.durum || '')}
                   </span>
                 </div>
                 {selectedCampaign.mesaj && (
-                  <div className="customers-detail-block customers-detail-block-sep">
-                    <p className="customers-detail-label">Kampanya Mesajı</p>
-                    <p className="customers-detail-value mesaj-text">{selectedCampaign.mesaj}</p>
+                  <div className="page-detail-block page-detail-block-sep">
+                    <p className="page-detail-label">Kampanya Mesajı</p>
+                    <p className="page-detail-value mesaj-text">{selectedCampaign.mesaj}</p>
                   </div>
                 )}
                 {!selectedCampaign.gonderildi && (
@@ -824,7 +824,7 @@ export const CampaignsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleEdit(selectedCampaign)}
-                      className="customers-btn-duzenle"
+                      className="page-detail-btn-edit"
                     >
                       <Pencil size={16} />
                       <span>Kampanyayı Düzenle</span>
@@ -857,7 +857,7 @@ export const CampaignsPage: React.FC = () => {
                 </div>
               </div>
             ) : showForm ? (
-              <div className="customers-detail-card campaigns-form-card campaigns-form-wrap" data-card-item>
+              <div className="page-detail-card customers-detail-card campaigns-form-card campaigns-form-wrap" data-card-item>
                 <form onSubmit={handleSubmit} className="campaigns-form">
                   <div className="campaigns-form-scroll custom-scrollbar space-y-6">
                     <div className="campaigns-form-gorsel">
@@ -894,8 +894,8 @@ export const CampaignsPage: React.FC = () => {
                 </form>
               </div>
             ) : selectedCampaign ? (
-              <div className="customers-detail-card campaigns-detail-card" data-card-item>
-                <div className="customers-detail-card-top custom-scrollbar">
+              <div className="page-detail-card customers-detail-card campaigns-detail-card" data-card-item>
+                <div className="page-detail-card-top customers-detail-card-top custom-scrollbar">
                   {(selectedCampaign.gorsel_path || selectedCampaign.gorsel) && (
                     <div className="kampanya-gorsel-preview mb-4">
                       <img src={`${getUploadUrl(selectedCampaign.gorsel_path || selectedCampaign.gorsel)}?t=${selectedCampaign.id}`} alt={selectedCampaign.ad} className="max-w-full max-h-48 rounded" />

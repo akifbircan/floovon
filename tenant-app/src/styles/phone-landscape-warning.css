@@ -1,0 +1,78 @@
+/* Telefon yatay (landscape): "Lütfen dikey kullanın" uyarı overlay – mevcut mobil/masaüstü stillerine dokunmaz */
+
+/* Uyarı görünürken sağ panel toggle butonu gizlensin */
+body:has(.phone-landscape-warning) .sag-panel-toggle-btn {
+  display: none !important;
+}
+
+.phone-landscape-warning {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: var(--toast-bg, #fff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+body.dark-mode .phone-landscape-warning,
+html.dark-mode .phone-landscape-warning {
+  background: var(--toast-bg, #252340);
+}
+
+.phone-landscape-warning-inner {
+  text-align: center;
+  max-width: 320px;
+}
+
+.phone-landscape-warning-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: var(--mor-primary-text, #8b5cf6);
+}
+
+.phone-landscape-warning-icon .phone-landscape-warning-phone {
+  display: block;
+}
+
+/* Tablet "yatay kullanın" ekranında tablet ikonu yatay (90° döndürülmüş) görünsün */
+.phone-landscape-warning-icon .tablet-landscape-icon {
+  transform: rotate(90deg);
+}
+
+.phone-landscape-warning-icon .phone-landscape-warning-rotate {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.phone-landscape-warning-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--toast-text, #111827);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.phone-landscape-warning-desc {
+  font-size: 0.9375rem;
+  color: var(--gri70, #6b7280);
+  margin: 0;
+  line-height: 1.5;
+}
+
+body.dark-mode .phone-landscape-warning-title,
+html.dark-mode .phone-landscape-warning-title {
+  color: var(--toast-text, #e5e7eb);
+}
+
+body.dark-mode .phone-landscape-warning-desc,
+html.dark-mode .phone-landscape-warning-desc {
+  color: var(--gri70, #9ca3af);
+}

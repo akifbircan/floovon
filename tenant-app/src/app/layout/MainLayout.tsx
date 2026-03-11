@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { Header } from './Header';
 import { Navbar } from './Navbar';
 import { MobileNavbar } from './MobileNavbar';
+import { PhoneLandscapeWarning } from './PhoneLandscapeWarning';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -103,6 +104,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       
       {/* Mobile Navbar - Sadece mobilde görünür */}
       <MobileNavbar />
+
+      {/* Telefon yatay: "Lütfen dikey kullanın" uyarısı (portal ile body'de) */}
+      <PhoneLandscapeWarning />
       
       {/* Toast container: ciceksepeti.js index.html'de yüklenince ensureToastContainer() ile body'de oluşturulur; aşağıdaki modal React'ta kalır */}
       {/* Çiçek Sepeti sipariş detay modal – toast'taki siparişe tıklanınca açılır; SİPARİŞİ ONAYLA ile organizasyon kartı oluşur (ciceksepeti.js) */}

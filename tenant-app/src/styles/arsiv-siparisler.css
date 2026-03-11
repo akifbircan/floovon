@@ -80,7 +80,7 @@
   flex: 1;
 }
 
-/* Tablo - customers-table ile aynı stil */
+/* Tablo - customers-table ile aynı stil; scrollbar sağ kenarda */
 .arsiv-table-wrapper {
   overflow: hidden;
   border-radius: 8px;
@@ -92,6 +92,7 @@
   overflow-x: auto;
   overflow-y: auto;
   max-height: calc(100vh - 320px);
+  padding-right: 10px;
 }
 
 .arsiv-tablosu {

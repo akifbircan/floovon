@@ -8,8 +8,17 @@
   inset: 0 !important;
   pointer-events: none !important;
 }
+/* Container tam ekran olduğu için pointer-events: none; sadece toast kutuları tıklanabilir olsun (sayfa tıklama/scroll engellenmesin) */
 .app-toast-portal-wrapper .app-toast-container,
 .app-toast-portal-wrapper div[data-rht-toaster] {
+  pointer-events: none !important;
+}
+.app-toast-portal-wrapper div[data-rht-toaster] > div {
+  pointer-events: none !important;
+}
+/* Sadece tek tek toast öğeleri tıklanabilir */
+.app-toast-portal-wrapper div[data-rht-toaster] [role="status"],
+.app-toast-portal-wrapper div[data-rht-toaster] > div > * {
   pointer-events: auto !important;
 }
 

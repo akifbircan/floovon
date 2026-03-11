@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { gsap } from 'gsap';
 import type { OrganizasyonKart } from '../types';
@@ -35,6 +36,9 @@ const RightPanelComponent: React.FC<RightPanelProps> = ({
   const weekPickerRef = useRef<HTMLInputElement>(null);
   const yearMonthLabelRef = useRef<HTMLDivElement>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isTablet, setIsTablet] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 768px) and (max-width: 1439px)').matches
+  );
   const sagPanelRef = useRef<HTMLDivElement>(null);
   const panelMergedRef = useRef<HTMLDivElement>(null);
   const panelWrapperRef = useRef<HTMLDivElement>(null);
@@ -293,17 +297,16 @@ const RightPanelComponent: React.FC<RightPanelProps> = ({
     setIsPanelOpen(false);
   };
 
-  // Tablet görünümü kontrolü ve toggle button görünürlüğü
+  // Tablet benzeri (768–1439px): sağ panel gizli, toggle ile aç/kapa
   useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth;
-      const isTablet = width >= 1024 && width <= 1199;
+      const isTablet = width >= 768 && width <= 1439;
       const panel = document.querySelector('.sag-panel');
       const toggleBtn = document.getElementById('sagPanelToggleBtn');
       
       if (panel && toggleBtn) {
         if (isTablet) {
-          toggleBtn.style.display = 'flex';
           panel.classList.add('tablet-hidden');
           if (isPanelOpen) {
             panel.classList.add('tablet-open');
@@ -311,7 +314,6 @@ const RightPanelComponent: React.FC<RightPanelProps> = ({
             panel.classList.remove('tablet-open');
           }
         } else {
-          toggleBtn.style.display = 'none';
           panel.classList.remove('tablet-hidden', 'tablet-open');
           setIsPanelOpen(false);
         }
@@ -636,7 +638,15 @@ const RightPanelComponent: React.FC<RightPanelProps> = ({
   // Bu useEffect artık gerekli değil - animasyonlar usePageAnimations.ts'de yönetiliyor
   // useEffect(() => {}, []) kaldırıldı - boş useEffect gereksiz
 
-  return (
+  // Tablet benzeri (768–1439) overlay/panel/toggle body'ye portal edilir; header/sidebar altında kalır
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px) and (max-width: 1439px)');
+    const handler = () => setIsTablet(mq.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const panelContent = (
     <>
       <div className="sag-panel" ref={sagPanelRef}>
         <div className="sag-panel-icerik">
@@ -1056,6 +1066,8 @@ const RightPanelComponent: React.FC<RightPanelProps> = ({
       ></div>
     </>
   );
+
+  return isTablet ? createPortal(panelContent, document.body) : panelContent;
 };
 
 // ✅ KRİTİK: React.memo ile wrap et - component'in gereksiz yeniden render edilmesini önle

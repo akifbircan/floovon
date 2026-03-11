@@ -101,7 +101,7 @@
   flex: 1;
 }
 
-/* Responsive – sağ panel sadece mobilde gizlensin; web/tablet görünümde görünsün */
+/* Responsive – sağ panel sadece mobilde (≤767) gizli; tablet 768–1439’da right-panel.css ile slide-out */
 @media (max-width: 767px) {
   .sag-panel {
     display: none;
@@ -109,7 +109,18 @@
 }
 
 /* Masaüstü/web: sağ panel wrapper ve panel her zaman görünsün (Tailwind/başka override’ları geçersiz kılsın) */
-@media (min-width: 768px) {
+/* Tablet benzeri (768–1439): wrapper görünsün, panel right-panel.css ile slide-out/toggle */
+@media (min-width: 768px) and (max-width: 1439px) {
+  .dashboard-right-panel-wrapper {
+    display: flex !important;
+    flex-shrink: 0;
+    width: 0;
+    min-width: 0;
+  }
+}
+
+/* Masaüstü (1440px+): sağ panel wrapper ve panel her zaman akışta görünsün */
+@media (min-width: 1440px) {
   .dashboard-right-panel-wrapper {
     display: flex !important;
     flex-shrink: 0;

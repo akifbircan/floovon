@@ -277,15 +277,14 @@ export const Header: React.FC = () => {
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      const dropdownContent = document.getElementById('bildirimlerDropdown') ?? document.getElementById('bildirimlerDropdown-mobile');
+      const dropdownDesktop = document.getElementById('bildirimlerDropdown');
+      const dropdownMobile = document.getElementById('bildirimlerDropdown-mobile');
       const icon = document.querySelector('.ikon-bildirimler .header-icon');
-      
-      // Eğer tıklama dropdown içindeyse veya icon'a tıklandıysa, hiçbir şey yapma
-      if (dropdownContent?.contains(target) || icon?.contains(target)) {
-        return;
-      }
-      
-      // Dropdown dışına tıklandıysa kapat
+      const iconMobile = document.querySelector('.ikon-bildirimler-mobil .header-icon, .btn-bildirimler-mobil');
+      const insideAnyDropdown = dropdownDesktop?.contains(target) || dropdownMobile?.contains(target);
+      const onAnyIcon = icon?.contains(target) || iconMobile?.contains(target);
+
+      if (insideAnyDropdown || onAnyIcon) return;
       setNotificationsDropdownOpen(false);
     };
 
@@ -690,7 +689,10 @@ export const Header: React.FC = () => {
                   </div>
                   {profileDropdownOpen && (
                     <div className="clickdropdown-content">
-                      <div className="liste-baslik">@{user?.kullaniciadi || user?.username || 'Kullanıcı'}</div>
+                      <div className="liste-baslik" id="dropdown-user-name">
+                        @{user?.kullaniciadi || user?.username || user?.email?.split('@')[0] || 'Kullanıcı'}
+                        <span id="dropdown-user-role">{user?.yetki || user?.role || 'Sistem Yöneticisi'}</span>
+                      </div>
                       <div className="menu-links-wrapper">
                         {(() => {
                           const role = user?.yetki || user?.role || '';
@@ -810,9 +812,10 @@ export const Header: React.FC = () => {
                         {renderNotifications}
                       </div>
                       {notifications.length > 0 && (
-                        <div className="liste-alt" id="bildirimlerFooter-mobile">
-                          <a
-                            href="#"
+                        <div className="liste-alt" id="bildirimlerFooter-mobile" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            className="liste-alt-btn"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -820,7 +823,7 @@ export const Header: React.FC = () => {
                             }}
                           >
                             Tümünü okundu olarak işaretle
-                          </a>
+                          </button>
                         </div>
                       )}
                     </div>
@@ -847,11 +850,13 @@ export const Header: React.FC = () => {
                 <div className="top-tooltip" data-tooltip="Yeni Kart" data-tooltip-pos="bottom">
                   <button className="btn-yeni-kart-ekle" type="button" onClick={handleYeniKart}>
                     <i className="icon-btn-yeni-kart"></i>
+                    <span className="btn-text">Yeni Kart</span>
                   </button>
                 </div>
                 <div className="top-tooltip" data-tooltip="Müşteri Ekle" data-tooltip-pos="bottom">
                   <button className="btn-yeni-musteri-ekle" type="button" onClick={handleYeniMusteri}>
                     <i className="icon-sm-i-musteriler"></i>
+                    <span className="btn-text">Müşteri Ekle</span>
                   </button>
                 </div>
               </div>
@@ -882,11 +887,13 @@ export const Header: React.FC = () => {
                   <div className="top-tooltip" data-tooltip="Yeni Kart Oluştur" data-tooltip-pos="bottom">
                     <button className="btn-yeni-kart-ekle" data-value="Yeni Kart Oluştur" type="button" onClick={handleYeniKart}>
                       <i className="icon-btn-yeni-kart"></i>
+                      <span className="btn-text">Yeni Kart Oluştur</span>
                     </button>
                   </div>
                   <div className="top-tooltip" data-tooltip="Müşteri Ekle" data-tooltip-pos="bottom">
                     <button className="btn-yeni-musteri-ekle" data-value="Müşteri Ekle" type="button" onClick={handleYeniMusteri}>
                       <i className="icon-sm-i-musteriler"></i>
+                      <span className="btn-text">Müşteri Ekle</span>
                     </button>
                   </div>
                 </div>

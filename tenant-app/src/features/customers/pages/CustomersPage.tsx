@@ -480,9 +480,9 @@ export const CustomersPage: React.FC = () => {
               description={customers?.length ? 'Farklı bir arama terimi deneyin.' : 'Henüz müşteri kaydı bulunmamaktadır.'}
             />
           ) : (
-            <div className="customers-table-wrapper">
-              <div className="customers-table-scroll table-scrollbar">
-                <table className="w-full customers-table">
+            <div className="page-table-wrapper customers-table-wrapper">
+              <div className="page-table-scroll customers-table-scroll table-scrollbar">
+                <table className="w-full page-table customers-table">
                   <thead>
                     <tr>
                       <TableSortHeader field="kod" label="Müşteri No" currentSort={sortField} sortDirection={sortDir} onSort={handleSort} />
@@ -517,17 +517,17 @@ export const CustomersPage: React.FC = () => {
                       return (
                         <tr
                           key={customer.id}
-                          className={`customers-table-row ${selectedCustomerId === customer.id ? 'customers-table-row-selected' : ''}`}
+                          className={`page-table-row customers-table-row ${selectedCustomerId === customer.id ? 'page-table-row-selected customers-table-row-selected' : ''}`}
                           onClick={() => setSelectedCustomerId(customer.id)}
                           data-table-row
                         >
-                          <td className="customers-td-code" data-label="Müşteri No">
+                          <td className="page-table-cell customers-td-code" data-label="Müşteri No">
                             {customer.musteri_kodu || customer.id}
                           </td>
-                          <td className="customers-td-tipi" data-label="Müşteri Tipi">
+                          <td className="page-table-cell customers-td-tipi" data-label="Müşteri Tipi">
                             {tipi ?? emptyLabel('(Müşteri tipi eklenmemiş)')}
                           </td>
-                          <td className="customers-td-grubu" data-label="Müşteri Grubu">
+                          <td className="page-table-cell customers-td-grubu" data-label="Müşteri Grubu">
                             {customer.musteri_grubu?.trim()
                               ? customer.musteri_grubu
                               : emptyLabel('(Müşteri grubu eklenmemiş)')}
@@ -636,13 +636,13 @@ export const CustomersPage: React.FC = () => {
       {(!isMobile || selectedCustomerId) && (() => {
         const panelContent = (
             <div className="page-panel-sag-inner">
-              <div className="customers-detail-header mb-4 flex items-center justify-between flex-shrink-0">
-                <h2 id="musteri-detay-title" className="customers-detail-title">Müşteri Detayları</h2>
+              <div className="page-detail-header mb-4 flex items-center justify-between flex-shrink-0">
+                <h2 id="musteri-detay-title" className="page-detail-title">Müşteri Detayları</h2>
                 <div className="flex items-center gap-2">
                   {selectedCustomer && (
                     <button
                       type="button"
-                      className="customers-btn-duzenle"
+                      className="page-detail-btn-edit"
                       onClick={() => {
                         setEditingCustomer(selectedCustomer);
                         setYeniMusteriModalOpen(true);
@@ -675,20 +675,20 @@ export const CustomersPage: React.FC = () => {
                   </div>
                   </div>
           ) : (
-            <div className="customers-detail-card" data-card-item>
-              <div className="customers-detail-card-top custom-scrollbar">
+            <div className="page-detail-card customers-detail-card" data-card-item>
+              <div className="page-detail-card-top customers-detail-card-top custom-scrollbar">
                 {/* Toplam Sipariş & Kalan Bakiye - en üstte, alan genişliğinde yarı yarıya */}
-                <div className="customers-detail-block customers-detail-block-sep customers-detail-cari">
+                <div className="page-detail-block page-detail-block-sep customers-detail-cari">
                   <div className="customers-detail-cari-row">
                     <div className="customers-detail-cari-cell">
-                      <span className="customers-detail-label">Toplam Sipariş</span>
-                      <span className="customers-detail-value">
+                      <span className="page-detail-label">Toplam Sipariş</span>
+                      <span className="page-detail-value">
                         {cariOzet?.toplam_siparis_sayisi ?? selectedCustomer.toplam_siparis ?? selectedCustomer.orderCount ?? 0}
                       </span>
                     </div>
                     <div className="customers-detail-cari-cell">
-                      <span className="customers-detail-label">Kalan Bakiye</span>
-                      <span className={`customers-detail-value customers-detail-bakiye ${(cariOzet?.bakiye ?? selectedCustomer.bakiye ?? 0) >= 0 ? 'customers-detail-bakiye-pozitif' : 'customers-detail-bakiye-negatif'}`}>
+                      <span className="page-detail-label">Kalan Bakiye</span>
+                      <span className={`page-detail-value customers-detail-bakiye ${(cariOzet?.bakiye ?? selectedCustomer.bakiye ?? 0) >= 0 ? 'customers-detail-bakiye-pozitif' : 'customers-detail-bakiye-negatif'}`}>
                         {formatTL(cariOzet?.bakiye ?? selectedCustomer.bakiye ?? 0)}
                       </span>
                     </div>
@@ -706,9 +706,9 @@ export const CustomersPage: React.FC = () => {
                 </div>
 
                 {/* Müşteri Unvanı & Yetkili Kişi - tek başlık, ünvan büyük punto */}
-                <div className="customers-detail-block customers-detail-block-sep">
-                  <p className="customers-detail-label">Müşteri Unvanı & Yetkili Kişi</p>
-                  <p className="customers-detail-value customers-detail-unvan">
+                <div className="page-detail-block page-detail-block-sep">
+                  <p className="page-detail-label">Müşteri Unvanı & Yetkili Kişi</p>
+                  <p className="page-detail-value customers-detail-unvan">
                     {selectedCustomer.musteri_unvani?.trim() || emptyLabel('(Müşteri ünvanı eklenmemiş)')}
                   </p>
                   <p className="customers-detail-value customers-detail-yetkili">
@@ -719,8 +719,8 @@ export const CustomersPage: React.FC = () => {
               </div>
 
                 {/* Adres Bilgileri */}
-                <p className="customers-detail-label">Adres Bilgileri</p>
-                <div className="customers-detail-address-line customers-detail-block-sep">
+                <p className="page-detail-label">Adres Bilgileri</p>
+                <div className="customers-detail-address-line page-detail-block-sep">
                   {[
                     selectedCustomer.musteri_mahalle || null,
                     (selectedCustomer.musteri_acik_adres || selectedCustomer.musteri_adres || '').trim() || null,
@@ -731,22 +731,22 @@ export const CustomersPage: React.FC = () => {
                     </div>
 
                 {/* Vergi Kimlik Bilgileri */}
-                <p className="customers-detail-label">Vergi Kimlik Bilgileri</p>
+                <p className="page-detail-label">Vergi Kimlik Bilgileri</p>
                 {(selectedCustomer.musteri_vergi_dairesi || selectedCustomer.musteri_vergi_kimlik_numarasi) ? (
                   <div className="customers-detail-vergi customers-detail-block-sep">
                     <span>{selectedCustomer.musteri_vergi_dairesi}</span>
                     <span>{selectedCustomer.musteri_vergi_kimlik_numarasi}</span>
                   </div>
                 ) : (
-                  <p className="customers-detail-value customers-detail-block-sep">
+                  <p className="page-detail-value page-detail-block-sep">
                     {emptyLabel('(Vergi bilgisi eklenmemiş)')}
                   </p>
               )}
 
                 {/* Müşterinin ürün yazısı bilgisi + kopyala */}
-                <div className="customers-detail-urun-yazisi-wrap customers-detail-block-sep">
+                <div className="customers-detail-urun-yazisi-wrap page-detail-block-sep">
                   <div className="customers-detail-urun-yazisi-head">
-                    <p className="customers-detail-label">Müşteri Ürün Yazısı Bilgisi</p>
+                    <p className="page-detail-label">Müşteri Ürün Yazısı Bilgisi</p>
                     <button
                       type="button"
                       className="customers-detail-copy-btn"
@@ -767,7 +767,7 @@ export const CustomersPage: React.FC = () => {
                       <Copy size={16} aria-hidden />
                     </button>
                   </div>
-                  <p className="customers-detail-value customers-detail-urun-yazisi">
+                  <p className="page-detail-value customers-detail-urun-yazisi">
                     {(selectedCustomer as any).musteri_urun_yazisi?.trim() ||
                       emptyLabel('(Ürün yazısı eklenmemiş)')}
                       </p>

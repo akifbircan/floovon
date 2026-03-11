@@ -685,3 +685,15 @@ body select.modal-react-arac-takip-select {
     }
 }
 
+/* ========== SAĞ PANEL AÇIKKEN (tablet) HEADER VE SIDEBAR ALTTA KALSIN ========== */
+body:has(.sag-panel-overlay.active) .header,
+body:has(.sag-panel.tablet-open) .header {
+    z-index: 0 !important;
+    isolation: auto !important;
+}
+body:has(.sag-panel-overlay.active) nav[data-sidebar],
+body:has(.sag-panel.tablet-open) nav[data-sidebar] {
+    z-index: 0 !important;
+    isolation: auto !important;
+}
+

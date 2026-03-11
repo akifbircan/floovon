@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  padding: 0 20px 16px;
+  padding: 0 0 16px 0;
   border-bottom: 1px solid var(--overlay-gray-light);
 }
 

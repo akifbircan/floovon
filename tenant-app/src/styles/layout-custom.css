@@ -54,7 +54,8 @@ body:has(.modal-react-teknik-destek-overlay) nav[data-sidebar],
 body:has(.confirm-modal-overlay) nav[data-sidebar],
 body:has(.rapor-detay-overlay) nav[data-sidebar],
 body:has(.siparis-detay-overlay) nav[data-sidebar],
-body:has(.cari-drawer-overlay) nav[data-sidebar] {
+body:has(.cari-drawer-overlay) nav[data-sidebar],
+body:has(.sag-panel-overlay.active) nav[data-sidebar] {
   z-index: 0 !important;
   isolation: auto !important;
 }
@@ -122,9 +123,21 @@ main[data-main-content] {
   min-height: 0;
 }
 
-/* Main content için right panel genişliği kadar margin */
-main[data-main-content] > div[style*="marginRight"] {
-  margin-right: 20rem !important; /* Right panel genişliği */
+/* Main content için right panel genişliği kadar margin (sadece masaüstü 1440+) */
+@media (min-width: 1440px) {
+  main[data-main-content] > div[style*="marginRight"] {
+    margin-right: 20rem !important; /* Right panel genişliği */
+  }
+}
+
+/* Tablet benzeri (768–1439): sağ panel kapalı, ana içerik tam genişlik; main'e 10px sağ boşluk */
+@media (min-width: 768px) and (max-width: 1439px) {
+  main[data-main-content] {
+    margin-right: 10px;
+  }
+  main[data-main-content] > div[style*="marginRight"] {
+    margin-right: 0 !important;
+  }
 }
 
 /* Mobil: sidebar yok, ana içerik soldan margin almamalı (modal açık olsa da) */

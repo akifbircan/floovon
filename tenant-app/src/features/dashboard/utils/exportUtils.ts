@@ -1068,6 +1068,7 @@ export function buildPrintHtml(
     th { background: #f5f5f5; font-weight: 600; white-space: nowrap; }
     tr:nth-child(even) { background: #fafafa; }
     .print-th-center, .print-td-center { text-align: center !important; }
+    img.print-partner-logo { max-width: 60px; max-height: 60px; object-fit: contain; display: block; margin: 0 auto; }
     .print-footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 20px; border-top: 1px solid #e5e7eb; font-size: 9px; color: #4b5563; text-align: center; background: #fff; }
     @media print {
       body { margin: 0; padding-bottom: 28px; }

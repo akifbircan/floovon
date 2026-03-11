@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import '../styles/reports-page.css';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -63,6 +63,18 @@ export const ReportsPage: React.FC = () => {
   const [urunFilter, setUrunFilter] = useState<string>('tumunu');
   const [musteriFilter, setMusteriFilter] = useState<string>('tumunu');
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!exportMenuOpen) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (exportDropdownRef.current?.contains(e.target as Node)) return;
+      setExportMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, [exportMenuOpen]);
+
   const [sortSatisField, setSortSatisField] = useState<string | null>(null);
   const [sortSatisDir, setSortSatisDir] = useState<'asc' | 'desc'>('asc');
   const [sortMusteriField, setSortMusteriField] = useState<string | null>(null);
@@ -569,7 +581,7 @@ export const ReportsPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className={`buton-disa-aktar clickdropdown page-export-dropdown ${exportMenuOpen ? 'is-open' : ''}`}>
+            <div ref={exportDropdownRef} className={`buton-disa-aktar clickdropdown page-export-dropdown ${exportMenuOpen ? 'is-open' : ''}`}>
               <div className="btn-baslik">
                 <i className="icon-dashboard-disa-aktar" />
                 Dışa Aktar
@@ -1023,7 +1035,6 @@ export const ReportsPage: React.FC = () => {
         document.body
       )}
 
-      {exportMenuOpen && <div className="fixed inset-0 z-10" onClick={() => setExportMenuOpen(false)} aria-hidden />}
     </div>
   );
 };

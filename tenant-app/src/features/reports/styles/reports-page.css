@@ -70,14 +70,12 @@
 
 /* İstatistikler - bilgi-box (eski raporlar tasarımı) */
 .reports-content .istatistikler {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   width: 100%;
   color: var(--ana-renk);
   gap: 24px;
   padding: 20px 0;
-  flex-wrap: wrap;
 }
 
 .reports-content .istatistikler .bilgi-box {
@@ -181,19 +179,19 @@
   font-size: 16px;
 }
 
-/* Tablo - reports-table (partners/customers benzeri) */
+/* Tablo - reports-table (partners/customers benzeri); scrollbar sağ kenarda */
 .reports-table-wrapper {
   background-color: var(--white);
   border-radius: 8px;
   border: 1px solid var(--border-renk);
   overflow: hidden;
-  /* margin-bottom: 16px; */
 }
 
 .reports-table-scroll {
   max-height: calc(100vh - 320px);
   overflow-x: auto;
   overflow-y: auto;
+  padding-right: 10px;
 }
 
 .reports-table-scroll.table-scrollbar {

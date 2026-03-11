@@ -1,19 +1,31 @@
 /* Toast override: mor primary, beyaz yazı, büyük harf butonlar, daha belirgin tasarım */
 
-/* Toast: sipariş detay overlay (999999) ve modallerin üstünde; konum her zaman viewport üstü (modal içinde bile) */
+/* Toast: konteyner react-hot-toast’ın div[data-rht-toaster] + containerClassName; kenarlarda boşluk burada */
+div[data-rht-toaster],
+div[data-rht-toaster].app-toast-container,
 .app-toast-container,
 body > div[class*="toast"],
 body > div[class*="Toast"] {
   z-index: 1000000 !important;
   position: fixed !important;
   top: var(--header-height, 64px) !important;
-  left: 50% !important;
-  right: auto !important;
-  transform: translateX(-50%) !important;
+  left: 20px !important;
+  right: 20px !important;
   width: auto !important;
-  max-width: min(400px, calc(100vw - 32px)) !important;
+  max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+}
+/* İç wrapper: toast listesi ortada, max genişlik */
+div[data-rht-toaster] > div,
+.app-toast-container > div,
+body > div[class*="toast"] > div,
+body > div[class*="Toast"] > div {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  max-width: 400px !important;
 }
 
 /* Onay butonu → mor primary, beyaz yazı */
@@ -200,6 +212,10 @@ body .toast.info .column .toast-icon svg,
 }
 
 .toast.interactive {
+  width: auto !important;
+  min-width: min(360px, calc(100vw - 40px)) !important;
+  max-width: min(440px, calc(100vw - 40px)) !important;
+  align-items: center !important;
   border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }

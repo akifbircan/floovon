@@ -1,22 +1,25 @@
 /* Toast override: mor primary, beyaz yazı, büyük harf butonlar, daha belirgin tasarım */
 
 /* Toast: konteyner react-hot-toast’ın div[data-rht-toaster] + containerClassName; kenarlarda boşluk burada */
+/* Portal wrapper (MainLayout): sunucuda overlay en üstte görünsün; inline z-index + burada pointer-events */
+.app-toast-portal-wrapper {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+}
+.app-toast-portal-wrapper .app-toast-container,
+.app-toast-portal-wrapper div[data-rht-toaster] {
+  pointer-events: auto !important;
+}
+
+/* Toast: konteyner react-hot-toast'ın div[data-rht-toaster] + containerClassName; kenarlarda boşluk burada */
 div[data-rht-toaster],
 div[data-rht-toaster].app-toast-container,
 .app-toast-container,
 body > div[class*="toast"],
 body > div[class*="Toast"] {
   z-index: 2147483647 !important;
-  position: fixed !important;
-  top: var(--header-height, 64px) !important;
-  left: 20px !important;
-  right: 20px !important;
-  width: auto !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  transform: none !important;
-  box-sizing: border-box !important;
 }
 /* İç wrapper: toast listesi ortada, max genişlik */
 div[data-rht-toaster] > div,
@@ -233,33 +236,14 @@ body .toast.info .column .toast-icon svg,
 
 /* Mobil: toast header hemen altında, biraz yukarıda kalsın */
 @media (max-width: 767px) {
-  .app-toast-container,
+  /* Konteyner pozisyonu kaldırıldı (top/left/right sorun çıkarıyordu) */
+  /* .app-toast-container,
   [class*="toast"][class*="container"],
   ul.notifications,
   body > [id*="toast"],
   body > [class*="ToastContainer"] {
-    top: calc(var(--header-height, 64px) - 8px) !important;
-    left: auto !important;
-    right: 20px !important;
-    width: auto !important;
-    max-width: min(340px, calc(100vw - 40px)) !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    transform: none !important;
-    box-sizing: border-box !important;
-  }
+  } */
   /* Kütüphanenin eklediği margin/padding’i sıfırla; toasts yukarıda kalsın */
-  .app-toast-container > div,
-  [class*="toast"][class*="container"] > div,
-  ul.notifications {
-    margin: 0 !important;
-    margin-top: 0 !important;
-    margin-left: auto !important;
-    margin-right: 0 !important;
-    padding-top: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
 }
 
 

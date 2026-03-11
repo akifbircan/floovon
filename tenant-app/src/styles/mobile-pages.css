@@ -154,31 +154,7 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
   }
 
-  /* Toast mobil: header hemen altında, yukarıda kalsın */
-  body .app-toast-container,
-  body ul.notifications,
-  body > .app-toast-container,
-  body > ul.notifications,
-  .app-toast-container,
-  ul.notifications,
-  body > [id*="toast"],
-  body > [class*="ToastContainer"] {
-    left: auto !important;
-    right: 20px !important;
-    top: calc(var(--header-height, 64px) - 8px) !important;
-    width: auto !important;
-    max-width: min(340px, calc(100vw - 40px)) !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    transform: none !important;
-    box-sizing: border-box !important;
-  }
-  .app-toast-container > div,
-  [class*="toast"][class*="container"] > div,
-  ul.notifications {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-  }
+  /* Toast konteyner: top/left/right kaldırıldı (sorun çıkarıyordu) */
 
   /* ========== Ortak sayfa yapısı: page-wrapper, panel-sol, panel-sag ========== */
   .page-wrapper {

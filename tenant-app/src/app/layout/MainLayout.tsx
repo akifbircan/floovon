@@ -214,12 +214,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </div>
       </div>
 
-      {/* Toast notifications: body'ye portal ile render edilir; sipariş detay overlay (z-index: 2147483646) üstünde görünsün */}
+      {/* Toast notifications: body'ye portal ile render edilir; sunucuda da overlay en üstte görünsün diye wrapper'a inline z-index */}
       {createPortal(
-        <Toaster
-          position="top-center"
-          containerClassName="app-toast-container"
-          toastOptions={{
+        <div className="app-toast-portal-wrapper" style={{ position: 'fixed', inset: 0, zIndex: 2147483647, pointerEvents: 'none' }}>
+          <Toaster
+            position="top-center"
+            containerClassName="app-toast-container"
+            toastOptions={{
             duration: 3000,
             style: {
               background: '#363636',
@@ -240,7 +241,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               },
             },
           }}
-        />,
+          />
+        </div>,
         document.body
       )}
     </div>

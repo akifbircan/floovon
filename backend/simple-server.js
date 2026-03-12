@@ -2624,6 +2624,7 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
             app.listen(PORT, HOST, () => {
                 console.log(`🚀 Backend server çalışıyor: http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`);
                 console.log(`📡 API endpoint: http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}/api`);
+                startHaftalikRaporScheduler();
             });
         }
     } catch (error) {
@@ -2635,6 +2636,7 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
             const HOST = process.env.HOST || '0.0.0.0';
             app.listen(PORT, HOST, () => {
                 console.log(`🚀 Backend server çalışıyor (hata ile): http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`);
+                startHaftalikRaporScheduler();
             });
         }
     }
@@ -16413,7 +16415,15 @@ app.get('/api/customers/:id/urun-yazi-dosyalari', async (req, res) => {
                         modified: stats.mtime.toISOString()
                     };
                 });
-                console.log(`✅ ${files.length} dosya bulundu`);
+                
+                // Dosyaları son yüklenen en altta olacak şekilde tarihe göre sırala (eski → yeni)
+                files.sort((a, b) => {
+                    const ta = new Date(a.modified).getTime();
+                    const tb = new Date(b.modified).getTime();
+                    return ta - tb;
+                });
+
+                console.log(`✅ ${files.length} dosya bulundu (tarihe göre sıralandı)`);
             } catch (dirError) {
                 console.error('❌ Dosya listesi okunurken hata:', dirError);
             }
@@ -18049,23 +18059,17 @@ async function ensureMesajSablonlariTable() {
     }
 }
 
-// Gönderim ayarları endpoint (WhatsApp sipariş listesi numaraları vb.)
+// Gönderim ayarları: sadece ayarlar_gonderim_iletisim_kisileri + ayarlar_gonderim_rapor_ayarlari (eski ayarlar_genel_gonderim_ayarlari kullanılmıyor)
 app.get('/api/ayarlar/gonderim', async (req, res) => {
     try {
         const tenantId = req.tenantId || await getTenantId(req);
-        
         if (!tenantId) {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
         }
-        
         await ensureMesajSablonlariTable();
-        
-        const tableExists = await query(`
-            SELECT name FROM sqlite_master WHERE type='table' AND name='ayarlar_genel_gonderim_ayarlari'
-        `);
-        
+        await ensureGonderimIletisimVeRaporTables();
+
         let musteri_sablonu_whatsapp = null;
-        let hasTenantRow = false;
         try {
             const tenantSablonRows = await query(
                 `SELECT mesaj_metni FROM ${MESAJ_SABLONLARI_TABLE} WHERE tenant_id = ? AND sablon_turu = ? LIMIT 1`,
@@ -18073,89 +18077,49 @@ app.get('/api/ayarlar/gonderim', async (req, res) => {
             );
             if (tenantSablonRows.length > 0 && tenantSablonRows[0].mesaj_metni != null) {
                 musteri_sablonu_whatsapp = tenantSablonRows[0].mesaj_metni;
-                hasTenantRow = true;
             }
-        } catch (e) {
-            // Tablo yeni oluşmuş olabilir, kolon adları farklı olabilir
-        }
-        
-        if (tableExists.length === 0) {
-            if (!hasTenantRow) {
-                const seedValue = musteri_sablonu_whatsapp != null ? musteri_sablonu_whatsapp : DEFAULT_MUSTERI_SIPARIS_SABLONU;
-                try {
-                    await run(
-                        `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                        [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, seedValue]
-                    );
-                    musteri_sablonu_whatsapp = seedValue;
-                } catch (err) { console.error('Mesaj şablonu seed hatası:', err); }
-            }
-            return res.json({
-                success: true,
-                data: {
-                    siparis_listesi_whatsapp: null,
-                    musteri_sablonu_whatsapp: musteri_sablonu_whatsapp,
-                    haftalik_rapor_eposta: null,
-                    haftalik_rapor_gun: '1',
-                    haftalik_rapor_saat: '18:00'
-                }
-            });
-        }
-        
-        const columns = await query('PRAGMA table_info(ayarlar_genel_gonderim_ayarlari)');
-        const hasTenantId = columns.some(col => col.name === 'tenant_id');
-        
-        let settings;
-        if (hasTenantId) {
-            settings = await query(
-                'SELECT * FROM ayarlar_genel_gonderim_ayarlari WHERE tenant_id = ? AND (is_active = 1 OR is_active IS NULL) LIMIT 1',
-                [tenantId]
-            );
-            if (settings.length === 0) {
-                settings = await query(
-                    'SELECT * FROM ayarlar_genel_gonderim_ayarlari WHERE tenant_id IS NULL LIMIT 1'
-                );
-            }
-        } else {
-            settings = await query('SELECT * FROM ayarlar_genel_gonderim_ayarlari WHERE id = 1 LIMIT 1');
-        }
-        
-        if (musteri_sablonu_whatsapp == null && settings.length > 0) {
-            musteri_sablonu_whatsapp = settings[0].musteri_sablonu_whatsapp || null;
-        }
-        if (!hasTenantRow) {
-            const seedValue = musteri_sablonu_whatsapp != null ? musteri_sablonu_whatsapp : DEFAULT_MUSTERI_SIPARIS_SABLONU;
+        } catch (e) {}
+        if (musteri_sablonu_whatsapp == null) {
             try {
                 await run(
                     `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                    [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, seedValue]
+                    [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, DEFAULT_MUSTERI_SIPARIS_SABLONU]
                 );
-                musteri_sablonu_whatsapp = seedValue;
-            } catch (err) { console.error('Mesaj şablonu seed hatası:', err); }
+                musteri_sablonu_whatsapp = DEFAULT_MUSTERI_SIPARIS_SABLONU;
+            } catch (err) { /* zaten var */ }
+            if (musteri_sablonu_whatsapp == null) {
+                const any = await query(`SELECT mesaj_metni FROM ${MESAJ_SABLONLARI_TABLE} WHERE sablon_turu = ? LIMIT 1`, [MUSTERI_SIPARIS_SABLONU_TURU]).then(r => r[0]);
+                musteri_sablonu_whatsapp = (any && any.mesaj_metni) || null;
+            }
         }
-        
-        if (settings.length === 0) {
-            return res.json({
-                success: true,
-                data: {
-                    siparis_listesi_whatsapp: null,
-                    musteri_sablonu_whatsapp: musteri_sablonu_whatsapp,
-                    haftalik_rapor_eposta: null,
-                    haftalik_rapor_gun: '1',
-                    haftalik_rapor_saat: '18:00'
-                }
+
+        const iletisimRows = await query(
+            'SELECT id, kisi_ad_soyad, kisi_telefon FROM ayarlar_gonderim_iletisim_kisileri WHERE tenant_id = ? AND (is_active = 1 OR is_active IS NULL) ORDER BY id ASC',
+            [tenantId]
+        );
+        let siparisListesiWhatsapp = null;
+        if (iletisimRows && iletisimRows.length > 0) {
+            const obj = {};
+            iletisimRows.forEach((r, i) => {
+                obj['kisi_' + (r.id || i)] = { ad: r.kisi_ad_soyad, tel: r.kisi_telefon };
             });
+            siparisListesiWhatsapp = JSON.stringify(obj);
         }
-        
-        const row = settings[0];
-        res.json({
+
+        const raporRow = await query('SELECT haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat FROM ayarlar_gonderim_rapor_ayarlari WHERE tenant_id = ? LIMIT 1', [tenantId]).then(r => r[0]);
+        const haftalikRaporEposta = raporRow ? (raporRow.haftalik_rapor_eposta || null) : null;
+        const haftalikRaporGun = raporRow ? (raporRow.haftalik_rapor_gun || '1') : '1';
+        const haftalikRaporSaat = raporRow ? (raporRow.haftalik_rapor_saat || '18:00') : '18:00';
+
+        return res.json({
             success: true,
             data: {
-                siparis_listesi_whatsapp: row.siparis_listesi_whatsapp || null,
-                musteri_sablonu_whatsapp: musteri_sablonu_whatsapp != null ? musteri_sablonu_whatsapp : (row.musteri_sablonu_whatsapp || null),
-                haftalik_rapor_eposta: row.haftalik_rapor_eposta || null,
-                haftalik_rapor_gun: row.haftalik_rapor_gun || '1',
-                haftalik_rapor_saat: row.haftalik_rapor_saat || '18:00'
+                siparis_listesi_whatsapp: siparisListesiWhatsapp,
+                iletisimKisileri: iletisimRows || [],
+                musteri_sablonu_whatsapp: musteri_sablonu_whatsapp,
+                haftalik_rapor_eposta: haftalikRaporEposta,
+                haftalik_rapor_gun: haftalikRaporGun,
+                haftalik_rapor_saat: haftalikRaporSaat
             }
         });
     } catch (error) {
@@ -18168,16 +18132,15 @@ app.get('/api/ayarlar/gonderim', async (req, res) => {
     }
 });
 
+// PUT gonderim: sadece mesaj şablonu + rapor (yeni tablolar). ayarlar_genel_gonderim_ayarlari kullanılmıyor.
 app.put('/api/ayarlar/gonderim', async (req, res) => {
     try {
         const tenantId = req.tenantId || await getTenantId(req);
-        
         if (!tenantId) {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
         }
-        
-        const { siparis_listesi_whatsapp, musteri_sablonu_whatsapp, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat } = req.body || {};
-        
+        const { musteri_sablonu_whatsapp, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat } = req.body || {};
+
         if (musteri_sablonu_whatsapp !== undefined) {
             await ensureMesajSablonlariTable();
             const mevcut = await query(
@@ -18196,96 +18159,47 @@ app.put('/api/ayarlar/gonderim', async (req, res) => {
                 );
             }
         }
-        
-        const tableExists = await query(`
-            SELECT name FROM sqlite_master WHERE type='table' AND name='ayarlar_genel_gonderim_ayarlari'
-        `);
-        
-        if (tableExists.length === 0) {
-            const sablonRow = await query(
-                `SELECT mesaj_metni FROM ${MESAJ_SABLONLARI_TABLE} WHERE sablon_turu = ? AND (tenant_id = ? OR tenant_id IS NULL) ORDER BY tenant_id DESC LIMIT 1`,
-                [MUSTERI_SIPARIS_SABLONU_TURU, tenantId]
-            ).catch(() => []);
-            return res.json({
-                success: true,
-                data: {
-                    siparis_listesi_whatsapp: null,
-                    musteri_sablonu_whatsapp: sablonRow[0]?.mesaj_metni ?? null,
-                    haftalik_rapor_eposta: null,
-                    haftalik_rapor_gun: '1',
-                    haftalik_rapor_saat: '18:00'
-                }
-            });
-        }
-        
-        const columns = await query('PRAGMA table_info(ayarlar_genel_gonderim_ayarlari)');
-        const hasTenantId = columns.some(col => col.name === 'tenant_id');
-        
-        let existing;
-        if (hasTenantId) {
-            existing = await query(
-                'SELECT id FROM ayarlar_genel_gonderim_ayarlari WHERE tenant_id = ? LIMIT 1',
-                [tenantId]
-            );
-        } else {
-            existing = await query('SELECT id FROM ayarlar_genel_gonderim_ayarlari WHERE id = 1 LIMIT 1');
-        }
-        
-        if (existing.length > 0) {
-            const updateCols = [];
-            const updateVals = [];
-            if (siparis_listesi_whatsapp !== undefined) { updateCols.push('siparis_listesi_whatsapp = ?'); updateVals.push(siparis_listesi_whatsapp); }
-            if (musteri_sablonu_whatsapp !== undefined) { updateCols.push('musteri_sablonu_whatsapp = ?'); updateVals.push(musteri_sablonu_whatsapp); }
-            if (haftalik_rapor_eposta !== undefined) { updateCols.push('haftalik_rapor_eposta = ?'); updateVals.push(haftalik_rapor_eposta); }
-            if (haftalik_rapor_gun !== undefined) { updateCols.push('haftalik_rapor_gun = ?'); updateVals.push(haftalik_rapor_gun); }
-            if (haftalik_rapor_saat !== undefined) { updateCols.push('haftalik_rapor_saat = ?'); updateVals.push(haftalik_rapor_saat); }
-            
-            if (updateCols.length > 0) {
-                updateCols.push('updated_at = CURRENT_TIMESTAMP');
-                updateVals.push(existing[0].id);
+
+        if (haftalik_rapor_eposta !== undefined || haftalik_rapor_gun !== undefined || haftalik_rapor_saat !== undefined) {
+            await ensureGonderimIletisimVeRaporTables();
+            const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId) || null;
+            const existing = await query('SELECT id FROM ayarlar_gonderim_rapor_ayarlari WHERE tenant_id = ? LIMIT 1', [tenantId]);
+            if (existing.length > 0) {
                 await run(
-                    `UPDATE ayarlar_genel_gonderim_ayarlari SET ${updateCols.join(', ')} WHERE id = ?`,
-                    updateVals
-                );
-            }
-        } else {
-            if (hasTenantId) {
-                await run(
-                    `INSERT INTO ayarlar_genel_gonderim_ayarlari (tenant_id, siparis_listesi_whatsapp, musteri_sablonu_whatsapp, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                    [tenantId, siparis_listesi_whatsapp || null, musteri_sablonu_whatsapp || null, haftalik_rapor_eposta || null, haftalik_rapor_gun || '1', haftalik_rapor_saat || '18:00']
+                    `UPDATE ayarlar_gonderim_rapor_ayarlari SET haftalik_rapor_eposta = ?, haftalik_rapor_gun = ?, haftalik_rapor_saat = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = ?`,
+                    [haftalik_rapor_eposta != null ? String(haftalik_rapor_eposta).trim() : null, haftalik_rapor_gun || '1', haftalik_rapor_saat || '18:00', kullaniciAdi, tenantId]
                 );
             } else {
                 await run(
-                    `INSERT INTO ayarlar_genel_gonderim_ayarlari (siparis_listesi_whatsapp, musteri_sablonu_whatsapp, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat, created_at, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                    [siparis_listesi_whatsapp || null, musteri_sablonu_whatsapp || null, haftalik_rapor_eposta || null, haftalik_rapor_gun || '1', haftalik_rapor_saat || '18:00']
+                    `INSERT INTO ayarlar_gonderim_rapor_ayarlari (tenant_id, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat, created_by, updated_by, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)`,
+                    [tenantId, haftalik_rapor_eposta != null ? String(haftalik_rapor_eposta).trim() : null, haftalik_rapor_gun || '1', haftalik_rapor_saat || '18:00', kullaniciAdi, kullaniciAdi]
                 );
             }
         }
-        
-        const result = await query(
-            hasTenantId
-                ? 'SELECT * FROM ayarlar_genel_gonderim_ayarlari WHERE tenant_id = ? LIMIT 1'
-                : 'SELECT * FROM ayarlar_genel_gonderim_ayarlari WHERE id = 1 LIMIT 1',
-            hasTenantId ? [tenantId] : []
+
+        const sablonRow = await query(
+            `SELECT mesaj_metni FROM ${MESAJ_SABLONLARI_TABLE} WHERE sablon_turu = ? AND (tenant_id = ? OR tenant_id IS NULL) ORDER BY tenant_id DESC LIMIT 1`,
+            [MUSTERI_SIPARIS_SABLONU_TURU, tenantId]
+        ).catch(() => []);
+        const raporRow = await query('SELECT haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat FROM ayarlar_gonderim_rapor_ayarlari WHERE tenant_id = ? LIMIT 1', [tenantId]).then(r => r[0]);
+        const iletisimRows = await query(
+            'SELECT id, kisi_ad_soyad, kisi_telefon FROM ayarlar_gonderim_iletisim_kisileri WHERE tenant_id = ? AND (is_active = 1 OR is_active IS NULL) ORDER BY id ASC',
+            [tenantId]
         );
-        
-        const row = result[0] || {};
-        let musteriSablonResponse = row.musteri_sablonu_whatsapp || null;
-        try {
-            const sablonRows = await query(
-                `SELECT mesaj_metni FROM ${MESAJ_SABLONLARI_TABLE} WHERE sablon_turu = ? AND (tenant_id = ? OR tenant_id IS NULL) ORDER BY tenant_id DESC LIMIT 1`,
-                [MUSTERI_SIPARIS_SABLONU_TURU, tenantId]
-            );
-            if (sablonRows.length > 0 && sablonRows[0].mesaj_metni != null) musteriSablonResponse = sablonRows[0].mesaj_metni;
-        } catch (_) {}
-        res.json({
+        let siparisListesiWhatsapp = null;
+        if (iletisimRows && iletisimRows.length > 0) {
+            const obj = {};
+            iletisimRows.forEach((r, i) => { obj['kisi_' + (r.id || i)] = { ad: r.kisi_ad_soyad, tel: r.kisi_telefon }; });
+            siparisListesiWhatsapp = JSON.stringify(obj);
+        }
+        return res.json({
             success: true,
             data: {
-                siparis_listesi_whatsapp: row.siparis_listesi_whatsapp || null,
-                musteri_sablonu_whatsapp: musteriSablonResponse,
-                haftalik_rapor_eposta: row.haftalik_rapor_eposta || null,
-                haftalik_rapor_gun: row.haftalik_rapor_gun || '1',
-                haftalik_rapor_saat: row.haftalik_rapor_saat || '18:00'
+                siparis_listesi_whatsapp: siparisListesiWhatsapp,
+                musteri_sablonu_whatsapp: sablonRow[0]?.mesaj_metni ?? null,
+                haftalik_rapor_eposta: raporRow ? (raporRow.haftalik_rapor_eposta || null) : null,
+                haftalik_rapor_gun: raporRow ? (raporRow.haftalik_rapor_gun || '1') : '1',
+                haftalik_rapor_saat: raporRow ? (raporRow.haftalik_rapor_saat || '18:00') : '18:00'
             }
         });
     } catch (error) {
@@ -18295,6 +18209,446 @@ app.put('/api/ayarlar/gonderim', async (req, res) => {
             error: 'Gönderim ayarları güncellenemedi',
             message: error.message
         });
+    }
+});
+
+// --- Gönderim İletişim Kişileri & Rapor Ayarları tabloları (ayarlar_gonderim_iletisim_kisileri, ayarlar_gonderim_rapor_ayarlari) ---
+async function ensureGonderimIletisimVeRaporTables() {
+    const iletisimExists = await query("SELECT name FROM sqlite_master WHERE type='table' AND name='ayarlar_gonderim_iletisim_kisileri'");
+    if (iletisimExists.length === 0) {
+        await run(`
+            CREATE TABLE ayarlar_gonderim_iletisim_kisileri (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant_id INTEGER NOT NULL,
+                kisi_ad_soyad TEXT NOT NULL,
+                kisi_telefon TEXT NOT NULL,
+                created_by TEXT,
+                updated_by TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                is_active INTEGER DEFAULT 1
+            )
+        `);
+        await run('CREATE INDEX IF NOT EXISTS idx_iletisim_kisileri_tenant ON ayarlar_gonderim_iletisim_kisileri(tenant_id)');
+        await run('CREATE INDEX IF NOT EXISTS idx_iletisim_kisileri_tenant_active ON ayarlar_gonderim_iletisim_kisileri(tenant_id, is_active)');
+        console.log('✅ ayarlar_gonderim_iletisim_kisileri tablosu oluşturuldu');
+    }
+    const raporExists = await query("SELECT name FROM sqlite_master WHERE type='table' AND name='ayarlar_gonderim_rapor_ayarlari'");
+    if (raporExists.length === 0) {
+        await run(`
+            CREATE TABLE ayarlar_gonderim_rapor_ayarlari (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant_id INTEGER NOT NULL UNIQUE,
+                haftalik_rapor_eposta TEXT,
+                haftalik_rapor_gun TEXT DEFAULT '1',
+                haftalik_rapor_saat TEXT DEFAULT '18:00',
+                created_by TEXT,
+                updated_by TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                is_active INTEGER DEFAULT 1
+            )
+        `);
+        await run('CREATE INDEX IF NOT EXISTS idx_rapor_ayarlari_tenant ON ayarlar_gonderim_rapor_ayarlari(tenant_id)');
+        console.log('✅ ayarlar_gonderim_rapor_ayarlari tablosu oluşturuldu');
+    } else {
+        const raporCols = await query('PRAGMA table_info(ayarlar_gonderim_rapor_ayarlari)');
+        const hasLastSent = raporCols.some(c => c.name === 'last_weekly_report_sent_at');
+        if (!hasLastSent) {
+            await run('ALTER TABLE ayarlar_gonderim_rapor_ayarlari ADD COLUMN last_weekly_report_sent_at TEXT');
+            console.log('✅ ayarlar_gonderim_rapor_ayarlari.last_weekly_report_sent_at eklendi');
+        }
+    }
+}
+
+/**
+ * Mevcut tarihin içinde bulunduğu ISO haftanın Pazartesi ve Pazar tarihlerini döndürür (index ile aynı mantık).
+ * @returns { { weekStart: string, weekEnd: string } } YYYY-MM-DD formatında
+ */
+function getMevcutHaftaPazartesiPazar() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    const dateDay = d.getDay();
+    const daysToMonday = dateDay === 0 ? -6 : 1 - dateDay;
+    const pazartesi = new Date(d);
+    pazartesi.setDate(d.getDate() + daysToMonday);
+    const pazar = new Date(pazartesi);
+    pazar.setDate(pazartesi.getDate() + 6);
+    const pad = (n) => String(n).padStart(2, '0');
+    return {
+        weekStart: `${pazartesi.getFullYear()}-${pad(pazartesi.getMonth() + 1)}-${pad(pazartesi.getDate())}`,
+        weekEnd: `${pazar.getFullYear()}-${pad(pazar.getMonth() + 1)}-${pad(pazar.getDate())}`,
+    };
+}
+
+/**
+ * Haftalık rapor verilerini topla: index ile aynı mantık
+ * organizasyon_kartlar.organizasyon_teslim_tarih mevcut hafta (Pazartesi–Pazar) içinde olan kartlara ait siparişler sayılır
+ * turBreakdown: organizasyon türüne göre (Organizasyonlar, Özel Günler, vb.) sipariş sayısı ve toplam tutar
+ */
+async function getHaftalikRaporVerisi(tenantId) {
+    let siparisSayisi = 0;
+    let toplamTutar = 0;
+    let turBreakdown = [];
+    try {
+        const cols = await query('PRAGMA table_info(siparisler)');
+        const colNames = (cols || []).map(c => c.name);
+        const hasToplam = colNames.includes('toplam_tutar');
+        const hasSiparisTutari = colNames.includes('siparis_tutari');
+        const tutarCol = hasToplam && hasSiparisTutari
+            ? 'COALESCE(sk.toplam_tutar, sk.siparis_tutari)'
+            : hasToplam
+                ? 'sk.toplam_tutar'
+                : hasSiparisTutari
+                    ? 'sk.siparis_tutari'
+                    : '0';
+        const { weekStart, weekEnd } = getMevcutHaftaPazartesiPazar();
+        const rows = await query(
+            `SELECT COUNT(sk.id) as cnt, COALESCE(SUM(CAST(${tutarCol} AS REAL)), 0) as toplam
+             FROM siparisler sk
+             INNER JOIN organizasyon_kartlar ok ON sk.organizasyon_kart_id = ok.id AND ok.tenant_id = ?
+             WHERE (sk.is_active = 1 OR sk.is_active IS NULL)
+               AND (sk.status = 'aktif' OR sk.status IS NULL) AND (COALESCE(CAST(sk.arsivli AS INTEGER), 0) = 0)
+               AND ok.organizasyon_status = 'aktif' AND (ok.is_active = 1 OR ok.is_active IS NULL) AND (COALESCE(CAST(ok.arsivli AS INTEGER), 0) = 0)
+               AND date(ok.organizasyon_teslim_tarih) >= ? AND date(ok.organizasyon_teslim_tarih) <= ?`,
+            [tenantId, weekStart, weekEnd]
+        );
+        if (rows && rows[0]) {
+            siparisSayisi = parseInt(rows[0].cnt, 10) || 0;
+            toplamTutar = parseFloat(rows[0].toplam) || 0;
+        }
+        const breakdownRows = await query(
+            `SELECT ok.organizasyon_kart_tur AS tur, COUNT(sk.id) AS adet, COALESCE(SUM(CAST(${tutarCol} AS REAL)), 0) AS toplam
+             FROM siparisler sk
+             INNER JOIN organizasyon_kartlar ok ON sk.organizasyon_kart_id = ok.id AND ok.tenant_id = ?
+             WHERE (sk.is_active = 1 OR sk.is_active IS NULL)
+               AND (sk.status = 'aktif' OR sk.status IS NULL) AND (COALESCE(CAST(sk.arsivli AS INTEGER), 0) = 0)
+               AND ok.organizasyon_status = 'aktif' AND (ok.is_active = 1 OR ok.is_active IS NULL) AND (COALESCE(CAST(ok.arsivli AS INTEGER), 0) = 0)
+               AND date(ok.organizasyon_teslim_tarih) >= ? AND date(ok.organizasyon_teslim_tarih) <= ?
+             GROUP BY ok.organizasyon_kart_tur
+             ORDER BY ok.organizasyon_kart_tur`,
+            [tenantId, weekStart, weekEnd]
+        );
+        if (breakdownRows && breakdownRows.length > 0) {
+            turBreakdown = breakdownRows.map(r => ({
+                tur: r.tur || 'Diğer',
+                adet: parseInt(r.adet, 10) || 0,
+                toplam: parseFloat(r.toplam) || 0
+            }));
+        }
+
+        // Çiçek Sepeti: organizasyon_siparisler_ciceksepeti tablosundan (aynı hafta, arşivlenmemiş, beklemede/kabul_edildi)
+        try {
+            const cicekExists = await query("SELECT name FROM sqlite_master WHERE type='table' AND name='organizasyon_siparisler_ciceksepeti'");
+            if (cicekExists && cicekExists.length > 0) {
+                const cicekRows = await query(
+                    `SELECT COUNT(*) as cnt, COALESCE(SUM(CAST(fiyat AS REAL)), 0) as toplam
+                     FROM organizasyon_siparisler_ciceksepeti
+                     WHERE tenant_id = ? AND (durum = 'beklemede' OR durum = 'kabul_edildi') AND (COALESCE(arsivli, 0) = 0)
+                       AND date(teslim_tarihi) >= ? AND date(teslim_tarihi) <= ?`,
+                    [tenantId, weekStart, weekEnd]
+                );
+                if (cicekRows && cicekRows[0] && (parseInt(cicekRows[0].cnt, 10) || 0) > 0) {
+                    const cicekCnt = parseInt(cicekRows[0].cnt, 10) || 0;
+                    const cicekToplam = parseFloat(cicekRows[0].toplam) || 0;
+                    siparisSayisi += cicekCnt;
+                    toplamTutar += cicekToplam;
+                    const existingCicek = turBreakdown.find(t => t.tur === 'Çiçek Sepeti');
+                    if (existingCicek) {
+                        existingCicek.adet += cicekCnt;
+                        existingCicek.toplam += cicekToplam;
+                    } else {
+                        turBreakdown.push({ tur: 'Çiçek Sepeti', adet: cicekCnt, toplam: cicekToplam });
+                    }
+                }
+            }
+        } catch (cicekE) {
+            console.warn('⚠️ Haftalık rapor Çiçek Sepeti sorgusu:', cicekE.message);
+        }
+    } catch (e) {
+        console.warn('⚠️ Haftalık rapor veri sorgusu:', e.message);
+    }
+    turBreakdown.sort((a, b) => (a.tur || '').localeCompare(b.tur || ''));
+    return { siparisSayisi, toplamTutar, turBreakdown };
+}
+
+/**
+ * Tek tenant için haftalık rapor maili gönderir (SMTP)
+ */
+async function sendHaftalikRaporForTenant(tenantId) {
+    await ensureGonderimIletisimVeRaporTables();
+    const rapor = await query(
+        'SELECT id, tenant_id, haftalik_rapor_eposta, last_weekly_report_sent_at FROM ayarlar_gonderim_rapor_ayarlari WHERE tenant_id = ? AND (is_active = 1 OR is_active IS NULL) LIMIT 1',
+        [tenantId]
+    ).then(r => r[0]);
+    if (!rapor || !rapor.haftalik_rapor_eposta || !String(rapor.haftalik_rapor_eposta).trim()) {
+        return { success: false, error: 'E-posta adresi tanımlı değil' };
+    }
+    const to = String(rapor.haftalik_rapor_eposta).trim();
+    const { siparisSayisi, toplamTutar, turBreakdown } = await getHaftalikRaporVerisi(tenantId);
+    let tenantName = 'Floovon Kullanıcısı';
+    try {
+        const t = await query('SELECT firma_adi, name FROM tenants WHERE id = ?', [tenantId]).then(r => r[0]);
+        if (t && (t.firma_adi || t.name)) tenantName = t.firma_adi || t.name;
+    } catch (_) {}
+    const tarihStr = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const formatTL = (n) => (n == null || isNaN(n) ? '0' : Number(n).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + ' TL';
+    const turSatirlari = (turBreakdown && turBreakdown.length > 0)
+        ? turBreakdown.map(t => `<tr><td valign="middle" style="padding: 10px; border: 1px solid #dee2e6; vertical-align: middle;">${String(t.tur)}</td><td valign="middle" style="padding: 10px; border: 1px solid #dee2e6; text-align: center; vertical-align: middle;">${t.adet} Sipariş</td><td valign="middle" style="padding: 10px; border: 1px solid #dee2e6; text-align: center; vertical-align: middle;"><strong>${formatTL(t.toplam)}</strong></td></tr>`).join('')
+        : '';
+    const organizasyonlarBlok = turSatirlari
+        ? `<tr><td colspan="2" style="padding: 16px 10px 8px; font-size: 14px; color: #333;"><strong>Organizasyonlara göre özet</strong></td></tr>
+<tr><td colspan="2" style="padding: 0 10px 16px;"><table style="width: 100%; border-collapse: collapse;" cellpadding="0" cellspacing="0"><thead><tr style="background: #f8f9fa;"><th valign="middle" style="padding: 10px; border: 1px solid #dee2e6; text-align: left; vertical-align: middle;">Tür</th><th valign="middle" style="padding: 10px; border: 1px solid #dee2e6; text-align: center; vertical-align: middle;">Sipariş</th><th valign="middle" style="padding: 10px; border: 1px solid #dee2e6; text-align: center; vertical-align: middle;">Toplam</th></tr></thead><tbody>${turSatirlari}</tbody></table></td></tr>`
+        : '';
+
+    const mailService = getMailService();
+    const logoAttachments = (mailService && mailService.getLogoAttachment) ? mailService.getLogoAttachment() : [];
+    const logoHtml = logoAttachments.length > 0
+        ? '<img src="cid:floovon-logo" alt="" style="height: 32px; width: auto; display: block; margin-left: auto;" />'
+        : '';
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Haftalık Rapor</title></head>
+<body style="margin:0; padding:0; font-family: Arial, sans-serif; background: #f5f5f5;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #f5f5f5;"><tr><td style="padding: 20px;">
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width: 560px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+<tr><td style="padding: 24px 24px 0; text-align: right;">${logoHtml}</td></tr>
+<tr><td style="padding: 20px 24px 8px; font-size: 14px; color: #333;">Merhaba,</td></tr>
+<tr><td style="padding: 0 24px 16px; font-size: 14px; color: #333;">Mevcut haftaya ait (Pazartesi–Pazar) <strong>haftalık sipariş özeti</strong> raporunuz aşağıdadır.</td></tr>
+<tr><td style="padding: 0 24px 16px;"><table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;"><tr style="background: #f8f9fa;"><td valign="middle" style="padding: 10px; border: 1px solid #dee2e6; vertical-align: middle;">Toplam Sipariş Sayısı</td><td valign="middle" style="padding: 10px; border: 1px solid #dee2e6; vertical-align: middle;"><strong>${siparisSayisi}</strong></td></tr><tr><td valign="middle" style="padding: 10px; border: 1px solid #dee2e6; vertical-align: middle;">Toplam Tutar</td><td valign="middle" style="padding: 10px; border: 1px solid #dee2e6; vertical-align: middle;"><strong>${formatTL(toplamTutar)}</strong></td></tr></table></td></tr>
+${organizasyonlarBlok}
+<tr><td style="padding: 16px 24px 0; font-size: 12px; color: #6c757d;">Rapor tarihi: ${tarihStr}</td></tr>
+<tr><td style="padding: 8px 24px 24px; font-size: 12px; color: #6c757d;">Bu e-posta Floovon haftalık rapor gönderimi ile otomatik oluşturulmuştur.</td></tr>
+</table>
+</td></tr></table>
+</body>
+</html>`;
+    if (!mailService || (!mailService.noreplyInitialized && !mailService.initialized)) {
+        return { success: false, error: 'E-posta servisi yapılandırılmamış' };
+    }
+    const result = await mailService.sendMail({
+        to,
+        subject: 'Floovon Haftalık Sipariş Özeti Raporu',
+        html,
+        from: 'noreply@floovon.com',
+        tenantInfo: { name: tenantName },
+        noTenantInSubject: true,
+        attachments: logoAttachments
+    });
+    if (result.success) {
+        await run(
+            'UPDATE ayarlar_gonderim_rapor_ayarlari SET last_weekly_report_sent_at = datetime(\'now\') WHERE tenant_id = ?',
+            [tenantId]
+        );
+    }
+    return result;
+}
+
+// POST haftalık raporu şimdi gönder (manuel – ayarlar sayfasındaki "Şimdi Gönder" için)
+app.post('/api/ayarlar/weekly-report/send', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) {
+            return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
+        }
+        const result = await sendHaftalikRaporForTenant(tenantId);
+        if (result.success) {
+            return res.json({ success: true, message: 'Haftalık rapor e-posta ile gönderildi.' });
+        }
+        return res.status(400).json({ success: false, error: result.error || 'Rapor gönderilemedi.' });
+    } catch (err) {
+        console.error('❌ Haftalık rapor gönderme hatası:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Haftalık rapor zamanlayıcı: her dakika çalışır; gün ve saat eşleşen tenant’lara mail atar
+function startHaftalikRaporScheduler() {
+    setInterval(async () => {
+        try {
+            await ensureGonderimIletisimVeRaporTables();
+            const now = new Date();
+            const gunJS = now.getDay();
+            const gunDB = gunJS === 0 ? 7 : gunJS;
+            const saatStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            const rows = await query(
+                'SELECT tenant_id, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat, last_weekly_report_sent_at FROM ayarlar_gonderim_rapor_ayarlari WHERE haftalik_rapor_eposta IS NOT NULL AND TRIM(haftalik_rapor_eposta) != \'\' AND (is_active = 1 OR is_active IS NULL)'
+            );
+            const todayStr = now.toISOString().slice(0, 10);
+            for (const row of rows || []) {
+                const rGun = String(row.haftalik_rapor_gun || '1').trim();
+                const rSaat = String(row.haftalik_rapor_saat || '18:00').trim().slice(0, 5);
+                const lastSent = row.last_weekly_report_sent_at ? row.last_weekly_report_sent_at.toString().slice(0, 10) : null;
+                if (rGun !== String(gunDB)) continue;
+                if (rSaat !== saatStr) continue;
+                if (lastSent === todayStr) continue;
+                try {
+                    const result = await sendHaftalikRaporForTenant(row.tenant_id);
+                    if (result.success) console.log('✅ Haftalık rapor gönderildi, tenant_id:', row.tenant_id);
+                    else console.warn('⚠️ Haftalık rapor gönderilemedi:', result.error, 'tenant_id:', row.tenant_id);
+                } catch (e) {
+                    console.error('❌ Haftalık rapor scheduler gönderim hatası (tenant_id=' + row.tenant_id + '):', e.message);
+                }
+            }
+        } catch (e) {
+            console.error('❌ Haftalık rapor scheduler hatası:', e.message);
+        }
+    }, 60 * 1000);
+    console.log('✅ Haftalık rapor zamanlayıcı başlatıldı (her dakika kontrol).');
+}
+
+// GET iletişim kişileri (aktif olanlar)
+app.get('/api/ayarlar/gonderim/iletisim-kisileri', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) {
+            return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        }
+        await ensureGonderimIletisimVeRaporTables();
+        const rows = await query(
+            'SELECT id, tenant_id, kisi_ad_soyad, kisi_telefon, created_by, updated_by, created_at, updated_at, is_active FROM ayarlar_gonderim_iletisim_kisileri WHERE tenant_id = ? AND (is_active = 1 OR is_active IS NULL) ORDER BY id ASC',
+            [tenantId]
+        );
+        return res.json({ success: true, data: rows || [] });
+    } catch (err) {
+        console.error('❌ İletişim kişileri listelenirken hata:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// POST iletişim kişisi ekle
+app.post('/api/ayarlar/gonderim/iletisim-kisileri', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) {
+            return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        }
+        const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId) || null;
+        const { kisi_ad_soyad, kisi_telefon } = req.body || {};
+        if (!kisi_ad_soyad || !kisi_telefon) {
+            return res.status(400).json({ success: false, error: 'kisi_ad_soyad ve kisi_telefon gerekli.' });
+        }
+        await ensureGonderimIletisimVeRaporTables();
+        await run(
+            `INSERT INTO ayarlar_gonderim_iletisim_kisileri (tenant_id, kisi_ad_soyad, kisi_telefon, created_by, updated_by, is_active) VALUES (?, ?, ?, ?, ?, 1)`,
+            [tenantId, String(kisi_ad_soyad).trim(), String(kisi_telefon).trim(), kullaniciAdi, kullaniciAdi]
+        );
+        const inserted = await query('SELECT id, tenant_id, kisi_ad_soyad, kisi_telefon, created_by, updated_by, created_at, updated_at, is_active FROM ayarlar_gonderim_iletisim_kisileri WHERE tenant_id = ? ORDER BY id DESC LIMIT 1', [tenantId]);
+        return res.json({ success: true, data: inserted[0] || null });
+    } catch (err) {
+        console.error('❌ İletişim kişisi eklenirken hata:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// PUT iletişim kişisi güncelle
+app.put('/api/ayarlar/gonderim/iletisim-kisileri/:id', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) {
+            return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        }
+        const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId) || null;
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id) || id <= 0) {
+            return res.status(400).json({ success: false, error: 'Geçersiz id.' });
+        }
+        const { kisi_ad_soyad, kisi_telefon, is_active } = req.body || {};
+        const updates = [];
+        const vals = [];
+        if (kisi_ad_soyad !== undefined) { updates.push('kisi_ad_soyad = ?'); vals.push(String(kisi_ad_soyad).trim()); }
+        if (kisi_telefon !== undefined) { updates.push('kisi_telefon = ?'); vals.push(String(kisi_telefon).trim()); }
+        if (is_active !== undefined) { updates.push('is_active = ?'); vals.push(is_active ? 1 : 0); }
+        updates.push('updated_by = ?'); vals.push(kullaniciAdi);
+        updates.push('updated_at = CURRENT_TIMESTAMP');
+        await run(
+            `UPDATE ayarlar_gonderim_iletisim_kisileri SET ${updates.join(', ')} WHERE id = ? AND tenant_id = ?`,
+            [...vals, id, tenantId]
+        );
+        const row = await query('SELECT id, tenant_id, kisi_ad_soyad, kisi_telefon, created_by, updated_by, created_at, updated_at, is_active FROM ayarlar_gonderim_iletisim_kisileri WHERE id = ? AND tenant_id = ?', [id, tenantId]);
+        return res.json({ success: true, data: row[0] || null });
+    } catch (err) {
+        console.error('❌ İletişim kişisi güncellenirken hata:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// DELETE iletişim kişisi (soft delete: is_active = 0)
+app.delete('/api/ayarlar/gonderim/iletisim-kisileri/:id', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) {
+            return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        }
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id) || id <= 0) {
+            return res.status(400).json({ success: false, error: 'Geçersiz id.' });
+        }
+        await run('UPDATE ayarlar_gonderim_iletisim_kisileri SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?', [id, tenantId]);
+        return res.json({ success: true });
+    } catch (err) {
+        console.error('❌ İletişim kişisi silinirken hata:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// GET rapor ayarları
+app.get('/api/ayarlar/gonderim/rapor', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) {
+            return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        }
+        await ensureGonderimIletisimVeRaporTables();
+        let row = await query(
+            'SELECT id, tenant_id, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat, created_by, updated_by, created_at, updated_at, is_active FROM ayarlar_gonderim_rapor_ayarlari WHERE tenant_id = ? LIMIT 1',
+            [tenantId]
+        ).then(r => r[0]);
+        if (!row) {
+            row = null;
+        }
+        const data = row ? {
+            haftalik_rapor_eposta: row.haftalik_rapor_eposta || null,
+            haftalik_rapor_gun: row.haftalik_rapor_gun || '1',
+            haftalik_rapor_saat: row.haftalik_rapor_saat || '18:00'
+        } : { haftalik_rapor_eposta: null, haftalik_rapor_gun: '1', haftalik_rapor_saat: '18:00' };
+        return res.json({ success: true, data });
+    } catch (err) {
+        console.error('❌ Rapor ayarları okunurken hata:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// PUT rapor ayarları
+app.put('/api/ayarlar/gonderim/rapor', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) {
+            return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        }
+        const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId) || null;
+        const { haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat } = req.body || {};
+        await ensureGonderimIletisimVeRaporTables();
+        const existing = await query('SELECT id FROM ayarlar_gonderim_rapor_ayarlari WHERE tenant_id = ? LIMIT 1', [tenantId]);
+        if (existing.length > 0) {
+            await run(
+                `UPDATE ayarlar_gonderim_rapor_ayarlari SET haftalik_rapor_eposta = ?, haftalik_rapor_gun = ?, haftalik_rapor_saat = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = ?`,
+                [haftalik_rapor_eposta != null ? String(haftalik_rapor_eposta).trim() : null, haftalik_rapor_gun || '1', haftalik_rapor_saat || '18:00', kullaniciAdi, tenantId]
+            );
+        } else {
+            await run(
+                `INSERT INTO ayarlar_gonderim_rapor_ayarlari (tenant_id, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat, created_by, updated_by, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)`,
+                [tenantId, haftalik_rapor_eposta != null ? String(haftalik_rapor_eposta).trim() : null, haftalik_rapor_gun || '1', haftalik_rapor_saat || '18:00', kullaniciAdi, kullaniciAdi]
+            );
+        }
+        const row = await query('SELECT id, tenant_id, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat FROM ayarlar_gonderim_rapor_ayarlari WHERE tenant_id = ? LIMIT 1', [tenantId]).then(r => r[0]);
+        const data = row ? { haftalik_rapor_eposta: row.haftalik_rapor_eposta || null, haftalik_rapor_gun: row.haftalik_rapor_gun || '1', haftalik_rapor_saat: row.haftalik_rapor_saat || '18:00' } : { haftalik_rapor_eposta: null, haftalik_rapor_gun: '1', haftalik_rapor_saat: '18:00' };
+        return res.json({ success: true, data });
+    } catch (err) {
+        console.error('❌ Rapor ayarları kaydedilirken hata:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 });
 

@@ -91,12 +91,16 @@
   --blue-vivid: #0037ff;
   --mavi-seffaf: rgba(5, 63, 199, 0.8);
   --mor-primary: #6a48b8; /* net mor (eski #513fff mavi görünüyordu) */
+  --mor-primary-soft: #6a48b8; /* legacy – bazı border'lar için kullanılmaya devam ediyor */
+  --mor-primary-soft-ultra: rgba(106, 72, 184, 0.08); /* light: mor-primary'nin ultra şeffaf tonu (badge / arka plan) */
   --mor-primary-hover: #5b21b6;
   /* Light'ta mor, dark'ta beyaz – body.dark-mode override gerektirmez */
   --mor-primary-flex: var(--mor-primary);
   /* --mavi-canli: #3f81ff; (eski mavi-canli) */
   --accent-blue-soft: rgba(5, 63, 199, 0.4);
   --bg-blue-pale: #d6e1ff;
+  --file-input-hover: #f5f8ff; /* dosya yükle alanı hover arka plan */
+  --bg-pruple-pale: #e0d6ff;
   --mint-blue: #b6ccff;
   --sky-light-bg: #bedef3;
   --soft-blue-bg: #ccecf1;
@@ -623,6 +627,8 @@ html.dark-mode {
   --accent-red: #ff4444;
   --accent-blue-soft: rgba(183, 205, 255, 0.4);
   --bg-blue-pale: #1a2d4d;
+  --file-input-hover: #252d45; /* dosya yükle alanı hover arka plan (koyu mavi) */
+  --bg-pruple-pale: #2c1a4d;
   --divider-gray-fade: rgba(255, 255, 255, 0.1);
   --magenta-deep: #ff77b5;
   --green-transparent: rgba(68, 212, 107, 0.1);
@@ -692,6 +698,8 @@ html.dark-mode {
   --gri-orta: #666;
   --gri-acik: #888;
   --mor-primary: #6D28D9; /* net mor dark tema */
+  --mor-primary-soft: #c19aff; /* legacy – bazı border'lar için kullanılmaya devam ediyor */
+  --mor-primary-soft-ultra: rgba(109, 40, 217, 0.20); /* dark: mor-primary'nin belirgin ama yumuşak arka plan tonu */
   /* dark temada mor yazılar için --mor-primary-text yukarıda #ffffff olarak tanımlı */
   /* --mavi-canli: #699dff; (eski mavi-canli dark) */
   --yesil-dogal: #44d46b;

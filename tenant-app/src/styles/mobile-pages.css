@@ -103,13 +103,13 @@
     font-size: 0.875rem !important; /* 14px */
   }
 
-  /* Kampanya formu: date input'lar select'lerle aynı custom ok stilini kullansın */
+  /* Kampanya formu: date input'lar select'lerle aynı custom ok stilini kullansın (zemin transparent – dark tema uyumlu) */
   .campaigns-form-wrap .campaigns-form input[type="date"] {
     -webkit-appearance: none !important;
     appearance: none !important;
     position: relative !important;
     padding-right: 2.25rem !important;
-    background-color: var(--white) !important;
+    background-color: transparent !important;
     background-repeat: no-repeat !important;
     background-position: right 0.5rem center !important;
     background-size: 1rem 1rem !important;

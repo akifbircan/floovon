@@ -98,13 +98,15 @@ body.dark-mode .cari-drawer select,
 body.dark-mode .sicak-satis-popup select,
 body.dark-mode .modal-react-teknik-destek-form-group select,
 body.dark-mode select.modal-react-arac-takip-select,
+body.dark-mode .campaigns-form select,
 html.dark-mode .overlay-yeni-kart-container .yeni-kart-container select,
 html.dark-mode .overlay-yeni-musteri-container .yeni-musteri-container select,
 html.dark-mode .overlay-yeni-siparis-container .yeni-siparis-container select,
 html.dark-mode .overlay-yeni-siparis-container .yeni-siparis-container select.odeme-yontemi-select,
 html.dark-mode .cari-drawer select,
 html.dark-mode .sicak-satis-popup select,
-html.dark-mode .modal-react-teknik-destek-form-group select {
+html.dark-mode .modal-react-teknik-destek-form-group select,
+html.dark-mode .campaigns-form select {
   background-color: var(--white) !important;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
 }

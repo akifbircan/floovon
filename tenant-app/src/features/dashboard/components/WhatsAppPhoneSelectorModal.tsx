@@ -97,22 +97,41 @@ export const WhatsAppPhoneSelectorModal: React.FC<WhatsAppPhoneSelectorModalProp
       <div ref={panelRef} className="modal-react-whatsapp-phone-popup" style={{ opacity: 1, visibility: 'visible', transform: 'scale(1)' }} onClick={(e) => e.stopPropagation()}>
         <img src={`${import.meta.env.BASE_URL}assets/whatsapp.svg`} alt="WhatsApp" className="modal-react-whatsapp-phone-logo" />
         <h3 className="modal-react-whatsapp-phone-title">{title}</h3>
-        <div className="modal-react-whatsapp-phone-button-group">
-          {contacts.map((contact, index) => (
-            <button
-              key={index}
-              className="modal-react-whatsapp-phone-button"
-              data-tel={contact.telefon}
-              onClick={() => {
-                onSelect(normalizePhone(contact.telefon));
-              }}
-            >
-              <strong>{contact.isim}</strong>
-              <br />
-              <small>{formatPhone(contact.telefon)}</small>
-            </button>
-          ))}
-        </div>
+        {contacts.length === 0 ? (
+          <div className="modal-react-whatsapp-phone-button-group modal-react-whatsapp-phone-button-group-empty">
+            <p className="modal-react-whatsapp-phone-empty-text">
+              Gönderim için kişi bilgisi ve numarası bulunamadı.
+            </p>
+            <div className="modal-react-whatsapp-phone-empty-actions">
+              <button
+                type="button"
+                className="modal-react-whatsapp-phone-button modal-react-whatsapp-phone-settings-button"
+                onClick={() => {
+                  window.location.href = '/ayarlar?tab=gonderim&subtab=iletisim';
+                }}
+              >
+                Kişi Ekleyin
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="modal-react-whatsapp-phone-button-group">
+            {contacts.map((contact, index) => (
+              <button
+                key={index}
+                className="modal-react-whatsapp-phone-button"
+                data-tel={contact.telefon}
+                onClick={() => {
+                  onSelect(normalizePhone(contact.telefon));
+                }}
+              >
+                <strong>{contact.isim}</strong>
+                <br />
+                <small>{formatPhone(contact.telefon)}</small>
+              </button>
+            ))}
+          </div>
+        )}
         <button type="button" className="modal-react-whatsapp-phone-close" onClick={onClose}>
           VAZGEÇ
         </button>

@@ -949,7 +949,7 @@ export async function getPrintLogoAndFooter(): Promise<PrintLogoAndFooter> {
 
 /**
  * Kampanya listesi yazdırma HTML'i – eski kampanya-yonetimi yapısına uygun
- * Kolonlar: Kampanya Adı, Kampanya Görseli, Kampanya Mesajı, Müşteri Grubu, Başlangıç, Bitiş, Kupon Kodu, Durum, Gönderilme
+ * Kolonlar: Kampanya Görseli, Kampanya Adı, Kampanya Mesajı, Müşteri Grubu, Başlangıç, Bitiş, Kupon Kodu, Durum, Gönderilme
  */
 export function generateKampanyaPrintHTML(
   campaigns: Array<{
@@ -990,8 +990,8 @@ export function generateKampanyaPrintHTML(
       ? (c.toplam_gonderilen != null ? `${c.toplam_gonderilen} gönderildi` : 'Gönderildi')
       : 'Gönderilmedi';
     return `<tr>
-      <td style="${tdBase}">${escape(c.ad || '')}</td>
       <td style="${tdBase}${tdCenter}">${gorselHtml}</td>
+      <td style="${tdBase}">${escape(c.ad || '')}</td>
       <td style="${tdBase}font-size:8px;line-height:1.3;max-width:120px;">${mesaj || '—'}</td>
       <td style="${tdBase}${tdCenter}">${escape(getMusteriGrubuText(c.musteri_grubu || ''))}</td>
       <td style="${tdBase}${tdCenter}">${formatDate(c.baslangic_tarihi)}</td>
@@ -1006,8 +1006,8 @@ export function generateKampanyaPrintHTML(
 <table style="width:100%;border-collapse:collapse;font-size:10px;" class="kampanya-print-table">
 <thead>
 <tr>
-<th style="${thBase}">KAMPANYA ADI</th>
 <th style="${thBase}${tdCenter}">KAMPANYA GÖRSELİ</th>
+<th style="${thBase}">KAMPANYA ADI</th>
 <th style="${thBase}">KAMPANYA MESAJI</th>
 <th style="${thBase}${tdCenter}">MÜŞTERİ GRUBU</th>
 <th style="${thBase}${tdCenter}">BAŞLANGIÇ TARİHİ</th>

@@ -223,11 +223,7 @@ export function useWhatsAppShare() {
       // Telefon numaralarını yükle
       const loadedContacts = await loadContacts();
       
-      if (loadedContacts.length === 0) {
-        showToast('error', 'Tanımlı telefon numarası bulunamadı!');
-        return;
-      }
-      
+      // Kişi yoksa bile popup açılacak; modal içinde "Kişi Ekleyin" CTA'sı gösterilecek
       setContacts(loadedContacts);
       setCurrentKart(kart);
       setCurrentSiparisler(siparisler || kart.siparisler || []);
@@ -254,10 +250,13 @@ export function useWhatsAppShare() {
     try {
       // Mesajı oluştur – shareModeRef kullan (stale closure önleme: tıklanan butona göre doğru mesaj)
       const message = await createOrganizasyonMessage(currentKart, currentSiparisler, shareModeRef.current);
-      
+      const isTemplateMode = shareModeRef.current === 'template';
+      if (isTemplateMode && !(message || '').trim()) {
+        showToast('error', 'Kayıtlı mesaj şablonunuz yok! Ayarlar > Mesaj Şablonları alanından mesaj ekleyebilirsiniz');
+        return;
+      }
       // Mesajı gönder
       const success = await sendMessage(phone, message);
-      
       if (success) {
         showToast('success', 'Mesaj başarıyla gönderildi');
       } else {
@@ -265,7 +264,9 @@ export function useWhatsAppShare() {
       }
     } catch (error: any) {
       console.error('❌ WhatsApp mesaj gönderme hatası:', error);
-      showToast('error', error.message || 'Mesaj gönderilemedi');
+      const errMsg = error.response?.data?.message || error.message || '';
+      const isNoTemplateError = typeof errMsg === 'string' && (errMsg.includes('phone/message zorunlu') || errMsg.includes('message zorunlu'));
+      showToast('error', isNoTemplateError ? 'Kayıtlı mesaj şablonunuz yok! Ayarlar > Mesaj Şablonları alanından mesaj ekleyebilirsiniz' : (errMsg || 'Mesaj gönderilemedi'));
     } finally {
       setLoading(false);
     }
@@ -315,11 +316,7 @@ export function useWhatsAppShare() {
       // Telefon numarasını yükle
       const loadedContacts = await loadContacts();
       
-      if (loadedContacts.length === 0) {
-        showToast('error', 'Tanımlı telefon numarası bulunamadı!');
-        return;
-      }
-      
+      // Kişi yoksa bile popup açılacak; modal içinde "Kişi Ekleyin" CTA'sı gösterilecek
       setContacts(loadedContacts);
       setCurrentKart(organizasyonKart || null);
       setCurrentSiparisler([order]);

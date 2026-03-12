@@ -34,7 +34,6 @@ const RightPanelComponent: React.FC<RightPanelProps> = ({
   kartlarLoading = false, // ✅ DÜZELTME: Loading state'i
 }) => {
   const weekPickerRef = useRef<HTMLInputElement>(null);
-  const yearMonthLabelRef = useRef<HTMLDivElement>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isTablet, setIsTablet] = useState(() =>
     typeof window !== 'undefined' && window.matchMedia('(min-width: 768px) and (max-width: 1439px)').matches
@@ -209,13 +208,6 @@ const RightPanelComponent: React.FC<RightPanelProps> = ({
   }, [statistics]);
 
   // ✅ REACT: İstatistikler artık direkt JSX'te gösteriliyor, DOM manipülasyonu yok
-
-  // Year/Month label'ı güncelle
-  useEffect(() => {
-    if (yearMonthLabelRef.current) {
-      yearMonthLabelRef.current.textContent = yearMonthLabel;
-    }
-  }, [yearMonthLabel]);
 
   // ✅ REACT: Günler artık React component olarak render ediliyor (weekDates prop'undan)
 
@@ -659,7 +651,9 @@ const RightPanelComponent: React.FC<RightPanelProps> = ({
                 <span>Seçtiğiniz tarihteki siparişleri görüntüleyin</span>
               </div>
               <div className="takvim-header">
-                <div className="year-month-label" ref={yearMonthLabelRef} id="yearMonthLabel"></div>
+                <div className="year-month-label" id="yearMonthLabel">
+                  {yearMonthLabel}
+                </div>
               </div>
               <div className="label-container week-wrapper">
                 {/* ✅ KRİTİK: Form dışında, hiçbir form submit'i tetiklenmesin */}

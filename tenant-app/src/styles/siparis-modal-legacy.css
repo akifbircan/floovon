@@ -521,8 +521,8 @@
 }
 
 .yeni-siparis-container .siparis-form-alan .sol-alan .partner-siparisi-isaretle .cbox-alan input[type="checkbox"]:checked {
-  border-color: var(--mor-primary) !important;
-  background-color: var(--mor-primary) !important;
+  border-color: var(--accent-pink) !important;
+  background-color: var(--accent-pink) !important;
 }
 
 .yeni-siparis-container .siparis-form-alan .sol-alan .partner-siparisi-isaretle .cbox-alan input[type="checkbox"]:checked::before {
@@ -531,7 +531,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: var(--white);
+  color: var(--white-only);
   font-size: 10px;
   font-weight: bold;
   line-height: 1;
@@ -705,6 +705,7 @@
 .yeni-siparis-container .partner-siparisi-isaretle .partner-tipi .radio-label {
   display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   gap: 8px !important;
   cursor: pointer !important;
   user-select: none !important;
@@ -725,7 +726,7 @@
 .yeni-siparis-container .odeme-tipleri .radio-label:hover,
 .yeni-siparis-container .radiobutton-alan .radio-label:hover,
 .yeni-siparis-container .partner-siparisi-isaretle .partner-tipi .radio-label:hover {
-  background: var(--bg-blue-pale) !important;
+  background: var(--bg-pruple-pale) !important;
 }
 
 .yeni-siparis-container .odeme-tipleri .radio-label input[type="radio"],
@@ -749,8 +750,8 @@
 .yeni-siparis-container .odeme-tipleri .radio-label input[type="radio"]:checked,
 .yeni-siparis-container .radiobutton-alan .radio-label input[type="radio"]:checked,
 .yeni-siparis-container .partner-siparisi-isaretle .partner-tipi .radio-label input[type="radio"]:checked {
-  border-color: var(--mor-primary) !important;
-  background-color: var(--mor-primary) !important;
+  border-color: var(--mor-primary-text) !important;
+  background-color: var(--mor-primary-text) !important;
 }
 
 .yeni-siparis-container .odeme-tipleri .radio-label input[type="radio"]:checked::before,
@@ -778,8 +779,7 @@
 .yeni-siparis-container .odeme-tipleri .radio-label:has(input:checked),
 .yeni-siparis-container .radiobutton-alan .radio-label:has(input:checked),
 .yeni-siparis-container .partner-siparisi-isaretle .partner-tipi .radio-label:has(input:checked) {
-  border-color: var(--mor-primary) !important;
-  background: var(--bg-blue-pale) !important;
+  background: var(--bg-pruple-pale) !important;
 }
 
 .yeni-siparis-container .odeme-tipleri .radio-label span,
@@ -882,7 +882,7 @@
 
 /* ---------- File input: müşteri ekle formu ile aynı görünüm ---------- */
 .overlay-yeni-siparis-container .yeni-siparis-container .file-input-alan.dosya-yukle-alan {
-  display: block !important;
+  display: flex !important;
   margin-top: 10px;
 }
 
@@ -917,55 +917,28 @@
 /* Görünen alan: müşteri ekle formundaki .dosya-yukle-alan ile aynı stil */
 .overlay-yeni-siparis-container .yeni-siparis-container .file-input-alan .file-input-trigger {
   margin-top: 0 !important;
-  min-height: 56px !important;
-  max-height: 56px !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 12px !important;
-  border: 1px dashed var(--mor-primary) !important;
-  border-radius: 4px !important;
-  cursor: pointer !important;
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
-  padding: 0 12px !important;
-  overflow: hidden !important;
-  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
   font-size: 12px !important;
   color: var(--gri70) !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
 }
 
 .overlay-yeni-siparis-container .yeni-siparis-container .file-input-alan .file-input-trigger.drag-over {
-  border-width: 2px !important;
+  /* Border artık .dosya-yukle-alan'da, burada sadece içerik stili var */
 }
 
 .overlay-yeni-siparis-container .yeni-siparis-container .file-input-alan .file-input-trigger.dosya-secildi {
-  border: 1px solid var(--success-green) !important;
-  background-color: var(--white);
-  justify-content: space-between !important;
+  /* Seçili durumda da border .dosya-yukle-alan tarafından yönetiliyor */
 }
 
-.overlay-yeni-siparis-container .yeni-siparis-container .file-input-alan .file-input-trigger .file-label {
-  font-size: 12px !important;
-  color: var(--gri70) !important;
-  text-align: center !important;
-  margin-right: 0;
-}
-
-.overlay-yeni-siparis-container .yeni-siparis-container .file-input-alan .file-input-trigger.dosya-secildi .secilen-dosya-metin {
-  font-size: 12px !important;
-  color: var(--gri70) !important;
-  flex: 1 !important;
-  min-width: 0 !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-  font-weight: 500;
-}
-
-.overlay-yeni-siparis-container .yeni-siparis-container .file-input-alan .file-input-trigger .remove-button,
 .yeni-siparis-container .musteri-urun-dosya-listesi .secilen-dosya-ozet .remove-button {
   font-size: 12px !important;
   padding: 6px 12px !important;

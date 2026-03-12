@@ -38,18 +38,19 @@
     min-height: 0; /* ✅ DÜZELTME: Vehicle list scroll için gerekli */
 }
 
+/* Takvim görseli: panel padding'ini yok sayarak tam genişlik göster (sarı çerçeve kesilmesin) */
 .sag-panel .sag-panel-icerik .takvim-imaj {
+    display: block;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* margin-bottom: 14px; */
+    overflow: hidden;
 }
 
 .sag-panel .sag-panel-icerik .takvim-imaj img {
+    display: block;
     user-select: none;
-    max-width: 100%;
+    width: 100%;
     height: auto;
+    object-fit: contain;
 }
 
 .sag-panel .sag-panel-icerik .gorsel img {

@@ -43,29 +43,12 @@
   flex-shrink: 0;
 }
 
-.searchable-select-trigger img {
+.searchable-select-trigger img,
+.searchable-select-placeholder-img {
   width: 28px;
   height: 28px;
   object-fit: cover;
   border-radius: 4px;
-  flex-shrink: 0;
-}
-
-/* Görseli olmayan ürünler: sipariş formunda aynı boyutta placeholder */
-.searchable-select-placeholder {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  min-height: 28px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  line-height: 1.1;
-  text-align: center;
-  background-color: var(--gray-light-ec, #ececec);
-  color: var(--gri70, #6b7280);
   flex-shrink: 0;
 }
 
@@ -132,17 +115,11 @@
   background: var(--bg-blue-pale, #eff6ff);
 }
 
-.searchable-select-dropdown .searchable-select-option img {
+.searchable-select-dropdown .searchable-select-option img,
+.searchable-select-dropdown .searchable-select-option .searchable-select-placeholder-img {
   width: 28px;
   height: 28px;
   object-fit: cover;
   border-radius: 4px;
   flex-shrink: 0;
-}
-
-.searchable-select-dropdown .searchable-select-option .searchable-select-placeholder {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  min-height: 28px;
 }

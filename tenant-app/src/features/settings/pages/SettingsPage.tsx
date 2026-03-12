@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest, apiClient } from '../../../lib/api';
 import { getApiBaseUrl } from '../../../lib/runtime';
@@ -592,42 +593,63 @@ function YazdirmaAyarlariForm() {
   );
 }
 
+type IletisimKisi = { id: number; kisi_ad_soyad: string; kisi_telefon: string };
+
 function GonderimAyarlariTab() {
   const queryClient = useQueryClient();
   const { isBaslangicPlan } = usePlan();
-  const [gonderimSubTab, setGonderimSubTab] = useState<'iletisim' | 'mesaj-sablonlari'>('iletisim');
+  const [searchParams] = useSearchParams();
+  const [gonderimSubTab, setGonderimSubTab] = useState<'iletisim' | 'mesaj-sablonlari' | 'rapor'>('iletisim');
   const [yeniAd, setYeniAd] = useState('');
   const iletisimTelInput = usePhoneInput('');
-  const [editingIletisimKey, setEditingIletisimKey] = useState<string | null>(null);
+  const [editingIletisimId, setEditingIletisimId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [mesajSablonuValue, setMesajSablonuValue] = useState('');
   const [savingSablon, setSavingSablon] = useState(false);
+  const [raporEposta, setRaporEposta] = useState('');
+  const [raporGun, setRaporGun] = useState('1');
+  const [raporSaat, setRaporSaat] = useState('18:00');
+  const [savingRapor, setSavingRapor] = useState(false);
+  const [sendingRapor, setSendingRapor] = useState(false);
+
+  React.useEffect(() => {
+    const subtab = searchParams.get('subtab');
+    if (subtab === 'iletisim' || subtab === 'mesaj-sablonlari' || subtab === 'rapor') setGonderimSubTab(subtab);
+  }, [searchParams]);
 
   const { data: gonderimData, isLoading } = useQuery({
     queryKey: ['ayarlar-gonderim'],
     queryFn: async () => {
-      const res = await apiClient.get<{ success: boolean; data?: Record<string, unknown> }>('/ayarlar/gonderim');
+      const res = await apiClient.get<{ success: boolean; data?: Record<string, unknown> & { iletisimKisileri?: IletisimKisi[] } }>('/ayarlar/gonderim');
       return res.data;
     },
     staleTime: 60 * 1000,
   });
 
-  type WpKisi = { ad?: string; isim?: string; tel?: string; telefon?: string };
-  const wpListe = (() => {
-    const raw = gonderimData?.data?.siparis_listesi_whatsapp;
-    if (!raw) return {} as Record<string, WpKisi>;
-    try {
-      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      return (typeof parsed === 'object' && parsed !== null ? parsed : {}) as Record<string, WpKisi>;
-    } catch {
-      return {};
-    }
-  })();
+  const { data: raporData } = useQuery({
+    queryKey: ['ayarlar-gonderim-rapor'],
+    queryFn: async () => {
+      const res = await apiClient.get<{ success: boolean; data?: { haftalik_rapor_eposta?: string | null; haftalik_rapor_gun?: string; haftalik_rapor_saat?: string } }>('/ayarlar/gonderim/rapor');
+      return res.data;
+    },
+    staleTime: 60 * 1000,
+    enabled: gonderimSubTab === 'rapor',
+  });
 
-  const kisiler = Object.entries(wpListe).map(([key, k]) => ({
-    key,
-    ad: (k?.ad || k?.isim || '').trim(),
-    tel: (k?.tel || k?.telefon || '').trim(),
+  React.useEffect(() => {
+    if (raporData?.data) {
+      setRaporEposta(raporData.data.haftalik_rapor_eposta || '');
+      setRaporGun(raporData.data.haftalik_rapor_gun || '1');
+      setRaporSaat(raporData.data.haftalik_rapor_saat || '18:00');
+    }
+  }, [raporData?.data]);
+
+  const iletisimKisileri = (gonderimData?.data?.iletisimKisileri as IletisimKisi[] | undefined) || [];
+  const kisiler = iletisimKisileri.map((k) => ({
+    key: String(k.id),
+    id: k.id,
+    ad: (k.kisi_ad_soyad || '').trim(),
+    tel: (k.kisi_telefon || '').trim(),
   })).filter((k) => k.ad || k.tel);
 
   React.useEffect(() => {
@@ -655,6 +677,18 @@ function GonderimAyarlariTab() {
     setGonderimSortField(field);
     setGonderimSortDir(dir);
   };
+
+  // İletişim ayarlarında düzenle moduna girince sayfanın en üstüne scroll et
+  React.useEffect(() => {
+    if (!editingIletisimId) return;
+    const t = setTimeout(() => {
+      const pageWrapper = document.querySelector('.ayarlar-page.page-wrapper') as HTMLElement | null;
+      if (pageWrapper) pageWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+      const main = document.querySelector('main[data-main-content]') as HTMLElement | null;
+      if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 50);
+    return () => clearTimeout(t);
+  }, [editingIletisimId]);
 
   const handleMesajSablonuKaydet = async () => {
     setSavingSablon(true);
@@ -689,23 +723,15 @@ function GonderimAyarlariTab() {
     }
     setSaving(true);
     try {
-      const yeniListe = { ...wpListe };
-      if (editingIletisimKey) {
-        yeniListe[editingIletisimKey] = { ad, tel };
-        await apiClient.put('/ayarlar/gonderim', {
-          siparis_listesi_whatsapp: JSON.stringify(yeniListe),
-        });
+      if (editingIletisimId) {
+        await apiClient.put(`/ayarlar/gonderim/iletisim-kisileri/${editingIletisimId}`, { kisi_ad_soyad: ad, kisi_telefon: tel });
         queryClient.invalidateQueries({ queryKey: ['ayarlar-gonderim'] });
         setYeniAd('');
         iletisimTelInput.setDisplayValue('');
-        setEditingIletisimKey(null);
+        setEditingIletisimId(null);
         showToast('success', 'Kişi güncellendi');
       } else {
-        const yeniKey = `kisi_${Date.now()}`;
-        yeniListe[yeniKey] = { ad, tel };
-        await apiClient.put('/ayarlar/gonderim', {
-          siparis_listesi_whatsapp: JSON.stringify(yeniListe),
-        });
+        await apiClient.post('/ayarlar/gonderim/iletisim-kisileri', { kisi_ad_soyad: ad, kisi_telefon: tel });
         queryClient.invalidateQueries({ queryKey: ['ayarlar-gonderim'] });
         setYeniAd('');
         iletisimTelInput.setDisplayValue('');
@@ -718,17 +744,13 @@ function GonderimAyarlariTab() {
     }
   };
 
-  const handleSil = async (key: string) => {
+  const handleSil = async (id: number) => {
     setSaving(true);
     try {
-      const yeniListe = { ...wpListe };
-      delete yeniListe[key];
-      await apiClient.put('/ayarlar/gonderim', {
-        siparis_listesi_whatsapp: JSON.stringify(yeniListe),
-      });
+      await apiClient.delete(`/ayarlar/gonderim/iletisim-kisileri/${id}`);
       queryClient.invalidateQueries({ queryKey: ['ayarlar-gonderim'] });
-      if (editingIletisimKey === key) {
-        setEditingIletisimKey(null);
+      if (editingIletisimId === id) {
+        setEditingIletisimId(null);
         setYeniAd('');
         iletisimTelInput.setDisplayValue('');
       }
@@ -740,16 +762,57 @@ function GonderimAyarlariTab() {
     }
   };
 
-  const handleDüzenleIletisim = (k: { key: string; ad: string; tel: string }) => {
-    setEditingIletisimKey(k.key);
+  const handleDüzenleIletisim = (k: { id: number; ad: string; tel: string }) => {
+    setEditingIletisimId(k.id);
     setYeniAd(k.ad);
     iletisimTelInput.setDisplayValue(k.tel || '');
   };
 
   const handleVazgecIletisim = () => {
-    setEditingIletisimKey(null);
+    setEditingIletisimId(null);
     setYeniAd('');
     iletisimTelInput.setDisplayValue('');
+  };
+
+  const handleRaporKaydet = async () => {
+    setSavingRapor(true);
+    try {
+      await apiClient.put('/ayarlar/gonderim/rapor', {
+        haftalik_rapor_eposta: raporEposta.trim() || null,
+        haftalik_rapor_gun: raporGun || '1',
+        haftalik_rapor_saat: raporSaat || '18:00',
+      });
+      queryClient.invalidateQueries({ queryKey: ['ayarlar-gonderim-rapor'] });
+      queryClient.invalidateQueries({ queryKey: ['ayarlar-gonderim'] });
+      showToast('success', 'Rapor ayarları kaydedildi.');
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Rapor ayarları kaydedilemedi.');
+    } finally {
+      setSavingRapor(false);
+    }
+  };
+
+  const handleRaporSimdiGonder = async () => {
+    if (!raporEposta?.trim()) {
+      showToast('error', 'Önce e-posta adresini girin ve kaydedin.');
+      return;
+    }
+    setSendingRapor(true);
+    try {
+      const res = await apiClient.post<{ success: boolean; message?: string; error?: string }>('/ayarlar/weekly-report/send');
+      if (res.data?.success) {
+        showToast('success', res.data.message || 'Haftalık rapor e-posta ile gönderildi.');
+        queryClient.invalidateQueries({ queryKey: ['ayarlar-gonderim-rapor'] });
+      } else {
+        showToast('error', res.data?.error || 'Rapor gönderilemedi.');
+      }
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      showToast('error', msg || 'Rapor gönderilemedi.');
+    } finally {
+      setSendingRapor(false);
+    }
   };
 
   return (
@@ -764,21 +827,31 @@ function GonderimAyarlariTab() {
           İletişim Ayarları
         </button>
         {isBaslangicPlan === false && (
-          <button
-            type="button"
-            data-subtab="mesaj-sablonlari"
-            onClick={() => setGonderimSubTab('mesaj-sablonlari')}
-            className={`ayarlar-subtab-btn ${gonderimSubTab === 'mesaj-sablonlari' ? 'active' : ''}`}
-          >
-            Mesaj Şablonları
-          </button>
+          <>
+            <button
+              type="button"
+              data-subtab="rapor"
+              onClick={() => setGonderimSubTab('rapor')}
+              className={`ayarlar-subtab-btn ${gonderimSubTab === 'rapor' ? 'active' : ''}`}
+            >
+              Rapor Ayarları
+            </button>
+            <button
+              type="button"
+              data-subtab="mesaj-sablonlari"
+              onClick={() => setGonderimSubTab('mesaj-sablonlari')}
+              className={`ayarlar-subtab-btn ${gonderimSubTab === 'mesaj-sablonlari' ? 'active' : ''}`}
+            >
+              Mesaj Şablonları
+            </button>
+          </>
         )}
       </div>
       {gonderimSubTab === 'iletisim' && (
-        <div className={`flex flex-col lg:flex-row gap-6 ayarlar-form-row ${editingIletisimKey ? 'ayarlar-form-active' : ''}`}>
+        <div className={`flex flex-col lg:flex-row gap-6 ayarlar-form-row ${editingIletisimId ? 'ayarlar-form-active' : ''}`}>
           <div className="ayarlar-sol-kolon">
             <div className="ayarlar-panel-form">
-              <h3 className="ayarlar-panel-form-title">{editingIletisimKey ? 'Kişiyi Düzenle' : 'Yeni Kişi / Numara Ekle'}</h3>
+              <h3 className="ayarlar-panel-form-title">{editingIletisimId ? 'Kişiyi Düzenle' : 'Yeni Kişi / Numara Ekle'}</h3>
               <p className="ayarlar-panel-desc ayarlar-panel-desc-iletisim">
                 Kart menüsündeki &quot;WhatsApp Sipariş Listesi Gönder&quot; ve &quot;Sipariş Şablonu ve IBAN Bilgisi Gönder&quot; butonlarında seçilecek numaralar. WhatsApp bağlantısı için üst menüdeki WhatsApp butonunu kullanın.
               </p>
@@ -795,10 +868,12 @@ function GonderimAyarlariTab() {
                     <input type="tel" ref={iletisimTelInput.inputRef} value={iletisimTelInput.displayValue} onChange={iletisimTelInput.handleChange} onKeyDown={iletisimTelInput.handleKeyDown} onFocus={iletisimTelInput.handleFocus} onPaste={iletisimTelInput.handlePaste} placeholder="+90 (5XX) XXX XX XX" className="ayarlar-input" required data-phone-input="standard" />
                   </div>
                   <div className="ayarlar-form-actions">
-                    {editingIletisimKey && (
+                    {editingIletisimId && (
                       <button type="button" onClick={handleVazgecIletisim} className="ayarlar-btn ayarlar-btn-secondary">VAZGEÇ</button>
                     )}
-                    <button type="submit" disabled={saving} className="ayarlar-btn ayarlar-btn-primary">{editingIletisimKey ? 'GÜNCELLE' : 'EKLE'}</button>
+                    <button type="submit" disabled={saving} className="ayarlar-btn ayarlar-btn-primary">
+                      {editingIletisimId ? 'GÜNCELLE' : 'EKLE'}
+                    </button>
                   </div>
                 </form>
               )}
@@ -817,7 +892,7 @@ function GonderimAyarlariTab() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full ayarlar-tablosu">
-                    <thead className="bg-gray-50">
+                    <thead>
                       <tr>
                         <TableSortHeader field="ad" label="Kişi Adı" currentSort={gonderimSortField} sortDirection={gonderimSortDir} onSort={handleGonderimSort} className="px-4 py-3 text-xs font-medium text-gray-500 uppercase" />
                         <TableSortHeader field="tel" label="Telefon" currentSort={gonderimSortField} sortDirection={gonderimSortDir} onSort={handleGonderimSort} className="px-4 py-3 text-xs font-medium text-gray-500 uppercase" />
@@ -831,8 +906,26 @@ function GonderimAyarlariTab() {
                           <td data-label="Telefon" className="px-4 py-3 text-sm text-gray-600">{formatPhoneNumber(k.tel)}</td>
                           <td data-label="İşlemler" className="px-4 py-3 text-sm font-medium table-col-islem">
                             <div className="islem-ikonlar">
-                              <button type="button" className="islem-ikon duzenle-ikon" data-tooltip="Düzenle" aria-label="Düzenle" onClick={() => handleDüzenleIletisim(k)} disabled={saving}><Pencil size={16} aria-hidden /></button>
-                              <button type="button" onClick={() => handleSil(k.key)} disabled={saving} className="islem-ikon sil-ikon" data-tooltip="Sil" aria-label="Sil"><Trash2 size={16} aria-hidden /></button>
+                              <button
+                                type="button"
+                                className="islem-ikon duzenle-ikon"
+                                data-tooltip="Düzenle"
+                                aria-label="Düzenle"
+                                onClick={() => handleDüzenleIletisim(k)}
+                                disabled={saving}
+                              >
+                                <Pencil size={16} aria-hidden />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSil(k.id)}
+                                disabled={saving}
+                                className="islem-ikon sil-ikon"
+                                data-tooltip="Sil"
+                                aria-label="Sil"
+                              >
+                                <Trash2 size={16} aria-hidden />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -845,12 +938,95 @@ function GonderimAyarlariTab() {
           </div>
         </div>
       )}
+      {isBaslangicPlan === false && gonderimSubTab === 'rapor' && (
+        <div className="ayarlar-panel">
+          <div className="ayarlar-panel-header">
+            <h3 className="ayarlar-panel-form-title">Haftalık Rapor Gönderimi</h3>
+            <p className="ayarlar-panel-desc">
+              Haftalık raporların gönderileceği e-posta adresi ve gönderim günü/saati.
+            </p>
+          </div>
+          {raporData === undefined ? (
+            <div className="ayarlar-loading"><LoadingSpinner size="md" /></div>
+          ) : (
+            <div className="ayarlar-form">
+              <div className="ayarlar-form-row-3">
+                <div className="ayarlar-form-group">
+                  <label className="ayarlar-label" htmlFor="rapor-eposta">E-posta Adresi</label>
+                  <input
+                    id="rapor-eposta"
+                    type="email"
+                    className="ayarlar-input"
+                    placeholder="ornek@email.com"
+                    value={raporEposta}
+                    onChange={(e) => setRaporEposta(e.target.value)}
+                  />
+                  <small className="ayarlar-panel-desc" style={{ display: 'block', marginTop: 4 }}>
+                    Raporun gönderileceği e-posta adresi
+                  </small>
+                </div>
+                <div className="ayarlar-form-group">
+                  <label className="ayarlar-label" htmlFor="rapor-gun">Gönderim Günü</label>
+                  <select
+                    id="rapor-gun"
+                    className="ayarlar-input"
+                    value={raporGun}
+                    onChange={(e) => setRaporGun(e.target.value)}
+                  >
+                    <option value="1">Pazartesi</option>
+                    <option value="2">Salı</option>
+                    <option value="3">Çarşamba</option>
+                    <option value="4">Perşembe</option>
+                    <option value="5">Cuma</option>
+                    <option value="6">Cumartesi</option>
+                    <option value="7">Pazar</option>
+                  </select>
+                  <small className="ayarlar-panel-desc" style={{ display: 'block', marginTop: 4 }}>
+                    Raporun düzenli olarak gönderileceği gün
+                  </small>
+                </div>
+                <div className="ayarlar-form-group">
+                  <label className="ayarlar-label" htmlFor="rapor-saat">Gönderim Saati</label>
+                  <input
+                    id="rapor-saat"
+                    type="time"
+                    className="ayarlar-input"
+                    value={raporSaat}
+                    onChange={(e) => setRaporSaat(e.target.value)}
+                  />
+                  <small className="ayarlar-panel-desc" style={{ display: 'block', marginTop: 4 }}>
+                    Raporun düzenli olarak gönderileceği saat
+                  </small>
+                </div>
+              </div>
+              <div className="ayarlar-form-actions">
+                <button
+                  type="button"
+                  className="ayarlar-btn ayarlar-btn-primary"
+                  onClick={handleRaporKaydet}
+                  disabled={savingRapor}
+                >
+                  {savingRapor ? 'KAYDEDİLİYOR...' : 'KAYDET'}
+                </button>
+                <button
+                  type="button"
+                  className="ayarlar-btn ayarlar-btn-secondary"
+                  onClick={handleRaporSimdiGonder}
+                  disabled={sendingRapor || savingRapor}
+                >
+                  {sendingRapor ? 'GÖNDERİLİYOR...' : 'ŞİMDİ GÖNDER'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       {isBaslangicPlan === false && gonderimSubTab === 'mesaj-sablonlari' && (
         <div className="ayarlar-panel">
           <div className="ayarlar-panel-header">
             <h3 className="ayarlar-panel-form-title">Müşteri Sipariş Şablonu</h3>
             <p className="ayarlar-panel-desc">
-              WhatsApp &quot;Sipariş Şablonu ve IBAN Bilgisi Gönder&quot; butonu ile gönderilen mesaj. Veritabanında ne kayıtlıysa o kullanılır; boşsa boş gönderilir.
+              WhatsApp &quot;Sipariş Şablonu ve IBAN Bilgisi Gönder&quot; butonu ile iletişim kişilerine gönderilen hazır müşteri mesajı.
             </p>
           </div>
           {isLoading ? (
@@ -936,6 +1112,7 @@ export const SettingsPage: React.FC = () => {
   useApexChartsCleanup();
   const { isBaslangicPlan } = usePlan();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'veri' | 'genel' | 'arac' | 'gonderim'>('veri');
   const [activeSubTab, setActiveSubTab] = useState<'urunler' | 'urun-gruplari' | 'organizasyon-turleri' | 'organizasyon-etiketleri'>('urunler');
   const [genelSubTab, setGenelSubTab] = useState<'isletme' | 'konum' | 'teslimat' | 'yazdirma' | 'ciceksepeti'>('isletme');
@@ -954,6 +1131,20 @@ export const SettingsPage: React.FC = () => {
   const [aracSortField, setAracSortField] = useState<string | null>(null);
   const [aracSortDir, setAracSortDir] = useState<'asc' | 'desc'>('asc');
   const [veriSearchQuery, setVeriSearchQuery] = useState('');
+
+  // URL'deki tab parametresine göre başlangıç sekmesini ayarla
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'gonderim' && isBaslangicPlan === false) {
+      setActiveTab('gonderim');
+    } else if (tabParam === 'genel') {
+      setActiveTab('genel');
+    } else if (tabParam === 'arac' && isBaslangicPlan === false) {
+      setActiveTab('arac');
+    } else if (tabParam === 'veri') {
+      setActiveTab('veri');
+    }
+  }, [searchParams, isBaslangicPlan]);
 
   // Başlangıç planında (plan_id=1) Araç Takip ve Çiçek Sepeti gizli; açıksa başka sekmeye al
   useEffect(() => {
@@ -1974,7 +2165,14 @@ export const SettingsPage: React.FC = () => {
   }, [activeTab, activeSubTab, genelSubTab]);
 
   /** Düzenle tıklanınca scroll: panel + main (layout’ta hangisi scroll ediyorsa o hareket etsin) */
-  const ayarlarFormActive = !!(editingUrunId || editingUrunGrubuId || editingOrganizasyonTuruId || editingEtiketId || editingTeslimatId || editingAracId);
+  const ayarlarFormActive = !!(
+    editingUrunId ||
+    editingUrunGrubuId ||
+    editingOrganizasyonTuruId ||
+    editingEtiketId ||
+    editingTeslimatId ||
+    editingAracId
+  );
   React.useEffect(() => {
     if (!ayarlarFormActive) return;
     const t = setTimeout(() => {
@@ -2351,7 +2549,7 @@ export const SettingsPage: React.FC = () => {
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full ayarlar-tablosu ayarlar-urunler-tablosu">
-                          <thead className="bg-gray-50">
+                          <thead>
                             <tr>
                               <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase table-col-gorsel">
                                 ÜRÜN GÖRSELİ
@@ -2392,9 +2590,7 @@ export const SettingsPage: React.FC = () => {
                                   {urun.gorsel ? (
                                     <img src={urun.gorsel} alt={urun.ad} className="w-12 h-12 object-cover rounded" />
                                   ) : (
-                                    <div className="ayarlar-gorsel-placeholder">
-                                      Görsel{'\n'}Yok
-                                    </div>
+                                    <img src="/assets/product-img-placeholder.png" alt="Görsel yok" className="w-12 h-12 object-cover rounded" />
                                   )}
                                 </td>
                                 <td data-label="Ürün Adı" className="px-4 py-3 text-sm text-gray-900 urunler-ad-hucre">{urun.ad}</td>
@@ -2508,7 +2704,7 @@ export const SettingsPage: React.FC = () => {
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full ayarlar-tablosu">
-                          <thead className="bg-gray-50">
+                          <thead>
                             <tr>
                               <TableSortHeader
                                 field="ad"
@@ -2613,7 +2809,7 @@ export const SettingsPage: React.FC = () => {
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full ayarlar-tablosu">
-                          <thead className="bg-gray-50">
+                          <thead>
                             <tr>
                               <TableSortHeader
                                 field="grup"
@@ -2741,7 +2937,7 @@ export const SettingsPage: React.FC = () => {
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full ayarlar-tablosu">
-                          <thead className="bg-gray-50">
+                          <thead>
                             <tr>
                               <TableSortHeader
                                 field="grup"
@@ -2935,7 +3131,7 @@ export const SettingsPage: React.FC = () => {
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full ayarlar-tablosu">
-                          <thead className="bg-gray-50">
+                          <thead>
                             <tr>
                               <TableSortHeader field="konum_adi" label="Konum Adı" currentSort={teslimatSortField} sortDirection={teslimatSortDir} onSort={handleTeslimatSort} className="px-4 py-3 text-xs font-medium text-gray-500 uppercase" />
                               <TableSortHeader field="il" label="İl / İlçe" currentSort={teslimatSortField} sortDirection={teslimatSortDir} onSort={handleTeslimatSort} className="px-4 py-3 text-xs font-medium text-gray-500 uppercase" />
@@ -3211,7 +3407,7 @@ export const SettingsPage: React.FC = () => {
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full ayarlar-tablosu">
-                        <thead className="bg-gray-50">
+                        <thead>
                           <tr>
                             <TableSortHeader field="plaka" label="Plaka" currentSort={aracSortField} sortDirection={aracSortDir} onSort={handleAracSort} className="px-4 py-3 text-xs font-medium text-gray-500 uppercase" />
                             <TableSortHeader field="marka_model" label="Marka / Model" currentSort={aracSortField} sortDirection={aracSortDir} onSort={handleAracSort} className="px-4 py-3 text-xs font-medium text-gray-500 uppercase" />

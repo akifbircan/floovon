@@ -65,6 +65,7 @@ main[data-main-content] {
   /* max-height: calc(100vh - var(--header-height, 64px)); */
   padding-bottom: 0 !important;
   margin-bottom: 0 !important;
+  
 }
 
 /* Right Panel - Butonların solunda, butonların altından başlayarak sayfanın sonuna kadar */

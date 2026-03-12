@@ -234,20 +234,11 @@ class MailService {
      */
     getLogoAttachment() {
         try {
-            const logoPngPath = path.join(__dirname, '..', 'assets', 'mail-data', 'logo-floovon-dark.png');
-            const logoPngPathAlt = path.join(__dirname, '..', 'assets', 'logo-floovon-dark.png');
-            
-            let logoPath = null;
+            const logoPngPath = path.join(__dirname, '..', 'assets', 'mail', 'logo-floovon.png');
             if (fs.existsSync(logoPngPath)) {
-                logoPath = logoPngPath;
-            } else if (fs.existsSync(logoPngPathAlt)) {
-                logoPath = logoPngPathAlt;
-            }
-
-            if (logoPath) {
                 return [{
                     filename: 'logo-floovon.png',
-                    path: logoPath,
+                    path: logoPngPath,
                     cid: 'floovon-logo'
                 }];
             }

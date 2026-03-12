@@ -2245,7 +2245,7 @@ table thead .table-sort-header .table-sort-icon {
    ================================ */
 .page-wrapper {
   background-color: var(--border-renk);
-  border-radius: 15px;
+  border-radius: 15px 15px 0 0;
   margin-right: 20px;
 }
 
@@ -2497,8 +2497,16 @@ table thead .table-sort-header .table-sort-icon {
   background: var(--mor-alpha-06);
 }
 
-.campaigns-table-row-selected {
-  background: var(--mor-alpha-10) !important;
+/* Seçili satır rengi – tüm tablolar için ortak sınıf */
+.page-table-row-selected,
+.customers-table-row-selected,
+.partners-table-row-selected,
+.campaigns-table-row-selected,
+.reports-table-row-selected,
+.profil-table-row-selected,
+.cari-table-row-selected,
+.arsiv-table-row-selected {
+  background-color: var(--blue-transparent) !important;
 }
 
 /* Kampanya tablosu: hücre yazıları müşteriler sayfası gibi 13px */
@@ -2535,14 +2543,15 @@ table thead .table-sort-header .table-sort-icon {
   font-size: 12px;
 }
 
-/* Kampanya kupon kodu badge */
+/* Kampanya kupon kodu badge – tablo ve detayda farklı, canlı renk */
+/* Kupon kodu badge – mor değil; mavi ton (taslak badge'den farklı) */
 .campaigns-kupon-badge {
   display: inline-block;
-  padding: 4px 10px;
+  padding: 3px 10px;
   font-size: 11px;
   font-weight: 600;
-  background: var(--gray-light-f2);
-  color: var(--ana-renk);
+  background: var(--soft-blue-bg);
+  color: var(--blue-dark);
   border-radius: 6px;
   letter-spacing: 0.02em;
 }
@@ -2562,6 +2571,12 @@ table thead .table-sort-header .table-sort-icon {
 .profil-table thead th.text-center,
 .profil-table tbody td.text-right,
 .profil-table tbody td.text-center,
+.campaigns-table thead th.campaigns-th-durum,
+.campaigns-table tbody td.campaigns-td-durum,
+.campaigns-table-wrap .customers-table thead th.campaigns-th-durum,
+.campaigns-table-wrap .customers-table tbody td.campaigns-td-durum,
+.campaigns-table thead th.campaigns-th-islemler,
+.campaigns-table tbody td.campaigns-td-islemler,
 .campaigns-table-wrap .customers-table thead th.campaigns-th-islemler,
 .campaigns-table-wrap .customers-table tbody td.campaigns-td-islemler,
 .potansiyel-tablosu thead th.potansiyel-th-islem,
@@ -2666,6 +2681,17 @@ table td:has(.islem-ikonlar) {
   margin-bottom: 6px;
 }
 
+/* Kampanya görseli file input tetikleyicisi: ortak dosya-yukle-alan stili kullansın */
+.campaigns-form .dosya-yukle-alan label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gri70);
+}
+
 .campaigns-form input,
 .campaigns-form select,
 .campaigns-form textarea {
@@ -2675,6 +2701,14 @@ table td:has(.islem-ikonlar) {
   border-radius: 8px;
   font-size: 0.875rem;
   color: var(--ana-renk);
+  background-color: transparent;
+}
+
+/* Dark tema: select açılır listesi (option) koyu zemin – tarayıcı desteklediği ölçüde uygulanır */
+body.dark-mode .campaigns-form select option,
+html.dark-mode .campaigns-form select option {
+  background-color: var(--white);
+  color: var(--ana-renk);
 }
 
 .campaigns-form textarea {
@@ -2682,33 +2716,24 @@ table td:has(.islem-ikonlar) {
   min-height: 120px;
 }
 
-.kampanya-upload-area {
-  border: 2px dashed var(--border-renk);
-  border-radius: 8px;
-  padding: 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.2s;
+.campaigns-musteri-grubu-hint-wrap {
+  width: 100%;
+  margin-top: 10px !important;
 }
 
-.kampanya-upload-area:hover {
-  border-color: var(--mor-primary);
+.campaigns-musteri-grubu-hint {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  color: var(--muted-text);
+  background-color: var(--file-input-hover);
+  border-radius: 8px;
+  text-align: center;
 }
 
 .upload-placeholder {
   display: block;
   width: 100%;
-}
-.upload-placeholder label {
-  cursor: pointer;
-  color: var(--mor-primary);
-}
-.kampanya-upload-area .upload-placeholder label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 120px;
 }
 
 .uploaded-preview {
@@ -2754,8 +2779,8 @@ table td:has(.islem-ikonlar) {
 }
 
 .status-badge.status-taslak {
-  background: var(--purple-50-bg);
-  color: var(--purple-700);
+  background: var(--mor-primary-soft-ultra);
+  color: var(--mor-primary-text);
 }
 
 .status-badge.status-devam-ediyor {
@@ -2764,8 +2789,8 @@ table td:has(.islem-ikonlar) {
 }
 
 .status-badge.status-tamamlandi {
-  background: var(--gray-200-bg);
-  color: var(--gray-600);
+  background: var(--success-green-transparent);
+  color: var(--success-green);
 }
 
 .campaigns-detail-block {
@@ -2843,7 +2868,6 @@ table td:has(.islem-ikonlar) {
   width: 100%;
   padding: 0.5rem 1rem;
   padding-left: 2.25rem;
-  padding-top: 6px;
   border: 1px solid var(--search-input-border);
   border-radius: 8px;
   color: var(--ana-renk);
@@ -2957,7 +2981,6 @@ table td:has(.islem-ikonlar) {
   vertical-align: middle;
   color: var(--ana-renk);
   border-bottom: 1px solid var(--border-renk);
-  width: 100%;
 }
 .customers-table tbody td.customers-td-logo {
   padding: 0;

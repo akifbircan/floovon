@@ -1110,7 +1110,6 @@ body.css-loaded .admin-tenant-users-table tbody {
   font-size: 14px;
   font-weight: 600;
   color: var(--console-text-primary);
-  margin-bottom: 4px;
 }
 
 /* Email and Phone Cell Styles */
@@ -1128,7 +1127,6 @@ body.css-loaded .admin-tenant-users-table tbody {
 .admin-tenant-email-phone-cell .phone {
   font-size: 13px;
   color: var(--console-text-primary);
-  margin-top: 4px;
 }
 
 /* Badge Styles */

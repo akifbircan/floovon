@@ -427,11 +427,11 @@
 }
 
 /* ========== INPUT GRUP COLUMN ========== */
-.yeni-kart-container .input-grup-column {
+/* .yeni-kart-container .input-grup-column {
     display: flex !important;
     gap: 10px !important;
     padding-bottom: 10px !important;
-}
+} */
 
 /* ========== LABEL STİLLERİ ========== */
 .yeni-kart-container .input-grup label {
@@ -1070,17 +1070,14 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     -webkit-appearance: menulist !important;
 }
 
-.yeni-kart-container .dosya-yukle-alan,
-.ayarlar-panel .dosya-yukle-alan,
-.ayarlar-panel-form .dosya-yukle-alan {
+.dosya-yukle-alan {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 12px !important;
-    border: 1px dashed var(--mor-primary) !important;
+    border: 1px dashed var(--mor-primary-soft) !important;
     border-radius: 6px !important;
-    /* background-color: var(--white) !important; */
     min-height: 72px !important;
     max-height: 72px !important;
     cursor: pointer !important;
@@ -1088,28 +1085,22 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     padding: 16px !important;
 }
 
-/* Dosya seçildiğinde alan boyu aynı kalsın, resim küçük, Kaldır butonu müşteri formu ile aynı stil */
-.yeni-kart-container .dosya-yukle-alan.dosya-secildi,
-.ayarlar-panel .dosya-yukle-alan.dosya-secildi,
-.ayarlar-panel-form .dosya-yukle-alan.dosya-secildi {
+/* Dosya seçildiğinde alan boyu aynı kalsın, resim küçük, Kaldır butonu ortak stil kullansın */
+.dosya-yukle-alan.dosya-secildi {
     justify-content: space-between !important;
     padding: 0 12px !important;
     overflow: hidden !important;
     min-width: 0 !important;
 }
 
-.yeni-kart-container .dosya-yukle-alan .davetiye-preview-img,
-.ayarlar-panel .dosya-yukle-alan .davetiye-preview-img,
-.ayarlar-panel-form .dosya-yukle-alan .davetiye-preview-img {
+.dosya-yukle-alan .davetiye-preview-img {
     max-width: 120px !important;
     max-height: 48px !important;
     object-fit: contain !important;
     flex-shrink: 0 !important;
 }
 
-.yeni-kart-container .dosya-yukle-alan .secilen-dosya-metin,
-.ayarlar-panel .dosya-yukle-alan .secilen-dosya-metin,
-.ayarlar-panel-form .dosya-yukle-alan .secilen-dosya-metin {
+.dosya-yukle-alan .secilen-dosya-metin {
     font-size: 12px !important;
     color: var(--gri70) !important;
     flex: 1 !important;
@@ -1119,9 +1110,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     white-space: nowrap !important;
 }
 
-.yeni-kart-container .dosya-yukle-alan .remove-button,
-.ayarlar-panel .dosya-yukle-alan .remove-button,
-.ayarlar-panel-form .dosya-yukle-alan .remove-button {
+.dosya-yukle-alan .remove-button {
     font-size: 12px !important;
     padding: 6px 12px !important;
     cursor: pointer !important;
@@ -1133,24 +1122,18 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     flex-shrink: 0 !important;
 }
 
-.yeni-kart-container .dosya-yukle-alan .file-label,
-.ayarlar-panel .dosya-yukle-alan .file-label,
-.ayarlar-panel-form .dosya-yukle-alan .file-label {
+.dosya-yukle-alan .file-label {
     color: var(--gri70) !important;
     font-size: 13px !important;
 }
 
-.yeni-kart-container .dosya-yukle-alan:hover,
-.ayarlar-panel .dosya-yukle-alan:hover,
-.ayarlar-panel-form .dosya-yukle-alan:hover {
-    background-color: var(--light-gray) !important;
+.dosya-yukle-alan:hover {
+    background-color: var(--file-input-hover) !important;
     border-color: var(--mor-primary-text) !important;
 }
 
 /* Sürükleme sırasında border kalınlaşsın, üzerine gelindiği anlaşılsın */
-.yeni-kart-container .dosya-yukle-alan.drag-over,
-.ayarlar-panel .dosya-yukle-alan.drag-over,
-.ayarlar-panel-form .dosya-yukle-alan.drag-over {
+.dosya-yukle-alan.drag-over {
     border-width: 2px !important;
 }
 
@@ -1393,7 +1376,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
     align-items: center !important;
     justify-content: center !important;
     gap: 12px !important;
-    border: 1px dashed var(--mor-primary) !important;
+    border: 1px dashed var(--mor-primary-soft) !important;
     border-radius: 4px !important;
     cursor: pointer !important;
     max-width: 100% !important;
@@ -3763,6 +3746,25 @@ color: var(--ana-renk) !important;
     width: 100% !important;
 }
 
+.modal-react-whatsapp-phone-button-group-empty {
+    align-items: center !important;
+    text-align: center !important;
+}
+
+.modal-react-whatsapp-phone-button-group-empty .modal-react-whatsapp-phone-empty-text {
+    text-align: center !important;
+}
+
+.modal-react-whatsapp-phone-empty-actions {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+.modal-react-whatsapp-phone-empty-actions .modal-react-whatsapp-phone-settings-button {
+    width: fit-content !important;
+}
+
 .modal-react-whatsapp-phone-button {
     display: flex !important;
     align-items: center !important;
@@ -5113,6 +5115,10 @@ color: var(--ana-renk) !important;
     width: 100% !important;
   }
 
+  .overlay-yeni-kart-container .yeni-kart-container .dosya-yukle-alan {
+    margin-top: 16px !important;
+  }
+
   /* İl / İlçe: mobilde alt alta (column) */
   .overlay-yeni-kart-container .yeni-kart-container .input-grup-il-ilce {
     flex-direction: column !important;
@@ -5146,9 +5152,9 @@ color: var(--ana-renk) !important;
     padding-bottom: 12px !important;
   }
 
-  .overlay-yeni-kart-container .yeni-kart-container .input-form {
+  /* .overlay-yeni-kart-container .yeni-kart-container .input-form {
     margin-bottom: 16px !important;
-  }
+  } */
 
   .overlay-yeni-kart-container .yeni-kart-container .dosya-yukle-alan {
     min-height: 80px !important;
@@ -5164,9 +5170,9 @@ color: var(--ana-renk) !important;
     box-sizing: border-box !important;
   }
 
-  .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat {
+  /* .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat {
     flex-wrap: wrap !important;
-  }
+  } */
 
   .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat .siparis-tarih,
   .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat .siparis-saat {
@@ -5230,7 +5236,12 @@ color: var(--ana-renk) !important;
     align-items: flex-start;
   }
 
-
+  .yeni-kart-container .input-grup-column {
+    padding-bottom: 0 !important;
+  }
+  .yeni-kart-container .input-grup .input-help {
+    padding-top: 0 !important;
+  }
 
   .ayarlar-form-group input,
   .ayarlar-form-group select,
@@ -5634,7 +5645,7 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
 
 .overlay-yeni-musteri-container .yeni-musteri-container .input-alan .input-grup textarea,
 .overlay-yeni-musteri-container .yeni-musteri-container textarea {
-    padding: 10px 0 0 10px !important;
+    padding: 6px 0 0 10px !important;
     resize: none !important;
     height: 56px !important;
 }
@@ -5699,7 +5710,7 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
 }
 
 .overlay-yeni-musteri-container .yeni-musteri-container textarea {
-    padding: 10px 0 0 10px !important;
+    padding: 6px 0 0 10px !important;
     resize: none !important;
     height: 56px !important;
 }
@@ -5975,6 +5986,7 @@ body select.modal-react-arac-takip-select {
         flex-wrap: wrap !important;
         gap: 8px !important;
         padding: 0 !important;
+        /* margin-bottom: 16px !important; */
     }
     .overlay-yeni-kart-container .yeni-kart-container .input-form .label-kapsayici-org-tipler .radio-label {
         width: auto !important;

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../../../lib/api';
@@ -12,7 +12,7 @@ import { SearchInput } from '../../../shared/components/SearchInput';
 import { getPrintLogoAndFooter, openPrintWindow, downloadTableAsExcel, generateKampanyaPrintHTML } from '../../dashboard/utils/exportUtils';
 import { getUploadUrl } from '../../../shared/utils/urlUtils';
 import { getApiBaseUrl } from '../../../lib/runtime';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Upload } from 'lucide-react';
 import { TableSortHeader } from '../../../shared/components/TableSortHeader';
 import { Lightbox } from '../../../shared/components/Lightbox';
 
@@ -124,6 +124,8 @@ export const CampaignsPage: React.FC = () => {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [formData, setFormData] = useState(defaultFormData);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const kampanyaGorselInputRef = useRef<HTMLInputElement | null>(null);
+  const kampanyaGorselDesktopInputRef = useRef<HTMLInputElement | null>(null);
   const [campaignImageLightboxOpen, setCampaignImageLightboxOpen] = useState(false);
 
   const { data: campaigns, isLoading, error } = useQuery({
@@ -157,12 +159,27 @@ export const CampaignsPage: React.FC = () => {
     staleTime: 5 * 60 * 1000,
   });
 
+  /** Sadece müşteriler sayfasındaki veriden: "Tüm Müşteriler" + müşterilerde geçen tüm gruplar (statik liste yok). Formdaki mevcut değer listede yoksa eklenir (düzenlemede eski grup adı için). */
   const musteriGruplari = useMemo(() => {
-    const gruplar = new Set<string>(['tum-musteriler', 'VIP', 'Kurumsal', 'Bireysel', 'Standart']);
+    const gruplar = new Set<string>(['tum-musteriler']);
     customers?.forEach((c) => {
       if (c.musteri_grubu?.trim()) gruplar.add(c.musteri_grubu.trim());
     });
+    const current = formData.musteri_grubu?.trim();
+    if (current && !gruplar.has(current)) gruplar.add(current);
     return Array.from(gruplar).sort();
+  }, [customers, formData.musteri_grubu]);
+
+  /** Seçilen müşteri grubuna göre kişi sayısı (formda "X müşteri grubunda toplam N kişi" için) */
+  const musteriGrubuSayilari = useMemo(() => {
+    const list = customers ?? [];
+    const tum = list.length;
+    const byGroup: Record<string, number> = { 'tum-musteriler': tum };
+    list.forEach((c) => {
+      const g = (c.musteri_grubu ?? '').trim() || 'Belirtilmemiş';
+      byGroup[g] = (byGroup[g] ?? 0) + 1;
+    });
+    return byGroup;
   }, [customers]);
 
   const filteredCampaigns = useMemo(() => {
@@ -505,7 +522,7 @@ export const CampaignsPage: React.FC = () => {
                       <TableSortHeader field="kupon" label="Kupon Kodu" currentSort={sortField} sortDirection={sortDir} onSort={handleSort} />
                       <TableSortHeader field="baslangic" label="Başlangıç" currentSort={sortField} sortDirection={sortDir} onSort={handleSort} />
                       <TableSortHeader field="bitis" label="Bitiş" currentSort={sortField} sortDirection={sortDir} onSort={handleSort} />
-                      <TableSortHeader field="durum" label="Durum" currentSort={sortField} sortDirection={sortDir} onSort={handleSort} />
+                      <TableSortHeader field="durum" label="Durum" currentSort={sortField} sortDirection={sortDir} onSort={handleSort} className="campaigns-th-durum" align="center" />
                       <th className="campaigns-th-islemler">İşlemler</th>
                     </tr>
                   </thead>
@@ -535,7 +552,7 @@ export const CampaignsPage: React.FC = () => {
                         </td>
                         <td data-label="Başlangıç">{c.baslangic_tarihi ? new Date(c.baslangic_tarihi).toLocaleDateString('tr-TR') : '—'}</td>
                         <td data-label="Bitiş">{c.bitis_tarihi ? new Date(c.bitis_tarihi).toLocaleDateString('tr-TR') : '—'}</td>
-                        <td data-label="Durum">
+                        <td className="campaigns-td-durum" data-label="Durum">
                           <span className={`status-badge status-${c.durum || 'taslak'}`}>
                             {getStatusText(c.durum || '')}
                           </span>
@@ -657,21 +674,30 @@ export const CampaignsPage: React.FC = () => {
                         </button>
                       </div>
                     ) : (
-                      <div className="upload-placeholder">
+                      <div
+                        className="upload-placeholder dosya-yukle-alan"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => !uploadingImage && kampanyaGorselInputRef.current?.click()}
+                        onKeyDown={(e) => e.key === 'Enter' && !uploadingImage && kampanyaGorselInputRef.current?.click()}
+                      >
                         <input
+                          ref={kampanyaGorselInputRef}
                           type="file"
                           accept="image/*"
-                          className="hidden"
-                          id="kampanya-gorsel"
+                          className="file-input-hidden"
                           disabled={uploadingImage}
                           onChange={(e) => {
                             const f = e.target.files?.[0];
                             if (f) handleImageUpload(f);
                           }}
                         />
-                        <label htmlFor="kampanya-gorsel" className="cursor-pointer">
-                          {uploadingImage ? 'Yükleniyor...' : 'Görsel sürükleyin veya tıklayın (max 5MB)'}
-                        </label>
+                        <div className="flex items-center gap-2">
+                          <Upload size={18} strokeWidth={1.5} aria-hidden />
+                          <span className="file-label">
+                            {uploadingImage ? 'Yükleniyor...' : 'Görsel sürükleyin veya tıklayın (max 5MB)'}
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -716,6 +742,13 @@ export const CampaignsPage: React.FC = () => {
                     </select>
                   </div>
                 </div>
+                {customers && (
+                  <div className="campaigns-musteri-grubu-hint-wrap">
+                    <p className="campaigns-musteri-grubu-hint">
+                      {getMusteriGrubuText(formData.musteri_grubu)} müşteri grubunda toplam {musteriGrubuSayilari[formData.musteri_grubu] ?? musteriGrubuSayilari[(formData.musteri_grubu || '').trim()] ?? 0} kişi
+                    </p>
+                  </div>
+                )}
 
                 <div className="form-row-2">
                   <div>
@@ -807,7 +840,9 @@ export const CampaignsPage: React.FC = () => {
                 </div>
                 <div className="page-detail-block page-detail-block-sep">
                   <p className="page-detail-label">Kupon Kodu</p>
-                  <p className="page-detail-value"><code>{selectedCampaign.kupon_kodu || '—'}</code></p>
+                  <p className="page-detail-value">
+                    <span className="campaigns-kupon-badge">{selectedCampaign.kupon_kodu || '—'}</span>
+                  </p>
                 </div>
                 <div className="page-detail-block page-detail-block-sep">
                   <p className="page-detail-label">Tarihler</p>
@@ -878,9 +913,30 @@ export const CampaignsPage: React.FC = () => {
                             <button type="button" onClick={() => setFormData((p) => ({ ...p, gorsel: null, gorsel_path: null }))} className="remove-button">Kaldır</button>
                           </div>
                         ) : (
-                          <div className="upload-placeholder">
-                            <input type="file" accept="image/*" className="hidden" id="kampanya-gorsel-desktop" disabled={uploadingImage} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                            <label htmlFor="kampanya-gorsel-desktop" className="cursor-pointer">{uploadingImage ? 'Yükleniyor...' : 'Görsel sürükleyin veya tıklayın (max 5MB)'}</label>
+                          <div
+                            className="upload-placeholder dosya-yukle-alan"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => !uploadingImage && kampanyaGorselDesktopInputRef.current?.click()}
+                            onKeyDown={(e) => e.key === 'Enter' && !uploadingImage && kampanyaGorselDesktopInputRef.current?.click()}
+                          >
+                            <input
+                              ref={kampanyaGorselDesktopInputRef}
+                              type="file"
+                              accept="image/*"
+                              className="file-input-hidden"
+                              disabled={uploadingImage}
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                if (f) handleImageUpload(f);
+                              }}
+                            />
+                            <div className="flex items-center gap-2">
+                              <Upload size={18} strokeWidth={1.5} aria-hidden />
+                              <span className="file-label">
+                                {uploadingImage ? 'Yükleniyor...' : 'Görsel sürükleyin veya tıklayın (max 5MB)'}
+                              </span>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -890,6 +946,11 @@ export const CampaignsPage: React.FC = () => {
                       <div><label>Kupon Tanımla *</label><input type="text" value={formData.kupon_kodu} onChange={(e) => setFormData((p) => ({ ...p, kupon_kodu: e.target.value.toUpperCase() }))} onBlur={() => setTimeout(handleAutoMessage, 0)} placeholder="SEVGILI14" required /></div>
                       <div><label>Müşteri Grubu *</label><select value={formData.musteri_grubu} onChange={(e) => setFormData((p) => ({ ...p, musteri_grubu: e.target.value }))} required>{musteriGruplari.map((g) => <option key={g} value={g}>{getMusteriGrubuText(g)}</option>)}</select></div>
                     </div>
+                    {customers && (
+                      <div className="campaigns-musteri-grubu-hint-wrap">
+                        <p className="campaigns-musteri-grubu-hint">{getMusteriGrubuText(formData.musteri_grubu)} müşteri grubunda toplam {musteriGrubuSayilari[formData.musteri_grubu] ?? musteriGrubuSayilari[(formData.musteri_grubu || '').trim()] ?? 0} kişi</p>
+                      </div>
+                    )}
                     <div className="form-row-2">
                       <div><label>Başlangıç Tarihi *</label><input type="date" value={formData.baslangic_tarihi} onChange={(e) => { setFormData((p) => ({ ...p, baslangic_tarihi: e.target.value })); setTimeout(handleAutoMessage, 0); }} required /></div>
                       <div><label>Bitiş Tarihi *</label><input type="date" value={formData.bitis_tarihi} onChange={(e) => { setFormData((p) => ({ ...p, bitis_tarihi: e.target.value })); setTimeout(handleAutoMessage, 0); }} min={formData.baslangic_tarihi} required /></div>
@@ -919,7 +980,7 @@ export const CampaignsPage: React.FC = () => {
                   )}
                   <div className="customers-detail-block customers-detail-block-sep"><p className="customers-detail-label">Kampanya Adı</p><p className="customers-detail-value">{selectedCampaign.ad}</p></div>
                   <div className="customers-detail-block customers-detail-block-sep"><p className="customers-detail-label">Müşteri Grubu</p><p className="customers-detail-value">{getMusteriGrubuText(selectedCampaign.musteri_grubu || '')}</p></div>
-                  <div className="customers-detail-block customers-detail-block-sep"><p className="customers-detail-label">Kupon Kodu</p><p className="customers-detail-value"><code>{selectedCampaign.kupon_kodu || '—'}</code></p></div>
+                  <div className="customers-detail-block customers-detail-block-sep"><p className="customers-detail-label">Kupon Kodu</p><p className="customers-detail-value"><span className="campaigns-kupon-badge">{selectedCampaign.kupon_kodu || '—'}</span></p></div>
                   <div className="customers-detail-block customers-detail-block-sep"><p className="customers-detail-label">Tarih Aralığı</p><p className="customers-detail-value">{selectedCampaign.baslangic_tarihi && new Date(selectedCampaign.baslangic_tarihi).toLocaleDateString('tr-TR')} – {selectedCampaign.bitis_tarihi && new Date(selectedCampaign.bitis_tarihi).toLocaleDateString('tr-TR')}</p></div>
                   <div className="customers-detail-block"><p className="customers-detail-label">Durum</p><span className={`status-badge status-${selectedCampaign.durum || 'taslak'}`}>{getStatusText(selectedCampaign.durum || '')}</span></div>
                   {selectedCampaign.mesaj && <div className="customers-detail-block"><p className="customers-detail-label">Mesaj</p><p className="customers-detail-value mesaj-text">{selectedCampaign.mesaj}</p></div>}

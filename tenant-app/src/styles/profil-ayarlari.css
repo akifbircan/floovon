@@ -21,17 +21,17 @@
   max-width: 100%;
 }
 
-/* Ayarlar: sayfa scrollu main'de olsun (layout-custom main overflow:hidden eziyor, burada geri açıyoruz) */
+/* Ayarlar: ana layout'ta scrollbar hiç görünmesin; scroll sadece içerideki wrapper'da olsun */
 main[data-main-content]:has(.ayarlar-page) {
-  overflow: auto !important;
+  overflow: hidden !important;
 }
 
-/* Ayarlar: sayfa scrollu .ayarlar-page.page-wrapper'da (düzenle tıklanınca bunu kaydırıyoruz) */
+/* Ayarlar: dış sayfada scroll yok, scroll sadece iç panellerde (.ayarlar-panel) – wrapper'da scrollbar titremesin */
 .ayarlar-page.page-wrapper {
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  overflow: auto;
+  overflow: hidden;
 }
 .ayarlar-page-inner {
   max-width: 100%;
@@ -186,7 +186,7 @@ main[data-main-content]:has(.ayarlar-page) {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-right: 10px;
+  /* padding-right: 10px; */
 }
 
 .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel > .empty-state {
@@ -478,6 +478,10 @@ main[data-main-content]:has(.ayarlar-page) {
   .profil-form-grid.profil-form-grid-cols3 {
     grid-template-columns: 1fr;
   }
+
+  .profil-form-col-secure {
+    padding: 1rem;
+  }
   .profil-form-grid-cols3 .profil-form-col-3 {
     grid-column: 1;
   }
@@ -502,7 +506,7 @@ main[data-main-content]:has(.ayarlar-page) {
 }
 .ayarlar-form-row-3 {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr;
   gap: 1rem;
 }
 @media (max-width: 900px) {
@@ -520,10 +524,10 @@ main[data-main-content]:has(.ayarlar-page) {
   margin-bottom: 0;
 }
 
-/* İşletme ayarları: 2 kolon */
+/* İşletme ayarları: masaüstünde 3 kolon */
 .ayarlar-isletme-3kolon {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 1.5rem;
 }
 .ayarlar-isletme-kolon {
@@ -1562,24 +1566,6 @@ html.dark-mode .profil-yetki-kart-footer {
   min-width: 200px;
   max-width: 200px;
   box-sizing: border-box;
-}
-
-/* Ürün tablosu: görsel yok placeholder – sadece CSS variable renkleri, hücre içinde ortada */
-.ayarlar-gorsel-placeholder {
-  width: 3rem;
-  height: 3rem;
-  min-width: 3rem;
-  min-height: 3rem;
-  border-radius: 6px;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  text-align: center;
-  line-height: 1.2;
-  white-space: pre-line;
-  background-color: var(--gray-light-ec);
-  color: var(--gri70);
 }
 
 /* Ayarlar sol / sağ kolon genişlikleri */

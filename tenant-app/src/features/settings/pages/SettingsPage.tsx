@@ -379,6 +379,9 @@ function CiceksepetiAyarlariForm() {
                           const integration = (window as any).ciceksepetiIntegration;
                           if (integration && typeof integration.showSystemNotification === 'function') {
                             integration.showSystemNotification('Test — Çiçek Sepeti', 'Bildirim ayarı çalışıyor. Yeni siparişte böyle görünecek.');
+                            if (localStorage.getItem('ciceksepeti_ses_bildirimi') !== 'false' && typeof integration.playNotificationSound === 'function') {
+                              integration.playNotificationSound();
+                            }
                             showToast('success', 'Test bildirimi gönderildi. Bildirim çubuğuna veya kilidi ekranına bakın.');
                           } else {
                             try {

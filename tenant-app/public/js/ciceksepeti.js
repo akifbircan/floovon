@@ -188,15 +188,27 @@ class CiceksepetiFloovonIntegration {
         } catch (e) {}
     }
 
-    /** Telefon bildirim çubuğunda bildirim gösterir (izin verilmişse). PWA/uygulama açık veya arka plandayken çalışır. */
+    /** Telefon bildirim çubuğunda bildirim gösterir (izin verilmişse). Önce Service Worker üzerinden dener (mobil/arka plan güvenilir), yoksa sayfa Notification. */
     showSystemNotification(title, body) {
+        if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') return;
+        var icon = (window.BACKEND_BASE_URL || window.location.origin || '') + '/favicon.ico';
+        try {
+            if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'ciceksepeti_show_notification',
+                    title: title || 'Yeni Çiçek Sepeti siparişi',
+                    body: body || '',
+                    icon: icon
+                });
+                return;
+            }
+        } catch (e) {}
         if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
         try {
-            var icon = (window.BACKEND_BASE_URL || window.location.origin || '') + '/favicon.ico';
             var n = new Notification(title, { body: body || '', icon: icon });
             n.onclick = function() {
                 n.close();
-                window.focus();
+                if (typeof window !== 'undefined' && window.focus) window.focus();
             };
             setTimeout(function() { n.close(); }, 8000);
         } catch (e) {}
@@ -249,13 +261,14 @@ class CiceksepetiFloovonIntegration {
 
     playNotificationSound() {
     try {
-        const audio = new Audio("/assets/sounds/sound-12.mp3"); // sipariş gelince sesli uyarı (tenant-app public)
-        audio.volume = 0.9; // ses seviyesi
-        audio.play().catch(err => {
-            // console.warn("Bildirim sesi oynatılamadı:", err);
+        var origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : '';
+        var soundUrl = origin + '/assets/sounds/sound-12.mp3';
+        var audio = new Audio(soundUrl);
+        audio.volume = 0.9;
+        audio.play().catch(function() {
+            if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
         });
     } catch (error) {
-        // console.log("Ses çalınamadı:", error);
         if (navigator.vibrate) {
             navigator.vibrate([300, 150, 300]);
         }

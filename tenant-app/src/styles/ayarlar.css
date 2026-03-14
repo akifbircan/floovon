@@ -752,13 +752,13 @@ main[data-main-content]:has(.ayarlar-page) {
 /* Banka hesap tabloları: Faturada göster / Mesajda kullan başlık ve checkbox sütunu dikey-yatay ortada */
 .ayarlar-tablosu th.ayarlar-banka-checkbox-col,
 .ayarlar-tablosu td.ayarlar-banka-checkbox-col {
-  text-align: center;
-  vertical-align: middle;
+  text-align: center !important;
+  vertical-align: middle !important;
 }
 .ayarlar-tablosu th.ayarlar-banka-checkbox-col,
 .ayarlar-tablosu thead th.ayarlar-banka-checkbox-col {
   text-align: center !important;
-  vertical-align: middle;
+  vertical-align: middle !important;
 }
 .ayarlar-tablosu td.ayarlar-banka-checkbox-col {
   display: table-cell;
@@ -1169,7 +1169,7 @@ main[data-main-content]:has(.ayarlar-page) {
   background-color: var(--ikincil-renk);
 }
 .ayarlar-page .ayarlar-panel table thead th {
-  text-align: left !important;
+  text-align: left;
   padding: 0.75rem 1.5rem !important;
   font-size: 9px !important;
   font-weight: 500 !important;

@@ -84,7 +84,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const subscriptionChannel = new BroadcastChannel('floovon-admin-notifications');
     subscriptionChannel.onmessage = async (event) => {
         if (event.data.type === 'subscription-updated') {
-            console.log('🔄 Plan güncellendi, dashboard yenileniyor...', event.data);
             // Dashboard verilerini yeniden yükle
             const tenantCode = urlParams.get('tenant') || localStorage.getItem('tenant_code');
             if (tenantCode) {
@@ -822,8 +821,6 @@ function updatePlanFeatures(features) {
  */
 async function loadPlansForModal(apiBase) {
     try {
-        console.log('🔍 Planlar yükleniyor...', { apiBase });
-        
         // Mevcut plan bilgisini al
         const currentPlanName = document.getElementById('plan-name-text')?.textContent || '';
         const currentPlanNameModal = document.getElementById('current-plan-name-modal');
@@ -845,7 +842,6 @@ async function loadPlansForModal(apiBase) {
         }
         
         const result = await response.json();
-        console.log('📦 Planlar API yanıtı:', result);
         
         const plansContainer = document.getElementById('plans-list-container');
         if (!plansContainer) {
@@ -856,12 +852,9 @@ async function loadPlansForModal(apiBase) {
         plansContainer.innerHTML = '';
         
         if (!result.success || !result.data || result.data.length === 0) {
-            console.warn('⚠️ Plan bulunamadı veya boş');
             plansContainer.innerHTML = '<p style="padding: 20px; text-align: center; color: #6b7280;">Plan bulunamadı.</p>';
             return;
         }
-        
-        console.log(`✅ ${result.data.length} plan bulundu, render ediliyor...`);
         
         // Mevcut plan ID'sini ve billing period'u al (subscription bilgisinden)
         // Plan yoksa (Plan Yok durumunda) currentPlanId null olmalı
@@ -968,7 +961,6 @@ async function loadPlansForModal(apiBase) {
         });
         
         const btns = plansContainer.querySelectorAll('.plan-select-btn');
-        console.log(`✅ ${result.data.length} plan render edildi. Butonlar:`, Array.from(btns).map(b => ({ id: b.dataset.planId, name: b.dataset.planName, disabled: b.disabled })));
         
     } catch (error) {
         console.error('❌ Planlar yüklenirken hata:', error);
@@ -1227,17 +1219,11 @@ function initTabs() {
     const tabButtons = document.querySelectorAll('.sidebar-nav-item');
     const tabSections = document.querySelectorAll('.content-section');
     
-    if (tabButtons.length === 0) {
-        console.warn('⚠️ Tab butonları bulunamadı!');
-        return;
-    }
+    if (tabButtons.length === 0) return;
     
     tabButtons.forEach((button, index) => {
         const targetTab = button.dataset.tab;
-        if (!targetTab) {
-            console.warn(`⚠️ Tab butonu ${index} için data-tab bulunamadı!`);
-            return;
-        }
+        if (!targetTab) return;
         
         button.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -1293,7 +1279,6 @@ function initTabs() {
  * Modal event listener'ları
  */
 function initModalListeners() {
-    console.log('[initModalListeners] Çalıştı');
     // Modal overlay
     const modalOverlay = document.getElementById('modal-overlay');
     
@@ -1396,7 +1381,6 @@ function initModalListeners() {
                 // Planlar yüklendikten sonra modal'ı aç
                 openModal('upgrade-plan-modal');
                 const planBtns = document.querySelectorAll('#upgrade-plan-modal .plan-select-btn');
-                console.log('[Plan Değiştir] Modal açıldı, buton sayısı:', planBtns.length, planBtns.length ? '(disabled olmayan: ' + Array.from(planBtns).filter(b => !b.disabled).length + ')' : '');
                 // Kontrol: Eğer planlar yüklenmediyse hata mesajı göster
                 setTimeout(() => {
                     const plansContainer = document.getElementById('plans-list-container');
@@ -1421,32 +1405,16 @@ function initModalListeners() {
     document.addEventListener('click', async function planSwitchHandler(e) {
         const target = e.target;
         const btn = target.closest('#upgrade-plan-modal .plan-select-btn');
-        // Debug: her tıklamada hedefi logla (sadece modal içindeyse)
-        const inModal = target.closest('#upgrade-plan-modal');
-        if (inModal) {
-            console.log('[Plan Değiştir] Tıklama modal içinde:', {
-                targetTag: target.tagName,
-                targetClass: target.className,
-                closestBtn: btn ? 'bulundu' : 'yok',
-                btnDisabled: btn ? btn.disabled : '-',
-                dataPlanId: btn ? btn.dataset.planId : '-'
-            });
-        }
         if (!btn || btn.disabled) return;
         e.preventDefault();
         e.stopPropagation();
         const planId = btn.dataset.planId;
         const planName = btn.dataset.planName || 'Plan';
         const billingPeriod = window.dashboardBillingPeriod || 'monthly';
-        if (!planId) {
-            console.warn('[Plan Değiştir] planId yok, işlem iptal');
-            return;
-        }
-        console.log('[Plan Değiştir] upgradePlan çağrılıyor:', { planId, planName, billingPeriod });
+        if (!planId) return;
         await upgradePlan(planId, planName, billingPeriod);
         // Modal kapatma: onayda upgradePlan içinde closeAllModals çağrılıyor; iptalde modal açık kalsın
     });
-    console.log('[Plan Değiştir] Document click listener (Bu Plana Geç) kaydedildi.');
     
     // Save profile butonu
     const saveProfileBtn = document.getElementById('save-profile-btn');
@@ -2104,11 +2072,9 @@ function toggleDashboardPricing(period) {
  * Plan yükseltme
  */
 async function upgradePlan(planId, planName, billingPeriod = null) {
-    console.log('[upgradePlan] Başladı', { planId, planName, billingPeriod });
     try {
         const apiBase = window.dashboardApiBase || (typeof window.getFloovonApiBase === 'function' ? window.getFloovonApiBase() : window.API_BASE_URL || '/api');
         const tenantCode = new URLSearchParams(window.location.search).get('tenant') || localStorage.getItem('tenant_code');
-        console.log('[upgradePlan] apiBase:', apiBase, 'tenantCode:', tenantCode ? 'var' : 'YOK');
         if (!tenantCode) {
             const msg = 'Tenant kodu bulunamadı. Lütfen giriş yapın veya dashboard\'a tenant parametresi ile girin.';
             if (typeof window.createToast === 'function') {
@@ -2138,7 +2104,6 @@ async function upgradePlan(planId, planName, billingPeriod = null) {
         
         const subscriptionResult = await subscriptionResponse.json();
         const currentPlan = subscriptionResult.success && subscriptionResult.data ? subscriptionResult.data : null;
-        console.log('[upgradePlan] Mevcut abonelik alındı:', currentPlan ? 'var' : 'yok');
         
         // Yeni plan bilgisini al
         const plansResponse = await fetch(`${apiBase}/public/plans`, {
@@ -2155,7 +2120,6 @@ async function upgradePlan(planId, planName, billingPeriod = null) {
         
         const plansResult = await plansResponse.json();
         const newPlan = plansResult.success && plansResult.data ? plansResult.data.find(p => p.id == planId) : null;
-        console.log('[upgradePlan] Yeni plan bulundu:', newPlan ? newPlan.plan_adi : 'YOK');
         if (!newPlan) {
             throw new Error('Yeni plan bulunamadı');
         }
@@ -2207,7 +2171,6 @@ async function upgradePlan(planId, planName, billingPeriod = null) {
         }
         
         // Kullanıcıdan onay al - Toast notification ile
-        console.log('[upgradePlan] Onay dialogu gösteriliyor (createToastInteractive:', typeof window.createToastInteractive, ')');
         return new Promise((resolve) => {
             if (typeof window.createToastInteractive === 'function') {
                 window.createToastInteractive({
@@ -2302,16 +2265,6 @@ async function proceedWithPlanChange(apiBase, tenantCode, planId, planName, bill
             requestUrl = `${apiBase}public/change-plan`;
         } else {
             requestUrl = `${apiBase}/api/public/change-plan`;
-        }
-        
-        // Debug log (production'da kaldırılabilir)
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.log('🔍 Plan değiştirme isteği:', {
-                apiBase,
-                requestUrl,
-                tenantCode,
-                planId
-            });
         }
         
         // Backend'e plan değişikliği isteği gönder
@@ -2411,7 +2364,6 @@ async function proceedWithPlanChange(apiBase, tenantCode, planId, planName, bill
                 await loadDashboardData(reloadApiBase, tenantCode);
             } catch (reloadError) {
                 // Veri yenileme hatası sessizce handle edilir (kullanıcı zaten başarı mesajı aldı)
-                console.warn('Veri yenileme hatası:', reloadError);
             }
             
             // Sayfa yenileme kaldırıldı - sadece veriler güncelleniyor

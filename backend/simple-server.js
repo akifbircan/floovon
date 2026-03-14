@@ -5884,7 +5884,6 @@ async function createTenantAbonelikFatura(tenantId, abonelikId, planId, planAdi,
         }
 
         const hasFaturaDongusu = await query('PRAGMA table_info(tenants_faturalar)', [], null).then(cols => (cols || []).some(c => c && c.name === 'fatura_dongusu'));
-        console.log('[FATURA] INSERT öncesi', { tenantId, abonelikId, faturaNo, hasFaturaDongusu });
         if (hasFaturaDongusu) {
             await run(
                 `INSERT INTO tenants_faturalar (tenant_id, fatura_no, fatura_tarihi, plan_id, abonelik_id, ara_toplam, kdv_tutari, toplam_tutar, fatura_dongusu, odeme_yontemi_id, odeme_tarihi, vade_tarihi, durum, olusturma_tarihi, guncelleme_tarihi)
@@ -5951,7 +5950,6 @@ async function createTenantAbonelikFatura(tenantId, abonelikId, planId, planAdi,
             const pdfYolu = `uploads/tenants/${tenantId}/invoices/${pdfFileName}`;
             await run("UPDATE tenants_faturalar SET pdf_yolu = ?, guncelleme_tarihi = datetime('now') WHERE id = ?", [pdfYolu, faturaId]);
         }
-        console.log('✅ createTenantAbonelikFatura: fatura oluşturuldu', { faturaId, fatura_no: faturaNo, tenantId, abonelikId });
         return { id: faturaId, fatura_no: faturaNo };
     } catch (err) {
         console.error('❌ createTenantAbonelikFatura hatası:', err?.message || err);
@@ -8747,6 +8745,56 @@ app.get('/api/public/business-profile', async (req, res) => {
         });
     } catch (error) {
         console.error('❌ /api/public/business-profile hatası:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Public: Landing dashboard - işletme profil bilgilerini güncelle (tenant_code ile, auth gerekmez)
+app.put('/api/public/business-profile', async (req, res) => {
+    try {
+        const b = req.body || {};
+        const tenantCode = (b.tenant_code || '').toString().trim();
+        if (!tenantCode) {
+            return res.status(400).json({ success: false, error: 'tenant_code gerekli' });
+        }
+        const tenants = await query('SELECT id FROM tenants WHERE tenants_no = ?', [tenantCode], null);
+        if (!tenants || tenants.length === 0) {
+            return res.status(404).json({ success: false, error: 'Tenant bulunamadı' });
+        }
+        const tenantId = tenants[0].id;
+
+        const companyName = (b.company_name || '').toString().trim();
+        const fullName = (b.full_name || '').toString().trim();
+        const email = (b.email || '').toString().trim();
+        const phone = (b.phone || '').toString().trim();
+        const city = (b.city || '').toString().trim();
+        const state = (b.state || '').toString().trim();
+        const address = (b.address || '').toString().trim();
+        const taxOffice = (b.tax_office || '').toString().trim();
+        const taxNumber = (b.tax_number || '').toString().trim();
+
+        const tenantCols = await query('PRAGMA table_info(tenants)', [], null).catch(() => []);
+        const tCols = (tenantCols || []).map(c => c && c.name).filter(Boolean);
+        const nameCol = tCols.includes('firma_adi') ? 'firma_adi' : 'name';
+        await run(
+            `UPDATE tenants SET ${nameCol} = ?, email = ?, phone = ?, city = ?, state = ?, address = ?, tax_office = ?, tax_number = ?, updated_at = datetime('now') WHERE id = ?`,
+            [companyName || null, email || null, phone || null, city || null, state || null, address || null, taxOffice || null, taxNumber || null, tenantId]
+        );
+
+        const users = await query('SELECT id, name, surname FROM tenants_kullanicilar WHERE tenant_id = ? AND is_active = 1 ORDER BY id ASC LIMIT 1', [tenantId], null);
+        if (users && users.length > 0) {
+            const parts = fullName ? fullName.trim().split(/\s+/) : [];
+            const uName = parts.length > 0 ? parts[0] : '';
+            const uSurname = parts.length > 1 ? parts.slice(1).join(' ') : '';
+            await run(
+                'UPDATE tenants_kullanicilar SET name = ?, surname = ?, email = ?, phone = ?, updated_at = datetime(\'now\') WHERE id = ? AND tenant_id = ?',
+                [uName || null, uSurname || null, email || null, phone || null, users[0].id, tenantId]
+            ).catch(() => {});
+        }
+
+        res.json({ success: true, message: 'Profil bilgileri kaydedildi' });
+    } catch (error) {
+        console.error('❌ PUT /api/public/business-profile hatası:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });

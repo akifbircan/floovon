@@ -799,8 +799,15 @@
     height: 36px;
   }
 
+  
   .buton-hizli-islemler:hover {
     background-color: var(--mor-primary) !important;
+  }
+
+  /* Menü kapalıyken takılı kalan transform/hover sıfırlansın */
+  .buton-hizli-islemler.hizli-islemler-fab-closed,
+  .qr-fab-index.hizli-islemler-fab-closed {
+    transform: none !important;
   }
 
   .buton-hizli-islemler:focus {

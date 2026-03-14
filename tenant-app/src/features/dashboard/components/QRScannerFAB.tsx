@@ -31,18 +31,30 @@ export const QRScannerFAB: React.FC<QRScannerFABProps> = ({
       )
         return;
       setMenuOpen(false);
+      btnRef.current?.blur();
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
 
+  // Menü kapandığında buton focus'tan çıksın, border (focus ring) kalmasın
+  const prevMenuOpen = useRef(false);
+  useEffect(() => {
+    if (prevMenuOpen.current && !menuOpen) {
+      btnRef.current?.blur();
+    }
+    prevMenuOpen.current = menuOpen;
+  }, [menuOpen]);
+
   const handleSiparisKunyesi = () => {
     setMenuOpen(false);
+    btnRef.current?.blur();
     onOpen();
   };
 
   const handleSicakSatis = () => {
     setMenuOpen(false);
+    btnRef.current?.blur();
     onOpenSicakSatis?.();
   };
 
@@ -85,7 +97,7 @@ export const QRScannerFAB: React.FC<QRScannerFABProps> = ({
         ref={btnRef}
         type="button"
         onClick={() => setMenuOpen((o) => !o)}
-        className={`buton-hizli-islemler fixed bottom-6 right-6 md:hidden w-14 h-14 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 z-50 flex items-center justify-center transition-all hover:scale-110 ${className ?? ''}`}
+        className={`buton-hizli-islemler fixed bottom-6 right-6 md:hidden w-14 h-14 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center transition-all hover:scale-110 ${menuOpen ? 'hizli-islemler-fab-open z-[10002]' : 'hizli-islemler-fab-closed z-50'} ${className ?? ''}`}
         aria-label="Hızlı işlemler"
         aria-expanded={menuOpen}
         aria-haspopup="menu"

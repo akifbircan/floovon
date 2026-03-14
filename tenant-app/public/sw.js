@@ -14,11 +14,12 @@ self.addEventListener('message', function (event) {
   var title = d.title || 'Yeni Çiçek Sepeti siparişi';
   var body = d.body || '';
   var icon = d.icon || '/favicon.ico';
+  var tag = (d.tag && String(d.tag)) || ('ciceksepeti-' + Date.now());
   event.waitUntil(
     self.registration.showNotification(title, {
       body: body,
       icon: icon,
-      tag: 'ciceksepeti-order',
+      tag: tag,
       requireInteraction: false
     })
   );

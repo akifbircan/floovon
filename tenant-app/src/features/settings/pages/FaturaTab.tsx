@@ -95,7 +95,7 @@ export function FaturaTab(props: FaturaTabProps) {
             <div className="ayarlar-form-group">
               <div className="ayarlar-fatura-isletme-kutu ayarlar-fatura-isletme-kutu--no-bg">
                 <div className="ayarlar-sekme-baslik-wrapper">
-                  <label className="ayarlar-label ayarlar-sekme-baslik">İşletme bilgileri (faturada sol tarafta)</label>
+                  <label className="ayarlar-label ayarlar-sekme-baslik">İşletme Bilgileri</label>
                   <p className="ayarlar-fatura-bolum-aciklama">Faturada sol üstte görünen firma adı, adres ve vergi bilgileri.</p>
                 </div>
                 <div className="ayarlar-form-group">
@@ -199,7 +199,7 @@ export function FaturaTab(props: FaturaTabProps) {
           <div className="ayarlar-fatura-sag ayarlar-fatura-banka-alan">
           <div className="ayarlar-fatura-isletme-kutu ayarlar-fatura-isletme-kutu--no-bg">
             <div className="ayarlar-sekme-baslik-wrapper">
-              <label className="ayarlar-label ayarlar-sekme-baslik">Banka hesap bilgileri</label>
+              <label className="ayarlar-label ayarlar-sekme-baslik">Banka Hesap Bilgileri</label>
               <p className="ayarlar-fatura-bolum-aciklama">Faturada göstermek istediğiniz hesapları işaretleyin. Hesap eklemek/düzenlemek için Genel → Banka Hesap Bilgileri sekmesine gidin.</p>
             </div>
             {bankaHesaplari.length > 0 ? (

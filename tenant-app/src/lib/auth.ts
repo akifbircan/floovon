@@ -87,7 +87,7 @@ export const clearAuth = (): void => {
   localStorage.removeItem('floovon_user_id');
   localStorage.removeItem('user_id');
   localStorage.removeItem('floovon_tenant_id');
-  localStorage.removeItem('remembered_tenant_code');
+  /* "Beni hatırla" verileri (remembered_tenant_code, remembered_username, remembered_password, remember_me) çıkışta silinmez; kullanıcı tekrar login sayfasında doldurulmuş görsün */
 };
 
 /**

@@ -189,16 +189,18 @@ class CiceksepetiFloovonIntegration {
     }
 
     /** Telefon bildirim çubuğunda bildirim gösterir (izin verilmişse). Önce Service Worker üzerinden dener (mobil/arka plan güvenilir), yoksa sayfa Notification. */
-    showSystemNotification(title, body) {
+    showSystemNotification(title, body, uniqueTag) {
         if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') return;
         var icon = (window.BACKEND_BASE_URL || window.location.origin || '') + '/favicon.ico';
+        var tag = (uniqueTag && String(uniqueTag)) || ('ciceksepeti-' + Date.now());
         try {
             if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.controller.postMessage({
                     type: 'ciceksepeti_show_notification',
                     title: title || 'Yeni Çiçek Sepeti siparişi',
                     body: body || '',
-                    icon: icon
+                    icon: icon,
+                    tag: tag
                 });
                 return;
             }
@@ -498,11 +500,11 @@ class CiceksepetiFloovonIntegration {
         if (sesBildirimiEnabled) {
             this.playNotificationSound();
         }
-        // Telefon bildirim çubuğunda göster (izin verilmişse)
-        var firstOrder = this.pendingOrders[0];
+        // Telefon bildirim çubuğunda göster (her sipariş ayrı bildirim – sipariş no ile tag)
+        var order = mockOrder;
         var notifTitle = 'Yeni Çiçek Sepeti siparişi';
-        var notifBody = firstOrder ? ('Sipariş no: ' + (firstOrder.siparisNo || '')) : 'Yeni sipariş geldi.';
-        this.showSystemNotification(notifTitle, notifBody);
+        var notifBody = order ? ('Sipariş no: ' + (order.siparisNo || '')) : 'Yeni sipariş geldi.';
+        this.showSystemNotification(notifTitle, notifBody, order ? order.siparisNo : null);
     }
     
     addToPendingOrders(order) {

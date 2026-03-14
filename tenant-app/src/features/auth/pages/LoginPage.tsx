@@ -12,7 +12,10 @@ const loginSchema = z.object({
   tenant_code: z.string().min(1, 'Tenant kodu gereklidir'),
   username: z.string().min(1, 'Kullanıcı adı gereklidir'),
   password: z.string().min(1, 'Şifre gereklidir'),
-  remember_tenant: z.boolean().optional(),
+  remember_tenant: z
+    .union([z.boolean(), z.string(), z.literal('on')])
+    .optional()
+    .transform((v) => v === true || v === 'true' || v === 'on'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -29,6 +32,7 @@ export const LoginPage: React.FC = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    getValues,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: (() => {
@@ -57,7 +61,7 @@ export const LoginPage: React.FC = () => {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  // URL veya localStorage'tan hatırlanan değerleri forma uygula (ilk yükleme ve URL değişince)
+  // URL veya localStorage'tan hatırlanan değerleri forma uygula (sadece "Beni hatırla" işaretliyse tenant + kullanıcı adı + şifre)
   useEffect(() => {
     const urlTenantCode = searchParams.get('tenant');
     const rememberedTenantCode = localStorage.getItem('remembered_tenant_code') || '';
@@ -66,14 +70,15 @@ export const LoginPage: React.FC = () => {
     const isRemembered = localStorage.getItem('remember_me') === 'true';
 
     const tenantCode = urlTenantCode || (isRemembered ? rememberedTenantCode : '');
+    const currentRemember = getValues('remember_tenant');
 
     reset({
       tenant_code: tenantCode,
       username: isRemembered ? rememberedUsername : '',
       password: isRemembered ? rememberedPassword : '',
-      remember_tenant: isRemembered,
+      remember_tenant: currentRemember ?? isRemembered,
     });
-  }, [searchParams, reset]);
+  }, [searchParams]);
 
   const onSubmit = async (data: LoginFormData) => {
     setError('');
@@ -101,22 +106,17 @@ export const LoginPage: React.FC = () => {
         String(rememberVal) === 'true' ||
         Boolean(rememberVal);
 
-      // Tenant kodunu her zaman kaydet (giriş başarılı ve dolu ise) - checkbox bazen formda gelmeyebiliyor
-      if (data.tenant_code?.trim()) {
-        localStorage.setItem('remembered_tenant_code', data.tenant_code.trim());
-      }
-
+      // Beni hatırla işaretliyse: tenant kodu + kullanıcı adı + şifre kaydet; değilse hepsini temizle
       if (shouldRemember && data.tenant_code?.trim()) {
+        localStorage.setItem('remembered_tenant_code', data.tenant_code.trim());
         localStorage.setItem('remembered_username', (data.username || '').trim());
         localStorage.setItem('remembered_password', data.password || '');
         localStorage.setItem('remember_me', 'true');
       } else {
+        localStorage.removeItem('remembered_tenant_code');
         localStorage.removeItem('remembered_username');
         localStorage.removeItem('remembered_password');
         localStorage.removeItem('remember_me');
-        if (!shouldRemember) {
-          localStorage.removeItem('remembered_tenant_code');
-        }
       }
 
       // User objesine tenant_id ekle

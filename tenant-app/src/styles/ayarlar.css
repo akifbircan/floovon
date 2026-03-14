@@ -441,6 +441,21 @@ main[data-main-content]:has(.ayarlar-page) {
 .ayarlar-logo-alan-inline .ayarlar-logo-img,
 .ayarlar-logo-alan-inline .ayarlar-logo-placeholder {
   flex-shrink: 0;
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+  min-height: 90px;
+  max-height: 90px;
+  object-fit: contain;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+.ayarlar-logo-alan-inline .ayarlar-logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .ayarlar-logo-alan-inline .ayarlar-logo-butonlar {
   display: flex;

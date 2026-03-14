@@ -1,12 +1,13 @@
 /**
- * Tüm date/time input'larda (her viewport) native takvim/saat ikonu gizli, custom chevron kullanılır.
- * Opera GX vb. tarayıcılarda native ikonun kocaman görünmesini önler; rapor filtreleri dahil her yerde aynı görünüm.
- * select-arrow-global.css ile aynı chevron SVG. Bu dosya main.tsx'te select-arrow-global.css'ten sonra import edilmeli.
+ * Tüm date/time/datetime-local input'larda (yeni kart formu gibi) native takvim/saat ikonu yok, sadece custom chevron.
+ * Tüm sayfa ve formlarda select gibi tek görünüm; tarayıcı default ikonları her yerde kapalı.
+ * select-arrow-global.css ile aynı chevron SVG. main.tsx'te select-arrow-global.css'ten sonra import edilmeli.
  */
 
-/* Tüm date ve time input'lar: native ikon gizli, custom chevron. */
+/* Tüm date, time, datetime-local: native ikon yok, custom chevron (yeni kart formu ile aynı). */
 input[type="date"],
-input[type="time"] {
+input[type="time"],
+input[type="datetime-local"] {
   -webkit-appearance: none !important;
   appearance: none !important;
   padding-right: 2.25rem !important;
@@ -18,9 +19,10 @@ input[type="time"] {
   overflow: hidden !important;
 }
 
-/* Native takvim/saat ikonunu her zaman gizle; tıklanabilir alan kalsın (Opera GX vb. büyük ikon sorunu). */
+/* Native takvim/saat ikonunu her zaman gizle; tıklanabilir alan kalsın. */
 input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator {
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   opacity: 0 !important;
   position: absolute !important;
   top: 0 !important;
@@ -36,12 +38,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer !important;
   min-width: 0 !important;
   min-height: 0 !important;
+  filter: none !important;
 }
 
 /* Dark tema: chevron açık renk (select ile aynı) */
 body.dark-mode input[type="date"],
 body.dark-mode input[type="time"],
+body.dark-mode input[type="datetime-local"],
 html.dark-mode input[type="date"],
-html.dark-mode input[type="time"] {
+html.dark-mode input[type="time"],
+html.dark-mode input[type="datetime-local"] {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
 }

@@ -1020,14 +1020,13 @@ body.dark-mode [class*="overlay"] input[type="date"]::-webkit-calendar-picker-in
 body.dark-mode [class*="overlay"] input[type="time"]::-webkit-calendar-picker-indicator,
 body.dark-mode [class*="overlay"] .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
 body.dark-mode [class*="overlay"] .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(1) !important;
-  opacity: 0.85 !important;
+  opacity: 0 !important;
   cursor: pointer;
 }
 
 body.dark-mode,
 html.dark-mode {
-  --input-date-time-indicator-filter: invert(1);
-  --input-date-time-indicator-opacity: 0.85;
+  --input-date-time-indicator-filter: none;
+  --input-date-time-indicator-opacity: 0;
 }
 

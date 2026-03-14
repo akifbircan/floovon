@@ -4449,6 +4449,7 @@ color: var(--ana-renk) !important;
 /* Teknik destek footer butonları: ortak primary/secondary (yukarıdaki tek blok) kullanılıyor, ayrı stil yok */
 
 /* ========== Yeni Tür / Yeni Etiket Ekle Popup (Yeni Kart Modal içinden) ========== */
+/* Yeni kart modal içindeki “Yeni alt tür / Yeni etiket ekle” popupları overlay üstünde görünsün */
 .yeni-etiket-popup-overlay {
     position: fixed !important;
     top: 0 !important;
@@ -4457,7 +4458,7 @@ color: var(--ana-renk) !important;
     height: 100% !important;
     background-color: var(--overlay-bg-black) !important;
     display: none !important;
-    z-index: 10000 !important;
+    z-index: 100002 !important;
     justify-content: center !important;
     align-items: center !important;
 }

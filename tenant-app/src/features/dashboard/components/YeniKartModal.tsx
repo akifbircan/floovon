@@ -244,8 +244,9 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
     }
   }, [isOpen]);
 
-  // Form reset
+  // Form reset (modal kapatıldığında veya iptal edildiğinde)
   const resetForm = useCallback(() => {
+    setActiveTab('organizasyon');
     setOrgTur('');
     setOrgEtiket('');
     setDavetiyeGorsel(null);
@@ -282,6 +283,7 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
 
   const requestClose = useCallback(() => {
     if (!isDirty) {
+      resetForm();
       onClose();
       return;
     }

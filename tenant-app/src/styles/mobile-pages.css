@@ -1965,6 +1965,19 @@ ul.notifications {
     overflow-y: visible !important;
   }
 
+  .ayarlar-panel .ayarlar-panel-title {
+    font-size: 1rem !important;
+}
+
+  .ayarlar-panel-header-sol {
+   justify-content: space-between !important;
+   width: 100% !important;
+  }
+
+  .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel .ayarlar-panel-header {
+   flex-direction: column !important;
+  }
+
   .ayarlar-sol-kolon,
   .ayarlar-sag-kolon {
     width: 100% !important;

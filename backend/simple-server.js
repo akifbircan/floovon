@@ -5356,6 +5356,19 @@ function getTurkeyTimeISO() {
     return new Date().toISOString();
 }
 
+/** Türkiye saatine göre bugünün tarihi YYYY-MM-DD (fatura tarihi vb. için) */
+function getTurkeyDateString() {
+    try {
+        return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+    } catch (_) {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+}
+
 /**
  * Tenant depolama kullanımını güncelle (dosya yükleme)
  * @param {number} tenantId - Tenant ID
@@ -5853,19 +5866,25 @@ async function ensureTenantsFaturalarTable() {
  */
 async function createTenantAbonelikFatura(tenantId, abonelikId, planId, planAdi, aylikUcretKurus, faturaDongusu) {
     if (!tenantId || !abonelikId || !planId || aylikUcretKurus == null) return null;
+    await ensureTenantsFaturalarTable();
     const dongu = (faturaDongusu === 'yillik' || faturaDongusu === 'yearly') ? 'yillik' : 'aylik';
     const araToplam = Math.round(Number(aylikUcretKurus)) || 0;
     const kdvTutari = Math.round(araToplam * 0.2);
     const toplamTutar = araToplam + kdvTutari;
     const faturaNo = `FLV-${tenantId}-${Date.now()}`;
-    const faturaTarihi = new Date().toISOString().split('T')[0];
+    const faturaTarihi = getTurkeyDateString();
 
     try {
         let odemeYontemiId = null;
-        const pmRows = await query('SELECT odeme_yontemi_id FROM tenants_odeme_yontemleri WHERE tenant_id = ? ORDER BY COALESCE(varsayilan_mi, 0) DESC, id ASC LIMIT 1', [tenantId], null);
-        if (pmRows && pmRows[0] && pmRows[0].odeme_yontemi_id != null) odemeYontemiId = pmRows[0].odeme_yontemi_id;
+        try {
+            const pmRows = await query('SELECT odeme_yontemi_id FROM tenants_odeme_yontemleri WHERE tenant_id = ? ORDER BY COALESCE(varsayilan_mi, 0) DESC, id ASC LIMIT 1', [tenantId], null);
+            if (pmRows && pmRows[0] && pmRows[0].odeme_yontemi_id != null) odemeYontemiId = pmRows[0].odeme_yontemi_id;
+        } catch (pmErr) {
+            // tenants_odeme_yontemleri yoksa veya sorgu hata verirse fatura yine oluşturulur (odeme_yontemi_id = null)
+        }
 
         const hasFaturaDongusu = await query('PRAGMA table_info(tenants_faturalar)', [], null).then(cols => (cols || []).some(c => c && c.name === 'fatura_dongusu'));
+        console.log('[FATURA] INSERT öncesi', { tenantId, abonelikId, faturaNo, hasFaturaDongusu });
         if (hasFaturaDongusu) {
             await run(
                 `INSERT INTO tenants_faturalar (tenant_id, fatura_no, fatura_tarihi, plan_id, abonelik_id, ara_toplam, kdv_tutari, toplam_tutar, fatura_dongusu, odeme_yontemi_id, odeme_tarihi, vade_tarihi, durum, olusturma_tarihi, guncelleme_tarihi)
@@ -5881,7 +5900,10 @@ async function createTenantAbonelikFatura(tenantId, abonelikId, planId, planAdi,
         }
         const inserted = await query('SELECT id FROM tenants_faturalar WHERE fatura_no = ?', [faturaNo]);
         const faturaId = Array.isArray(inserted) && inserted[0] ? inserted[0].id : null;
-        if (!faturaId) return { id: null, fatura_no: faturaNo };
+        if (!faturaId) {
+            console.warn('⚠️ createTenantAbonelikFatura: INSERT sonrası kayıt bulunamadı', { faturaNo });
+            return { id: null, fatura_no: faturaNo };
+        }
 
         let tenant = null;
         try {
@@ -5929,9 +5951,11 @@ async function createTenantAbonelikFatura(tenantId, abonelikId, planId, planAdi,
             const pdfYolu = `uploads/tenants/${tenantId}/invoices/${pdfFileName}`;
             await run("UPDATE tenants_faturalar SET pdf_yolu = ?, guncelleme_tarihi = datetime('now') WHERE id = ?", [pdfYolu, faturaId]);
         }
+        console.log('✅ createTenantAbonelikFatura: fatura oluşturuldu', { faturaId, fatura_no: faturaNo, tenantId, abonelikId });
         return { id: faturaId, fatura_no: faturaNo };
     } catch (err) {
         console.error('❌ createTenantAbonelikFatura hatası:', err?.message || err);
+        if (err && err.stack) console.error(err.stack);
         return null;
     }
 }
@@ -10599,6 +10623,7 @@ app.post('/api/public/change-plan', async (req, res) => {
         let faturaResult = null;
         if (abonelikId) {
             try {
+                await ensureTenantsFaturalarTable();
                 faturaResult = await createTenantAbonelikFatura(tenantId, abonelikId, planId, plan[0].plan_adi, aylikUcret, faturaDongusu);
                 if (!faturaResult || !faturaResult.id) {
                     console.warn('⚠️ change-plan: Fatura kaydı dönmedi');
@@ -10753,9 +10778,9 @@ app.post('/api/admin/tenants/:tenantId/abonelik/upgrade', requireAdmin, async (r
         }
 
         let faturaResult = null;
-        console.log('🔴 [FATURA] admin/upgrade: abonelikId =', abonelikId, 'tenantId =', tenantId, 'planId =', planId);
         if (abonelikId) {
             try {
+                await ensureTenantsFaturalarTable();
                 faturaResult = await createTenantAbonelikFatura(tenantId, abonelikId, planId, plan[0].plan_adi, aylikUcret, faturaDongusu);
                 if (!faturaResult || !faturaResult.id) {
                     console.warn('⚠️ admin/upgrade: Fatura kaydı dönmedi');
@@ -10763,8 +10788,6 @@ app.post('/api/admin/tenants/:tenantId/abonelik/upgrade', requireAdmin, async (r
             } catch (e) {
                 console.warn('⚠️ admin/upgrade: Fatura oluşturulamadı (abonelik güncellendi):', e?.message || e);
             }
-        } else {
-            console.warn('⚠️ [FATURA] admin/upgrade: abonelikId yok, fatura atlandı');
         }
 
         try {

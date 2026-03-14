@@ -868,8 +868,8 @@ async function resolvePrintLogoUrl(pathOrUrl: string): Promise<string> {
 /** Backend'den gelen data içinde logo path/url alan adları (ayarlar_genel_yazdirma_ayarlari uyumu) */
 const LOGO_KEYS = ['logo_png_url', 'logo_png_path', 'logo_url', 'logo'] as const;
 
-/** true iken konsola [PrintLogo] logları yazar; sorun giderildikten sonra false yapın */
-const PRINT_LOGO_DEBUG = true;
+/** true iken konsola [PrintLogo] logları yazar; debug için açılabilir */
+const PRINT_LOGO_DEBUG = false;
 
 export interface PrintLogoAndFooter {
   logoMarkup: string;

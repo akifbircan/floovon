@@ -731,7 +731,7 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
 
 .sag-detay-alan .siparis-listesi .td-musteri-ve-urun-yazisi .siparis-musteri-telefon {
   font-size: 11px;
-  color: var(--gray-basic);
+  color: var(--gri70);
 }
 
 .sag-detay-alan .siparis-listesi .td-musteri-ve-urun-yazisi .siparis-urun-yazisi {
@@ -880,7 +880,7 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
 
 .sag-detay-alan .siparis-listesi .siparis-urun-yazi-dosya-label {
   display: inline-flex;
-  align-items: center;
+  /* align-items: center; */
   gap: 3px;
   flex-wrap: wrap;
 }
@@ -941,7 +941,7 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
 /* İşlem ikonları – sadece bu sayfa: ikon rengi tablo satırına göre biraz daha koyu gri (hover renkleri dashboard-cards.css ortak stilde) */
 .sag-detay-alan .siparis-listesi .td-islem .islem-ikon i,
 .sag-detay-alan .siparis-listesi .td-islem .islem-ikon svg {
-  color: var(--gray-basic);
+  color: var(--ana-renk);
 }
 
 .sag-detay-alan .siparis-listesi .td-islem .islem-link {

@@ -73,7 +73,7 @@
   .profil-page input,
   .profil-page select,
   .profil-page textarea,
-  .cari-drawer-overlay input,
+  .cari-drawer-overlay input:not([type="checkbox"]):not([type="radio"]),
   .cari-drawer-overlay select,
   .cari-drawer-overlay textarea,
   .yeni-kart-container input,
@@ -1758,6 +1758,7 @@ ul.notifications {
     border: none !important;
     min-width: 0 !important;
     width: 100% !important;
+    text-align: right !important;
   }
 
 
@@ -1804,6 +1805,21 @@ ul.notifications {
   .ayarlar-page .ayarlar-tablosu tbody tr td.urunler-ad-hucre,
   .ayarlar-page table.ayarlar-tablosu tbody tr td.urunler-ad-hucre {
     word-break: break-word;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td.ayarlar-banka-checkbox-col,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td.ayarlar-banka-checkbox-col {
+    justify-content: space-between !important;
+    text-align: right !important;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td.ayarlar-banka-checkbox-col > *,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td.ayarlar-banka-checkbox-col > * {
+    margin-left: auto;
+    width: fit-content;
+  }
+  .ayarlar-page .ayarlar-tablosu tbody tr td.ayarlar-banka-iban-col,
+  .ayarlar-page table.ayarlar-tablosu tbody tr td.ayarlar-banka-iban-col {
+    justify-content: center !important;
+    text-align: center !important;
   }
 
   .ayarlar-page .ayarlar-panel table td.table-col-gorsel > * {

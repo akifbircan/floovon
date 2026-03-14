@@ -35,6 +35,18 @@ export function RealtimeSSEListener() {
             queryClient.invalidateQueries({ queryKey: ['archived-orders'] });
           }
         }
+        if (data?.type === 'ciceksepeti_new_order') {
+          const win = typeof window !== 'undefined' ? (window as Window & { ciceksepetiIntegration?: { showSystemNotification: (t: string, b: string) => void; playNotificationSound: () => void } }) : null;
+          const integration = win?.ciceksepetiIntegration;
+          if (integration) {
+            const title = 'Yeni Çiçek Sepeti siparişi';
+            const body = data.siparis_no ? `Sipariş no: ${data.siparis_no}` : 'Yeni sipariş geldi.';
+            if (typeof integration.showSystemNotification === 'function') integration.showSystemNotification(title, body);
+            if (typeof localStorage !== 'undefined' && localStorage.getItem('ciceksepeti_ses_bildirimi') !== 'false' && typeof integration.playNotificationSound === 'function') {
+              integration.playNotificationSound();
+            }
+          }
+        }
       } catch (_) {
         // ignore parse errors
       }

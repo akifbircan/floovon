@@ -25,6 +25,7 @@ import { uploadTeslimFotolari, deleteTeslimFoto } from '../../dashboard/api/tesl
 import type { Order, OrganizasyonKart as DashboardOrganizasyonKart } from '../../dashboard/types';
 import { getApiBaseUrl } from '../../../lib/runtime';
 import { formatPhoneNumber, formatOdemeYontemiDisplay, formatTL } from '../../../shared/utils/formatUtils';
+import { getUploadUrl } from '../../../shared/utils/urlUtils';
 import '../../../styles/order-detail-page.css';
 import { invalidateOrganizasyonKartQueries } from '../../../lib/invalidateQueries';
 import { broadcastInvalidation } from '../../../lib/crossTabInvalidate';
@@ -78,6 +79,40 @@ function directDownloadFallback(downloadUrl: string, fileName: string): void {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+}
+
+/** Index’teki gibi: müşteri ürün yazı dosyaları API’sinden doğru URL alıp indir. musteriId yoksa veya API hata verirse fallback URL kullanır. */
+async function handleUrunYaziDosyasiIndir(
+  musteriId: number | null | undefined,
+  secilenPath: string | undefined | null,
+  fallbackUrl: string,
+  fileName: string
+): Promise<void> {
+  const secilenDosyaAdi = secilenPath ? getFileNameFromPath(secilenPath) || secilenPath : '';
+  if (!secilenDosyaAdi) {
+    triggerDownload(fallbackUrl, fileName);
+    return;
+  }
+  if (musteriId) {
+    try {
+      const res = await apiClient.get<{ success?: boolean; data?: Array<{ name: string; url?: string; path?: string }> }>(`/customers/${musteriId}/urun-yazi-dosyalari`);
+      const data = res.data;
+      const files = (data && (data as any).success && Array.isArray((data as any).data)) ? (data as any).data : Array.isArray(data) ? data : [];
+      const file = files.find((f: any) => {
+        const fName = f.name || f.fileName;
+        const fPath = f.path || f.url;
+        return fName === secilenDosyaAdi || fPath === secilenPath || (fPath && String(fPath).endsWith(secilenDosyaAdi));
+      });
+      if (file && (file.path || file.url)) {
+        const downloadUrl = getUploadUrl(file.path || file.url);
+        triggerDownload(downloadUrl, file.name || secilenDosyaAdi);
+        return;
+      }
+    } catch (_) {
+      // API hata verirse aşağıdaki fallback kullanılır
+    }
+  }
+  triggerDownload(fallbackUrl, fileName);
 }
 
 /** API Siparis → Dashboard Order (SiparisEditModal için) */
@@ -186,6 +221,9 @@ interface Siparis {
   musteri_address?: string;
   musteri_district?: string;
   musteri_city?: string;
+  /** Müşteri ID (ürün yazı dosyası indirme için API ile eşleştirme) */
+  musteri_id?: number | null;
+  customer_id?: number | null;
 }
 
 function normalizeKartTur(kart_turu?: string): 'organizasyon' | 'aracsusleme' | 'ozelgun' | 'ozelsiparis' {
@@ -1218,6 +1256,7 @@ export const OrderDetailPage: React.FC = () => {
                               const dosyaPath = siparis.secilen_urun_yazi_dosyasi;
                               const dosyaUrl = dosyaPath.startsWith('http') ? dosyaPath : `${backendBase}${dosyaPath.startsWith('/') ? '' : '/'}${dosyaPath}`;
                               const dosyaAdi = getFileNameFromPath(dosyaPath) || dosyaPath;
+                              const musteriId = siparis.musteri_id ?? (siparis as any).customer_id;
                               return (
                               <div className="siparis-urun-yazisi siparis-urun-yazi-dosyasi">
                                 <span className="siparis-urun-yazi-dosya-label">
@@ -1227,7 +1266,7 @@ export const OrderDetailPage: React.FC = () => {
                                     download={dosyaAdi}
                                     title="Ürün yazısı dosyasını indir"
                                     className="siparis-urun-yazi-dosya-link"
-                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); triggerDownload(dosyaUrl, dosyaAdi); }}
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleUrunYaziDosyasiIndir(musteriId, dosyaPath, dosyaUrl, dosyaAdi); }}
                                   >{dosyaAdi}</a>
                                 </span>
                               </div>
@@ -1440,7 +1479,12 @@ export const OrderDetailPage: React.FC = () => {
                                 download={getFileNameFromPath(s.secilen_urun_yazi_dosyasi) || s.secilen_urun_yazi_dosyasi}
                                 title="Ürün yazısı dosyasını indir"
                                 className="siparis-detay-urun-yazi-dosya-link"
-                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); triggerDownload(dosyaUrl, getFileNameFromPath(s.secilen_urun_yazi_dosyasi) || s.secilen_urun_yazi_dosyasi || ''); }}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const musteriId = s.musteri_id ?? (s as any).customer_id;
+                                  handleUrunYaziDosyasiIndir(musteriId, s.secilen_urun_yazi_dosyasi, dosyaUrl, getFileNameFromPath(s.secilen_urun_yazi_dosyasi) || s.secilen_urun_yazi_dosyasi || '');
+                                }}
                               >{getFileNameFromPath(s.secilen_urun_yazi_dosyasi) || s.secilen_urun_yazi_dosyasi}</a>
                             </span>
                           ) : (

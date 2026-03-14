@@ -35,9 +35,10 @@ try {
 // Mail stilleri (CSS gibi düzenlenebilir) - mail-teknik-destek-styles.js dosyasından yüklenir
 const mailStyles = require('./mail-teknik-destek-styles');
 
-// Fatura şablon modülü
-const { generateInvoiceHtml } = require('./utils/tenant-fatura-sablon');
+// Fatura şablon modülleri: fatura-sablon-floovon (abonelik), fatura-sablon-musteri (çiçekçi → müşteri)
+const { generateInvoiceHtml } = require('./utils/fatura-sablon-floovon');
 const { generateInvoicePdfFromHtml } = require('./utils/tenant-fatura-pdf');
+const { generateMusteriInvoiceHtml } = require('./utils/fatura-sablon-musteri');
 
 // Abonelik mail şablonları modülü
 const abonelikMailTemplates = require('./mail-templates/abonelik-mail-templates');
@@ -537,7 +538,38 @@ async function updateMusteriFaturaDurumu(musteriId, faturaId, yeniDurumRaw, req 
     // Tenant kontrolü ekle
     const tenantId = req ? (req.tenantId || await getTenantId(req)) : null;
     let result;
-    
+
+    // İptal = fatura kaydını sil (eskiden olduğu gibi listeden çıksın)
+    if (normalizedDurum === 'iptal') {
+        if (tenantId) {
+            result = await execute(`
+                DELETE FROM musteri_faturalar
+                WHERE id = ? AND musteri_id = ? AND tenant_id = ?
+            `, [numericFaturaId, musteriId, tenantId]);
+        } else {
+            result = await execute(`
+                DELETE FROM musteri_faturalar
+                WHERE id = ? AND musteri_id = ?
+            `, [numericFaturaId, musteriId]);
+        }
+        if (result.changes === 0) {
+            return {
+                ok: false,
+                status: 404,
+                body: { success: false, error: 'Fatura bulunamadı' }
+            };
+        }
+        return {
+            ok: true,
+            status: 200,
+            body: {
+                success: true,
+                message: 'Fatura iptal edildi.',
+                data: { durum: 'iptal', deleted: true }
+            }
+        };
+    }
+
     const kullaniciAdi = req ? await getCurrentUsername(req).catch(() => null) : null;
     if (tenantId) {
         result = await execute(`
@@ -1453,6 +1485,36 @@ const isletmeLogoUpload = multer({
     fileFilter: (req, file, cb) => {
         if (!file.mimetype || !file.mimetype.startsWith('image/')) {
             return cb(new Error('Lütfen geçerli bir görsel dosyası yükleyin (PNG, JPG, SVG vb.)'));
+        }
+        cb(null, true);
+    }
+});
+
+// Fatura ayarları logosu (müşteri faturası sağ üst) – uploads/tenants/<tenantId>/fatura-ayarlari/
+const faturaLogoStorage = multer.diskStorage({
+    destination: async function (req, file, cb) {
+        try {
+            const tenantId = req.tenantId || await getTenantId(req);
+            if (!tenantId) return cb(new Error('Tenant ID bulunamadı. Lütfen giriş yapın.'));
+            const targetDir = getTenantUploadPath(tenantId, 'fatura-ayarlari');
+            if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+            cb(null, targetDir);
+        } catch (error) {
+            console.error('❌ Fatura logo storage hatası:', error);
+            cb(error);
+        }
+    },
+    filename: function (req, file, cb) {
+        const ext = (path.extname(file.originalname) || '').toLowerCase() || '.png';
+        cb(null, `logo${ext}`);
+    }
+});
+const faturaLogoUpload = multer({
+    storage: faturaLogoStorage,
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (!file.mimetype || !file.mimetype.startsWith('image/')) {
+            return cb(new Error('Lütfen geçerli bir görsel dosyası yükleyin (PNG, JPG vb.)'));
         }
         cb(null, true);
     }
@@ -2602,7 +2664,12 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
         
         // organizasyon_siparisler_ciceksepeti tablosuna arşivleme kolonları
         await ensureCiceksepetiArsivColumns();
-        
+        await ensureMusteriFaturalarPdfYolu();
+        // Fatura ayarları ve banka hesapları tabloları migration'ı devre dışı (sürekli çalışmasın; tablolar zaten mevcut)
+        // await ensureTenantFaturaAyarlariColumns();
+        // await ensureAyarlarFaturaTables();
+        // await migrateTenantToFaturaAyarlari();
+
         // Proje kullanım hata logları tablosu (frontend/backend hataları)
         await initProjeKullanimHataLogsTable();
         
@@ -4149,6 +4216,136 @@ async function ensureCiceksepetiArsivColumns() {
         await addColumnIfMissing('organizasyon_siparisler_ciceksepeti', 'arsivleme_sebebi', 'TEXT');
     } catch (error) {
         console.error('❌ ensureCiceksepetiArsivColumns hatası:', error.message);
+    }
+}
+
+// musteri_faturalar tablosuna pdf_yolu kolonu (çiçekçi → müşteri fatura PDF saklama)
+async function ensureMusteriFaturalarPdfYolu() {
+    try {
+        const tables = await query(`SELECT name FROM sqlite_master WHERE type='table' AND name='musteri_faturalar'`);
+        if (!tables || tables.length === 0) return;
+        await addColumnIfMissing('musteri_faturalar', 'pdf_yolu', 'TEXT');
+    } catch (error) {
+        console.error('❌ ensureMusteriFaturalarPdfYolu hatası:', error.message);
+    }
+}
+
+// tenants tablosuna fatura ayarları kolonları (Fatura Ayarları sekmesi: logo ve fatura bilgileri)
+async function ensureTenantFaturaAyarlariColumns() {
+    try {
+        const tables = await query(`SELECT name FROM sqlite_master WHERE type='table' AND name='tenants'`);
+        if (!tables || tables.length === 0) return;
+        await addColumnIfMissing('tenants', 'fatura_logo_yolu', 'TEXT');
+    } catch (error) {
+        console.error('❌ ensureTenantFaturaAyarlariColumns hatası:', error.message);
+    }
+}
+
+// ayarlar_fatura_fatura_ayarlari ve ayarlar_fatura_banka_hesaplari tabloları
+const FATURA_AYARLARI_TABLE = 'ayarlar_fatura_fatura_ayarlari';
+const FATURA_BANKA_TABLE = 'ayarlar_fatura_banka_hesaplari';
+async function ensureAyarlarFaturaTables() {
+    try {
+        await run(`
+            CREATE TABLE IF NOT EXISTS ${FATURA_AYARLARI_TABLE} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant_id INTEGER NOT NULL UNIQUE,
+                fatura_logo_yolu TEXT,
+                firma_adi TEXT,
+                adres TEXT,
+                il TEXT,
+                ilce TEXT,
+                vergi_dairesi TEXT,
+                vergi_no TEXT,
+                kdv_orani REAL DEFAULT 20,
+                fatura_not TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        await run(`CREATE INDEX IF NOT EXISTS idx_fatura_ayarlari_tenant ON ${FATURA_AYARLARI_TABLE}(tenant_id)`);
+        await run(`
+            CREATE TABLE IF NOT EXISTS ${FATURA_BANKA_TABLE} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant_id INTEGER NOT NULL,
+                banka_adi TEXT,
+                iban TEXT,
+                sube TEXT,
+                hesap_sahibi TEXT,
+                aciklama TEXT,
+                sira INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        await run(`CREATE INDEX IF NOT EXISTS idx_fatura_banka_tenant ON ${FATURA_BANKA_TABLE}(tenant_id)`);
+        await addColumnIfMissing(FATURA_AYARLARI_TABLE, 'faturada_gosterilen_banka_ids', 'TEXT');
+        await addColumnIfMissing(FATURA_BANKA_TABLE, 'is_active', 'INTEGER DEFAULT 1');
+        console.log('✅ ayarlar_fatura tabloları hazır');
+    } catch (error) {
+        console.error('❌ ensureAyarlarFaturaTables hatası:', error.message);
+    }
+}
+
+// Mevcut tenant verilerini ayarlar_fatura_fatura_ayarlari'na kopyala; İşletme Ayarları tablosundan doldur; 3 banka kaydı ekle
+async function migrateTenantToFaturaAyarlari() {
+    try {
+        const tenants = await query(`SELECT id, fatura_logo_yolu, name, address, city, state, tax_office, tax_number FROM tenants`);
+        if (!tenants || tenants.length === 0) return;
+        const hasIsletmeTable = await query(`SELECT name FROM sqlite_master WHERE type='table' AND name='ayarlar_genel_isletme_ayarlari'`);
+        for (const t of tenants) {
+            let firma_adi = t.name || '';
+            let adres = t.address || '';
+            let il = t.state || '';
+            let ilce = t.city || '';
+            let vergi_dairesi = t.tax_office || '';
+            let vergi_no = t.tax_number || '';
+            if (hasIsletmeTable && hasIsletmeTable.length > 0) {
+                const isletme = await query(
+                    'SELECT isletme_adi, adres, il, ilce, vergi_dairesi, vergi_no FROM ayarlar_genel_isletme_ayarlari WHERE tenant_id = ? LIMIT 1',
+                    [t.id]
+                );
+                if (isletme && isletme.length > 0) {
+                    const i = isletme[0];
+                    if (i.isletme_adi) firma_adi = i.isletme_adi;
+                    if (i.adres != null) adres = i.adres || '';
+                    if (i.il != null) il = i.il || '';
+                    if (i.ilce != null) ilce = i.ilce || '';
+                    if (i.vergi_dairesi != null) vergi_dairesi = i.vergi_dairesi || '';
+                    if (i.vergi_no != null) vergi_no = i.vergi_no || '';
+                }
+            }
+            const existing = await query(`SELECT id FROM ${FATURA_AYARLARI_TABLE} WHERE tenant_id = ?`, [t.id]);
+            if (existing && existing.length > 0) {
+                await run(`
+                    UPDATE ${FATURA_AYARLARI_TABLE} SET firma_adi=?, adres=?, il=?, ilce=?, vergi_dairesi=?, vergi_no=?, updated_at=CURRENT_TIMESTAMP
+                    WHERE tenant_id=?
+                `, [firma_adi, adres, il, ilce, vergi_dairesi, vergi_no, t.id]);
+            } else {
+                await run(`
+                    INSERT INTO ${FATURA_AYARLARI_TABLE} (tenant_id, fatura_logo_yolu, firma_adi, adres, il, ilce, vergi_dairesi, vergi_no, kdv_orani)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 20)
+                `, [t.id, t.fatura_logo_yolu || null, firma_adi, adres, il, ilce, vergi_dairesi, vergi_no]);
+            }
+            const bankCount = await query(`SELECT COUNT(*) AS n FROM ${FATURA_BANKA_TABLE} WHERE tenant_id = ?`, [t.id]);
+            const n = (bankCount && bankCount[0] && bankCount[0].n) ? parseInt(bankCount[0].n, 10) : 0;
+            if (n < 3) {
+                const defaults = [
+                    { banka_adi: 'Ziraat Bankası', iban: 'TR00 0000 0000 0000 0000 0000 00', sube: 'Merkez', hesap_sahibi: firma_adi || 'İşletme', aciklama: 'Ana hesap', sira: 0 },
+                    { banka_adi: 'İş Bankası', iban: 'TR00 0000 0000 0000 0000 0000 01', sube: 'Merkez', hesap_sahibi: firma_adi || 'İşletme', aciklama: '', sira: 1 },
+                    { banka_adi: 'Garanti BBVA', iban: 'TR00 0000 0000 0000 0000 0000 02', sube: 'Merkez', hesap_sahibi: firma_adi || 'İşletme', aciklama: '', sira: 2 }
+                ];
+                for (let i = n; i < 3 && i < defaults.length; i++) {
+                    const d = defaults[i];
+                    await run(`
+                        INSERT INTO ${FATURA_BANKA_TABLE} (tenant_id, banka_adi, iban, sube, hesap_sahibi, aciklama, sira)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    `, [t.id, d.banka_adi, d.iban, d.sube, d.hesap_sahibi, d.aciklama, d.sira]);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('❌ migrateTenantToFaturaAyarlari hatası:', error.message);
     }
 }
 
@@ -15050,6 +15247,149 @@ app.get('/api/tenants/:tenantId/customers/:customerId/faturalar', async (req, re
     }
 });
 
+// Müşteri faturası PDF indir/görüntüle – uploads/tenants/<tenantId>/customers/<customerId>-<slug>/faturalar/<faturaNo>.pdf
+app.get('/api/tenants/:tenantId/customers/:customerId/faturalar/:faturaId/pdf', async (req, res) => {
+    try {
+        const userTenantId = req.tenantId || await getTenantId(req);
+        if (!userTenantId) {
+            return res.status(401).json({ success: false, error: 'Kimlik doğrulama gerekli.' });
+        }
+        const urlTenantId = parseInt(req.params.tenantId);
+        if (userTenantId !== urlTenantId) {
+            return res.status(403).json({ success: false, error: 'Yetkisiz erişim.' });
+        }
+        const tenantId = urlTenantId;
+        const customerId = parseInt(req.params.customerId);
+        const faturaId = parseInt(req.params.faturaId);
+        if (!tenantId || !customerId || !faturaId) {
+            return res.status(400).json({ success: false, error: 'Geçersiz parametre.' });
+        }
+
+        const customer = await query('SELECT * FROM musteriler WHERE id = ? AND tenant_id = ?', [customerId, tenantId]);
+        if (!customer || customer.length === 0) {
+            return res.status(404).json({ success: false, error: 'Müşteri bulunamadı.' });
+        }
+        const tenant = await query('SELECT * FROM tenants WHERE id = ?', [tenantId]);
+        if (!tenant || tenant.length === 0) {
+            return res.status(404).json({ success: false, error: 'Tenant bulunamadı.' });
+        }
+        const faturalar = await query('SELECT * FROM musteri_faturalar WHERE id = ? AND musteri_id = ? AND tenant_id = ?', [faturaId, customerId, tenantId]);
+        if (!faturalar || faturalar.length === 0) {
+            return res.status(404).json({ success: false, error: 'Fatura bulunamadı.' });
+        }
+        const fatura = faturalar[0];
+        const t = tenant[0];
+        const c = customer[0];
+
+        const customerUnvan = (c.musteri_unvani || c.musteri_ad_soyad || 'musteri').toString().trim();
+        const cleanUnvan = customerUnvan
+            .replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i')
+            .replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
+            .replace(/Ç/g, 'C').replace(/Ğ/g, 'G').replace(/İ/g, 'I')
+            .replace(/Ö/g, 'O').replace(/Ş/g, 'S').replace(/Ü/g, 'U')
+            .replace(/[^a-zA-Z0-9_-]/g, '-')
+            .toLowerCase()
+            .replace(/-+/g, '-').replace(/^-|-$/g, '') || 'musteri';
+        const customerFolder = `${customerId}-${cleanUnvan}`;
+        const faturalarDir = path.join(__dirname, 'uploads', 'tenants', String(tenantId), 'customers', customerFolder, 'faturalar');
+        const pdfFileName = `${String(fatura.fatura_no).replace(/[<>:"/\\|?*]/g, '_')}.pdf`;
+        const pdfAbsolutePath = path.join(faturalarDir, pdfFileName);
+        let fullPath = pdfAbsolutePath;
+        const pdfExists = fs.existsSync(fullPath);
+
+        if (!pdfExists) {
+            const tutarTL = parseFloat(fatura.tutar) || 0;
+            const kdvTutariTL = parseFloat(fatura.kdv_tutari) || 0;
+            const genelToplamTL = parseFloat(fatura.genel_toplam) || 0;
+            const araToplamKurus = Math.round(tutarTL * 100);
+            const kdvTutariKurus = Math.round(kdvTutariTL * 100);
+            const toplamTutarKurus = Math.round(genelToplamTL * 100);
+            const aliciUnvan = (c.musteri_unvani || c.musteri_ad_soyad || 'Müşteri').toString().trim();
+            let faturaAyari = null;
+            try {
+                const fa = await query(`SELECT * FROM ${FATURA_AYARLARI_TABLE} WHERE tenant_id = ?`, [tenantId]);
+                faturaAyari = fa && fa[0] ? fa[0] : null;
+            } catch (e) { /* ignore */ }
+            let bankalar = faturaAyari ? (await query(`SELECT id, banka_adi, iban, sube, hesap_sahibi, aciklama FROM ${FATURA_BANKA_TABLE} WHERE tenant_id = ? AND (COALESCE(is_active, 1) = 1) ORDER BY sira ASC, id ASC`, [tenantId]) || []) : [];
+            let faturadaGosterilenIds = [];
+            if (faturaAyari && (faturaAyari.faturada_gosterilen_banka_ids || '').toString().trim()) {
+                try {
+                    faturadaGosterilenIds = JSON.parse((faturaAyari.faturada_gosterilen_banka_ids || '').toString().trim());
+                    if (!Array.isArray(faturadaGosterilenIds)) faturadaGosterilenIds = [];
+                } catch (_) {}
+            }
+            if (faturadaGosterilenIds.length > 0) {
+                const idSet = new Set(faturadaGosterilenIds.map(id => Number(id)));
+                bankalar = bankalar.filter(b => idSet.has(Number(b.id)));
+            } else {
+                bankalar = [];
+            }
+            const saticiUnvan = (faturaAyari && faturaAyari.firma_adi) ? String(faturaAyari.firma_adi).trim() : (t.firma_adi || t.name || 'Şirket').toString().trim();
+            const saticiAdres = (faturaAyari && faturaAyari.adres) ? String(faturaAyari.adres) : (t.address || '').toString();
+            const saticiIl = (faturaAyari && faturaAyari.il) ? String(faturaAyari.il) : (t.state || t.city || '').toString();
+            const saticiIlce = (faturaAyari && faturaAyari.ilce) ? String(faturaAyari.ilce) : (t.city || '').toString();
+            const saticiVergiDairesi = (faturaAyari && faturaAyari.vergi_dairesi) ? String(faturaAyari.vergi_dairesi) : (t.tax_office || '').toString();
+            const saticiVergiNo = (faturaAyari && faturaAyari.vergi_no) ? String(faturaAyari.vergi_no) : (t.tax_number || '').toString();
+            const faturaNot = (faturaAyari && faturaAyari.fatura_not) ? String(faturaAyari.fatura_not) : '';
+            const faturaLogoPath = (faturaAyari && faturaAyari.fatura_logo_yolu) ? String(faturaAyari.fatura_logo_yolu).trim() : (t.fatura_logo_yolu || '').toString().trim();
+            let saticiLogoDataUrl = '';
+            if (faturaLogoPath) {
+                const absPath = path.join(__dirname, faturaLogoPath.replace(/^\/+/, ''));
+                if (fs.existsSync(absPath)) {
+                    try {
+                        const buf = fs.readFileSync(absPath);
+                        const mime = absPath.toLowerCase().endsWith('.png') ? 'image/png' : (absPath.toLowerCase().endsWith('.jpg') || absPath.toLowerCase().endsWith('.jpeg') ? 'image/jpeg' : 'image/png');
+                        saticiLogoDataUrl = `data:${mime};base64,${buf.toString('base64')}`;
+                    } catch (e) {
+                        console.warn('⚠️ Fatura logosu okunamadı:', absPath, e.message);
+                    }
+                }
+            }
+            const siparisIdList = (fatura.siparis_idler || '').split(',').map(s => s.trim()).filter(Boolean);
+            const aciklamaMetin = siparisIdList.length === 0 ? 'Mal / Hizmet satışı' : (siparisIdList.length === 1 ? 'Çiçek Siparişi' : 'Çiçek Siparişleri');
+            const satirlar = [{ aciklama: aciklamaMetin, adet: 1, tutarKurus: araToplamKurus }];
+            const invoiceHtml = generateMusteriInvoiceHtml({
+                faturaNo: fatura.fatura_no,
+                faturaTarihi: fatura.fatura_tarihi,
+                satici_unvan: saticiUnvan,
+                satici_adres: saticiAdres,
+                satici_il: saticiIl,
+                satici_ilce: saticiIlce,
+                satici_vergi_dairesi: saticiVergiDairesi,
+                satici_vergi_no: saticiVergiNo,
+                satici_logo_data_url: saticiLogoDataUrl,
+                alici_unvan: aliciUnvan,
+                alici_adres: (c.musteri_acik_adres || '').toString(),
+                alici_il: '',
+                alici_ilce: '',
+                alici_vergi_dairesi: '',
+                alici_vergi_no: '',
+                satirlar,
+                araToplam: araToplamKurus,
+                kdvTutari: kdvTutariKurus,
+                toplamTutar: toplamTutarKurus,
+                kdvOrani: parseFloat(fatura.kdv_orani) || (faturaAyari && faturaAyari.kdv_orani != null ? Number(faturaAyari.kdv_orani) : 20),
+                banka_hesaplari: bankalar.map(b => ({ banka_adi: b.banka_adi, iban: b.iban, sube: b.sube, hesap_sahibi: b.hesap_sahibi, aciklama: b.aciklama })),
+                fatura_not: faturaNot
+            });
+            if (!fs.existsSync(faturalarDir)) fs.mkdirSync(faturalarDir, { recursive: true });
+            const pdfSaved = await generateInvoicePdfFromHtml(invoiceHtml, fullPath);
+            if (!pdfSaved) {
+                return res.status(500).send('Fatura PDF oluşturulamadı. Lütfen daha sonra tekrar deneyin.');
+            }
+            const pdfYolu = `uploads/tenants/${tenantId}/customers/${customerFolder}/faturalar/${pdfFileName}`;
+            await run('UPDATE musteri_faturalar SET pdf_yolu = ?, updated_at = datetime(\'now\') WHERE id = ?', [pdfYolu, fatura.id]);
+        }
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${(fatura.fatura_no || 'fatura').replace(/"/g, '')}.pdf"`);
+        return res.sendFile(fullPath);
+    } catch (error) {
+        console.error('❌ Müşteri fatura PDF hatası:', error);
+        res.status(500).json({ success: false, error: 'PDF oluşturulurken hata oluştu', message: error.message });
+    }
+});
+
 // Müşteri fatura durumu güncelleme endpoint (eski format - backward compatibility)
 app.put('/api/customers/:id/faturalar/:faturaId/durum', async (req, res) => {
     try {
@@ -18205,7 +18545,7 @@ Lütfen siparişiniz ile ilgili aşağıdaki alanları bize iletiniz.
 Sipariş ücretini aşağıdaki IBAN hesaplarımıza gönderebilirsiniz:
 
 -----------------------
-"Bu alana banka hesap ve IBAN bilgilerinizi yazabilirsiniz."
+Aşağıdaki tablodan seçeceğiniz banka hesap bilgileri WhatsApp mesajında bu alanda görünecektir
 -----------------------
 
 _Lütfen EFT/Havale işlemi açıklamasına isminizi ve sipariş detayını yazınız._`;
@@ -18250,6 +18590,7 @@ async function ensureMesajSablonlariTable() {
     const hasUpdatedBy = colNames.includes('updated_by');
     if (!hasCreatedBy) { try { await run(`ALTER TABLE ${MESAJ_SABLONLARI_TABLE} ADD COLUMN created_by TEXT`); } catch (_) {} }
     if (!hasUpdatedBy) { try { await run(`ALTER TABLE ${MESAJ_SABLONLARI_TABLE} ADD COLUMN updated_by TEXT`); } catch (_) {} }
+    if (!colNames.includes('mesajda_kullanilacak_banka_ids')) { try { await run(`ALTER TABLE ${MESAJ_SABLONLARI_TABLE} ADD COLUMN mesajda_kullanilacak_banka_ids TEXT`); } catch (_) {} }
     if (hasTenantId && hasCreatedAt && hasUpdatedAt) {
         return;
     }
@@ -18275,6 +18616,13 @@ async function ensureMesajSablonlariTable() {
         console.error('Mesaj şablonları tablo migration (yeni tablo + kopyala):', migErr);
         try { await run(`DROP TABLE IF EXISTS ${MESAJ_SABLONLARI_TABLE_NEW}`); } catch (_) {}
     }
+    // Mevcut kayıtlardaki eski banka placeholder metnini yeni metinle güncelle
+    try {
+        await run(
+            `UPDATE ${MESAJ_SABLONLARI_TABLE} SET mesaj_metni = REPLACE(REPLACE(mesaj_metni, ?, ?), ?, ?) WHERE mesaj_metni LIKE ?`,
+            ['"Bu alana banka hesap ve IBAN bilgilerinizi yazabilirsiniz."', 'Aşağıdaki tablodan seçeceğiniz banka hesap bilgileri WhatsApp mesajında bu alanda görünecektir', 'Bu alana banka hesap ve IBAN bilgilerinizi yazabilirsiniz.', 'Aşağıdaki tablodan seçeceğiniz banka hesap bilgileri WhatsApp mesajında bu alanda görünecektir', '%Bu alana banka%']
+        );
+    } catch (_) {}
 }
 
 // Gönderim ayarları: sadece ayarlar_gonderim_iletisim_kisileri + ayarlar_gonderim_rapor_ayarlari (eski ayarlar_genel_gonderim_ayarlari kullanılmıyor)
@@ -18289,13 +18637,17 @@ app.get('/api/ayarlar/gonderim', async (req, res) => {
 
         const kullaniciAdiGonderim = await getCurrentUsername(req);
         let musteri_sablonu_whatsapp = null;
+        let mesajda_kullanilacak_banka_ids = [];
         try {
             const tenantSablonRows = await query(
-                `SELECT mesaj_metni FROM ${MESAJ_SABLONLARI_TABLE} WHERE tenant_id = ? AND sablon_turu = ? LIMIT 1`,
+                `SELECT mesaj_metni, mesajda_kullanilacak_banka_ids FROM ${MESAJ_SABLONLARI_TABLE} WHERE tenant_id = ? AND sablon_turu = ? LIMIT 1`,
                 [tenantId, MUSTERI_SIPARIS_SABLONU_TURU]
             );
-            if (tenantSablonRows.length > 0 && tenantSablonRows[0].mesaj_metni != null) {
-                musteri_sablonu_whatsapp = tenantSablonRows[0].mesaj_metni;
+            if (tenantSablonRows.length > 0) {
+                if (tenantSablonRows[0].mesaj_metni != null) musteri_sablonu_whatsapp = tenantSablonRows[0].mesaj_metni;
+                const raw = (tenantSablonRows[0].mesajda_kullanilacak_banka_ids || '').toString().trim();
+                if (raw) { try { mesajda_kullanilacak_banka_ids = JSON.parse(raw); } catch (_) {} }
+                if (!Array.isArray(mesajda_kullanilacak_banka_ids)) mesajda_kullanilacak_banka_ids = [];
             }
         } catch (e) {}
         if (musteri_sablonu_whatsapp == null) {
@@ -18336,6 +18688,7 @@ app.get('/api/ayarlar/gonderim', async (req, res) => {
                 siparis_listesi_whatsapp: siparisListesiWhatsapp,
                 iletisimKisileri: iletisimRows || [],
                 musteri_sablonu_whatsapp: musteri_sablonu_whatsapp,
+                mesajda_kullanilacak_banka_ids: mesajda_kullanilacak_banka_ids,
                 haftalik_rapor_eposta: haftalikRaporEposta,
                 haftalik_rapor_gun: haftalikRaporGun,
                 haftalik_rapor_saat: haftalikRaporSaat
@@ -18358,24 +18711,37 @@ app.put('/api/ayarlar/gonderim', async (req, res) => {
         if (!tenantId) {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
         }
-        const { musteri_sablonu_whatsapp, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat } = req.body || {};
+        const { musteri_sablonu_whatsapp, haftalik_rapor_eposta, haftalik_rapor_gun, haftalik_rapor_saat, mesajda_kullanilacak_banka_ids } = req.body || {};
 
-        if (musteri_sablonu_whatsapp !== undefined) {
+        if (musteri_sablonu_whatsapp !== undefined || mesajda_kullanilacak_banka_ids !== undefined) {
             await ensureMesajSablonlariTable();
             const kullaniciAdi = await getCurrentUsername(req);
             const mevcut = await query(
                 `SELECT id FROM ${MESAJ_SABLONLARI_TABLE} WHERE tenant_id = ? AND sablon_turu = ? LIMIT 1`,
                 [tenantId, MUSTERI_SIPARIS_SABLONU_TURU]
             );
+            const bankaIdsJson = Array.isArray(mesajda_kullanilacak_banka_ids) ? JSON.stringify(mesajda_kullanilacak_banka_ids) : null;
             if (mevcut.length > 0) {
-                await run(
-                    `UPDATE ${MESAJ_SABLONLARI_TABLE} SET mesaj_metni = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ?`,
-                    [musteri_sablonu_whatsapp || null, kullaniciAdi, mevcut[0].id]
-                );
+                if (musteri_sablonu_whatsapp !== undefined && mesajda_kullanilacak_banka_ids !== undefined) {
+                    await run(
+                        `UPDATE ${MESAJ_SABLONLARI_TABLE} SET mesaj_metni = ?, mesajda_kullanilacak_banka_ids = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ?`,
+                        [musteri_sablonu_whatsapp || null, bankaIdsJson || '[]', kullaniciAdi, mevcut[0].id]
+                    );
+                } else if (musteri_sablonu_whatsapp !== undefined) {
+                    await run(
+                        `UPDATE ${MESAJ_SABLONLARI_TABLE} SET mesaj_metni = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ?`,
+                        [musteri_sablonu_whatsapp || null, kullaniciAdi, mevcut[0].id]
+                    );
+                } else {
+                    await run(
+                        `UPDATE ${MESAJ_SABLONLARI_TABLE} SET mesajda_kullanilacak_banka_ids = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ?`,
+                        [bankaIdsJson || '[]', kullaniciAdi, mevcut[0].id]
+                    );
+                }
             } else {
                 await run(
-                    `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`,
-                    [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, musteri_sablonu_whatsapp || null, kullaniciAdi, kullaniciAdi]
+                    `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, mesajda_kullanilacak_banka_ids, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`,
+                    [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, musteri_sablonu_whatsapp || null, bankaIdsJson || '[]', kullaniciAdi, kullaniciAdi]
                 );
             }
         }
@@ -19848,6 +20214,189 @@ app.post('/api/ayarlar/isletme/logo', (req, res, next) => {
     }
 });
 
+// ========== AYARLAR FATURA (fatura_ayarlari tablosu + banka hesapları) ==========
+app.get('/api/ayarlar/fatura', async (req, res) => {
+    try {
+        await ensureAyarlarFaturaTables();
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) return res.json({ success: true, data: {} });
+        const rows = await query(`SELECT * FROM ${FATURA_AYARLARI_TABLE} WHERE tenant_id = ?`, [tenantId]);
+        const t = rows && rows[0] ? rows[0] : {};
+        const logoPath = (t.fatura_logo_yolu || '').toString().trim();
+        const logo_url = logoPath ? buildUploadUrl(logoPath) : '';
+        const bankalar = await query(`SELECT id, banka_adi, iban, sube, hesap_sahibi, aciklama, sira FROM ${FATURA_BANKA_TABLE} WHERE tenant_id = ? AND (COALESCE(is_active, 1) = 1) ORDER BY sira ASC, id ASC`, [tenantId]);
+        let faturadaGosterilenBankaIds = [];
+        try {
+            const raw = (t.faturada_gosterilen_banka_ids || '').toString().trim();
+            if (raw) faturadaGosterilenBankaIds = JSON.parse(raw);
+            if (!Array.isArray(faturadaGosterilenBankaIds)) faturadaGosterilenBankaIds = [];
+        } catch (_) {}
+        res.json({
+            success: true,
+            data: {
+                fatura_logo_yolu: logoPath,
+                fatura_logo_url: logo_url,
+                firma_adi: t.firma_adi || '',
+                adres: t.adres || '',
+                il: t.il || '',
+                ilce: t.ilce || '',
+                vergi_dairesi: t.vergi_dairesi || '',
+                vergi_no: t.vergi_no || '',
+                kdv_orani: t.kdv_orani != null ? Number(t.kdv_orani) : 20,
+                fatura_not: t.fatura_not || '',
+                faturada_gosterilen_banka_ids: faturadaGosterilenBankaIds,
+                banka_hesaplari: (bankalar || []).map(b => ({
+                    id: b.id,
+                    banka_adi: b.banka_adi || '',
+                    iban: b.iban || '',
+                    sube: b.sube || '',
+                    hesap_sahibi: b.hesap_sahibi || '',
+                    aciklama: b.aciklama || '',
+                    sira: b.sira != null ? b.sira : 0
+                }))
+            }
+        });
+    } catch (error) {
+        console.error('❌ Fatura ayarları yüklenirken hata:', error);
+        res.status(500).json({ success: false, error: 'Ayarlar yüklenemedi', message: error.message });
+    }
+});
+
+app.post('/api/ayarlar/fatura', async (req, res) => {
+    try {
+        await ensureAyarlarFaturaTables();
+        await addColumnIfMissing(FATURA_AYARLARI_TABLE, 'faturada_gosterilen_banka_ids', 'TEXT');
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        const { firma_adi, adres, il, ilce, vergi_dairesi, vergi_no, kdv_orani, fatura_not, faturada_gosterilen_banka_ids } = req.body || {};
+        const existing = await query(`SELECT id FROM ${FATURA_AYARLARI_TABLE} WHERE tenant_id = ?`, [tenantId]);
+        const kdv = kdv_orani != null ? parseFloat(kdv_orani) : 20;
+        const faturadaIdsJson = Array.isArray(faturada_gosterilen_banka_ids) ? JSON.stringify(faturada_gosterilen_banka_ids) : (existing && existing[0] ? (await query(`SELECT faturada_gosterilen_banka_ids FROM ${FATURA_AYARLARI_TABLE} WHERE tenant_id = ?`, [tenantId]))?.[0]?.faturada_gosterilen_banka_ids : null) || '[]';
+        if (existing && existing.length > 0) {
+            await run(`
+                UPDATE ${FATURA_AYARLARI_TABLE} SET firma_adi=?, adres=?, il=?, ilce=?, vergi_dairesi=?, vergi_no=?, kdv_orani=?, fatura_not=?, faturada_gosterilen_banka_ids=?, updated_at=CURRENT_TIMESTAMP WHERE tenant_id=?
+            `, [firma_adi || '', adres || '', il || '', ilce || '', vergi_dairesi || '', vergi_no || '', kdv, fatura_not || '', faturadaIdsJson, tenantId]);
+        } else {
+            await run(`
+                INSERT INTO ${FATURA_AYARLARI_TABLE} (tenant_id, firma_adi, adres, il, ilce, vergi_dairesi, vergi_no, kdv_orani, fatura_not, faturada_gosterilen_banka_ids)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [tenantId, firma_adi || '', adres || '', il || '', ilce || '', vergi_dairesi || '', vergi_no || '', kdv, fatura_not || '', faturadaIdsJson]);
+        }
+        const rows = await query(`SELECT * FROM ${FATURA_AYARLARI_TABLE} WHERE tenant_id = ?`, [tenantId]);
+        const t = rows && rows[0] ? rows[0] : {};
+        const logoPath = (t.fatura_logo_yolu || '').toString().trim();
+        const bankalar = await query(`SELECT id, banka_adi, iban, sube, hesap_sahibi, aciklama, sira FROM ${FATURA_BANKA_TABLE} WHERE tenant_id = ? AND (COALESCE(is_active, 1) = 1) ORDER BY sira ASC, id ASC`, [tenantId]);
+        let resFaturadaIds = [];
+        try {
+            const raw = (t.faturada_gosterilen_banka_ids || '').toString().trim();
+            if (raw) resFaturadaIds = JSON.parse(raw);
+            if (!Array.isArray(resFaturadaIds)) resFaturadaIds = [];
+        } catch (_) {}
+        res.json({
+            success: true,
+            data: {
+                fatura_logo_yolu: logoPath,
+                fatura_logo_url: logoPath ? buildUploadUrl(logoPath) : '',
+                firma_adi: t.firma_adi || '',
+                adres: t.adres || '',
+                il: t.il || '',
+                ilce: t.ilce || '',
+                vergi_dairesi: t.vergi_dairesi || '',
+                vergi_no: t.vergi_no || '',
+                kdv_orani: t.kdv_orani != null ? Number(t.kdv_orani) : 20,
+                fatura_not: t.fatura_not || '',
+                faturada_gosterilen_banka_ids: resFaturadaIds,
+                banka_hesaplari: (bankalar || []).map(b => ({ id: b.id, banka_adi: b.banka_adi || '', iban: b.iban || '', sube: b.sube || '', hesap_sahibi: b.hesap_sahibi || '', aciklama: b.aciklama || '', sira: b.sira != null ? b.sira : 0 }))
+            }
+        });
+    } catch (error) {
+        console.error('❌ Fatura ayarları kaydedilirken hata:', error);
+        res.status(500).json({ success: false, error: 'Kayıt başarısız', message: error.message });
+    }
+});
+
+app.post('/api/ayarlar/fatura/logo', faturaLogoUpload.single('logo'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ success: false, error: 'Logo dosyası seçilmedi.' });
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        const relativePath = getTenantRelativePath(tenantId, 'fatura-ayarlari', req.file.filename);
+        await run('UPDATE tenants SET fatura_logo_yolu = ? WHERE id = ?', [relativePath, tenantId]);
+        const existing = await query(`SELECT id FROM ${FATURA_AYARLARI_TABLE} WHERE tenant_id = ?`, [tenantId]);
+        if (existing && existing.length > 0) {
+            await run(`UPDATE ${FATURA_AYARLARI_TABLE} SET fatura_logo_yolu = ?, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = ?`, [relativePath, tenantId]);
+        } else {
+            await run(`INSERT INTO ${FATURA_AYARLARI_TABLE} (tenant_id, fatura_logo_yolu) VALUES (?, ?)`, [tenantId, relativePath]);
+        }
+        const logoUrl = buildUploadUrl(relativePath);
+        res.json({ success: true, data: { fatura_logo_yolu: relativePath, fatura_logo_url: logoUrl } });
+    } catch (error) {
+        console.error('❌ Fatura logo upload hatası:', error);
+        res.status(500).json({ success: false, error: 'Logo yüklenemedi', message: error.message });
+    }
+});
+
+// Banka hesapları CRUD
+app.get('/api/ayarlar/fatura/banka-hesaplari', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) return res.json({ success: true, data: [] });
+        const rows = await query(`SELECT id, banka_adi, iban, sube, hesap_sahibi, aciklama, sira FROM ${FATURA_BANKA_TABLE} WHERE tenant_id = ? AND (COALESCE(is_active, 1) = 1) ORDER BY sira ASC, id ASC`, [tenantId]);
+        res.json({ success: true, data: rows || [] });
+    } catch (error) {
+        console.error('❌ Banka hesapları listesi hatası:', error);
+        res.status(500).json({ success: false, error: 'Liste alınamadı', message: error.message });
+    }
+});
+
+app.post('/api/ayarlar/fatura/banka-hesaplari', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        const { banka_adi, iban, sube, hesap_sahibi, aciklama, sira } = req.body || {};
+        const nextSira = (await query(`SELECT COALESCE(MAX(sira), -1) + 1 AS n FROM ${FATURA_BANKA_TABLE} WHERE tenant_id = ? AND (COALESCE(is_active, 1) = 1)`, [tenantId]))?.[0]?.n ?? 0;
+        const result = await run(`
+            INSERT INTO ${FATURA_BANKA_TABLE} (tenant_id, banka_adi, iban, sube, hesap_sahibi, aciklama, sira, is_active)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+        `, [tenantId, banka_adi || '', iban || '', sube || '', hesap_sahibi || '', aciklama || '', (sira != null ? parseInt(sira, 10) : nextSira)]);
+        const row = await query(`SELECT * FROM ${FATURA_BANKA_TABLE} WHERE id = ?`, [result.lastID]);
+        res.json({ success: true, data: row && row[0] ? row[0] : {} });
+    } catch (error) {
+        console.error('❌ Banka hesabı ekleme hatası:', error);
+        res.status(500).json({ success: false, error: 'Eklenemedi', message: error.message });
+    }
+});
+
+app.put('/api/ayarlar/fatura/banka-hesaplari/:id', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        const id = parseInt(req.params.id, 10);
+        if (!tenantId || !id) return res.status(400).json({ success: false, error: 'Geçersiz parametre.' });
+        const { banka_adi, iban, sube, hesap_sahibi, aciklama, sira } = req.body || {};
+        await run(`
+            UPDATE ${FATURA_BANKA_TABLE} SET banka_adi=?, iban=?, sube=?, hesap_sahibi=?, aciklama=?, sira=COALESCE(?, sira), updated_at=CURRENT_TIMESTAMP WHERE id=? AND tenant_id=?
+        `, [banka_adi ?? '', iban ?? '', sube ?? '', hesap_sahibi ?? '', aciklama ?? '', (sira != null ? parseInt(sira, 10) : undefined), id, tenantId]);
+        const row = await query(`SELECT * FROM ${FATURA_BANKA_TABLE} WHERE id = ? AND tenant_id = ?`, [id, tenantId]);
+        res.json({ success: true, data: row && row[0] ? row[0] : {} });
+    } catch (error) {
+        console.error('❌ Banka hesabı güncelleme hatası:', error);
+        res.status(500).json({ success: false, error: 'Güncellenemedi', message: error.message });
+    }
+});
+
+app.delete('/api/ayarlar/fatura/banka-hesaplari/:id', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        const id = parseInt(req.params.id, 10);
+        if (!tenantId || !id) return res.status(400).json({ success: false, error: 'Geçersiz parametre.' });
+        await run(`UPDATE ${FATURA_BANKA_TABLE} SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?`, [id, tenantId]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ Banka hesabı silme hatası:', error);
+        res.status(500).json({ success: false, error: 'Silinemedi', message: error.message });
+    }
+});
+
 // ========== AYARLAR ÇİÇEK SEPETİ ==========
 const CICEKSEPETI_TABLE = 'ayarlar_ciceksepeti_ayarlari';
 app.get('/api/ayarlar/ciceksepeti', async (req, res) => {
@@ -20064,6 +20613,8 @@ app.post('/api/ciceksepeti/test-order', async (req, res) => {
             urun_adi, urun_yazisi, fiyat, teslim_tarihi, teslim_saati,
             kullaniciAdi, kullaniciAdi
         ]);
+        broadcastSseToTenant(tenantId, { type: 'invalidate' });
+        broadcastSseToTenant(tenantId, { type: 'ciceksepeti_new_order', siparis_no, urun_adi, teslim_tarihi, teslim_saati });
         res.status(201).json({ success: true, message: 'Sipariş kaydedildi.' });
     } catch (error) {
         console.error('❌ Çiçek Sepeti test-order hatası:', error);

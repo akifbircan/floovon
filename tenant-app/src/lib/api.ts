@@ -33,10 +33,10 @@ export class ApiError extends Error {
 
 // Console override kaldırıldı - backend endpoint'leri implement edilecek
 
-// Tek Axios instance
+// Tek Axios instance – timeout 15s: uzun süren isteklerde kullanıcı 30s beklemek zorunda kalmasın
 const apiClient: AxiosInstance = axios.create({
   baseURL: getApiBaseUrl(),
-  timeout: 30000,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -89,6 +89,17 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
+    // Timeout – sunucu süre içinde yanıt vermedi
+    if (error.code === 'ECONNABORTED' || (error.message || '').includes('timeout')) {
+      return Promise.reject(
+        new ApiError(
+          'Sunucu yanıt vermedi. Bağlantıyı kontrol edip sayfayı yenileyin.',
+          408,
+          'TIMEOUT',
+          error.response?.data
+        )
+      );
+    }
     // 401 Unauthorized
     if (error.response?.status === 401) {
       const requestUrl = (error.config?.url || '').toString();

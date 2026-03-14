@@ -15,6 +15,7 @@ import { SearchInput } from '../../../shared/components/SearchInput';
 import { X, ArrowLeftCircle, Pencil, Trash2, FileDown, Mail, ListChecks, CircleDollarSign, Plus, XCircle, FileSearch, Eye, FileCheck, Send, Clock, FileText } from 'lucide-react';
 import { getPrintLogoAndFooter, openPrintWindow, generateCariPrintHTMLWithHeader, downloadTableAsExcel, getPrintDateDDMMYYYY } from '../../dashboard/utils/exportUtils';
 import { invalidateCustomerCariQueries } from '../../../lib/invalidateQueries';
+import { getApiBaseUrl } from '../../../lib/runtime';
 
 interface CustomerDetail {
   id: number;
@@ -161,6 +162,8 @@ export const CustomerDetailPage: React.FC = () => {
   const [tahsilatForFatura, setTahsilatForFatura] = useState<Fatura | null>(null);
   const [faturaDurumModal, setFaturaDurumModal] = useState<Fatura | null>(null);
   const [faturaKesOrder, setFaturaKesOrder] = useState<CustomerOrder | null>(null);
+  const [topluFaturaKesOpen, setTopluFaturaKesOpen] = useState(false);
+  const [topluFaturaSecilenIds, setTopluFaturaSecilenIds] = useState<number[]>([]);
   const [tableSearchByTab, setTableSearchByTab] = useState<Record<'siparisler' | 'tahsilatlar' | 'faturalar', string>>({
     siparisler: '',
     tahsilatlar: '',
@@ -358,7 +361,7 @@ export const CustomerDetailPage: React.FC = () => {
     queryKey: ['customer-orders', id],
     queryFn: async () => {
       try {
-        const result = await apiRequest<CustomerOrder[] | { data?: CustomerOrder[] }>(`/customers/${id}/siparisler`, { method: 'GET' });
+        const result = await apiRequest<CustomerOrder[] | { data?: CustomerOrder[] }>(`/customers/${id}/siparisler?includeFaturaKesilmis=true`, { method: 'GET' });
         if (Array.isArray(result)) return result;
         if (result && typeof result === 'object' && 'data' in result && Array.isArray((result as { data: CustomerOrder[] }).data)) return (result as { data: CustomerOrder[] }).data;
         return [];
@@ -400,7 +403,7 @@ export const CustomerDetailPage: React.FC = () => {
         return [];
       }
     },
-    enabled: !!id && activeTab === 'faturalar',
+    enabled: !!id,
     staleTime: 2 * 60 * 1000,
     retry: false,
   });
@@ -486,6 +489,21 @@ export const CustomerDetailPage: React.FC = () => {
       return combined.includes(searchLowerFaturalar);
     });
   }, [faturalar, searchLowerFaturalar]);
+
+  const faturaKesilmisSiparisIdleri = useMemo(() => {
+    const set = new Set<string>();
+    (faturalar ?? []).forEach((f) => {
+      if ((f.durum || '').toLowerCase() === 'iptal') return;
+      const raw = (f.siparis_idler ?? (f as unknown as Record<string, unknown>).siparis_idler ?? '') as string;
+      raw.split(',').map((x: string) => x.trim()).filter(Boolean).forEach((sid) => set.add(sid));
+    });
+    return set;
+  }, [faturalar]);
+
+  const ordersWithoutFatura = useMemo(() => {
+    if (!orders?.length) return [];
+    return orders.filter((o) => !faturaKesilmisSiparisIdleri.has(String(o.id)));
+  }, [orders, faturaKesilmisSiparisIdleri]);
 
   if (customerLoading) {
     return (
@@ -683,18 +701,15 @@ export const CustomerDetailPage: React.FC = () => {
   ];
 
   const handleFaturaPdf = (f: Fatura) => {
-    const tarih = f.tarih ?? f.fatura_tarihi ?? '';
-    const siparisIdler = (f.siparis_idler ?? (Array.isArray(f.siparisler) ? f.siparisler.join(',') : '')).toString().split(',').map((x: string) => x.trim()).filter(Boolean);
-    const ordersMap = (orders || []).reduce((acc, o) => { acc[o.id] = o; return acc; }, {} as Record<number, CustomerOrder>);
-    const htmlContent = `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>${f.fatura_no} - Fatura</title><style>body{font-family:Arial,sans-serif;margin:24px;}table{width:100%;border-collapse:collapse;}th,td{padding:8px;border-bottom:1px solid #e5e7eb;}th{background:#0ea5e9;color:#fff;}</style></head><body><h1>Fatura: ${f.fatura_no}</h1><p><strong>Müşteri:</strong> ${unvan}</p><p><strong>Tarih:</strong> ${tarih ? new Date(String(tarih)).toLocaleDateString('tr-TR') : '—'}</p><p><strong>Durum:</strong> ${f.durum || '—'}</p><table><thead><tr><th>Sipariş ID</th><th>Açıklama</th><th>Tutar</th></tr></thead><tbody>${siparisIdler.length === 0 ? '<tr><td colspan="3">Sipariş bilgisi yok</td></tr>' : siparisIdler.map((sid: string) => { const o = ordersMap[Number(sid)]; const urun = o?.siparis_urun ?? o?.urun ?? 'Sipariş'; const tut = o?.siparis_tutari ?? o?.toplam_tutar ?? o?.tutar ?? 0; return `<tr><td>${sid}</td><td>${urun}</td><td>${formatCurrency(tut)}</td></tr>`; }).join('')}</tbody></table><p><strong>Toplam:</strong> ${formatTL(f.tutar)}</p><p><strong>KDV:</strong> ${formatTL(f.kdv_tutari ?? f.kdv ?? 0)}</p><p><strong>Genel Toplam:</strong> ${formatTL(f.genel_toplam)}</p></body></html>`;
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${f.fatura_no}.html`;
-    link.click();
-    URL.revokeObjectURL(url);
-    showToast('success', `${f.fatura_no} indirildi.`);
+    const tenantId = localStorage.getItem('floovon_tenant_id');
+    if (!id || !tenantId) {
+      showToast('error', 'Oturum bilgisi bulunamadı.');
+      return;
+    }
+    const base = getApiBaseUrl();
+    const pdfUrl = `${base}/tenants/${tenantId}/customers/${id}/faturalar/${f.id}/pdf`;
+    window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+    showToast('success', 'Fatura PDF açıldı.');
   };
 
   const handleFaturaMail = (f: Fatura) => {
@@ -766,10 +781,77 @@ export const CustomerDetailPage: React.FC = () => {
       });
       showToast('success', 'Fatura kesildi.');
       invalidateCustomerCariQueries(queryClient, id);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ['customer-orders', id] }),
+        queryClient.refetchQueries({ queryKey: ['customer-faturalar', id] }),
+      ]);
       setFaturaKesOrder(null);
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : 'Fatura kesilemedi.');
     }
+  };
+
+  const handleTopluFaturaKesSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!id || !topluFaturaSecilenIds.length) {
+      showToast('error', 'En az bir sipariş seçin.');
+      return;
+    }
+    const form = e.currentTarget;
+    const faturaNo = (form.querySelector('[name="toplu_fatura_no"]') as HTMLInputElement)?.value?.trim();
+    const faturaTarihi = (form.querySelector('[name="toplu_fatura_tarihi"]') as HTMLInputElement)?.value?.trim();
+    const kdvOrani = parseFloat((form.querySelector('[name="toplu_kdv_orani"]') as HTMLInputElement)?.value ?? '20') || 20;
+    const tenantId = localStorage.getItem('floovon_tenant_id');
+    if (!tenantId || !faturaNo || !faturaTarihi) {
+      showToast('error', 'Fatura no ve tarih zorunludur.');
+      return;
+    }
+    const secilenOrders = (orders ?? []).filter((o) => topluFaturaSecilenIds.includes(o.id));
+    const tutar = secilenOrders.reduce((sum, o) => sum + Number(o.siparis_tutari ?? o.toplam_tutar ?? o.tutar ?? 0), 0);
+    const kdvTutari = (tutar * kdvOrani) / 100;
+    const genelToplam = tutar + kdvTutari;
+    try {
+      await apiRequest(`/tenants/${tenantId}/customers/${id}/faturalar`, {
+        method: 'POST',
+        data: {
+          fatura_no: faturaNo,
+          fatura_tarihi: faturaTarihi,
+          siparis_idler: topluFaturaSecilenIds.join(','),
+          tutar,
+          kdv_orani: kdvOrani,
+          kdv_tutari: kdvTutari,
+          genel_toplam: genelToplam,
+          durum: 'kesildi',
+        },
+      });
+      showToast('success', 'Toplu fatura kesildi.');
+      invalidateCustomerCariQueries(queryClient, id);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ['customer-orders', id] }),
+        queryClient.refetchQueries({ queryKey: ['customer-faturalar', id] }),
+      ]);
+      setTopluFaturaKesOpen(false);
+      setTopluFaturaSecilenIds([]);
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Toplu fatura kesilemedi.');
+    }
+  };
+
+  const openTopluFaturaKes = () => {
+    setTopluFaturaSecilenIds([]);
+    setTopluFaturaKesOpen(true);
+  };
+
+  const toggleTopluFaturaSiparis = (orderId: number) => {
+    setTopluFaturaSecilenIds((prev) =>
+      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
+    );
+  };
+
+  const topluFaturaSelectAll = () => {
+    if (!ordersWithoutFatura.length) return;
+    const allIds = ordersWithoutFatura.map((o) => o.id);
+    setTopluFaturaSecilenIds((prev) => (prev.length === allIds.length ? [] : allIds));
   };
 
   return (
@@ -861,7 +943,7 @@ export const CustomerDetailPage: React.FC = () => {
           <div className="cari-tablo-alan">
             <div className="cari-tablo-header">
               <h2 className="cari-tablo-baslik">
-                {activeTab === 'siparisler' && 'Siparişler'}
+                {activeTab === 'siparisler' && `Siparişler (${filteredOrders?.length ?? 0} Sipariş)`}
                 {activeTab === 'tahsilatlar' && 'Tahsilatlar'}
                 {activeTab === 'faturalar' && 'Faturalar'}
               </h2>
@@ -879,6 +961,16 @@ export const CustomerDetailPage: React.FC = () => {
                   className="musteri-cari-search-input"
                   aria-label="Tablo ara"
                 />
+                {activeTab === 'faturalar' && ordersWithoutFatura.length > 0 && (
+                  <button
+                    type="button"
+                    className="primary-button cari-toplu-fatura-kes-btn"
+                    onClick={openTopluFaturaKes}
+                  >
+                    <ListChecks size={18} aria-hidden />
+                    Toplu Fatura Kes
+                  </button>
+                )}
                 <div
                   className={`buton-disa-aktar clickdropdown cari-export-dropdown ${exportMenuOpen ? 'is-open' : ''}`}
                 >
@@ -943,7 +1035,11 @@ export const CustomerDetailPage: React.FC = () => {
                           const faturaNoVal = order.fatura_no ?? raw.fatura_no;
                           const orderIdStr = String(order.id);
                           const kesildiFromFatura = faturalar?.some((f) => (f.durum || '').toLowerCase() !== 'iptal' && (f.siparis_idler || '').split(',').map((x: string) => x.trim()).filter(Boolean).includes(orderIdStr));
-                          const faturaDurum = order.fatura_durumu ?? order.fatura_durumu_text ?? raw.fatura_durumu ?? (faturaNoVal || kesildiFromFatura ? 'Kesildi' : 'Kesilmedi');
+                          const faturaNoFromList = kesildiFromFatura && faturalar
+                            ? (faturalar.find((f) => (f.durum || '').toLowerCase() !== 'iptal' && (f.siparis_idler || '').split(',').map((x: string) => x.trim()).filter(Boolean).includes(orderIdStr))?.fatura_no ?? '')
+                            : '';
+                          const faturaNoDisplay = faturaNoVal || faturaNoFromList || '';
+                          const faturaDurum = order.fatura_durumu ?? order.fatura_durumu_text ?? raw.fatura_durumu ?? (faturaNoDisplay || kesildiFromFatura ? 'Kesildi' : 'Kesilmedi');
                           const kartTurRaw = raw.organizasyon_kart_tur ?? order.organizasyon_kart_tur ?? raw.kart_tur ?? raw.kart_turu ?? order.kart_tur ?? order.kart_turu;
                           const kartTurStr = typeof kartTurRaw === 'string' ? kartTurRaw : String(raw.kart_tur_display ?? order.kart_tur_display ?? kartTurRaw ?? '');
                           const kartTur = normalizeKartTur(kartTurStr || undefined);
@@ -1014,8 +1110,8 @@ export const CustomerDetailPage: React.FC = () => {
                             <td data-label="Ürün Fiyatı">{fiyat != null && !Number.isNaN(Number(fiyat)) ? `${Number(fiyat).toFixed(2)} TL` : (tutar != null ? `${Number(tutar).toFixed(2)} TL` : '—')}</td>
                             <td data-label="Toplam Tutar">{tutar != null ? formatCurrency(Number(tutar)) : '—'}</td>
                             <td data-label="Fatura Bilgileri">
-                              {faturaNoVal ? (
-                                String(faturaNoVal)
+                              {faturaNoDisplay ? (
+                                String(faturaNoDisplay)
                               ) : (
                                 <button type="button" className="btn-fatura-kes-mini" onClick={() => setFaturaKesOrder(order)} title="Bu sipariş için fatura kes">
                                   <Plus size={14} aria-hidden /> Fatura Kes
@@ -1254,6 +1350,83 @@ export const CustomerDetailPage: React.FC = () => {
                   <div className="butonlar">
                     <button type="button" className="secondary-button btn-vazgec" onClick={() => setFaturaKesOrder(null)}>VAZGEÇ</button>
                     <button type="submit" className="primary-button btn-kaydet">KAYDET</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* Toplu Fatura Kes modal */}
+      {topluFaturaKesOpen &&
+        createPortal(
+          <div
+            className="cari-drawer-overlay cari-fatura-kes-overlay"
+            data-modal-backdrop
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cari-toplu-fatura-kes-title"
+            onClick={() => { setTopluFaturaKesOpen(false); setTopluFaturaSecilenIds([]); }}
+          >
+            <div className="cari-fatura-kes-modal cari-toplu-fatura-kes-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="partner-modal-drawer-header">
+                <h2 id="cari-toplu-fatura-kes-title" className="partner-modal-drawer-title">Toplu Fatura Kes</h2>
+                <button type="button" className="partner-modal-drawer-close" onClick={() => { setTopluFaturaKesOpen(false); setTopluFaturaSecilenIds([]); }} aria-label="Kapat">
+                  <X size={22} aria-hidden />
+                </button>
+              </div>
+              <form className="cari-fatura-kes-form cari-drawer-form-musteri-stil" onSubmit={handleTopluFaturaKesSubmit}>
+                <p className="cari-fatura-kes-siparis">Fatura kesilmemiş siparişlerden seçim yapın. Seçilen siparişler tek faturada birleştirilir.</p>
+                <div className="cari-toplu-fatura-list-wrap">
+                  <div className="cari-toplu-fatura-list-header">
+                    <button type="button" className="cari-toplu-fatura-select-all" onClick={topluFaturaSelectAll}>
+                      {topluFaturaSecilenIds.length === ordersWithoutFatura.length ? 'Seçimi kaldır' : 'Tümünü seç'}
+                    </button>
+                    <span className="cari-toplu-fatura-secilen">{topluFaturaSecilenIds.length} sipariş seçildi</span>
+                  </div>
+                  <ul className="cari-toplu-fatura-list">
+                    {ordersWithoutFatura.map((o) => {
+                      const tutar = Number(o.siparis_tutari ?? o.toplam_tutar ?? o.tutar ?? 0);
+                      const urun = o.siparis_urun ?? o.urun ?? '—';
+                      const secili = topluFaturaSecilenIds.includes(o.id);
+                      return (
+                        <li key={o.id} className="cari-toplu-fatura-item">
+                          <label className="cari-toplu-fatura-item-label">
+                            <input
+                              type="checkbox"
+                              checked={secili}
+                              onChange={() => toggleTopluFaturaSiparis(o.id)}
+                            />
+                            <span className="cari-toplu-fatura-item-text">#{o.id} – {urun} – {formatCurrency(tutar)}</span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+                <div className="input-alan">
+                  <div className="input-grup">
+                    <label className="input-label">FATURA NO</label>
+                    <input name="toplu_fatura_no" type="text" required defaultValue={`BF-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000) + 1).padStart(3, '0')}`} />
+                  </div>
+                </div>
+                <div className="input-alan">
+                  <div className="input-grup">
+                    <label className="input-label">FATURA TARİHİ</label>
+                    <input name="toplu_fatura_tarihi" type="date" required defaultValue={new Date().toISOString().slice(0, 10)} />
+                  </div>
+                </div>
+                <div className="input-alan">
+                  <div className="input-grup">
+                    <label className="input-label">KDV ORANI (%)</label>
+                    <input name="toplu_kdv_orani" type="number" min={0} max={100} step={1} defaultValue={20} />
+                  </div>
+                </div>
+                <div className="alt-alan">
+                  <div className="butonlar">
+                    <button type="button" className="secondary-button btn-vazgec" onClick={() => { setTopluFaturaKesOpen(false); setTopluFaturaSecilenIds([]); }}>VAZGEÇ</button>
+                    <button type="submit" className="primary-button btn-kaydet" disabled={topluFaturaSecilenIds.length === 0}>FATURA KES</button>
                   </div>
                 </div>
               </form>

@@ -1767,7 +1767,7 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
 .urun-yazisi-popup-indir {
   display: inline-flex;
   padding: 4px;
-  color: var(--primary-color);
+  color: var(--mor-primary-text);
   text-decoration: none;
   border-radius: 4px;
 }
@@ -4381,7 +4381,7 @@ html.dark-mode .campaigns-form select option {
   border-bottom: 1px solid var(--border-renk);
 }
 .cari-tablo-baslik {
-  font-size: 0.9375rem;
+  font-size: 24px;
   font-weight: 600;
   color: var(--ana-renk);
   margin: 0;
@@ -4589,7 +4589,7 @@ html.dark-mode .campaigns-form select option {
 }
 .cari-fatura-kes-form .alt-alan {
   margin-top: 1.25rem;
-  padding: 1rem 20px 0;
+  padding: 1rem 0 0 0;
   border-top: 1px solid var(--mid-gray);
   flex-shrink: 0;
 }
@@ -4598,6 +4598,95 @@ html.dark-mode .campaigns-form select option {
   gap: 0.75rem;
   justify-content: flex-end;
 }
+
+/* Toplu Fatura Kes modal – daha geniş, sipariş listesi */
+.cari-toplu-fatura-kes-modal {
+  max-width: 480px;
+}
+.cari-toplu-fatura-list-wrap {
+  margin-bottom: 1rem;
+  border: 1px solid var(--mid-gray);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cari-toplu-fatura-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--border-renk);
+  font-size: 12px;
+}
+.cari-toplu-fatura-select-all {
+  background: none;
+  border: none;
+  color: var(--mor-primary-text);
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+}
+.cari-toplu-fatura-select-all:hover {
+  text-decoration: underline;
+}
+.cari-toplu-fatura-secilen {
+  color: var(--gri70);
+}
+.cari-toplu-fatura-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.cari-toplu-fatura-item {
+  border-bottom: 1px solid var(--mid-gray);
+}
+.cari-toplu-fatura-item:last-child {
+  border-bottom: none;
+}
+.cari-toplu-fatura-item-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 13px;
+}
+.cari-toplu-fatura-item-label input[type="checkbox"] {
+  flex-shrink: 0;
+}
+.cari-toplu-fatura-item-text {
+  flex: 1;
+  color: var(--ana-renk);
+}
+
+/* Toplu Fatura Kes – mobilde checkbox satırı genişliği, metin kesilmesin */
+@media (max-width: 767px) {
+  .cari-toplu-fatura-kes-modal {
+    max-width: min(480px, calc(100vw - 24px));
+    width: 100%;
+  }
+  .cari-toplu-fatura-list-wrap {
+    width: 100%;
+    min-width: 0;
+    overflow-x: visible;
+    box-sizing: border-box;
+  }
+  .cari-toplu-fatura-list {
+    min-width: 0;
+  }
+  .cari-toplu-fatura-item-label {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .cari-toplu-fatura-item-text {
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+}
+
 .cari-drawer {
   width: 100%;
   max-width: 480px;

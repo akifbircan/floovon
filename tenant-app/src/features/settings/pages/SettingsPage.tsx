@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest, apiClient } from '../../../lib/api';
 import { getApiBaseUrl } from '../../../lib/runtime';
+import { getUploadUrl } from '../../../shared/utils/urlUtils';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { TableSortHeader } from '../../../shared/components/TableSortHeader';
@@ -14,8 +15,9 @@ import { formatPhoneNumber, cleanPhoneForDatabase, formatTutarInputLive, formatT
 import { usePhoneInput } from '../../../shared/hooks/usePhoneInput';
 import { useAddressSelect } from '../../dashboard/hooks/useAddressSelect';
 import { getKonumAyarlari } from '../../dashboard/api/formActions';
-import { Trash2, FileSearch, Package, Settings, Truck, Send, Pencil, Upload, Info, Wrench, Clock, ShoppingCart, Plug, RefreshCw, Bell } from 'lucide-react';
+import { Trash2, FileSearch, Package, Settings, Truck, Send, Pencil, Upload, Info, Wrench, Clock, ShoppingCart, Plug, RefreshCw, Bell, FileText } from 'lucide-react';
 import { WhatsAppQRModal } from '../../dashboard/components/WhatsAppQRModal';
+import { FaturaTab } from './FaturaTab';
 
 interface Urun {
   id: number;
@@ -578,7 +580,7 @@ function YazdirmaAyarlariForm() {
                 <div>
                   <span className="ayarlar-label" style={{ display: 'block', marginBottom: '0.25rem' }}>Yazdırma Notları</span>
                   <p className="ayarlar-panel-desc" style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.5 }}>
-                    Bu alandan yüklediğiniz PNG logo, tüm yazdırma çıktılarında kullanılacaktır. Logonun güncellenebilmesi için yükleme sonrasında mutlaka kaydedin.
+                    Bu alandan yüklediğiniz PNG logo, tüm yazdırma çıktılarında ve sipariş künyesi çıktılarında kullanılacaktır. Logonun güncellenebilmesi için yükleme sonrasında mutlaka kaydedin.
                   </p>
                 </div>
               </div>
@@ -636,6 +638,17 @@ function GonderimAyarlariTab() {
     enabled: gonderimSubTab === 'rapor',
   });
 
+  const { data: bankaHesaplariGonderim } = useQuery({
+    queryKey: ['ayarlar-fatura-banka-hesaplari'],
+    queryFn: async () => {
+      const res = await apiClient.get<{ success: boolean; data?: Array<{ id: number; banka_adi?: string; iban?: string; sube?: string; hesap_sahibi?: string }> }>('/ayarlar/fatura/banka-hesaplari');
+      return (res.data?.data ?? []) as Array<{ id: number; banka_adi?: string; iban?: string; sube?: string; hesap_sahibi?: string }>;
+    },
+    staleTime: 2 * 60 * 1000,
+    enabled: gonderimSubTab === 'mesaj-sablonlari',
+  });
+  const bankaHesaplariMesaj = bankaHesaplariGonderim ?? [];
+
   React.useEffect(() => {
     if (raporData?.data) {
       setRaporEposta(raporData.data.haftalik_rapor_eposta || '');
@@ -652,10 +665,34 @@ function GonderimAyarlariTab() {
     tel: (k.kisi_telefon || '').trim(),
   })).filter((k) => k.ad || k.tel);
 
+  // Editörde IBAN bloğu gösterilmez; gönderimde arka planda eklenir. Yüklerken bu bloğu çıkar.
+  const stripIbanBlockFromTemplate = (text: string): string => {
+    if (!text || typeof text !== 'string') return '';
+    const t = text.trim();
+    const ibanStart = 'Sipariş ücretini aşağıdaki IBAN hesaplarımıza gönderebilirsiniz:';
+    const idx = t.indexOf(ibanStart);
+    if (idx === -1) return t;
+    let out = t.slice(0, idx).trimEnd();
+    const ibanBlockEnd = '_Lütfen EFT/Havale işlemi açıklamasına isminizi ve sipariş detayını yazınız._';
+    const afterBlock = t.slice(idx).indexOf(ibanBlockEnd);
+    if (afterBlock !== -1) {
+      const rest = t.slice(idx + afterBlock + ibanBlockEnd.length).trim();
+      if (rest) out = out ? `${out}\n\n${rest}` : rest;
+    }
+    return out.trim();
+  };
+
   React.useEffect(() => {
     const raw = gonderimData?.data?.musteri_sablonu_whatsapp;
-    setMesajSablonuValue(typeof raw === 'string' ? raw.trim() : '');
+    const value = typeof raw === 'string' ? stripIbanBlockFromTemplate(raw) : '';
+    setMesajSablonuValue(value);
   }, [gonderimData?.data?.musteri_sablonu_whatsapp]);
+
+  const mesajdaKullanilacakBankaIdsRaw = gonderimData?.data?.mesajda_kullanilacak_banka_ids;
+  const [mesajSablonuSecilenBankaIds, setMesajSablonuSecilenBankaIds] = useState<number[]>(() => (Array.isArray(mesajdaKullanilacakBankaIdsRaw) ? mesajdaKullanilacakBankaIdsRaw : []));
+  React.useEffect(() => {
+    if (Array.isArray(mesajdaKullanilacakBankaIdsRaw)) setMesajSablonuSecilenBankaIds(mesajdaKullanilacakBankaIdsRaw);
+  }, [mesajdaKullanilacakBankaIdsRaw]);
 
   const [gonderimSortField, setGonderimSortField] = useState<string | null>(null);
   const [gonderimSortDir, setGonderimSortDir] = useState<'asc' | 'desc'>('asc');
@@ -691,9 +728,16 @@ function GonderimAyarlariTab() {
   }, [editingIletisimId]);
 
   const handleMesajSablonuKaydet = async () => {
+    if (mesajSablonuSecilenBankaIds.length === 0) {
+      showToast('warning', 'En az bir banka hesabı seçmelisiniz. Aşağıdaki tablodan mesajda görünecek hesapları işaretleyin.');
+      return;
+    }
     setSavingSablon(true);
     try {
-      await apiClient.put('/ayarlar/gonderim', { musteri_sablonu_whatsapp: mesajSablonuValue.trim() || null });
+      await apiClient.put('/ayarlar/gonderim', {
+        musteri_sablonu_whatsapp: mesajSablonuValue.trim() || null,
+        mesajda_kullanilacak_banka_ids: mesajSablonuSecilenBankaIds,
+      });
       queryClient.invalidateQueries({ queryKey: ['ayarlar-gonderim'] });
       showToast('success', 'Mesaj şablonu kaydedildi.');
     } catch (err) {
@@ -842,7 +886,7 @@ function GonderimAyarlariTab() {
               onClick={() => setGonderimSubTab('mesaj-sablonlari')}
               className={`ayarlar-subtab-btn ${gonderimSubTab === 'mesaj-sablonlari' ? 'active' : ''}`}
             >
-              Mesaj Şablonları
+              Müşteri Mesaj Şablonları
             </button>
           </>
         )}
@@ -943,6 +987,7 @@ function GonderimAyarlariTab() {
           <div className="ayarlar-panel-header">
             <h3 className="ayarlar-panel-form-title">Haftalık Rapor Gönderimi</h3>
             <p className="ayarlar-panel-desc">
+              <Info size={18} className="ayarlar-help-icon ayarlar-panel-desc-icon" aria-hidden />
               Haftalık raporların gönderileceği e-posta adresi ve gönderim günü/saati.
             </p>
           </div>
@@ -1024,8 +1069,9 @@ function GonderimAyarlariTab() {
       {isBaslangicPlan === false && gonderimSubTab === 'mesaj-sablonlari' && (
         <div className="ayarlar-panel">
           <div className="ayarlar-panel-header">
-            <h3 className="ayarlar-panel-form-title">Müşteri Sipariş Şablonu</h3>
+            <h3 className="ayarlar-panel-form-title">Müşteri Sipariş Mesaj Şablonu</h3>
             <p className="ayarlar-panel-desc">
+              <Info size={18} className="ayarlar-help-icon ayarlar-panel-desc-icon" aria-hidden />
               WhatsApp &quot;Sipariş Şablonu ve IBAN Bilgisi Gönder&quot; butonu ile iletişim kişilerine gönderilen hazır müşteri mesajı.
             </p>
           </div>
@@ -1043,7 +1089,55 @@ function GonderimAyarlariTab() {
                   rows={14}
                   style={{ resize: 'vertical', minHeight: 280 }}
                 />
+                <p className="ayarlar-panel-desc" style={{ marginTop: 8, marginBottom: 0 }}>
+                  Banka hesabı/hesapları varsa ve seçiliyse yukarıdaki mesajın altında otomatik olarak gönderilecektir.
+                </p>
               </div>
+              {bankaHesaplariMesaj.length > 0 && (
+              <div className="ayarlar-form-group" style={{ marginTop: 16 }}>
+                <label className="ayarlar-label">Mesajda kullanılacak IBAN bilgileri</label>
+                <p className="ayarlar-panel-desc" style={{ marginTop: 4, marginBottom: 8 }}>Şablonda kullanılacak banka/IBAN hesaplarını işaretleyin. Hesap eklemek için Genel → Banka Hesap Bilgileri sekmesine gidin.</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full ayarlar-tablosu">
+                    <thead>
+                      <tr>
+                        <th className="ayarlar-banka-checkbox-col px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase w-10">Mesajda kullan</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Banka</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">IBAN</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Şube / Hesap sahibi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {bankaHesaplariMesaj.map((b) => (
+                        <tr key={b.id}>
+                          <td data-label="Mesajda kullan" className="ayarlar-banka-checkbox-col px-4 py-2">
+                            <label className="ayarlar-label ayarlar-label-inline">
+                              <input
+                                type="checkbox"
+                                className="ayarlar-checkbox"
+                                checked={mesajSablonuSecilenBankaIds.includes(b.id)}
+                                onChange={() => {
+                                  if (mesajSablonuSecilenBankaIds.includes(b.id)) {
+                                    setMesajSablonuSecilenBankaIds((prev) => prev.filter((id) => id !== b.id));
+                                  } else {
+                                    setMesajSablonuSecilenBankaIds((prev) => [...prev, b.id]);
+                                  }
+                                }}
+                                aria-label={`Mesajda kullan: ${b.banka_adi || b.iban || ''}`}
+                              />
+                              <span className="sr-only">Mesajda kullan</span>
+                            </label>
+                          </td>
+                          <td data-label="Banka">{b.banka_adi || '—'}</td>
+                          <td data-label="IBAN">{b.iban || '—'}</td>
+                          <td data-label="Şube">{[b.sube, b.hesap_sahibi].filter(Boolean).join(' · ') || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              )}
               <div className="ayarlar-form-actions">
                 <button type="button" className="ayarlar-btn ayarlar-btn-primary" onClick={handleMesajSablonuKaydet} disabled={savingSablon}>
                   {savingSablon ? 'KAYDEDİLİYOR...' : 'KAYDET'}
@@ -1113,9 +1207,9 @@ export const SettingsPage: React.FC = () => {
   const { isBaslangicPlan } = usePlan();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<'veri' | 'genel' | 'arac' | 'gonderim'>('veri');
+  const [activeTab, setActiveTab] = useState<'veri' | 'genel' | 'arac' | 'gonderim' | 'fatura' | 'ciceksepeti'>('veri');
   const [activeSubTab, setActiveSubTab] = useState<'urunler' | 'urun-gruplari' | 'organizasyon-turleri' | 'organizasyon-etiketleri'>('urunler');
-  const [genelSubTab, setGenelSubTab] = useState<'isletme' | 'konum' | 'teslimat' | 'yazdirma' | 'ciceksepeti'>('isletme');
+  const [genelSubTab, setGenelSubTab] = useState<'isletme' | 'konum' | 'teslimat' | 'yazdirma' | 'banka' | 'ciceksepeti'>('isletme');
 
   // Tablo sıralama durumları
   const [urunSortField, setUrunSortField] = useState<string | null>(null);
@@ -1143,6 +1237,10 @@ export const SettingsPage: React.FC = () => {
       setActiveTab('arac');
     } else if (tabParam === 'veri') {
       setActiveTab('veri');
+    } else if (tabParam === 'fatura') {
+      setActiveTab('fatura');
+    } else if (tabParam === 'ciceksepeti' && isBaslangicPlan === false) {
+      setActiveTab('ciceksepeti');
     }
   }, [searchParams, isBaslangicPlan]);
 
@@ -1150,6 +1248,7 @@ export const SettingsPage: React.FC = () => {
   useEffect(() => {
     if (isBaslangicPlan !== true) return;
     if (activeTab === 'arac') setActiveTab('genel');
+    if (activeTab === 'ciceksepeti') setActiveTab('genel');
     if (genelSubTab === 'ciceksepeti') setGenelSubTab('isletme');
   }, [isBaslangicPlan, activeTab, genelSubTab]);
 
@@ -1444,6 +1543,120 @@ export const SettingsPage: React.FC = () => {
   const [teslimatFormData, setTeslimatFormData] = useState({ konum_adi: '', il: '', ilce: '', mahalle: '', acik_adres: '' });
   const [editingTeslimatId, setEditingTeslimatId] = useState<number | null>(null);
   const addressSelectTeslimat = useAddressSelect();
+
+  // Fatura ayarları (müşteri faturası sağ üst logo)
+  type FaturaBankaHesap = { id: number; banka_adi?: string; iban?: string; sube?: string; hesap_sahibi?: string; aciklama?: string; sira?: number };
+  type FaturaAyarlariData = {
+    fatura_logo_yolu?: string; fatura_logo_url?: string;
+    firma_adi?: string; adres?: string; il?: string; ilce?: string; vergi_dairesi?: string; vergi_no?: string;
+    kdv_orani?: number; fatura_not?: string; faturada_gosterilen_banka_ids?: number[]; banka_hesaplari?: FaturaBankaHesap[];
+  };
+  const { data: faturaAyarlariData, refetch: refetchFaturaAyarlari } = useQuery({
+    queryKey: ['ayarlar-fatura'],
+    queryFn: async () => {
+      const res = await apiClient.get<{ success: boolean; data?: FaturaAyarlariData }>('/ayarlar/fatura');
+      return res.data?.data ?? {};
+    },
+    enabled: activeTab === 'fatura' || (activeTab === 'genel' && genelSubTab === 'banka'),
+    staleTime: 2 * 60 * 1000,
+  });
+  const [faturaLogoUploading, setFaturaLogoUploading] = useState(false);
+  const [faturaLogoCacheBuster, setFaturaLogoCacheBuster] = useState(0);
+  const faturaLogoPath = (faturaAyarlariData?.fatura_logo_yolu ?? faturaAyarlariData?.fatura_logo_url ?? '').toString();
+  const faturaLogoSrcBase = faturaLogoPath ? getUploadUrl(faturaLogoPath) : '';
+  const faturaLogoSrc = faturaLogoSrcBase + (faturaLogoCacheBuster ? (faturaLogoSrcBase.includes('?') ? '&' : '?') + 't=' + faturaLogoCacheBuster : '');
+  const [faturaForm, setFaturaForm] = useState({
+    firma_adi: '', adres: '', il: '', ilce: '', vergi_dairesi: '', vergi_no: '',
+    kdv_orani: 20, fatura_not: ''
+  });
+  const [faturaSaving, setFaturaSaving] = useState(false);
+  React.useEffect(() => {
+    if ((activeTab !== 'fatura' && !(activeTab === 'genel' && genelSubTab === 'banka')) || !faturaAyarlariData) return;
+    setFaturaForm({
+      firma_adi: (faturaAyarlariData.firma_adi ?? '').toString(),
+      adres: (faturaAyarlariData.adres ?? '').toString(),
+      il: (faturaAyarlariData.il ?? '').toString(),
+      ilce: (faturaAyarlariData.ilce ?? '').toString(),
+      vergi_dairesi: (faturaAyarlariData.vergi_dairesi ?? '').toString(),
+      vergi_no: (faturaAyarlariData.vergi_no ?? '').toString(),
+      kdv_orani: faturaAyarlariData.kdv_orani != null ? Number(faturaAyarlariData.kdv_orani) : 20,
+      fatura_not: (faturaAyarlariData.fatura_not ?? '').toString()
+    });
+  }, [activeTab, genelSubTab, faturaAyarlariData]);
+  const faturadaGosterilenBankaIdsRaw = faturaAyarlariData?.faturada_gosterilen_banka_ids;
+  const [faturadaSecilenBankaIds, setFaturadaSecilenBankaIds] = useState<number[]>(() => Array.isArray(faturadaGosterilenBankaIdsRaw) ? faturadaGosterilenBankaIdsRaw : []);
+  React.useEffect(() => {
+    if (Array.isArray(faturadaGosterilenBankaIdsRaw)) setFaturadaSecilenBankaIds(faturadaGosterilenBankaIdsRaw);
+  }, [faturadaGosterilenBankaIdsRaw]);
+  const handleFaturaAyarlariSave = async () => {
+    setFaturaSaving(true);
+    try {
+      await apiClient.post('/ayarlar/fatura', { ...faturaForm, faturada_gosterilen_banka_ids: faturadaSecilenBankaIds });
+      await refetchFaturaAyarlari();
+      showToast('success', 'Fatura ayarları kaydedildi.');
+    } catch (err: unknown) {
+      showToast('error', (err as Error)?.message || 'Kayıt başarısız.');
+    } finally {
+      setFaturaSaving(false);
+    }
+  };
+  const bankaHesaplari = (faturaAyarlariData?.banka_hesaplari ?? []) as FaturaBankaHesap[];
+  const [bankaForm, setBankaForm] = useState({ banka_adi: '', iban: '', sube: '', hesap_sahibi: '', aciklama: '' });
+  const [editingBankaId, setEditingBankaId] = useState<number | null>(null);
+  const handleBankaEkle = async () => {
+    try {
+      await apiClient.post('/ayarlar/fatura/banka-hesaplari', bankaForm);
+      setBankaForm({ banka_adi: '', iban: '', sube: '', hesap_sahibi: '', aciklama: '' });
+      await refetchFaturaAyarlari();
+      showToast('success', 'Banka hesabı eklendi.');
+    } catch (err: unknown) {
+      showToast('error', (err as Error)?.message || 'Eklenemedi.');
+    }
+  };
+  const handleBankaGuncelle = async () => {
+    if (!editingBankaId) return;
+    try {
+      await apiClient.put(`/ayarlar/fatura/banka-hesaplari/${editingBankaId}`, bankaForm);
+      setEditingBankaId(null);
+      setBankaForm({ banka_adi: '', iban: '', sube: '', hesap_sahibi: '', aciklama: '' });
+      await refetchFaturaAyarlari();
+      showToast('success', 'Banka hesabı güncellendi.');
+    } catch (err: unknown) {
+      showToast('error', (err as Error)?.message || 'Güncellenemedi.');
+    }
+  };
+  const handleBankaSil = async (id: number) => {
+    if (!window.confirm('Bu banka hesabını silmek istediğinize emin misiniz?')) return;
+    try {
+      await apiClient.delete(`/ayarlar/fatura/banka-hesaplari/${id}`);
+      await refetchFaturaAyarlari();
+      if (editingBankaId === id) { setEditingBankaId(null); setBankaForm({ banka_adi: '', iban: '', sube: '', hesap_sahibi: '', aciklama: '' }); }
+      showToast('success', 'Banka hesabı silindi.');
+    } catch (err: unknown) {
+      showToast('error', (err as Error)?.message || 'Silinemedi.');
+    }
+  };
+  const handleFaturaLogoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) {
+      showToast('warning', 'Lütfen PNG veya JPG seçin.');
+      return;
+    }
+    setFaturaLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('logo', file);
+      await apiClient.post('/ayarlar/fatura/logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await refetchFaturaAyarlari();
+      setFaturaLogoCacheBuster(Date.now());
+      showToast('success', 'Fatura logosu güncellendi.');
+    } catch (err: unknown) {
+      showToast('error', (err as Error)?.message || 'Logo yüklenemedi.');
+    } finally {
+      setFaturaLogoUploading(false);
+      e.target.value = '';
+    }
+  };
 
   // Konum ayarları
   const { data: konumData } = useQuery({
@@ -2228,6 +2441,26 @@ export const SettingsPage: React.FC = () => {
               Gönderim Ayarları
             </button>
           )}
+          <button
+            type="button"
+            data-tab="fatura"
+            onClick={() => setActiveTab('fatura')}
+            className={`ayarlar-tab-btn ${activeTab === 'fatura' ? 'active' : ''}`}
+          >
+            <FileText size={18} />
+            Fatura Ayarları
+          </button>
+          {isBaslangicPlan === false && (
+            <button
+              type="button"
+              data-tab="ciceksepeti"
+              onClick={() => setActiveTab('ciceksepeti')}
+              className={`ayarlar-tab-btn ${activeTab === 'ciceksepeti' ? 'active' : ''}`}
+            >
+              <ShoppingCart size={18} />
+              Çiçek Sepeti Ayarları
+            </button>
+          )}
         </div>
 
         {/* Veri Tanımları Tab */}
@@ -2551,39 +2784,15 @@ export const SettingsPage: React.FC = () => {
                         <table className="w-full ayarlar-tablosu ayarlar-urunler-tablosu">
                           <thead>
                             <tr>
-                              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase table-col-gorsel">
-                                ÜRÜN GÖRSELİ
-                              </th>
-                              <TableSortHeader
-                                field="ad"
-                                label="Ürün Adı"
-                                currentSort={urunSortField}
-                                sortDirection={urunSortDir}
-                                onSort={handleUrunSort}
-                              />
-                              <TableSortHeader
-                                field="grup"
-                                label="Ürün Kategorisi"
-                                currentSort={urunSortField}
-                                sortDirection={urunSortDir}
-                                onSort={handleUrunSort}
-                              />
-                              <TableSortHeader
-                                field="fiyat"
-                                label="Ürün Fiyatı"
-                                currentSort={urunSortField}
-                                sortDirection={urunSortDir}
-                                onSort={handleUrunSort}
-                              />
-                              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase table-col-durum">
-                                DURUM
-                              </th>
-                              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase table-col-islem">
-                                İŞLEMLER
-                              </th>
+                              <th className="table-col-gorsel">ÜRÜN GÖRSELİ</th>
+                              <TableSortHeader field="ad" label="Ürün Adı" currentSort={urunSortField} sortDirection={urunSortDir} onSort={handleUrunSort} className="table-col-urun-adi" />
+                              <TableSortHeader field="grup" label="Ürün Kategorisi" currentSort={urunSortField} sortDirection={urunSortDir} onSort={handleUrunSort} className="table-col-urun-kategori" />
+                              <TableSortHeader field="fiyat" label="Ürün Fiyatı" currentSort={urunSortField} sortDirection={urunSortDir} onSort={handleUrunSort} className="table-col-fiyat" />
+                              <th className="table-col-durum">DURUM</th>
+                              <th className="table-col-islem">İŞLEMLER</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-200">
+                          <tbody>
                             {Array.isArray(filteredUrunler) && filteredUrunler.map((urun) => (
                               <tr key={urun.id} className="hover:bg-gray-50 ayarlar-table-row" data-table-row>
                                 <td data-label="Ürün Görseli" className="px-4 py-3 table-col-gorsel">
@@ -2721,7 +2930,7 @@ export const SettingsPage: React.FC = () => {
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-200">
+                          <tbody>
                             {Array.isArray(filteredUrunGruplari) && filteredUrunGruplari.map((grup) => (
                               <tr key={grup.id} className="hover:bg-gray-50 ayarlar-table-row" data-table-row>
                                 <td data-label="Ürün Kategorisi Adı" className="px-4 py-3 text-sm font-medium text-gray-900">{grup.ad}</td>
@@ -2834,7 +3043,7 @@ export const SettingsPage: React.FC = () => {
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-200">
+                          <tbody>
                             {Array.isArray(filteredOrganizasyonTurleri) && filteredOrganizasyonTurleri.map((tur) => (
                               <tr key={tur.id} className="hover:bg-gray-50 ayarlar-table-row" data-table-row>
                                 <td data-label="Organizasyon Türü" className="px-4 py-3 text-sm font-medium text-gray-900 table-col-organizasyon-turu">
@@ -2962,7 +3171,7 @@ export const SettingsPage: React.FC = () => {
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-200">
+                          <tbody>
                             {Array.isArray(filteredEtiketler) && filteredEtiketler.map((etiket) => (
                               <tr key={etiket.id} className="hover:bg-gray-50 ayarlar-table-row" data-table-row>
                                 <td data-label="Organizasyon Türü" className="px-4 py-3 text-sm font-medium text-gray-900 table-col-organizasyon-turu">
@@ -3065,12 +3274,86 @@ export const SettingsPage: React.FC = () => {
               <button type="button" data-subtab="konum" onClick={() => setGenelSubTab('konum')} className={`ayarlar-subtab-btn ${genelSubTab === 'konum' ? 'active' : ''}`}>Konum Ayarları</button>
               <button type="button" data-subtab="teslimat" onClick={() => setGenelSubTab('teslimat')} className={`ayarlar-subtab-btn ${genelSubTab === 'teslimat' ? 'active' : ''}`}>Teslimat Konumları</button>
               <button type="button" data-subtab="yazdirma" onClick={() => setGenelSubTab('yazdirma')} className={`ayarlar-subtab-btn ${genelSubTab === 'yazdirma' ? 'active' : ''}`}>Yazdırma Ayarları</button>
-              {isBaslangicPlan === false && (
-                <button type="button" data-subtab="ciceksepeti" onClick={() => setGenelSubTab('ciceksepeti')} className={`ayarlar-subtab-btn ${genelSubTab === 'ciceksepeti' ? 'active' : ''}`}>Çiçek Sepeti Ayarları</button>
-              )}
+              <button type="button" data-subtab="banka" onClick={() => setGenelSubTab('banka')} className={`ayarlar-subtab-btn ${genelSubTab === 'banka' ? 'active' : ''}`}>Banka Hesap Bilgileri</button>
             </div>
-            {/* Teslimat Konumları: Araç Takip gibi – panel başlık/desc yok, doğrudan sol form + sağ tablo */}
-            {genelSubTab === 'teslimat' ? (
+            {/* Banka Hesap Bilgileri: sol form + sağ tablo */}
+            {genelSubTab === 'banka' ? (
+              <div className={`flex flex-col lg:flex-row gap-6 ayarlar-form-row ${editingBankaId ? 'ayarlar-form-active' : ''}`}>
+                <div className="ayarlar-sol-kolon">
+                  <div className="ayarlar-panel-form">
+                    <h3 className="ayarlar-panel-form-title">{editingBankaId ? 'Banka Hesabını Düzenle' : 'Yeni Banka Hesabı Ekle'}</h3>
+                    <p className="ayarlar-panel-desc">Fatura ve müşteri mesajında kullanılacak banka/IBAN bilgileri. Faturada veya mesajda göstermek istediklerinizi ilgili sekmelerden seçebilirsiniz.</p>
+                    <form
+                      className="ayarlar-form"
+                      onSubmit={(e) => { e.preventDefault(); if (editingBankaId) handleBankaGuncelle(); else handleBankaEkle(); }}
+                      noValidate
+                    >
+                      <div className="ayarlar-form-group">
+                        <label className="ayarlar-label">Banka adı *</label>
+                        <input type="text" className="ayarlar-input" placeholder="Banka adı" value={bankaForm.banka_adi} onChange={(e) => setBankaForm((p) => ({ ...p, banka_adi: e.target.value }))} required />
+                      </div>
+                      <div className="ayarlar-form-group">
+                        <label className="ayarlar-label">IBAN *</label>
+                        <input type="text" className="ayarlar-input" placeholder="IBAN" value={bankaForm.iban} onChange={(e) => setBankaForm((p) => ({ ...p, iban: e.target.value }))} required />
+                      </div>
+                      <div className="ayarlar-form-group">
+                        <label className="ayarlar-label">Şube</label>
+                        <input type="text" className="ayarlar-input" placeholder="Şube" value={bankaForm.sube} onChange={(e) => setBankaForm((p) => ({ ...p, sube: e.target.value }))} />
+                      </div>
+                      <div className="ayarlar-form-group">
+                        <label className="ayarlar-label">Hesap sahibi</label>
+                        <input type="text" className="ayarlar-input" placeholder="Hesap sahibi" value={bankaForm.hesap_sahibi} onChange={(e) => setBankaForm((p) => ({ ...p, hesap_sahibi: e.target.value }))} />
+                      </div>
+                      <div className="ayarlar-form-actions">
+                        {editingBankaId && (
+                          <button type="button" className="ayarlar-btn ayarlar-btn-secondary" onClick={() => { setEditingBankaId(null); setBankaForm({ banka_adi: '', iban: '', sube: '', hesap_sahibi: '', aciklama: '' }); }}>Vazgeç</button>
+                        )}
+                        <button type="submit" className="ayarlar-btn ayarlar-btn-primary">{editingBankaId ? 'Güncelle' : 'Ekle'}</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+                <div className="ayarlar-sag-kolon">
+                  <div className="ayarlar-panel">
+                    <div className="ayarlar-panel-header">
+                      <h3 className="ayarlar-panel-form-title">Banka Hesapları</h3>
+                      <span className="ayarlar-count-badge">{bankaHesaplari.length} Hesap</span>
+                    </div>
+                    {bankaHesaplari.length === 0 ? (
+                      <EmptyState variant="soft" title="Henüz banka hesabı eklenmemiş" description="Sol taraftaki formdan yeni hesap ekleyebilirsiniz." icon={<FileSearch size={28} aria-hidden />} />
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full ayarlar-tablosu">
+                          <thead>
+                            <tr>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Banka</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">IBAN</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Şube / Hesap sahibi</th>
+                              <th className="table-col-islem w-24">İşlem</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {bankaHesaplari.map((b) => (
+                              <tr key={b.id}>
+                                <td data-label="Banka">{b.banka_adi || '—'}</td>
+                                <td data-label="IBAN">{b.iban || '—'}</td>
+                                <td data-label="Şube">{[b.sube, b.hesap_sahibi].filter(Boolean).join(' · ') || '—'}</td>
+                                <td className="table-col-islem">
+                                  <div className="islem-ikonlar">
+                                    <button type="button" className="islem-ikon duzenle-ikon" aria-label="Düzenle" onClick={() => { setBankaForm({ banka_adi: b.banka_adi || '', iban: b.iban || '', sube: b.sube || '', hesap_sahibi: b.hesap_sahibi || '', aciklama: b.aciklama || '' }); setEditingBankaId(b.id); }}><Pencil size={16} /></button>
+                                    <button type="button" className="islem-ikon sil-ikon" aria-label="Sil" onClick={() => handleBankaSil(b.id)}><Trash2 size={16} /></button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : genelSubTab === 'teslimat' ? (
               <div className={`flex flex-col lg:flex-row gap-6 ayarlar-form-row ${editingTeslimatId ? 'ayarlar-form-active' : ''}`}>
                 <div className="ayarlar-sol-kolon">
                   <div className="ayarlar-panel-form">
@@ -3139,7 +3422,7 @@ export const SettingsPage: React.FC = () => {
                               <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase table-col-islem">İŞLEMLER</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-200">
+                          <tbody>
                             {sortedTeslimatKonumlari.map((k: { id: number; konum_adi: string; il?: string; ilce?: string; mahalle?: string }) => (
                               <tr key={k.id} className="hover:bg-gray-50 ayarlar-table-row">
                                 <td data-label="" className="td-no-mobile-label px-4 py-3 text-sm font-medium text-gray-900">{k.konum_adi}</td>
@@ -3167,13 +3450,12 @@ export const SettingsPage: React.FC = () => {
                   {genelSubTab === 'isletme' && 'İşletme Ayarları'}
                   {genelSubTab === 'konum' && 'Konum Ayarları'}
                   {genelSubTab === 'yazdirma' && 'Yazdırma Ayarları'}
-                  {genelSubTab === 'ciceksepeti' && !isBaslangicPlan && 'Çiçek Sepeti Ayarları'}
                 </h2>
                 <p className="ayarlar-panel-desc">
-                  {genelSubTab === 'isletme' && 'İşletme bilgileri, logo ve iletişim bilgileri'}
+                  <Info size={18} className="ayarlar-help-icon ayarlar-panel-desc-icon" aria-hidden />
+                  {genelSubTab === 'isletme' && 'Yazdırma sayfaları ve sipariş künyesi üzerindeki işletme bilgileri buradan yönetin.'}
                   {genelSubTab === 'konum' && 'Sipariş ve formlarda tanımlı olarak listelenecek il/ilçe bilgilerinizi buradan tanımlayın.'}
-                  {genelSubTab === 'yazdirma' && 'Yazdırma çıktılarında kullanılacak logo (PNG, şeffaf arka plan önerilir)'}
-                  {genelSubTab === 'ciceksepeti' && !isBaslangicPlan && 'Çiçek Sepeti platformu API entegrasyonu'}
+                  {genelSubTab === 'yazdirma' && 'Yazdırma sayfaları ve sipariş künyesi üzerindeki logonuzu buradan yönetin.'}
                 </p>
               </div>
               {genelSubTab === 'isletme' && (
@@ -3202,14 +3484,6 @@ export const SettingsPage: React.FC = () => {
                       <div className="ayarlar-form-group">
                         <label className="ayarlar-label">Yetkili Kişi</label>
                         <input type="text" className="ayarlar-input" placeholder="Yetkili kişi" value={isletmeFormData.yetkili_kisi} onChange={(e) => setIsletmeFormData((p) => ({ ...p, yetkili_kisi: e.target.value }))} />
-                      </div>
-                      <div className="ayarlar-form-group">
-                        <label className="ayarlar-label">Vergi Dairesi</label>
-                        <input type="text" className="ayarlar-input" placeholder="Vergi dairesi" value={isletmeFormData.vergi_dairesi} onChange={(e) => setIsletmeFormData((p) => ({ ...p, vergi_dairesi: e.target.value }))} />
-                      </div>
-                      <div className="ayarlar-form-group">
-                        <label className="ayarlar-label">Vergi No</label>
-                        <input type="text" className="ayarlar-input" placeholder="Vergi no" value={isletmeFormData.vergi_no} onChange={(e) => setIsletmeFormData((p) => ({ ...p, vergi_no: e.target.value }))} />
                       </div>
                     </div>
                     <div className="ayarlar-isletme-kolon">
@@ -3293,11 +3567,22 @@ export const SettingsPage: React.FC = () => {
               {genelSubTab === 'yazdirma' && (
                 <YazdirmaAyarlariForm />
               )}
-              {genelSubTab === 'ciceksepeti' && isBaslangicPlan !== true && (
-                <CiceksepetiAyarlariForm />
-              )}
             </div>
             )}
+          </div>
+        )}
+
+        {/* Çiçek Sepeti Ayarları Tab – ana sekme (sadece plan_id !== 1) */}
+        {isBaslangicPlan === false && activeTab === 'ciceksepeti' && (
+          <div className="ayarlar-tab-icerik">
+            <div className="ayarlar-subtab-nav ayarlar-subtab-nav--single">
+              <button type="button" className="ayarlar-subtab-btn active" aria-current="true">
+                Çiçek Sepeti Ayarları
+              </button>
+            </div>
+            <div className="ayarlar-panel">
+              <CiceksepetiAyarlariForm />
+            </div>
           </div>
         )}
 
@@ -3449,6 +3734,22 @@ export const SettingsPage: React.FC = () => {
             <GonderimAyarlariTab />
           </div>
         )}
+
+        {/* Fatura Ayarları Tab – Logo, İşletme bilgileri, Banka hesapları, KDV, Not */}
+        {activeTab === 'fatura' ? (
+          <FaturaTab
+            faturaLogoSrc={faturaLogoSrc}
+            faturaLogoUploading={faturaLogoUploading}
+            handleFaturaLogoFile={handleFaturaLogoFile}
+            faturaForm={faturaForm}
+            setFaturaForm={setFaturaForm}
+            faturaSaving={faturaSaving}
+            handleFaturaAyarlariSave={handleFaturaAyarlariSave}
+            bankaHesaplari={bankaHesaplari}
+            faturadaSecilenBankaIds={faturadaSecilenBankaIds}
+            onFaturadaSecimChange={setFaturadaSecilenBankaIds}
+          />
+        ) : null}
       </div>
     </div>
   );

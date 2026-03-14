@@ -107,9 +107,13 @@
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
-        });
+        var isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        var devPort = ['5173', '5174', '5175'].indexOf(window.location.port) !== -1;
+        if (!isDev || !devPort) {
+          window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+          });
+        }
       }
     </script>
   </body>

@@ -5354,7 +5354,7 @@ color: var(--ana-renk) !important;
     box-sizing: border-box !important;
   }
 
-  .cari-drawer-overlay input,
+  .cari-drawer-overlay input:not([type="checkbox"]):not([type="radio"]),
   .cari-drawer-overlay select,
   .cari-drawer-overlay textarea {
     width: 100% !important;

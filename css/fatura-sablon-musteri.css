@@ -1,0 +1,298 @@
+/* fatura-sablon-musteri – Sol: İşletme, Orta: Amblem, Sağ: FATURA + No/Tarih; SAYIN; Tablo AÇIKLAMA/ADET/TUTAR; Banka; Not */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 32px 40px;
+    color: #2c2c2c;
+    background: #fff;
+    line-height: 1.5;
+}
+
+.musteri-invoice {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    page-break-inside: avoid;
+}
+
+.musteri-invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #2c2c2c;
+    gap: 16px;
+}
+
+.musteri-header-left {
+    flex: 1 1 33%;
+    max-width: 240px;
+    font-size: 12px;
+}
+
+.musteri-header-left .musteri-header-logo {
+    display: block;
+    max-width: 120px;
+    max-height: 48px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 8px;
+}
+
+.musteri-header-left .musteri-header-unvan {
+    font-weight: 600;
+    color: #2c2c2c;
+    margin-bottom: 4px;
+}
+
+.musteri-header-left p {
+    font-size: 11px;
+    color: #555;
+    line-height: 1.4;
+    margin: 2px 0;
+}
+
+.musteri-header-center {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+}
+
+.musteri-amblem {
+    max-width: 72px;
+    max-height: 72px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.musteri-header-right {
+    flex: 1 1 33%;
+    text-align: right;
+    max-width: 220px;
+    margin-left: auto;
+}
+
+.musteri-header-right h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #2c2c2c;
+    margin-bottom: 8px;
+}
+
+.musteri-fatura-no {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+}
+
+.musteri-fatura-tarih {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.musteri-parties {
+    margin-bottom: 24px;
+}
+
+.musteri-party {
+    max-width: 420px;
+}
+
+.musteri-party h3 {
+    font-size: 10px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.musteri-party-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c2c2c;
+    margin-bottom: 4px;
+}
+
+.musteri-party p {
+    font-size: 12px;
+    color: #444;
+    line-height: 1.5;
+    margin: 2px 0;
+}
+
+.musteri-party-place {
+    font-size: 12px;
+    color: #555;
+}
+
+.musteri-items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.musteri-items thead th {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 8px 6px;
+    border-bottom: 1px solid #ddd;
+    font-weight: 600;
+}
+.musteri-items thead th:first-child {
+    text-align: left;
+}
+.musteri-th-center {
+    text-align: center;
+}
+.musteri-th-right {
+    text-align: right;
+}
+
+.musteri-items tbody td {
+    padding: 10px 6px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+    color: #2c2c2c;
+}
+.musteri-items tbody td:first-child {
+    text-align: left;
+}
+.musteri-td-center {
+    text-align: center;
+}
+.musteri-td-right {
+    text-align: right;
+    font-weight: 600;
+}
+
+.musteri-totals {
+    margin-top: 16px;
+    margin-bottom: 24px;
+}
+
+.musteri-totals-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+}
+
+.musteri-totals-row.musteri-total {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2c2c2c;
+    border-top: 1px solid #2c2c2c;
+    padding-top: 12px;
+    margin-top: 8px;
+}
+
+.musteri-banka-section {
+    margin-top: 20px;
+    padding: 12px 0;
+    border-top: 1px solid #e5e5e5;
+}
+
+.musteri-banka-section h4 {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.musteri-banka-item {
+    font-size: 11px;
+    color: #444;
+    line-height: 1.5;
+    margin-bottom: 14px;
+}
+.musteri-banka-item:last-child {
+    margin-bottom: 0;
+}
+.musteri-banka-line {
+    margin: 2px 0;
+}
+.musteri-banka-line.musteri-banka-adi {
+    font-weight: 600;
+    color: #2c2c2c;
+}
+.musteri-not-section {
+    margin-top: 12px;
+    padding: 8px 0;
+}
+.musteri-not-baslik {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.musteri-not-section p {
+    font-size: 11px;
+    color: #555;
+    line-height: 1.5;
+}
+
+.musteri-footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e5e5;
+    text-align: center;
+    page-break-inside: avoid;
+}
+
+.musteri-footer p {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.musteri-footer-year {
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 6px;
+}
+
+/* Yazdırma: footer tek sayfada kalsın, taşma olmasın */
+@media print {
+    body {
+        padding: 16px 24px;
+    }
+    .musteri-invoice {
+        padding-bottom: 52px;
+        max-height: none;
+    }
+    .musteri-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin-top: 0;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        background: #fff;
+    }
+}

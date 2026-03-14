@@ -1,6 +1,6 @@
 /**
- * Profil Ayarları sayfası
- * Ayarlar, Müşteriler sayfaları ile uyumlu tasarım
+ * Profil Ayarları sayfası (/profil-ayarlari) – kullanıcı profili, yetkilendirme
+ * Sadece bu sayfanın stilleri. Ayarlar sayfası stilleri: ayarlar.css
  */
 
 /* Genel profil sayfası – sayfa kendi içinde scroll */
@@ -10,8 +10,7 @@
   height: auto;
 }
 
-.profil-page,
-.ayarlar-page {
+.profil-page {
   min-height: 100%;
   padding: 1.5rem;
   background-color: var(--border-renk);
@@ -19,69 +18,6 @@
 
 .profil-page-inner {
   max-width: 100%;
-}
-
-/* Ayarlar: ana layout'ta scrollbar hiç görünmesin; scroll sadece içerideki wrapper'da olsun */
-main[data-main-content]:has(.ayarlar-page) {
-  overflow: hidden !important;
-}
-
-/* Ayarlar: dış sayfada scroll yok, scroll sadece iç panellerde (.ayarlar-panel) – wrapper'da scrollbar titremesin */
-.ayarlar-page.page-wrapper {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  overflow: hidden;
-}
-.ayarlar-page-inner {
-  max-width: 100%;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.ayarlar-page .ayarlar-tab-nav {
-  flex-shrink: 0;
-}
-.ayarlar-tab-icerik {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-/* Tab içeriği (subtab nav dışındaki alan) yüksekliği sınırla */
-.ayarlar-tab-icerik > div:not(.ayarlar-subtab-nav) {
-  /* flex: 1; */
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-.ayarlar-tab-icerik > div:not(.ayarlar-subtab-nav):not(.ayarlar-panel) {
-  overflow: hidden;
-}
-.ayarlar-tab-icerik > div.flex {
-  flex-direction: row;
-}
-/* Panel doğrudan tab içeriğindeyse (Genel: İşletme, Konum, Yazdırma, Çiçek Sepeti) scroll panelde; scrollbar sağ kenarda */
-.ayarlar-tab-icerik > div.ayarlar-panel {
-  overflow-y: auto !important;
-  overflow-x: hidden;
-  /* padding-right: 0; */
-}
-/* .ayarlar-tab-icerik > div.ayarlar-panel > * {
-  padding-right: 10px;
-} */
-.ayarlar-page .ayarlar-sol-kolon {
-  min-height: 0;
-}
-.ayarlar-page .ayarlar-sag-kolon {
-  min-height: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
 }
 
 .profil-baslik-alan {
@@ -102,17 +38,15 @@ main[data-main-content]:has(.ayarlar-page) {
   margin: 0;
 }
 
-/* Tab navigasyonu (profil + ayarlar) */
-.profil-tab-nav,
-.ayarlar-tab-nav {
+/* Tab navigasyonu – Profil sayfası */
+.profil-tab-nav {
   display: flex;
   gap: 0.5rem;
   border-bottom: 1px solid var(--border-renk);
   margin-bottom: 1.5rem;
 }
 
-.profil-tab-btn,
-.ayarlar-tab-btn {
+.profil-tab-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -127,71 +61,21 @@ main[data-main-content]:has(.ayarlar-page) {
   transition: color 0.2s, border-color 0.2s;
 }
 
-.profil-tab-btn:hover,
-.ayarlar-tab-btn:hover {
+.profil-tab-btn:hover {
   color: var(--ana-renk);
 }
 
-.profil-tab-btn.active,
-.ayarlar-tab-btn.active {
+.profil-tab-btn.active {
   color: var(--mor-primary-flex);
   border-bottom-color: var(--mor-primary-flex);
 }
 
 /* Kart */
-.profil-card,
-.ayarlar-panel,
-.ayarlar-panel-form {
+.profil-card {
   background-color: var(--white);
   border-radius: 8px;
   border: 1px solid var(--border-renk);
   padding: 1.5rem;
-}
-
-/* Ayarlar sayfasında scroll panel içinde (.ayarlar-panel) */
-.ayarlar-page .ayarlar-panel {
-  overflow-y: auto;
-  min-height: 0;
-}
-
-/* Sol kolon: form paneli içeriğe göre yükseklik (sabit min-height yok) */
-.ayarlar-page .ayarlar-sol-kolon .ayarlar-panel-form {
-  height: fit-content;
-  min-height: 0;
-  max-height: none;
-}
-
-/* (Ayarlar sayfa scroll yukarıda .ayarlar-page.page-wrapper ile tanımlı) */
-
-/* Ayarlar kartları (sağ kolon tablo paneli) – scroll panel içinde; scrollbar sağ kenarda */
-.ayarlar-page .ayarlar-sag-kolon .ayarlar-panel {
-  flex: 1;
-  min-height: 200px;
-  max-height: 100%;
-  overflow-y: auto !important;
-  display: flex;
-  flex-direction: column;
-  /* padding-right: 0; */
-}
-
-/* Sağ kolon panel: başlık sabit, içerik alanı kalan yüksekliği kaplasın; sağ boşluk içerikte */
-.ayarlar-page .ayarlar-sag-kolon .ayarlar-panel .ayarlar-panel-header {
-  flex-shrink: 0;
-  /* flex-direction: column; */
-  /* padding-right: 10px; */
-}
-
-.ayarlar-page .ayarlar-sag-kolon .ayarlar-panel > *:nth-child(2) {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  /* padding-right: 10px; */
-}
-
-.ayarlar-page .ayarlar-sag-kolon .ayarlar-panel > .empty-state {
-  justify-content: center;
-  align-items: center;
 }
 
 .profil-card-title {
@@ -223,100 +107,7 @@ main[data-main-content]:has(.ayarlar-page) {
   margin-bottom: 0.25rem;
 }
 
-/* Ayarlar paneli başlığı – .ayarlar-panel içinde kullanılan başlık sınıfı */
-.ayarlar-panel .ayarlar-panel-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--ana-renk);
-  margin: 0 0 1rem 0;
-}
-
-/* Ayarlar paneli form başlığı – sol kolon form + sağ kolon panel */
-.ayarlar-panel .ayarlar-panel-form-title,
-.ayarlar-panel-form .ayarlar-panel-form-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--gri70);
-  margin: 0 0 1rem 0;
-}
-
-.ayarlar-panel-header .ayarlar-panel-title {
-  margin-bottom: 0;
-}
-
-.ayarlar-panel-header .ayarlar-panel-form-title {
-  margin-bottom: 0;
-}
-
-/* Ayarlar panel açıklama metni (başlık altı) */
-.ayarlar-panel-desc {
-  font-size: 0.875rem;
-  color: var(--gri70);
-  margin: 0 0 1rem 0;
-  line-height: 1.4;
-}
-
-/* İletişim ayarları: açıklama metni daha küçük punto */
-.ayarlar-panel-desc-iletisim {
-  font-size: 0.75rem;
-  line-height: 1.35;
-  color: var(--gri70);
-  margin: 0 0 1rem 0;
-}
-.ayarlar-panel-header .ayarlar-panel-desc {
-  margin-top: 0.25rem;
-  margin-bottom: 0;
-}
-.ayarlar-panel-header .ayarlar-panel-title + .ayarlar-panel-desc {
-  margin-bottom: 1rem;
-}
-
-/* Ayarlar panel header: solda search, sağda başlık + badge */
-.ayarlar-panel-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-.ayarlar-panel-header > div {
-  flex: 1;
-  min-width: 0;
-}
-
-.ayarlar-panel-header-sol {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
-.ayarlar-panel-header .search-input-wrapper {
-  width: 100%;
-  min-width: 0;
-  flex: 1;
-}
-
-.ayarlar-panel-header .ayarlar-panel-title {
-  margin-bottom: 0;
-}
-
-.ayarlar-count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 800;
-  background-color: var(--form-dark-bg);
-  color: var(--ana-renk);
-  white-space: nowrap;
-  text-transform: uppercase;
-}
-
-/* Profil Yönetimi: kullanıcı sayısı badge (stil ayarlar-count-badge ile aynı) */
+/* Profil Yönetimi: kullanıcı sayısı badge */
 .profil-yonetim-user-count {
   display: inline-flex;
   align-items: center;
@@ -412,9 +203,8 @@ main[data-main-content]:has(.ayarlar-page) {
   color: var(--gri70);
 }
 
-/* Form (profil + ayarlar) */
-.profil-form,
-.ayarlar-form {
+/* Form – Profil sayfası */
+.profil-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -493,167 +283,22 @@ main[data-main-content]:has(.ayarlar-page) {
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 } */
-/* Veri tanımları: düzenle formu (.ayarlar-panel-form) her zaman 1px border (transparent) ki yeşil gelince layout kaymasın */
-.ayarlar-page .ayarlar-form-row .ayarlar-sol-kolon .ayarlar-panel-form {
-  border: 2px solid transparent;
-  border-radius: 8px;
-}
-.ayarlar-page .ayarlar-form-row.ayarlar-form-active .ayarlar-sol-kolon .ayarlar-panel-form {
-  border-color: var(--success-green);
-}
-.ayarlar-form-row.ayarlar-form-active .ayarlar-sol-kolon {
-  scroll-margin-top: 88px;
-}
-.ayarlar-form-row-3 {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 1rem;
-}
-@media (max-width: 900px) {
-  .ayarlar-form-row-3 {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-@media (max-width: 600px) {
-  .ayarlar-form-row-3 {
-    grid-template-columns: 1fr;
-    width: 100%;
-  }
-}
-.ayarlar-form-row .ayarlar-form-group,
-.ayarlar-form-row-3 .ayarlar-form-group {
-  margin-bottom: 0;
-}
-
-/* İşletme ayarları: masaüstünde 3 kolon */
-.ayarlar-isletme-3kolon {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 1.5rem;
-}
-.ayarlar-isletme-kolon {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-.ayarlar-isletme-kolon .ayarlar-form-group {
-  margin-bottom: 0;
-}
-@media (max-width: 600px) {
-  .ayarlar-isletme-3kolon {
-    grid-template-columns: 1fr;
-    width: 100%;
-  }
-
-
-
-.ayarlar-panel-header .ayarlar-panel-title + .ayarlar-panel-desc {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-}
-.ayarlar-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-.ayarlar-logo-alan {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-/* Logo + butonlar yan yana (işletme/yazdırma) */
-.ayarlar-logo-alan-inline {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.ayarlar-logo-alan-inline .ayarlar-logo-img,
-.ayarlar-logo-alan-inline .ayarlar-logo-placeholder {
-  flex-shrink: 0;
-}
-.ayarlar-logo-alan-inline .ayarlar-logo-butonlar {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.ayarlar-logo-placeholder {
-  min-height: 80px;
-  min-width: 120px;
-  border: 1px dashed var(--border-renk);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  font-size: 0.875rem;
-  color: var(--gri70);
-}
-.ayarlar-logo-img {
-  max-width: 200px;
-  max-height: 80px;
-  object-fit: contain;
-  border-radius: 4px;
-}
-.ayarlar-logo-butonlar {
-  display: flex;
-  gap: 0.5rem;
-}
-/* Konum ayarları – selectler kısa, yan yana */
-.ayarlar-konum-select-wrap {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.ayarlar-konum-select-wrap .ayarlar-form-group {
-  max-width: 220px;
-  min-width: 160px;
-}
-/* Yazdırma – sol kutu (logo + aktif) border ile */
-.ayarlar-yazdirma-sol-kutu {
-  border: 1px solid var(--border-renk);
-  border-radius: 8px;
-  padding: 1.25rem;
-  border: 1px solid var(--gray-light-f2);
-}
-.ayarlar-yazdirma-notlar {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  max-width: 340px;
-}
-.ayarlar-yazdirma-notlar .ayarlar-help-icon {
-  flex-shrink: 0;
-  color: var(--mor-primary);
-  margin-top: 0.15rem;
-}
-.ayarlar-help {
-  font-size: 0.75rem;
-  color: var(--gri70);
-}
-/* Sadece profil/ayarlar sayfalarında .hidden – login ve diğer sayfalardaki Tailwind .hidden / lg:block vb. ezilmesin */
-.ayarlar-page .hidden,
+/* Sadece Profil sayfasında .hidden – diğer sayfalardaki Tailwind .hidden ezilmesin */
 .profil-page .hidden {
   display: none !important;
 }
-.profil-form-group .profil-label,
-.ayarlar-form-group .ayarlar-label {
+.profil-form-group .profil-label {
   font-weight: 600;
   font-size: 0.8125rem;
 }
 
-.profil-label,
-.ayarlar-label {
+.profil-label {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--ana-renk);
 }
 
 .profil-input,
-.ayarlar-input,
 .partner-modal-field input,
 .partner-modal-field textarea {
   width: 100%;
@@ -667,7 +312,6 @@ main[data-main-content]:has(.ayarlar-page) {
 }
 
 .profil-input:focus,
-.ayarlar-input:focus,
 .partner-modal-field input:focus,
 .partner-modal-field textarea:focus {
   outline: none;
@@ -675,7 +319,6 @@ main[data-main-content]:has(.ayarlar-page) {
 }
 
 .profil-input::placeholder,
-.ayarlar-input::placeholder,
 .partner-modal-field input::placeholder,
 .partner-modal-field textarea::placeholder {
   color: var(--placeholder);
@@ -693,7 +336,6 @@ main[data-main-content]:has(.ayarlar-page) {
 }
 
 .profil-select,
-.ayarlar-select,
 .partner-modal-field select {
   width: 100%;
   padding: 0.5rem 0.75rem;
@@ -706,9 +348,7 @@ main[data-main-content]:has(.ayarlar-page) {
   cursor: pointer;
 }
 
-.profil-form-actions,
-/* Vazgeç solda, Kaydet/Güncelle sağda – yan yana */
-.ayarlar-form-actions {
+.profil-form-actions {
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -716,172 +356,6 @@ main[data-main-content]:has(.ayarlar-page) {
   padding-top: 0.5rem;
   margin-top: 0.25rem;
   width: 100%;
-}
-
-/* Çiçek Sepeti ayarları – eski yapı gibi iki eşit kart (sol: form, sağ: API durumu) */
-.ayarlar-ciceksepeti-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  align-items: start;
-  max-width: 100%;
-}
-.ayarlar-ciceksepeti-sol,
-.ayarlar-ciceksepeti-sag {
-  background: var(--white);
-  border: 1px solid var(--border-renk);
-  border-radius: 12px;
-  padding: 1.5rem;
-  min-height: 320px;
-}
-.ayarlar-ciceksepeti-sekme-baslik {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--ana-renk);
-  margin: 0 0 0.5rem 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--mor-primary);
-}
-.ayarlar-ciceksepeti-sekme-desc {
-  font-size: 0.875rem;
-  color: var(--gri70);
-  line-height: 1.4;
-  margin: 0 0 1rem 0;
-}
-.ayarlar-ciceksepeti-durum-alan {
-  padding: 0;
-}
-.ayarlar-ciceksepeti-durum-alan .ayarlar-form-group {
-  margin-bottom: 1rem;
-}
-.ayarlar-ciceksepeti-actions {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-/* Sol kolon: checkbox alanları ayrı kutularda */
-.ayarlar-ciceksepeti-checkbox-kutu {
-  border: 1px solid var(--border-renk);
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-}
-.ayarlar-ciceksepeti-checkbox-kutu .ayarlar-form-group {
-  margin-bottom: 0;
-  width: fit-content;
-  max-width: 100%;
-}
-/* Çiçek Sepeti checkbox etiketleri: sadece bu bağlamda hizalama (diğer sekmelerdeki ayarlar-label etkilenmez) */
-.ayarlar-ciceksepeti-checkbox-kutu .ayarlar-label.ayarlar-label-inline {
-  display: inline-flex !important;
-  align-items: center !important;
-  text-align: left !important;
-  gap: 0.5rem;
-  width: fit-content !important;
-}
-.ayarlar-ciceksepeti-checkbox-kutu .ayarlar-help { margin-top: 0.25rem; }
-
-/* Sağ kolon: başlık + açıklama kutusu */
-.ayarlar-ciceksepeti-baslik-kutu {
-  border: 1px solid var(--border-renk);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-}
-.ayarlar-ciceksepeti-baslik-kutu .ayarlar-ciceksepeti-sekme-baslik { margin-top: 0; }
-.ayarlar-ciceksepeti-baslik-kutu .ayarlar-ciceksepeti-sekme-desc { margin-bottom: 0; }
-
-/* Sağ kolon: API durumu (Bağlantı, Son Kontrol, Toplam Sipariş) kutusu */
-.ayarlar-ciceksepeti-durum-kutu {
-  border: 1px solid var(--border-renk);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-}
-.ayarlar-ciceksepeti-durum-kutu .ayarlar-ciceksepeti-durum-alan .ayarlar-form-group:last-child {
-  margin-bottom: 0;
-}
-
-/* Badge genişliği içeriğe göre */
-.ayarlar-count-badge,
-.ayarlar-count-badge-ciceksepeti {
-  width: fit-content;
-  display: inline-block;
-}
-
-/* Sağ kolon: test butonları yan yana, metin sola yaslı */
-.ayarlar-ciceksepeti-test-butonlar {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-  margin-top: 0;
-}
-.ayarlar-ciceksepeti-test-butonlar .ayarlar-btn {
-  justify-content: center;
-  text-align: center;
-}
-
-@media (max-width: 1024px) {
-  .ayarlar-ciceksepeti-wrapper {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Gönderim ayarları – ekle formu (tek satır alanlar) */
-.ayarlar-gonderim-ekle-form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-.ayarlar-gonderim-ekle-form .ayarlar-input {
-  width: auto;
-  min-width: 10rem;
-}
-.ayarlar-gonderim-ekle-form .ayarlar-input[type="tel"] {
-  min-width: 11rem;
-}
-
-/* Boş liste / bilgi metni */
-.ayarlar-empty-hint {
-  font-size: 0.875rem;
-  color: var(--gri70);
-  margin: 1rem 0 0 0;
-  padding: 0.75rem 0;
-}
-
-/* Tablo sarmalayıcı */
-.ayarlar-tablo-wrapper {
-  margin-top: 0.5rem;
-}
-
-/* Dosya input (file) – görsel olarak ayarlar input ile uyumlu */
-.ayarlar-input-file {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  cursor: pointer;
-}
-
-/* Checkbox grubu (inline label) */
-.ayarlar-form-group-checkbox {
-  margin-top: 0.25rem;
-}
-.ayarlar-label-inline {
-  display: inline-flex !important;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500 !important;
-  cursor: pointer;
-}
-.ayarlar-checkbox {
-  width: 1rem;
-  height: 1rem;
-  margin: 0;
-  cursor: pointer;
-  accent-color: var(--mor-primary);
 }
 
 /* Profil drawer (kullanıcı ekle / kullanıcı düzenle) – sayfa kendi selector'ları */
@@ -1036,36 +510,11 @@ main[data-main-content]:has(.ayarlar-page) {
 }
 
 /* Buton temel stilleri styles/buttons-common.css'te. Aşağıdakiler sayfa/bağlam özel override. */
-.ayarlar-page .ayarlar-btn {
-  text-transform: uppercase;
-}
-
 .profil-resim-actions .profil-btn {
   padding: 0.35rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 300;
   text-transform: capitalize;
-}
-
-/* Logo alanı Yükle / Kaldır – ortak primary/secondary, kompakt */
-.ayarlar-logo-butonlar .ayarlar-btn {
-  padding: 0.4rem 0.85rem;
-  font-size: 0.8125rem;
-  text-transform: uppercase;
-  min-height: 32px;
-}
-.ayarlar-logo-butonlar .ayarlar-btn-primary:hover:not(:disabled) {
-  background-color: var(--mor-primary-hover);
-  border-color: var(--mor-primary-hover);
-}
-.ayarlar-logo-butonlar .ayarlar-btn-secondary:hover:not(:disabled) {
-  background-color: var(--gray-light-f2);
-  border-color: var(--border-renk);
-}
-
-.ayarlar-btn-icon {
-  padding: 0.35rem !important;
-  min-width: 32px;
 }
 
 /* Tablo – scrollbar sağ kenarda */
@@ -1172,32 +621,6 @@ main[data-main-content]:has(.ayarlar-page) {
   color: var(--gri70);
 }
 
-/* Badge – ayarlar sayfası (profil- isimleri kaldırıldı) */
-.ayarlar-badge {
-  display: inline-block;
-  padding: 0.25rem 1.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 9999px;
-}
-
-.ayarlar-badge-aktif {
-  background-color: var(--yesil-color-1-soft);
-  color: var(--yesil-color-1);
-}
-
-.ayarlar-badge-pasif {
-  background-color: var(--gray-light-f2);
-  color: var(--gri70);
-}
-
-.ayarlar-loading {
-  display: flex;
-  justify-content: center;
-  padding: 2rem;
-}
-
-/* Eski profil-badge (profil sayfasında kullanılıyorsa bırakıldı) */
 .profil-badge {
   display: inline-block;
   padding: 0.25rem 1.5rem;
@@ -1466,122 +889,4 @@ html.dark-mode .profil-yetki-kart-footer {
   max-width: 400px;
 }
 
-/* ========== Ayarlar sayfası (Profil ile aynı görünüm) ========== */
-.ayarlar-page.page-wrapper {
-  overflow: auto !important;
-  min-height: 100%;
-  height: auto !important;
-}
 
-.ayarlar-page {
-  min-height: 100%;
-  padding: 1.5rem;
-  background-color: var(--border-renk);
-}
-
-.ayarlar-page .profil-page-inner {
-  max-width: 100%;
-}
-
-/* Alt sekmeler (Veri Tanımları: Ürünler, Ürün Grupları vb.) */
-.ayarlar-subtab-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.ayarlar-subtab-btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--gri70);
-  background-color: var(--white);
-  border: 1px solid var(--border-renk);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
-}
-
-.ayarlar-subtab-btn:hover {
-  background-color: var(--gray-light-dd);
-}
-
-.ayarlar-subtab-btn.active {
-  color: var(--white-only);
-  background-color: var(--mor-primary);
-  border-color: var(--mor-primary);
-}
-
-/* Ayarlar kart içi tablo (müşteriler tablosu ile uyumlu header) */
-.ayarlar-page .ayarlar-panel table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.ayarlar-page .ayarlar-panel table thead {
-  background-color: var(--ikincil-renk);
-}
-.ayarlar-page .ayarlar-panel table thead th {
-  text-align: left;
-  padding: 0.75rem 1.5rem;
-  font-size: 9px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--white);
-  
-}
-.ayarlar-page .ayarlar-panel table tbody td {
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  color: var(--ana-renk);
-  border-bottom: 1px solid var(--border-renk);
-}
-.ayarlar-page .ayarlar-panel table tbody td.urunler-ad-hucre {
-  font-weight: 600;
-}
-.ayarlar-page .ayarlar-panel table tbody tr:hover {
-  background-color: var(--form-dark-bg);
-}
-
-/* Ürün tablosu: görsel kolonu – hücre içeriği (görsel veya placeholder) ortada */
-.ayarlar-page .ayarlar-panel table td.table-col-gorsel {
-  text-align: center !important;
-  vertical-align: middle !important;
-}
-
-.ayarlar-page .ayarlar-panel table td.table-col-gorsel > * {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  margin-left: auto;
-  margin-right: auto;
-  border: 1px solid var(--border-renk);
-  
-}
-
-/* Organizasyon Türü kolonu – sabit genişlik (Alt Türler ve Etiketler tablolarında) */
-.ayarlar-page .ayarlar-panel table th.table-col-organizasyon-turu,
-.ayarlar-page .ayarlar-panel table td.table-col-organizasyon-turu {
-  width: 200px;
-  min-width: 200px;
-  max-width: 200px;
-  box-sizing: border-box;
-}
-
-/* Ayarlar sol / sağ kolon genişlikleri */
-.ayarlar-page .ayarlar-sol-kolon {
-  flex: 0 0 20%;
-  max-width: 20%;
-}
-
-.ayarlar-page .ayarlar-sag-kolon {
-  flex: 1 1 0%;
-}
-
-@media (max-width: 1024px) {
-  .ayarlar-page .ayarlar-sol-kolon {
-    flex: 1 1 35%; 
-    max-width: 35%;
-  }
-}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fatura - {{faturaNo}}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/fatura-sablon-musteri.css">
+    <style>
+        {{invoiceStyles}}
+    </style>
+</head>
+<body>
+    <div class="musteri-invoice">
+        <header class="musteri-invoice-header">
+            <div class="musteri-header-left">
+                {{saticiLogoHTML}}
+                <p class="musteri-header-unvan">{{satici_unvan}}</p>
+                {{saticiAddressHTML}}
+                <p class="musteri-party-place">{{satici_il_ilce}}</p>
+                {{saticiVergiHTML}}
+            </div>
+            <div class="musteri-header-center">
+                {{amblemHTML}}
+            </div>
+            <div class="musteri-header-right">
+                <h1>FATURA</h1>
+                <p class="musteri-fatura-no">Fatura No: {{faturaNo}}</p>
+                <p class="musteri-fatura-tarih">Fatura Tarihi: {{faturaTarihi}}</p>
+            </div>
+        </header>
+
+        <section class="musteri-parties">
+            <div class="musteri-party musteri-buyer">
+                <h3>SAYIN</h3>
+                <p class="musteri-party-name">{{alici_unvan}}</p>
+                {{aliciAddressHTML}}
+                <p class="musteri-party-place">{{alici_il_ilce}}</p>
+                {{aliciVergiHTML}}
+            </div>
+        </section>
+
+        <table class="musteri-items">
+            <thead>
+                <tr>
+                    <th>Açıklama</th>
+                    <th class="musteri-th-center">Adet</th>
+                    <th class="musteri-th-right">Birim Fiyat</th>
+                    <th class="musteri-th-right">Tutar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{tableRowsHTML}}
+            </tbody>
+        </table>
+
+        <div class="musteri-totals">
+            <div class="musteri-totals-row">
+                <span>Ara Toplam</span>
+                <span>{{araToplamFormatted}}</span>
+            </div>
+            <div class="musteri-totals-row">
+                <span>KDV (%{{kdvOrani}})</span>
+                <span>{{kdvTutariFormatted}}</span>
+            </div>
+            <div class="musteri-totals-row musteri-total">
+                <span>Genel Toplam</span>
+                <span>{{toplamTutarFormatted}}</span>
+            </div>
+        </div>
+
+        {{bankaSectionHTML}}
+
+        <div class="musteri-not-section">
+            <h4 class="musteri-not-baslik">NOTLAR</h4>
+            <p>{{fatura_not}}</p>
+        </div>
+
+        <footer class="musteri-footer">
+            <p>Bu belge elektronik ortamda oluşturulmuştur. e-Arşiv / e-Fatura mevzuatına uyumludur.</p>
+            <p class="musteri-footer-year">© {{currentYear}}</p>
+        </footer>
+    </div>
+</body>
+</html>

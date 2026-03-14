@@ -20,6 +20,7 @@ import './styles/sidebar-custom.css';
 import './styles/tooltip.css';
 import './styles/right-panel.css';
 import './styles/buttons-common.css';
+import './styles/ayarlar.css';
 import './styles/profil-ayarlari.css';
 import './styles/ciceksepeti-toast.css';
 import './styles/ciceksepeti-modal.css';
@@ -33,12 +34,16 @@ import './styles/tablet-notebook.css';
 import './styles/select-arrow-global.css';
 import './styles/date-time-input-global.css';
 
-// React Query client configuration
+// React Query client configuration – timeout'ta tekrar deneme yok, diğer hatalarda 1 retry
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      retry: 1,
+      retry: (failureCount, error) => {
+        const msg = (error?.message ?? '').toString();
+        if (msg.includes('timeout') || msg.includes('exceeded')) return false;
+        return failureCount < 1;
+      },
       staleTime: 5 * 60 * 1000, // 5 dakika
     },
     mutations: {

@@ -182,10 +182,10 @@ app.post('/api/test-fix-partner-kodu', async (req, res) => {
         const partnerId = req.body.partner_id || 1;
         const partnerKodu = req.body.partner_kodu || 'PRFP00001';
         
-        // Partner'ı güncelle
+        const kullaniciAdi = await getCurrentUsername(req);
         await run(
-            'UPDATE partner_firmalar SET partner_kodu = ? WHERE id = ?',
-            [partnerKodu, partnerId]
+            'UPDATE partner_firmalar SET partner_kodu = ?, updated_at = COALESCE(updated_at, datetime(\'now\')), updated_by = ? WHERE id = ?',
+            [partnerKodu, kullaniciAdi, partnerId]
         );
         
         // Güncellenmiş partner'ı getir
@@ -538,20 +538,19 @@ async function updateMusteriFaturaDurumu(musteriId, faturaId, yeniDurumRaw, req 
     const tenantId = req ? (req.tenantId || await getTenantId(req)) : null;
     let result;
     
+    const kullaniciAdi = req ? await getCurrentUsername(req).catch(() => null) : null;
     if (tenantId) {
-        // Tenant ID varsa tenant kontrolü yap
         result = await execute(`
             UPDATE musteri_faturalar
-            SET durum = ?, updated_at = CURRENT_TIMESTAMP
+            SET durum = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ?
             WHERE id = ? AND musteri_id = ? AND tenant_id = ?
-        `, [normalizedDurum, numericFaturaId, musteriId, tenantId]);
+        `, [normalizedDurum, kullaniciAdi, numericFaturaId, musteriId, tenantId]);
     } else {
-        // Tenant ID yoksa eski format
         result = await execute(`
             UPDATE musteri_faturalar
-            SET durum = ?, updated_at = CURRENT_TIMESTAMP
+            SET durum = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ?
             WHERE id = ? AND musteri_id = ?
-        `, [normalizedDurum, numericFaturaId, musteriId]);
+        `, [normalizedDurum, kullaniciAdi, numericFaturaId, musteriId]);
     }
 
     if (result.changes === 0) {
@@ -606,6 +605,22 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(cookieParser()); // Cookie parser middleware
+
+// SSE: Aynı tenant'taki tüm açık oturumlara anında invalidate yayını (tenantId -> Set<res>)
+const sseTenantClients = new Map();
+function broadcastSseToTenant(tenantId, eventData) {
+    if (!tenantId) return;
+    const set = sseTenantClients.get(tenantId);
+    if (!set || set.size === 0) return;
+    const data = typeof eventData === 'string' ? eventData : JSON.stringify(eventData || { type: 'invalidate' });
+    set.forEach((res) => {
+        try {
+            res.write(`data: ${data}\n\n`);
+        } catch (e) {
+            // bağlantı kapalı
+        }
+    });
+}
 
 // API için global hata yakalayıcı (4 argüman = Express error handler)
 app.use((err, req, res, next) => {
@@ -1586,10 +1601,10 @@ app.post('/api/organizasyon-kartlar/:organizasyonId/teslim-fotolar', upload.arra
         // Yeni fotoğraflar her zaman en başa eklenir
         const newList = renamedFiles.map(f => f.path).concat(prevList);
 
-        // Güncelle
+        const kullaniciAdi = await getCurrentUsername(req);
         await new Promise((resolve, reject) => db.run(
-            `UPDATE organizasyon_kartlar SET organizasyon_teslim_foto_sayisi = ?, organizasyon_teslim_fotolar = ? , updated_at = ${getTurkeyTimeSQL()} WHERE id = ? AND tenant_id = ?`,
-            [prevCount + count, JSON.stringify(newList), organizasyonId, tenantId], (err) => err ? reject(err) : resolve()
+            `UPDATE organizasyon_kartlar SET organizasyon_teslim_foto_sayisi = ?, organizasyon_teslim_fotolar = ? , updated_at = ${getTurkeyTimeSQL()}, updated_by = ? WHERE id = ? AND tenant_id = ?`,
+            [prevCount + count, JSON.stringify(newList), kullaniciAdi, organizasyonId, tenantId], (err) => err ? reject(err) : resolve()
         ));
 
         // Depolama kullanımını güncelle (limit kontrolü yukarıda yapıldı)
@@ -1783,9 +1798,10 @@ app.post('/api/organizasyon-kartlar/:organizasyonId/davetiye-gorseli', (req, res
         const safeId = String(organizasyonId).replace(/[^a-zA-Z0-9_-]/g, '');
         const relativePath = getTenantRelativePath(tenantId, 'organizations', safeId, 'davetiye-gorseli', file.filename);
         
+        const kullaniciAdi = await getCurrentUsername(req);
         await new Promise((resolve, reject) => db.run(
-            `UPDATE organizasyon_kartlar SET organizasyon_davetiye_gorsel = ?, updated_at = ${getTurkeyTimeSQL()} WHERE id = ? AND tenant_id = ?`,
-            [relativePath, organizasyonId, tenantId], (err) => {
+            `UPDATE organizasyon_kartlar SET organizasyon_davetiye_gorsel = ?, updated_at = ${getTurkeyTimeSQL()}, updated_by = ? WHERE id = ? AND tenant_id = ?`,
+            [relativePath, kullaniciAdi, organizasyonId, tenantId], (err) => {
                 if (err) {
                     console.error('❌ Veritabanı güncelleme hatası:', err);
                     reject(err);
@@ -1832,9 +1848,10 @@ app.delete('/api/organizasyon-kartlar/:id/davetiye-gorseli', async (req, res) =>
         if (orgCheck.length === 0) {
             return res.status(403).json({ success: false, error: 'Bu organizasyon kartına erişim yetkiniz yok' });
         }
+        const kullaniciAdi = await getCurrentUsername(req);
         await new Promise((resolve, reject) => db.run(
-            `UPDATE organizasyon_kartlar SET organizasyon_davetiye_gorsel = NULL, updated_at = ${getTurkeyTimeSQL()} WHERE id = ? AND tenant_id = ?`,
-            [id, tenantId],
+            `UPDATE organizasyon_kartlar SET organizasyon_davetiye_gorsel = NULL, updated_at = ${getTurkeyTimeSQL()}, updated_by = ? WHERE id = ? AND tenant_id = ?`,
+            [kullaniciAdi, id, tenantId],
             (err) => (err ? reject(err) : resolve())
         ));
         res.json({ success: true, message: 'Davetiye görseli kaldırıldı' });
@@ -2034,6 +2051,7 @@ app.post('/api/customers/upload-file', customerFileUpload.single('file'), async 
         if (!tenantId) {
             return res.status(400).json({ success: false, message: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
         }
+        const kullaniciAdi = await getCurrentUsername(req);
         
         // Müşteri klasörü oluştur (tenant-based)
         const customerFolder = `${customerId}-${cleanUnvan}`;
@@ -2100,8 +2118,8 @@ app.post('/api/customers/upload-file', customerFileUpload.single('file'), async 
                     
                     // Veritabanını güncelle
                     await dbRun(
-                        'UPDATE musteriler SET musteri_urun_yazi_dosyalar = ? WHERE id = ? AND tenant_id = ?',
-                        [jsonString, customerId, tenantId]
+                        'UPDATE musteriler SET musteri_urun_yazi_dosyalar = ?, updated_by = ? WHERE id = ? AND tenant_id = ?',
+                        [jsonString, kullaniciAdi, customerId, tenantId]
                     );
                     
                     // Depolama kullanımını güncelle
@@ -2242,9 +2260,13 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
     db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='siparisler_ciceksepeti'", [], (e4, r4) => {
         if (!e4 && r4) db.run('ALTER TABLE siparisler_ciceksepeti RENAME TO organizasyon_siparisler_ciceksepeti', () => {});
     });
-    // ciceksepeti_settings → ayarlar_ciceksepeti_ayalari
+    // ciceksepeti_settings → ayarlar_ciceksepeti_ayarlari
     db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='ciceksepeti_settings'", [], (e5, r5) => {
-        if (!e5 && r5) db.run('ALTER TABLE ciceksepeti_settings RENAME TO ayarlar_ciceksepeti_ayalari', () => {});
+        if (!e5 && r5) db.run('ALTER TABLE ciceksepeti_settings RENAME TO ayarlar_ciceksepeti_ayarlari', () => {});
+    });
+    // Eski yazım düzeltmesi: ayarlar_ciceksepeti_ayalari (typo) → ayarlar_ciceksepeti_ayarlari
+    db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='ayarlar_ciceksepeti_ayalari'", [], (e5b, r5b) => {
+        if (!e5b && r5b) db.run('ALTER TABLE ayarlar_ciceksepeti_ayalari RENAME TO ayarlar_ciceksepeti_ayarlari', () => {});
     });
     db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='gps_konum_gecmisi'", [], (e4, r4) => {
         if (!e4 && r4) db.run('ALTER TABLE gps_konum_gecmisi RENAME TO araclar_gps_konum_takip', () => {});
@@ -3249,6 +3271,29 @@ function initializeSiparisKartlarColumns() {
             const columnNames = columns.map(c => c.name);
             if (isDevelopment) {
                 console.log('📋 siparisler tablosu kolonları:', columnNames.join(', '));
+            }
+            
+            // updated_at kolonu yoksa ekle (Son Dzn tarihinin güncellenmesi için zorunlu)
+            if (!columnNames.includes('updated_at')) {
+                console.log('⚠️ siparisler tablosunda updated_at kolonu yok, ekleniyor...');
+                db.run('ALTER TABLE siparisler ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP', [], (err) => {
+                    if (err) {
+                        console.error('❌ updated_at kolonu eklenirken hata:', err);
+                    } else {
+                        console.log('✅ updated_at kolonu başarıyla eklendi');
+                    }
+                });
+            }
+            // created_at kolonu yoksa ekle
+            if (!columnNames.includes('created_at')) {
+                console.log('⚠️ siparisler tablosunda created_at kolonu yok, ekleniyor...');
+                db.run('ALTER TABLE siparisler ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP', [], (err) => {
+                    if (err) {
+                        console.error('❌ created_at kolonu eklenirken hata:', err);
+                    } else {
+                        console.log('✅ created_at kolonu başarıyla eklendi');
+                    }
+                });
             }
             
             // created_by kolonunun var olup olmadığını kontrol et, yoksa ekle
@@ -4381,6 +4426,22 @@ async function getSessionUsername(req) {
     }
 }
 
+// SSE: Aynı tenant’taki tüm açık oturumlara anında invalidate mesajı gönder
+const sseClientsByTenant = new Map(); // tenantId -> Set<res>
+function broadcastInvalidateToTenant(tenantId) {
+    if (!tenantId) return;
+    const clients = sseClientsByTenant.get(tenantId);
+    if (!clients || clients.size === 0) return;
+    const payload = 'data: invalidate\n\n';
+    clients.forEach((res) => {
+        try {
+            res.write(payload);
+        } catch (e) {
+            clients.delete(res);
+        }
+    });
+}
+
 // ✅ PLAN KONTROL: Tenant'ın plan_id'sini al
 // Genel plan bilgisi için kullanılır
 async function getTenantPlanId(tenantId) {
@@ -4793,36 +4854,27 @@ function dbRun(sql, params = []) {
     });
 }
 
-// Oturum açan kullanıcının kullanıcı adını al (helper fonksiyon)
-// Önce req.user'dan, yoksa req.body'den, yoksa varsayılan olarak 'akifbircan'
+// Oturum açan kullanıcının (düzenlemeyi yapan kişi) kullanıcı adını al.
+// created_by / updated_by alanlarına yazılacak değer: her zaman oturum sahibinin kullaniciadi.
 async function getCurrentUsername(req) {
     try {
-        // 1. Önce req.user'dan kontrol et (JWT token varsa)
-        if (req.user && req.user.kullaniciadi) {
-            return req.user.kullaniciadi;
+        // 1. req.user (JWT/middleware tarafından set edilmişse)
+        if (req.user && (req.user.kullaniciadi || req.user.username)) {
+            return req.user.kullaniciadi || req.user.username;
         }
-        
-        // 2. req.body'den kontrol et (frontend'den gönderilmişse)
-        if (req.body && req.body.kullaniciadi) {
-            return req.body.kullaniciadi;
+        // 2. Oturum sahibi: cookie (floovon_user_id) ile tenants_kullanicilar'dan kullaniciadi al
+        const sessionUsername = await getSessionUsername(req);
+        if (sessionUsername) {
+            return sessionUsername;
         }
-        
-        // 3. req.query'den kontrol et
-        if (req.query && req.query.kullaniciadi) {
-            return req.query.kullaniciadi;
-        }
-        
-        // 4. LocalStorage'dan al (frontend'den gönderilmişse)
-        // Frontend'den gönderilmişse req.body'de olabilir
-        if (req.body && req.body.currentUser && req.body.currentUser.kullaniciadi) {
-            return req.body.currentUser.kullaniciadi;
-        }
-        
-        // 5. Varsayılan olarak 'akifbircan' döndür
-        return 'akifbircan';
+        // 3. Fallback: body/query (güvenilir değil; sadece geliştirme)
+        if (req.body && req.body.kullaniciadi) return req.body.kullaniciadi;
+        if (req.query && req.query.kullaniciadi) return req.query.kullaniciadi;
+        if (req.body && req.body.currentUser && req.body.currentUser.kullaniciadi) return req.body.currentUser.kullaniciadi;
+        return 'Sistem';
     } catch (error) {
-        console.warn('⚠️ Kullanıcı adı alınırken hata:', error);
-        return 'akifbircan';
+        console.warn('⚠️ getCurrentUsername hatası:', error);
+        return 'Sistem';
     }
 }
 
@@ -6362,6 +6414,35 @@ app.get('/api/auth/session-check', async (req, res) => {
     }
 });
 
+// SSE: Tüm açık oturumlara anında güncelleme yayını (bir kullanıcı güncelleme yapınca diğerleri anında görür)
+app.get('/api/sse', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) {
+            res.setHeader('Content-Type', 'text/plain');
+            return res.status(401).end('Unauthorized');
+        }
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        res.flushHeaders();
+        if (!sseTenantClients.has(tenantId)) sseTenantClients.set(tenantId, new Set());
+        sseTenantClients.get(tenantId).add(res);
+        res.write('data: {"type":"connected"}\n\n');
+        const keepalive = setInterval(() => {
+            try { res.write(': keepalive\n\n'); } catch (_) { clearInterval(keepalive); }
+        }, 25000);
+        req.on('close', () => {
+            clearInterval(keepalive);
+            const set = sseTenantClients.get(tenantId);
+            if (set) { set.delete(res); if (set.size === 0) sseTenantClients.delete(tenantId); }
+        });
+    } catch (e) {
+        try { res.status(500).end(); } catch (_) {}
+    }
+});
+
 // Kullanıcı bilgilerini getir
 app.get('/api/auth/me', async (req, res) => {
     try {
@@ -7012,9 +7093,9 @@ app.put('/api/bildirimler/:id/read', async (req, res) => {
         const cols = await query('PRAGMA table_info(bildirimler)', [], null);
         const hasReadAt = cols.map((c) => c.name).includes('read_at');
         if (hasReadAt) {
-            await run(`UPDATE bildirimler SET is_read = 1, read_at = datetime('now') WHERE id = ?`, [parseInt(id, 10)]);
+            await run(`UPDATE bildirimler SET is_read = 1, read_at = datetime('now'), updated_by = ? WHERE id = ?`, [await getCurrentUsername(req), parseInt(id, 10)]);
         } else {
-            await run(`UPDATE bildirimler SET is_read = 1 WHERE id = ?`, [parseInt(id, 10)]);
+            await run(`UPDATE bildirimler SET is_read = 1, updated_by = ? WHERE id = ?`, [await getCurrentUsername(req), parseInt(id, 10)]);
         }
         res.json({ success: true });
     } catch (error) {
@@ -7041,10 +7122,14 @@ app.put('/api/bildirimler/read-all', async (req, res) => {
         const colNames = cols.map((c) => c.name);
         const hasReadAt = colNames.includes('read_at');
         const hasTenantId = colNames.includes('tenant_id');
+        const ub = await getCurrentUsername(req);
         let sql = `UPDATE bildirimler SET is_read = 1`;
         if (hasReadAt) sql += `, read_at = datetime('now')`;
+        if (colNames.includes('updated_by')) { sql += `, updated_by = ?`; }
         sql += ` WHERE kullanici_adi = ?`;
-        const params = [String(kullanici_adi).trim()];
+        const params = [];
+        if (colNames.includes('updated_by')) params.push(ub);
+        params.push(String(kullanici_adi).trim());
         if (hasTenantId) {
             sql += ` AND (tenant_id = ? OR tenant_id IS NULL)`;
             params.push(tenantId);
@@ -7212,11 +7297,12 @@ app.post('/api/user/page-permissions/update', async (req, res) => {
             // Güncelle
             console.log('📋 Kayıt güncelleniyor...', { id: existing[0].id });
             try {
+                const kullaniciAdi = await getCurrentUsername(req);
                 await run(`
                     UPDATE tenants_sayfa_izinleri 
-                    SET has_access = ?, guncelleme_tarihi = CURRENT_TIMESTAMP
+                    SET has_access = ?, guncelleme_tarihi = CURRENT_TIMESTAMP, updated_by = ?
                     WHERE tenant_id = ? AND role_id = ? AND page_id = ?
-                `, [accessValue, requestTenantId, cleanRoleId, cleanPageId]);
+                `, [accessValue, kullaniciAdi, requestTenantId, cleanRoleId, cleanPageId]);
                 console.log('✅ Kayıt güncellendi');
             } catch (updateError) {
                 console.error('❌ Kayıt güncelleme hatası:', updateError);
@@ -7227,10 +7313,11 @@ app.post('/api/user/page-permissions/update', async (req, res) => {
             // Yeni kayıt ekle
             console.log('📋 Yeni kayıt ekleniyor...', { requestTenantId, cleanRoleId, cleanPageId, accessValue });
             try {
+                const kullaniciAdi = await getCurrentUsername(req);
                 await run(`
-                    INSERT INTO tenants_sayfa_izinleri (tenant_id, role_id, page_id, has_access)
-                    VALUES (?, ?, ?, ?)
-                `, [requestTenantId, cleanRoleId, cleanPageId, accessValue]);
+                    INSERT INTO tenants_sayfa_izinleri (tenant_id, role_id, page_id, has_access, created_by, updated_by)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                `, [requestTenantId, cleanRoleId, cleanPageId, accessValue, kullaniciAdi, kullaniciAdi]);
                 console.log('✅ Yeni kayıt eklendi');
             } catch (insertError) {
                 console.error('❌ Kayıt ekleme hatası:', insertError);
@@ -7943,12 +8030,12 @@ app.put('/api/auth/profile', async (req, res) => {
                         role = ?,
                         ${profileImageColumn} = ?,
                         password = ?,
-                        updated_at = CURRENT_TIMESTAMP
+                        updated_at = CURRENT_TIMESTAMP,
+                        updated_by = ?
                     ${whereClause}
                 `;
-                queryParams = [nameValue, surnameValue, email, usernameValue, cleanedPhone, yetki, cleanProfilResmi, hashedPassword, id];
+                queryParams = [nameValue, surnameValue, email, usernameValue, cleanedPhone, yetki, cleanProfilResmi, hashedPassword, await getCurrentUsername(req), id];
             } else {
-                // surname kolonu yoksa name'e birleşik kaydet (nadir durum)
                 const fullName = [nameValue, surnameValue].filter(Boolean).join(' ') || nameValue;
                 updateQuery = `
                     UPDATE tenants_kullanicilar SET 
@@ -7959,16 +8046,15 @@ app.put('/api/auth/profile', async (req, res) => {
                         role = ?,
                         ${profileImageColumn} = ?,
                         password = ?,
-                        updated_at = CURRENT_TIMESTAMP
+                        updated_at = CURRENT_TIMESTAMP,
+                        updated_by = ?
                     ${whereClause}
                 `;
-                queryParams = [fullName, email, usernameValue, cleanedPhone, yetki, cleanProfilResmi, hashedPassword, id];
+                queryParams = [fullName, email, usernameValue, cleanedPhone, yetki, cleanProfilResmi, hashedPassword, await getCurrentUsername(req), id];
             }
             if (hasTenantId) queryParams.push(tenantId);
         } else {
-            // Şifre güncellenmeyecek
             if (hasSurnameColumn) {
-                // surname kolonu varsa name ve surname ayrı ayrı kaydet
                 updateQuery = `
                     UPDATE tenants_kullanicilar SET 
                         name = ?,
@@ -7978,10 +8064,11 @@ app.put('/api/auth/profile', async (req, res) => {
                         ${phoneColumn} = ?,
                         role = ?,
                         ${profileImageColumn} = ?,
-                        updated_at = CURRENT_TIMESTAMP
+                        updated_at = CURRENT_TIMESTAMP,
+                        updated_by = ?
                     ${whereClause}
                 `;
-                queryParams = [nameValue, surnameValue, email, usernameValue, cleanedPhone, yetki, cleanProfilResmi, id];
+                queryParams = [nameValue, surnameValue, email, usernameValue, cleanedPhone, yetki, cleanProfilResmi, await getCurrentUsername(req), id];
             } else {
                 // surname kolonu yoksa name'e birleşik kaydet (nadir durum)
                 const fullName = [nameValue, surnameValue].filter(Boolean).join(' ') || nameValue;
@@ -8217,13 +8304,15 @@ app.post('/api/users', async (req, res) => {
 
         const nameCols = hasSurname ? 'name, surname' : 'name';
         const nameVals = hasSurname ? [nameValue, surnameValue] : [[nameValue, surnameValue].filter(Boolean).join(' ') || nameValue];
+        const kullaniciAdi = await getCurrentUsername(req);
         const insertCols = hasTenantId
-            ? `${nameCols}, email, ${usernameCol}, ${phoneCol}, role, password, is_active, ${profileCol}, tenant_id, created_at`
-            : `${nameCols}, email, ${usernameCol}, ${phoneCol}, role, password, is_active, ${profileCol}, created_at`;
-        const placeholdersCount = (hasSurname ? 2 : 1) + 7 + (hasTenantId ? 1 : 0); // name(s), email, username, phone, role, password, is_active, profile, [tenant_id]
-        const insertPlaceholders = Array(placeholdersCount).fill('?').join(', ') + ', datetime(\'now\')';
+            ? `${nameCols}, email, ${usernameCol}, ${phoneCol}, role, password, is_active, ${profileCol}, tenant_id, created_at, created_by, updated_by`
+            : `${nameCols}, email, ${usernameCol}, ${phoneCol}, role, password, is_active, ${profileCol}, created_at, created_by, updated_by`;
+        const placeholdersCount = (hasSurname ? 2 : 1) + 7 + (hasTenantId ? 1 : 0);
+        const insertPlaceholders = Array(placeholdersCount).fill('?').join(', ') + ', datetime(\'now\'), ?, ?';
         const insertParams = [...nameVals, emailTrim, usernameValue, cleanedPhone, roleValue, hashedPassword, 1, cleanProfilResmi];
         if (hasTenantId) insertParams.push(tenantId);
+        insertParams.push(kullaniciAdi, kullaniciAdi);
 
         const result = await run(
             `INSERT INTO tenants_kullanicilar (${insertCols}) VALUES (${insertPlaceholders})`,
@@ -8272,10 +8361,11 @@ app.put('/api/users/:id', async (req, res) => {
         if (isAdmin) {
             return res.status(403).json({ success: false, message: 'Bu kullanıcı varsayılan/ana kullanıcı olduğu için durumu değiştirilemez.' });
         }
+        const kullaniciAdi = await getCurrentUsername(req);
         if (hasTenantId) {
-            await run('UPDATE tenants_kullanicilar SET status = ?, updated_at = datetime(\'now\') WHERE id = ? AND tenant_id = ?', [durumStr, id, tenantId]);
+            await run('UPDATE tenants_kullanicilar SET status = ?, updated_at = datetime(\'now\'), updated_by = ? WHERE id = ? AND tenant_id = ?', [durumStr, kullaniciAdi, id, tenantId]);
         } else {
-            await run('UPDATE tenants_kullanicilar SET status = ?, updated_at = datetime(\'now\') WHERE id = ?', [durumStr, id]);
+            await run('UPDATE tenants_kullanicilar SET status = ?, updated_at = datetime(\'now\'), updated_by = ? WHERE id = ?', [durumStr, kullaniciAdi, id]);
         }
         res.json({ success: true, message: durumStr === 'aktif' ? 'Kullanıcı aktif yapıldı.' : 'Kullanıcı pasif yapıldı.', durum: durumStr });
     } catch (err) {
@@ -8329,8 +8419,8 @@ app.delete('/api/users/:id', async (req, res) => {
         }
 
         const result = hasTenantId
-            ? await run('UPDATE tenants_kullanicilar SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ? AND tenant_id = ?', [targetId, tenantId])
-            : await run('UPDATE tenants_kullanicilar SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ?', [targetId]);
+            ? await run('UPDATE tenants_kullanicilar SET is_active = 0, updated_at = datetime(\'now\'), updated_by = ? WHERE id = ? AND tenant_id = ?', [await getCurrentUsername(req), targetId, tenantId])
+            : await run('UPDATE tenants_kullanicilar SET is_active = 0, updated_at = datetime(\'now\'), updated_by = ? WHERE id = ?', [await getCurrentUsername(req), targetId]);
 
         if (result.changes === 0) {
             return res.status(404).json({
@@ -9064,10 +9154,11 @@ app.put('/api/admin/tenants/:tenantId/users/:userId', requireAdmin, async (req, 
             return res.status(400).json({ success: false, error: 'Güncellenecek alan bulunamadı' });
         }
 
-        fields.push('updated_at = CURRENT_TIMESTAMP');
+        const kullaniciAdi = await getCurrentUsername(req);
+        fields.push('updated_at = CURRENT_TIMESTAMP', 'updated_by = ?');
 
         const sql = `UPDATE tenants_kullanicilar SET ${fields.join(', ')} WHERE id = ? AND tenant_id = ?`;
-        params.push(userId, tenantId);
+        params.push(kullaniciAdi, userId, tenantId);
 
         await run(sql, params, null);
 
@@ -9126,7 +9217,8 @@ app.put('/api/admin/tenants/:id/users/:userId/password', requireAdmin, async (re
             return res.status(404).json({ success: false, error: 'Kullanıcı bulunamadı' });
         }
         const hashedPassword = await bcrypt.hash(password.trim(), 10);
-        await run('UPDATE tenants_kullanicilar SET password = ?, updated_at = datetime(\'now\') WHERE id = ? AND tenant_id = ?', [hashedPassword, userId, tenantId], null);
+        const kullaniciAdi = await getCurrentUsername(req);
+        await run('UPDATE tenants_kullanicilar SET password = ?, updated_at = datetime(\'now\'), updated_by = ? WHERE id = ? AND tenant_id = ?', [hashedPassword, kullaniciAdi, userId, tenantId], null);
         const tenantRow = await query('SELECT name, tenants_no FROM tenants WHERE id = ?', [tenantId], null).then(r => r?.[0]);
         const userRow = await query('SELECT name, surname, username FROM tenants_kullanicilar WHERE id = ? AND tenant_id = ?', [userId, tenantId], null).then(r => r?.[0]);
         const tenantName = (tenantRow?.name || tenantRow?.tenants_no || `Tenant #${tenantId}`).toString();
@@ -9342,9 +9434,10 @@ app.post('/api/admin/tenants/:tenantId/odeme-yontemleri', requireAdmin, async (r
         }
         const kartTipi = (kart_tipi && String(kart_tipi).trim()) || 'Kredi Kartı';
         const kartSahibi = (kart_sahibi_adi && String(kart_sahibi_adi).trim()) || null;
+        const kullaniciAdi = await getCurrentUsername(req);
         await run(
-            `INSERT INTO tenants_odeme_yontemleri (tenant_id, odeme_yontemi_id, kart_tipi, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi, varsayilan_mi, aktif_mi) VALUES (?, 1, ?, ?, ?, ?, ?, 1, 1)`,
-            [tenantId, kartTipi, sonDortRakam, ayStr, yilInt, kartSahibi]
+            `INSERT INTO tenants_odeme_yontemleri (tenant_id, odeme_yontemi_id, kart_tipi, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi, varsayilan_mi, aktif_mi, created_by, updated_by) VALUES (?, 1, ?, ?, ?, ?, ?, 1, 1, ?, ?)`,
+            [tenantId, kartTipi, sonDortRakam, ayStr, yilInt, kartSahibi, kullaniciAdi, kullaniciAdi]
         );
         const inserted = await query('SELECT id FROM tenants_odeme_yontemleri WHERE tenant_id = ? ORDER BY id DESC LIMIT 1', [tenantId], null);
         const newId = inserted && inserted[0] ? inserted[0].id : null;
@@ -9411,10 +9504,11 @@ app.put('/api/admin/tenants/:tenantId/odeme-yontemleri/:paymentId', requireAdmin
             return res.status(400).json({ success: false, error: 'Güncellenecek alan bulunamadı' });
         }
 
-        fields.push('guncelleme_tarihi = datetime(\'now\')');
+        const kullaniciAdi = await getCurrentUsername(req);
+        fields.push('guncelleme_tarihi = datetime(\'now\')', 'updated_by = ?');
 
         const sql = `UPDATE tenants_odeme_yontemleri SET ${fields.join(', ')} WHERE id = ? AND tenant_id = ?`;
-        params.push(paymentId, tenantId);
+        params.push(kullaniciAdi, paymentId, tenantId);
 
         await run(sql, params, null);
 
@@ -9660,7 +9754,8 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
         if (String(id) === String(adminUserId)) {
             return res.status(400).json({ success: false, error: 'Kendi hesabınızı silemezsiniz' });
         }
-        const result = await run('DELETE FROM admin_kullanicilar WHERE id = ?', [id]);
+        const kullaniciAdi = await getCurrentUsername(req);
+        const result = await run('UPDATE admin_kullanicilar SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ?', [kullaniciAdi, id]);
         const deleted = result && result.changes > 0;
         if (!deleted) return res.status(404).json({ success: false, error: 'Kullanıcı bulunamadı' });
         res.json({ success: true, message: 'Kullanıcı silindi' });
@@ -9847,8 +9942,9 @@ app.put('/api/public/payment-method/:paymentId', async (req, res) => {
         if (fields.length === 0) {
             return res.status(400).json({ success: false, error: 'Güncellenecek alan bulunamadı' });
         }
-        fields.push("guncelleme_tarihi = datetime('now')");
-        params.push(paymentId, tenantId);
+        const kullaniciAdi = await getCurrentUsername(req);
+        fields.push("guncelleme_tarihi = datetime('now')", "updated_by = ?");
+        params.push(kullaniciAdi, paymentId, tenantId);
         await run(`UPDATE tenants_odeme_yontemleri SET ${fields.join(', ')} WHERE id = ? AND tenant_id = ?`, params);
         const updated = await query('SELECT * FROM tenants_odeme_yontemleri WHERE id = ? AND tenant_id = ?', [paymentId, tenantId], null);
         return res.json({ success: true, data: { payment_method: updated?.[0] || null } });
@@ -9890,8 +9986,8 @@ app.post('/api/public/payment-method', async (req, res) => {
         }
         const kartSahibi = (kart_sahibi_adi && String(kart_sahibi_adi).trim()) || null;
         await run(
-            `INSERT INTO tenants_odeme_yontemleri (tenant_id, odeme_yontemi_id, kart_tipi, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi, varsayilan_mi, aktif_mi) VALUES (?, 1, 'Kredi Kartı', ?, ?, ?, ?, 1, 1)`,
-            [tenantId, sonDortRakam, ayStr, yilInt, kartSahibi]
+            `INSERT INTO tenants_odeme_yontemleri (tenant_id, odeme_yontemi_id, kart_tipi, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi, varsayilan_mi, aktif_mi, created_by, updated_by) VALUES (?, 1, 'Kredi Kartı', ?, ?, ?, ?, 1, 1, ?, ?)`,
+            [tenantId, sonDortRakam, ayStr, yilInt, kartSahibi, await getCurrentUsername(req), await getCurrentUsername(req)]
         );
         const inserted = await query('SELECT * FROM tenants_odeme_yontemleri WHERE tenant_id = ? ORDER BY id DESC LIMIT 1', [tenantId], null);
         const row = inserted?.[0] || null;
@@ -9986,8 +10082,8 @@ app.post('/api/public/payment-method', async (req, res) => {
         }
         const kartSahibi = (kart_sahibi_adi && String(kart_sahibi_adi).trim()) || null;
         await run(
-            `INSERT INTO tenants_odeme_yontemleri (tenant_id, odeme_yontemi_id, kart_tipi, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi, varsayilan_mi, aktif_mi) VALUES (?, 1, 'Kredi Kartı', ?, ?, ?, ?, 1, 1)`,
-            [tenantId, sonDortRakam, ayStr, yilInt, kartSahibi]
+            `INSERT INTO tenants_odeme_yontemleri (tenant_id, odeme_yontemi_id, kart_tipi, son_dort_rakam, son_kullanim_ayi, son_kullanim_yili, kart_sahibi_adi, varsayilan_mi, aktif_mi, created_by, updated_by) VALUES (?, 1, 'Kredi Kartı', ?, ?, ?, ?, 1, 1, ?, ?)`,
+            [tenantId, sonDortRakam, ayStr, yilInt, kartSahibi, await getCurrentUsername(req), await getCurrentUsername(req)]
         );
         const inserted = await query('SELECT id FROM tenants_odeme_yontemleri WHERE tenant_id = ? ORDER BY id DESC LIMIT 1', [tenantId], null);
         const newId = inserted && inserted[0] ? inserted[0].id : null;
@@ -10045,8 +10141,9 @@ app.put('/api/public/payment-method/:paymentId', async (req, res) => {
         if (fields.length === 0) {
             return res.status(400).json({ success: false, error: 'Güncellenecek alan bulunamadı' });
         }
-        fields.push("guncelleme_tarihi = datetime('now')");
-        params.push(paymentId, tenantId);
+        const kullaniciAdi = await getCurrentUsername(req);
+        fields.push("guncelleme_tarihi = datetime('now')", "updated_by = ?");
+        params.push(kullaniciAdi, paymentId, tenantId);
         await run(`UPDATE tenants_odeme_yontemleri SET ${fields.join(', ')} WHERE id = ? AND tenant_id = ?`, params, null);
         const updated = await query('SELECT * FROM tenants_odeme_yontemleri WHERE id = ? AND tenant_id = ? LIMIT 1', [paymentId, tenantId], null);
         return res.json({ success: true, data: updated?.[0] || null });
@@ -10762,10 +10859,10 @@ app.get('/api/organizasyon-kartlar/:id/teslim-fotolar', async (req, res) => {
             console.log('📊 Veritabanı:', dbList.length, 'dosya');
             console.log('📊 Klasör:', validPaths.length, 'dosya');
             
-            // Veritabanını güncelle - sıra korunur (yeni dosyalar en başta)
+            const kullaniciAdi = await getCurrentUsername(req);
             await new Promise((resolve, reject) => db.run(
-                `UPDATE organizasyon_kartlar SET organizasyon_teslim_foto_sayisi = ?, organizasyon_teslim_fotolar = ?, updated_at = ${getTurkeyTimeSQL()} WHERE id = ? AND tenant_id = ?`,
-                [orderedPaths.length, JSON.stringify(orderedPaths), id, tenantId], 
+                `UPDATE organizasyon_kartlar SET organizasyon_teslim_foto_sayisi = ?, organizasyon_teslim_fotolar = ?, updated_at = ${getTurkeyTimeSQL()}, updated_by = ? WHERE id = ? AND tenant_id = ?`,
+                [orderedPaths.length, JSON.stringify(orderedPaths), kullaniciAdi, id, tenantId], 
                 (err) => err ? reject(err) : resolve()
             ));
             
@@ -10822,9 +10919,10 @@ app.delete('/api/organizasyon-kartlar/:organizasyonId/teslim-fotolar', async (re
         }
 
         const newList = prevList.filter((_, i) => i !== index);
+        const kullaniciAdi = await getCurrentUsername(req);
         await new Promise((resolve, reject) => db.run(
-            `UPDATE organizasyon_kartlar SET organizasyon_teslim_foto_sayisi = ?, organizasyon_teslim_fotolar = ?, updated_at = ${getTurkeyTimeSQL()} WHERE id = ? AND tenant_id = ?`,
-            [newList.length, JSON.stringify(newList), organizasyonId, tenantId],
+            `UPDATE organizasyon_kartlar SET organizasyon_teslim_foto_sayisi = ?, organizasyon_teslim_fotolar = ?, updated_at = ${getTurkeyTimeSQL()}, updated_by = ? WHERE id = ? AND tenant_id = ?`,
+            [newList.length, JSON.stringify(newList), kullaniciAdi, organizasyonId, tenantId],
             (err) => err ? reject(err) : resolve()
         ));
 
@@ -11164,16 +11262,17 @@ app.patch('/api/organizasyon-kartlar/:id/archive', async (req, res) => {
             });
         }
         
-        // Organizasyon kartını arşivle (organizasyon_kartlar – diğer kartlarla aynı mantık)
+        const kullaniciAdi = await getCurrentUsername(req);
         const updateResult = await execute(`
             UPDATE organizasyon_kartlar SET
                 organizasyon_status = 'arsivli',
                 arsivli = 1,
                 arsivleme_tarih = ${getTurkeyTimeSQL()},
                 arsivleme_sebebi = ?,
-                updated_at = ${getTurkeyTimeSQL()}
+                updated_at = ${getTurkeyTimeSQL()},
+                updated_by = ?
             WHERE id = ? AND tenant_id = ?
-        `, [arsivleme_sebebi || null, id, tenantId]);
+        `, [arsivleme_sebebi || null, kullaniciAdi, id, tenantId]);
         
         if (updateResult.changes === 0) {
             return res.status(404).json({
@@ -11187,16 +11286,18 @@ app.patch('/api/organizasyon-kartlar/:id/archive', async (req, res) => {
         const kart = orgCheck[0];
         if (kart.organizasyon_kart_tur === 'Çiçek Sepeti' && kart.organizasyon_teslim_tarih) {
             try {
+                const cicekKullanici = await getCurrentUsername(req);
                 const cicekResult = await execute(`
                     UPDATE organizasyon_siparisler_ciceksepeti SET
                         arsivli = 1,
                         arsivleme_tarih = ${getTurkeyTimeSQL()},
                         arsivleme_sebebi = ?,
-                        updated_at = ${getTurkeyTimeSQL()}
+                        updated_at = ${getTurkeyTimeSQL()},
+                        updated_by = ?
                     WHERE tenant_id = ? AND teslim_tarihi = ?
                     AND COALESCE(teslim_mahalle, '') = COALESCE(?, '')
                     AND COALESCE(teslim_ilce, '') = COALESCE(?, '')
-                `, [arsivleme_sebebi || null, tenantId, kart.organizasyon_teslim_tarih, kart.organizasyon_mahalle || '', kart.organizasyon_ilce || '']);
+                `, [arsivleme_sebebi || null, cicekKullanici, tenantId, kart.organizasyon_teslim_tarih, kart.organizasyon_mahalle || '', kart.organizasyon_ilce || '']);
                 if (cicekResult && cicekResult.changes > 0) {
                     try {
                         const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId);
@@ -11229,6 +11330,29 @@ app.patch('/api/organizasyon-kartlar/:id/archive', async (req, res) => {
             } catch (cicekErr) {
                 console.error('❌ Çiçek Sepeti siparişleri arşivlenirken (kart arşivleme):', cicekErr.message);
             }
+        }
+
+        // Bu organizasyon kartına bağlı aktif sipariş kartlarını da arşivle
+        try {
+            const siparisResult = await execute(`
+                UPDATE siparisler SET
+                    arsivli = 1,
+                    arsivleme_tarih = ${getTurkeyTimeSQL()},
+                    arsivleme_sebebi = ?,
+                    updated_at = ${getTurkeyTimeSQL()}
+                WHERE organizasyon_kart_id = ?
+                    AND tenant_id = ?
+                    AND status = 'aktif'
+                    AND (CAST(arsivli AS INTEGER) = 0 OR arsivli IS NULL OR arsivli = '0' OR arsivli = '')
+            `, [arsivleme_sebebi || 'Organizasyon kartı arşivlendi', id, tenantId]);
+            if (siparisResult && siparisResult.changes > 0 && isDevelopment) {
+                console.log('📦 Organizasyon kartına bağlı sipariş kartları da arşivlendi:', {
+                    organizasyon_kart_id: id,
+                    changes: siparisResult.changes
+                });
+            }
+        } catch (sipErr) {
+            console.error('⚠️ Organizasyon kartına bağlı siparişler arşivlenirken hata:', sipErr.message);
         }
         
         if (isDevelopment) {
@@ -11550,16 +11674,16 @@ app.get('/api/siparis-kartlar/organizasyon/:organizasyonId', async (req, res) =>
             `, [teslimTarihi, orgMahalle, orgIlce]);
             siparisler.forEach((s, i) => { s.kart_sira = i + 1; });
         } else {
-            // Normal siparişler
-            // DISTINCT kullanarak duplicate kayıtları önle (LEFT JOIN'ler nedeniyle oluşabilir)
-            
-            // ✅ DEBUG: Tüm siparişleri kontrol et (filtrelemeden önce)
-            const allSiparisler = await query(`
-                SELECT sk.id, sk.organizasyon_kart_id, sk.status, sk.arsivli, sk.is_active, sk.tenant_id
-                FROM siparisler sk
-                WHERE sk.organizasyon_kart_id = ? AND sk.tenant_id = ?
-            `, [organizasyonId, tenantId]);
-            console.log(`[BACKEND] Organizasyon ${organizasyonId} için tüm siparişler (filtrelemeden önce):`, allSiparisler.length, allSiparisler);
+            // Normal siparişler – sipariş veren ismi: tabloda musteri_unvan/musteri_isim_soyisim veya musteri_adi/musteri_unvani/musteri_ad_soyad/siparis_veren olabilir (büyük/küçük harf duyarsız)
+            const skCols = await query('PRAGMA table_info(siparisler)');
+            const skNames = (skCols || []).map((c) => c.name);
+            const has = (n) => skNames.some((c) => String(c).toLowerCase() === n.toLowerCase());
+            const col = (n) => skNames.find((c) => String(c).toLowerCase() === n.toLowerCase());
+            const unvanSel = has('musteri_unvan') ? 'sk.' + col('musteri_unvan') : (has('musteri_unvani') ? 'sk.' + col('musteri_unvani') + ' AS musteri_unvan' : 'NULL AS musteri_unvan');
+            const isimSel = has('musteri_isim_soyisim') ? 'sk.' + col('musteri_isim_soyisim') : (has('musteri_ad_soyad') ? 'sk.' + col('musteri_ad_soyad') + ' AS musteri_isim_soyisim' : (has('siparis_veren') ? 'sk.' + col('siparis_veren') + ' AS musteri_isim_soyisim' : (has('musteri_adi') ? 'sk.' + col('musteri_adi') + ' AS musteri_isim_soyisim' : 'NULL AS musteri_isim_soyisim')));
+            const unvanCol = has('musteri_unvan') ? 'sk.' + col('musteri_unvan') : (has('musteri_unvani') ? 'sk.' + col('musteri_unvani') : 'NULL');
+            const isimCol = has('musteri_isim_soyisim') ? 'sk.' + col('musteri_isim_soyisim') : (has('musteri_ad_soyad') ? 'sk.' + col('musteri_ad_soyad') : (has('siparis_veren') ? 'sk.' + col('siparis_veren') : (has('musteri_adi') ? 'sk.' + col('musteri_adi') : 'NULL')));
+            const siparisVerenSel = has('siparis_veren') ? ', sk.siparis_veren' : '';
             
             siparisler = await query(`
                 SELECT DISTINCT
@@ -11567,8 +11691,8 @@ app.get('/api/siparis-kartlar/organizasyon/:organizasyonId', async (req, res) =>
                     sk.kart_sira,
                     sk.siparis_kodu,
                     sk.organizasyon_kart_id,
-                    sk.musteri_unvan,
-                    sk.musteri_isim_soyisim,
+                    ${unvanSel},
+                    ${isimSel}${siparisVerenSel ? siparisVerenSel + ',' : ','}
                     sk.siparis_veren_telefon,
                     sk.urun_yazisi,
                     sk.secilen_urun_yazi_dosyasi,
@@ -11598,8 +11722,9 @@ app.get('/api/siparis-kartlar/organizasyon/:organizasyonId', async (req, res) =>
                     sk.arsivleme_sebebi,
                     sk.created_at,
                     sk.updated_at,
+                    sk.updated_by,
                     (SELECT c.id FROM musteriler c 
-                     WHERE (c.musteri_unvani = sk.musteri_unvan OR c.musteri_ad_soyad = sk.musteri_isim_soyisim) 
+                     WHERE (c.musteri_unvani = ${unvanCol} OR c.musteri_ad_soyad = ${isimCol}) 
                      AND c.musteri_telefon = sk.siparis_veren_telefon 
                      AND c.tenant_id = ?
                      LIMIT 1) as musteri_id,
@@ -11650,7 +11775,57 @@ app.get('/api/siparis-kartlar/organizasyon/:organizasyonId', async (req, res) =>
                 return (a.created_at || '').localeCompare(b.created_at || '');
             });
             siparisler.forEach((s, i) => { s.kart_sira = i + 1; });
+
+            // Düzenleyen (updated_by) kullanıcının profil resmi ve adı – dinamik kolon ile
+            const uniqueUpdatedBy = [...new Set(siparisler.map(s => s.updated_by).filter(Boolean))];
+            if (uniqueUpdatedBy.length > 0) {
+                try {
+                    const kCols = await query('PRAGMA table_info(tenants_kullanicilar)');
+                    const kNames = (kCols || []).map(c => c.name);
+                    const hasKullaniciadi = kNames.includes('kullaniciadi');
+                    const hasUsername = kNames.includes('username');
+                    const imgCol = kNames.includes('profil_resmi') ? 'profil_resmi' : (kNames.includes('profile_image') ? 'profile_image' : null);
+                    const nameCol = kNames.includes('name') ? 'name' : (kNames.includes('ad') ? 'ad' : null);
+                    const soyadCol = kNames.includes('soyad') ? 'soyad' : (kNames.includes('surname') ? 'surname' : null);
+                    const userCol = hasKullaniciadi ? 'kullaniciadi' : (hasUsername ? 'username' : null);
+                    if (userCol && (imgCol || nameCol)) {
+                        const selectParts = [imgCol ? `tk.${imgCol} as profil_resmi` : 'NULL as profil_resmi', nameCol ? `tk.${nameCol} as ad` : 'NULL as ad', soyadCol ? `tk.${soyadCol} as soyad` : 'NULL as soyad'];
+                        const editorMap = new Map();
+                        for (const ub of uniqueUpdatedBy) {
+                            const rows = await query(
+                                `SELECT ${selectParts.join(', ')} FROM tenants_kullanicilar tk WHERE tk.${userCol} = ? AND tk.tenant_id = ? AND (tk.is_active = 1 OR tk.is_active IS NULL) LIMIT 1`,
+                                [ub, tenantId]
+                            );
+                            if (rows && rows.length > 0) {
+                                const ad = rows[0].ad || rows[0].name || '';
+                                const soyad = rows[0].soyad || rows[0].surname || '';
+                                const adSoyad = [ad, soyad].filter(Boolean).join(' ').trim() || ub;
+                                editorMap.set(ub, { updated_by_profil_resmi: rows[0].profil_resmi || null, updated_by_name: ad, updated_by_soyad: soyad || null, updated_by_ad_soyad: adSoyad });
+                            }
+                        }
+                        siparisler.forEach(s => {
+                            if (s.updated_by && editorMap.has(s.updated_by)) {
+                                const e = editorMap.get(s.updated_by);
+                                s.updated_by_profil_resmi = e.updated_by_profil_resmi;
+                                s.updated_by_name = e.updated_by_name;
+                                s.updated_by_soyad = e.updated_by_soyad;
+                                s.updated_by_ad_soyad = e.updated_by_ad_soyad;
+                            }
+                        });
+                    }
+                } catch (editorErr) {
+                    console.warn('⚠️ Düzenleyen profil bilgisi doldurulamadı:', editorErr.message);
+                }
+            }
         }
+
+        // Sipariş veren (müşteri adı) alanı her zaman dolu olsun – frontend .siparis-veren için
+        siparisler.forEach((s) => {
+            const unvan = s.musteri_unvan || s.musteri_unvani || '';
+            const isim = s.musteri_isim_soyisim || s.musteri_ad_soyad || s.musteri_adi || s.siparis_veren || s.musteri_unvan || s.musteri_unvani || '';
+            s.musteri_unvan = unvan || isim || null;
+            s.musteri_isim_soyisim = isim || unvan || null;
+        });
 
         res.json({
             success: true,
@@ -11952,7 +12127,8 @@ app.get('/api/siparis-kartlar/:id', async (req, res) => {
                 p.urun_gorseli as product_gorsel,
                 sk.partner_firma_adi,
                 sk.partner_siparis_turu,
-                sk.siparis_teslim_kisisi_baskasi
+                sk.siparis_teslim_kisisi_baskasi,
+                sk.updated_by
             FROM siparisler sk
             LEFT JOIN organizasyon_kartlar ok ON sk.organizasyon_kart_id = ok.id
             LEFT JOIN urunler p ON (sk.siparis_urun_id = p.id OR sk.siparis_urun = p.urun_adi)
@@ -12400,6 +12576,7 @@ app.post('/api/siparis-kartlar', async (req, res) => {
             req
         );
 
+        broadcastSseToTenant(tenantId, '{"type":"invalidate"}');
         res.status(201).json({
             success: true,
             message: 'Sipariş kartı başarıyla oluşturuldu',
@@ -12570,7 +12747,7 @@ app.put('/api/siparis-kartlar/update-kart-sira', async (req, res) => {
         // NOT: validUpdates içindeki kartlar zaten yetki kontrolünden geçti
         // Burada sadece transaction içinde güncelleme yapıyoruz
         
-        // Tüm yetki kontrolleri başarılı - transaction içinde güncelle
+        const kullaniciAdi = await getCurrentUsername(req);
         await new Promise((resolve, reject) => {
             db.serialize(() => {
                 db.run('BEGIN TRANSACTION', (err) => {
@@ -12583,8 +12760,8 @@ app.put('/api/siparis-kartlar/update-kart-sira', async (req, res) => {
                         if (hasError) return;
                         
                         db.run(
-                            `UPDATE siparisler SET kart_sira = ?, updated_at = ${getTurkeyTimeSQL()} WHERE id = ? AND status = ?`,
-                            [update.sira, update.id, 'aktif'],
+                            `UPDATE siparisler SET kart_sira = ?, updated_at = ${getTurkeyTimeSQL()}, updated_by = ? WHERE id = ? AND status = ?`,
+                            [update.sira, kullaniciAdi, update.id, 'aktif'],
                             function(updateErr) {
                                 if (updateErr) {
                                     hasError = true;
@@ -12610,6 +12787,7 @@ app.put('/api/siparis-kartlar/update-kart-sira', async (req, res) => {
             });
         });
         
+        broadcastSseToTenant(tenantId, '{"type":"invalidate"}');
         res.json({
             success: true
         });
@@ -12933,6 +13111,8 @@ app.put('/api/siparis-kartlar/:id', async (req, res) => {
 
         console.log('✅ Sipariş kartı güncellendi: ID', id, '- Etkilenen satır:', result.changes);
 
+        broadcastSseToTenant(tenantId, '{"type":"invalidate"}');
+
         res.json({
             success: true,
             message: 'Sipariş kartı başarıyla güncellendi',
@@ -13032,6 +13212,7 @@ app.put('/api/siparis-kartlar/:id/organizasyon', async (req, res) => {
         // Eski ve yeni organizasyon kartlarının toplam_siparis_sayisi değerlerini güncelle
         if (eskiOrgId && eskiOrgId !== organizasyon_kart_id) {
             // Eski organizasyon kartının sipariş sayısını güncelle
+            const kullaniciAdi = await getCurrentUsername(req);
             await execute(`
                 UPDATE organizasyon_kartlar SET
                     organizasyon_toplam_siparis_sayisi = (
@@ -13040,12 +13221,14 @@ app.put('/api/siparis-kartlar/:id/organizasyon', async (req, res) => {
                         AND COALESCE(CAST(arsivli AS INTEGER), 0) = 0
                         AND (is_active = 1 OR is_active IS NULL)
                     ),
-                    updated_at = ${getTurkeyTimeSQL()}
+                    updated_at = ${getTurkeyTimeSQL()},
+                    updated_by = ?
                 WHERE id = ? AND tenant_id = ?
-            `, [eskiOrgId, eskiOrgId, tenantId]);
+            `, [eskiOrgId, kullaniciAdi, eskiOrgId, tenantId]);
         }
         
         // Yeni organizasyon kartının sipariş sayısını güncelle
+        const kullaniciAdi = await getCurrentUsername(req);
         await execute(`
             UPDATE organizasyon_kartlar SET
                 organizasyon_toplam_siparis_sayisi = (
@@ -13054,9 +13237,10 @@ app.put('/api/siparis-kartlar/:id/organizasyon', async (req, res) => {
                     AND COALESCE(CAST(arsivli AS INTEGER), 0) = 0
                     AND (is_active = 1 OR is_active IS NULL)
                 ),
-                updated_at = ${getTurkeyTimeSQL()}
+                updated_at = ${getTurkeyTimeSQL()},
+                updated_by = ?
             WHERE id = ? AND tenant_id = ?
-        `, [organizasyon_kart_id, organizasyon_kart_id, tenantId]);
+        `, [organizasyon_kart_id, kullaniciAdi, organizasyon_kart_id, tenantId]);
         
         res.json({
             success: true,
@@ -13358,20 +13542,19 @@ async function removeMusteriRaporlari(siparisBilgileri, tenantId) {
             const yeniToplamKazanc = Math.max(0, mevcutToplamKazanc - siparisTutari);
             const yeniOrtalamaTutar = yeniSiparisSayisi > 0 ? yeniToplamKazanc / yeniSiparisSayisi : 0;
             
-            // Eğer sipariş sayısı 0 olduysa, raporu sil
+            // Eğer sipariş sayısı 0 olduysa, raporu sil (soft delete)
             if (yeniSiparisSayisi <= 0) {
                 let whereClause = 'id = ?';
-                const deleteValues = [rapor.id];
-                
+                const raporSilValues = [rapor.id];
                 if (hasTenantId) {
                     whereClause += ' AND tenant_id = ?';
-                    deleteValues.push(tenantId);
+                    raporSilValues.push(tenantId);
                 }
-                
-                await execute(`
-                    DELETE FROM musteri_raporlari 
-                    WHERE ${whereClause}
-                `, deleteValues);
+                const raporSilKullanici = await getCurrentUsername(req);
+                await execute(
+                    `UPDATE musteri_raporlari SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE ${whereClause}`,
+                    [raporSilKullanici, ...raporSilValues]
+                );
                 
                 console.log(`✅ Müşteri raporu silindi (sipariş geri yüklendi): Müşteri ID ${rapor.id}, Müşteri: ${musteriUnvan || musteriIsimSoyisim}`);
             } else {
@@ -13456,14 +13639,16 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
                 [id, tenantId]
             );
             if (cicekRow && cicekRow.length > 0) {
+                const cicekKullanici = await getCurrentUsername(req);
                 await execute(`
                     UPDATE organizasyon_siparisler_ciceksepeti SET
                         arsivli = 1,
                         arsivleme_tarih = datetime('now', 'localtime'),
                         arsivleme_sebebi = 'Teslim Edildi',
-                        updated_at = datetime('now', 'localtime')
+                        updated_at = datetime('now', 'localtime'),
+                        updated_by = ?
                     WHERE id = ? AND tenant_id = ?
-                `, [id, tenantId]);
+                `, [cicekKullanici, id, tenantId]);
                 try {
                     const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId);
                     if (kullaniciAdi) {
@@ -13526,11 +13711,12 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
         let result = { changes: 0 };
         let lastError;
         // Tümünü teslim akışında imza alınmadığı için eski teslim_imza_data temizlenir; arşiv sayfasında eski imza görünmesin
+        const kullaniciAdi = await getCurrentUsername(req);
         const updateCandidates = [
-            { sql: `UPDATE siparisler SET status = 'teslim_edildi', arsivli = 1, arsivleme_tarih = datetime('now', 'localtime'), arsivleme_sebebi = 'Teslim Edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime') WHERE id = ? AND status = 'aktif' AND tenant_id = ?`, params: [id, tenantId] },
-            { sql: `UPDATE siparisler SET status = 'teslim_edildi', arsivli = 1, arsivleme_tarih = datetime('now', 'localtime'), arsivleme_sebebi = 'Teslim Edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime') WHERE id = ? AND tenant_id = ?`, params: [id, tenantId] },
-            { sql: `UPDATE siparisler SET status = 'teslim_edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime') WHERE id = ? AND status = 'aktif' AND tenant_id = ?`, params: [id, tenantId] },
-            { sql: `UPDATE siparisler SET status = 'teslim_edildi', teslim_imza_data = NULL WHERE id = ? AND tenant_id = ?`, params: [id, tenantId] }
+            { sql: `UPDATE siparisler SET status = 'teslim_edildi', arsivli = 1, arsivleme_tarih = datetime('now', 'localtime'), arsivleme_sebebi = 'Teslim Edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime'), updated_by = ? WHERE id = ? AND status = 'aktif' AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] },
+            { sql: `UPDATE siparisler SET status = 'teslim_edildi', arsivli = 1, arsivleme_tarih = datetime('now', 'localtime'), arsivleme_sebebi = 'Teslim Edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime'), updated_by = ? WHERE id = ? AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] },
+            { sql: `UPDATE siparisler SET status = 'teslim_edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime'), updated_by = ? WHERE id = ? AND status = 'aktif' AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] },
+            { sql: `UPDATE siparisler SET status = 'teslim_edildi', teslim_imza_data = NULL, updated_by = ? WHERE id = ? AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] }
         ];
         for (const { sql, params } of updateCandidates) {
             try {
@@ -13654,14 +13840,16 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                 [id, tenantId]
             );
             if (ciceksepetiRow && ciceksepetiRow.length > 0) {
+                const cicekKullanici = await getCurrentUsername(req).catch(() => null);
                 await execute(`
                     UPDATE organizasyon_siparisler_ciceksepeti SET
                         arsivli = 1,
                         arsivleme_tarih = datetime('now', 'localtime'),
                         arsivleme_sebebi = ?,
-                        updated_at = datetime('now', 'localtime')
+                        updated_at = datetime('now', 'localtime'),
+                        updated_by = ?
                     WHERE id = ? AND tenant_id = ?
-                `, [arsivleme_sebebi || null, id, tenantId]);
+                `, [arsivleme_sebebi || null, cicekKullanici, id, tenantId]);
                 // Çiçek Sepeti için de bildirim oluştur (işlemler bildirimlere yansısın)
                 try {
                     const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId);
@@ -13927,12 +14115,13 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                         const hasTutarColumn = columnNames.includes('tutar');
                         
                         // Satış kaydını ekle
-                        let insertSql = 'INSERT INTO sicak_satislar (urun_adi, miktar, aciklama, satis_turu, tenant_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, datetime(\'now\'), datetime(\'now\'))';
-                        let insertValues = [urunAdi, miktar, `Teslim Edilen Sipariş - ${siparis.musteri_unvan || siparis.musteri_isim_soyisim || 'Müşteri'}`, satisTuru, tenantId];
-                        
+                        const kullaniciAdi = await getCurrentUsername(req);
+                        let insertSql = 'INSERT INTO sicak_satislar (urun_adi, miktar, aciklama, satis_turu, tenant_id, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, datetime(\'now\'), datetime(\'now\'), ?, ?)';
+                        let insertValues = [urunAdi, miktar, `Teslim Edilen Sipariş - ${siparis.musteri_unvan || siparis.musteri_isim_soyisim || 'Müşteri'}`, satisTuru, tenantId, kullaniciAdi, kullaniciAdi];
+
                         if (hasTutarColumn) {
-                            insertSql = 'INSERT INTO sicak_satislar (urun_adi, miktar, aciklama, satis_turu, tutar, tenant_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, datetime(\'now\'), datetime(\'now\'))';
-                            insertValues = [urunAdi, miktar, `Teslim Edilen Sipariş - ${siparis.musteri_unvan || siparis.musteri_isim_soyisim || 'Müşteri'}`, satisTuru, tutar, tenantId];
+                            insertSql = 'INSERT INTO sicak_satislar (urun_adi, miktar, aciklama, satis_turu, tutar, tenant_id, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, datetime(\'now\'), datetime(\'now\'), ?, ?)';
+                            insertValues = [urunAdi, miktar, `Teslim Edilen Sipariş - ${siparis.musteri_unvan || siparis.musteri_isim_soyisim || 'Müşteri'}`, satisTuru, tutar, tenantId, kullaniciAdi, kullaniciAdi];
                         }
                         
                         await run(insertSql, insertValues);
@@ -14274,16 +14463,15 @@ app.patch('/api/siparis-kartlar/:id/unarchive', async (req, res) => {
                     `);
                     
                     if (tableExists.length > 0) {
-                        // Açıklama kısmında müşteri adını içeren kayıtları sil
+                        // Açıklama kısmında müşteri adını içeren kayıtları soft delete (is_active = 0)
                         const deleteResult = await execute(
-                            `DELETE FROM sicak_satislar 
-                             WHERE tenant_id = ? 
-                             AND aciklama LIKE ?`,
+                            `UPDATE sicak_satislar SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+                             WHERE tenant_id = ? AND aciklama LIKE ?`,
                             [tenantId, `%${aciklamaArama}%`]
                         );
                         
                         if (deleteResult.changes > 0) {
-                            console.log(`✅ Satış raporlarından ${deleteResult.changes} adet kayıt silindi: Müşteri - ${musteriAdi}`);
+                            console.log(`✅ Satış raporlarından ${deleteResult.changes} adet kayıt soft delete: Müşteri - ${musteriAdi}`);
                         }
                     }
                 } catch (satisRaporError) {
@@ -14714,6 +14902,7 @@ app.get('/api/customers/:id/cari-ozet', async (req, res) => {
             success: true,
             data: {
                 siparis_sayisi: siparisSayisi,
+                toplam_siparis_sayisi: siparisSayisi,
                 toplam_siparis: toplamSiparis,
                 toplam_fatura: toplamFatura,
                 toplam_alacak: toplamAlacak,
@@ -15035,14 +15224,13 @@ app.post('/api/tenants/:tenantId/customers/:customerId/faturalar', async (req, r
             });
         }
 
-        // Fatura kaydı oluştur
-        // İskonto kaldırıldı - her zaman 0 olarak set et
+        const kullaniciAdi = await getCurrentUsername(req);
         const result = await execute(`
             INSERT INTO musteri_faturalar (
                 musteri_id, tenant_id, fatura_no, fatura_tarihi,
                 siparis_idler, tutar, iskonto_orani, iskonto_tutari,
-                kdv_orani, kdv_tutari, genel_toplam, durum
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                kdv_orani, kdv_tutari, genel_toplam, durum, created_by, updated_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             customerId,
             tenantId,
@@ -15050,12 +15238,14 @@ app.post('/api/tenants/:tenantId/customers/:customerId/faturalar', async (req, r
             fatura_tarihi,
             siparis_idler || '',
             parseFloat(tutar) || 0,
-            0, // iskonto_orani - her zaman 0
-            0, // iskonto_tutari - her zaman 0
+            0,
+            0,
             parseFloat(kdv_orani) || 20,
             parseFloat(kdv_tutari) || 0,
             parseFloat(genel_toplam),
-            durum || 'kesildi'
+            durum || 'kesildi',
+            kullaniciAdi,
+            kullaniciAdi
         ]);
 
         const faturaId = result.lastID;
@@ -15340,12 +15530,13 @@ app.post('/api/tenants/:tenantId/customers/:customerId/tahsilatlar', async (req,
         }
 
         // Tahsilat kaydı oluştur
+        const kullaniciAdi = await getCurrentUsername(req);
         const result = await execute(`
             INSERT INTO musteri_tahsilatlar (
                 musteri_id, tenant_id, fatura_id, fatura_no,
                 islem_tarihi_saati, odeme_yontemi, tahsil_edilen_tutar,
-                odeme_yapan_kisi, tahsilat_yapan_kisi, tahsilat_makbuz_no, aciklama
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                odeme_yapan_kisi, tahsilat_yapan_kisi, tahsilat_makbuz_no, aciklama, created_by, updated_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             customerId,
             tenantId,
@@ -15357,7 +15548,9 @@ app.post('/api/tenants/:tenantId/customers/:customerId/tahsilatlar', async (req,
             odeme_yapan_kisi || null,
             tahsilat_yapan_kisi || null,
             tahsilat_makbuz_no,
-            aciklama || null
+            aciklama || null,
+            kullaniciAdi,
+            kullaniciAdi
         ]);
 
         const tahsilatId = result.lastID;
@@ -15431,17 +15624,18 @@ app.delete('/api/musteriler/:id/tahsilatlar/:tahsilatId', async (req, res) => {
             });
         }
 
-        // Tahsilat kaydını sil
+        // Tahsilat kaydını sil (soft delete)
+        const kullaniciAdi = await getCurrentUsername(req);
         let result;
         if (tenantId) {
             result = await execute(
-                'DELETE FROM musteri_tahsilatlar WHERE id = ? AND musteri_id = ? AND tenant_id = ?',
-                [tahsilatId, customerId, tenantId]
+                'UPDATE musteri_tahsilatlar SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND musteri_id = ? AND tenant_id = ?',
+                [kullaniciAdi, tahsilatId, customerId, tenantId]
             );
         } else {
             result = await execute(
-                'DELETE FROM musteri_tahsilatlar WHERE id = ? AND musteri_id = ?',
-                [tahsilatId, customerId]
+                'UPDATE musteri_tahsilatlar SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND musteri_id = ?',
+                [kullaniciAdi, tahsilatId, customerId]
             );
         }
 
@@ -15529,10 +15723,11 @@ app.delete('/api/tenants/:tenantId/customers/:customerId/tahsilatlar/:tahsilatId
             });
         }
 
-        // Tahsilat kaydını sil
+        // Tahsilat kaydını sil (soft delete)
+        const kullaniciAdi = await getCurrentUsername(req);
         const result = await execute(
-            'DELETE FROM musteri_tahsilatlar WHERE id = ? AND musteri_id = ? AND tenant_id = ?',
-            [tahsilatId, customerId, tenantId]
+            'UPDATE musteri_tahsilatlar SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND musteri_id = ? AND tenant_id = ?',
+            [kullaniciAdi, tahsilatId, customerId, tenantId]
         );
 
         if (result.changes === 0) {
@@ -15873,9 +16068,10 @@ app.delete('/api/customers/:id/tahsilatlar/:tahsilatId', async (req, res) => {
         if (existing.length === 0) {
             return res.status(404).json({ success: false, error: 'Tahsilat kaydı bulunamadı' });
         }
+        const kullaniciAdi = await getCurrentUsername(req);
         await execute(
-            'DELETE FROM musteri_tahsilatlar WHERE id = ? AND musteri_id = ? AND tenant_id = ?',
-            [tahsilatId, customerId, tenantId]
+            'UPDATE musteri_tahsilatlar SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND musteri_id = ? AND tenant_id = ?',
+            [kullaniciAdi, tahsilatId, customerId, tenantId]
         );
         res.json({ success: true, message: 'Tahsilat başarıyla silindi' });
     } catch (error) {
@@ -15971,16 +16167,18 @@ app.post('/api/customers/:id/tahsilatlar', async (req, res) => {
         const makbuzNo = (tahsilat_makbuz_no != null && String(tahsilat_makbuz_no).trim() !== '')
             ? String(tahsilat_makbuz_no).trim()
             : `T-${Date.now()}`;
+        const kullaniciAdi = await getCurrentUsername(req);
         const result = await execute(`
             INSERT INTO musteri_tahsilatlar (
                 musteri_id, tenant_id, fatura_id, fatura_no,
                 islem_tarihi_saati, odeme_yontemi, tahsil_edilen_tutar,
-                odeme_yapan_kisi, tahsilat_yapan_kisi, tahsilat_makbuz_no, aciklama
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                odeme_yapan_kisi, tahsilat_yapan_kisi, tahsilat_makbuz_no, aciklama, created_by, updated_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             customerId, tenantId, fatura_id || null, fatura_no || null,
             islem_tarihi_saati, normalizeOdemeYontemi(odeme_yontemi), parseFloat(tahsil_edilen_tutar),
-            odeme_yapan_kisi || null, tahsilat_yapan_kisi || null, makbuzNo, aciklama || null
+            odeme_yapan_kisi || null, tahsilat_yapan_kisi || null, makbuzNo, aciklama || null,
+            kullaniciAdi, kullaniciAdi
         ]);
         const created = await query('SELECT * FROM musteri_tahsilatlar WHERE id = ?', [result.lastID]);
         res.json({ success: true, data: created[0] });
@@ -16576,9 +16774,10 @@ app.delete('/api/customers/:id/files', async (req, res) => {
             
             // Eğer dosya listede bulunduysa veya fiziksel dosya varsa, veritabanını güncelle
             if (dosyaBulundu || dosyalar.length < dosyaSayisiOnce) {
+                const kullaniciAdi = await getCurrentUsername(req);
                 await run(
-                    'UPDATE musteriler SET musteri_urun_yazi_dosyalar = ? WHERE id = ? AND tenant_id = ?',
-                    [JSON.stringify(dosyalar), customerId, tenantId]
+                    'UPDATE musteriler SET musteri_urun_yazi_dosyalar = ?, updated_by = ? WHERE id = ? AND tenant_id = ?',
+                    [JSON.stringify(dosyalar), kullaniciAdi, customerId, tenantId]
                 );
                 console.log(`✅ Veritabanı güncellendi, kalan dosya sayısı: ${dosyalar.length} (önceki: ${dosyaSayisiOnce})`);
             }
@@ -17025,14 +17224,14 @@ app.post('/api/customers', async (req, res) => {
         }
         
         console.log('📝 Yeni müşteri kaydediliyor:', { tenantId, musteri_unvani, musteri_ad_soyad, musteriKoduValue });
-        
+        const kullaniciAdi = await getCurrentUsername(req);
         const result = await run(`
             INSERT INTO musteriler (
                 musteri_unvani, musteri_ad_soyad, musteri_telefon, musteri_eposta, musteri_acik_adres,
                 musteri_mahalle, musteri_ilce, musteri_il, musteri_tipi, musteri_grubu,
                 musteri_vergi_kimlik_numarasi, musteri_vergi_dairesi, musteri_urun_yazisi,
-                tenant_id, is_active, created_at, updated_at, musteri_kodu
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ${getTurkeyTimeSQL()}, ${getTurkeyTimeSQL()}, ?)
+                tenant_id, is_active, created_at, updated_at, musteri_kodu, created_by, updated_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ${getTurkeyTimeSQL()}, ${getTurkeyTimeSQL()}, ?, ?, ?)
         `, [
             musteri_unvani || null,
             musteri_ad_soyad || null,
@@ -17048,7 +17247,9 @@ app.post('/api/customers', async (req, res) => {
             musteri_vergi_dairesi || null,
             b.musteri_urun_yazisi || null,
             tenantId,
-            musteriKoduValue
+            musteriKoduValue,
+            kullaniciAdi,
+            kullaniciAdi
         ]);
         
         console.log('✅ Müşteri veritabanına kaydedildi:', {
@@ -17153,6 +17354,7 @@ app.put('/api/customers/:id', async (req, res) => {
         const musteri_vergi_dairesi = b.musteri_vergi_dairesi !== undefined ? b.musteri_vergi_dairesi : (b.vergi_dairesi !== undefined ? b.vergi_dairesi : e.musteri_vergi_dairesi);
         const musteri_kodu = b.musteri_kodu !== undefined ? b.musteri_kodu : (b.musteri_no !== undefined ? b.musteri_no : e.musteri_kodu);
         
+        const kullaniciAdi = await getCurrentUsername(req);
         const result = await run(`
             UPDATE musteriler SET
                 musteri_unvani = ?,
@@ -17169,7 +17371,8 @@ app.put('/api/customers/:id', async (req, res) => {
                 musteri_vergi_dairesi = ?,
                 musteri_urun_yazisi = ?,
                 musteri_kodu = ?,
-                updated_at = ${getTurkeyTimeSQL()}
+                updated_at = ${getTurkeyTimeSQL()},
+                updated_by = ?
             WHERE id = ? AND tenant_id = ?
         `, [
             musteri_unvani,
@@ -17186,6 +17389,7 @@ app.put('/api/customers/:id', async (req, res) => {
             musteri_vergi_dairesi,
             b.musteri_urun_yazisi !== undefined ? b.musteri_urun_yazisi : e.musteri_urun_yazisi,
             musteri_kodu,
+            kullaniciAdi,
             id,
             tenantId
         ]);
@@ -17269,9 +17473,10 @@ app.delete('/api/customers/:id', async (req, res) => {
         }
         
         // Soft delete - is_active = 0 yap
+        const kullaniciAdi = await getCurrentUsername(req);
         const result = await run(
-            'UPDATE musteriler SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ? AND tenant_id = ?',
-            [id, tenantId]
+            'UPDATE musteriler SET is_active = 0, updated_at = datetime(\'now\'), updated_by = ? WHERE id = ? AND tenant_id = ?',
+            [kullaniciAdi, id, tenantId]
         );
         
         if (result.changes === 0) {
@@ -17721,18 +17926,20 @@ app.put('/api/ayarlar/yazdirma', async (req, res) => {
                 const newLogoPath = logo_png_path === undefined && current[0]?.logo_png_path ? current[0].logo_png_path : (logo_png_path || null);
                 const newIsActive = is_active !== undefined ? (is_active ? 1 : 0) : (current[0]?.is_active ?? 1);
                 console.log('✅ Mevcut kayıt güncelleniyor, ID:', existing[0].id, 'Tenant ID:', tenantId);
+                const kullaniciAdi = await getCurrentUsername(req);
                 await run(
-                    'UPDATE ayarlar_genel_yazdirma_ayarlari SET logo_png_path = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = ?',
-                    [newLogoPath, newIsActive, tenantId]
+                    'UPDATE ayarlar_genel_yazdirma_ayarlari SET logo_png_path = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE tenant_id = ?',
+                    [newLogoPath, newIsActive, kullaniciAdi, tenantId]
                 );
                 result = await query('SELECT * FROM ayarlar_genel_yazdirma_ayarlari WHERE tenant_id = ?', [tenantId]);
             } else {
                 // Yeni kayıt oluştur (id otomatik artacak)
                 console.log('⚠️ Mevcut kayıt yok, yeni kayıt oluşturuluyor, Tenant ID:', tenantId);
                 try {
+                    const kullaniciAdi = await getCurrentUsername(req);
                     const insertResult = await run(
-                        'INSERT INTO ayarlar_genel_yazdirma_ayarlari (logo_png_path, is_active, tenant_id, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
-                        [logo_png_path || null, is_active ? 1 : 0, tenantId]
+                        'INSERT INTO ayarlar_genel_yazdirma_ayarlari (logo_png_path, is_active, tenant_id, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)',
+                        [logo_png_path || null, is_active ? 1 : 0, tenantId, kullaniciAdi, kullaniciAdi]
                     );
                     // Yeni eklenen kaydı getir (lastID kullan)
                     result = await query('SELECT * FROM ayarlar_genel_yazdirma_ayarlari WHERE tenant_id = ?', [tenantId]);
@@ -17749,15 +17956,17 @@ app.put('/api/ayarlar/yazdirma', async (req, res) => {
                 const current = existing[0];
                 const newLogoPath = logo_png_path === undefined ? (current.logo_png_path || null) : (logo_png_path || null);
                 const newIsActive = is_active !== undefined ? (is_active ? 1 : 0) : (current.is_active ?? 1);
+                const kullaniciAdi = await getCurrentUsername(req);
                 await run(
-                    'UPDATE ayarlar_genel_yazdirma_ayarlari SET logo_png_path = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1',
-                    [newLogoPath, newIsActive]
+                    'UPDATE ayarlar_genel_yazdirma_ayarlari SET logo_png_path = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = 1',
+                    [newLogoPath, newIsActive, kullaniciAdi]
                 );
                 result = await query('SELECT * FROM ayarlar_genel_yazdirma_ayarlari WHERE id = 1');
             } else {
+                const kullaniciAdi = await getCurrentUsername(req);
                 await run(
-                    'INSERT INTO ayarlar_genel_yazdirma_ayarlari (id, logo_png_path, is_active, created_at, updated_at) VALUES (1, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
-                    [logo_png_path || null, is_active ? 1 : 0]
+                    'INSERT INTO ayarlar_genel_yazdirma_ayarlari (id, logo_png_path, is_active, created_at, updated_at, created_by, updated_by) VALUES (1, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)',
+                    [logo_png_path || null, is_active ? 1 : 0, kullaniciAdi, kullaniciAdi]
                 );
                 result = await query('SELECT * FROM ayarlar_genel_yazdirma_ayarlari WHERE id = 1');
             }
@@ -17893,18 +18102,18 @@ app.post('/api/ayarlar/yazdirma/logo', (req, res, next) => {
                 if (existingRecord.length > 0 && existingRecord[0].tenant_id === null) {
                     // Global kayıt bulundu, yeni tenant kaydı oluştur
                     console.log('⚠️ Global kayıt bulundu, yeni tenant kaydı oluşturuluyor...');
+                    const ub = await getCurrentUsername(req);
                     await run(
-                        'INSERT INTO ayarlar_genel_yazdirma_ayarlari (logo_png_path, is_active, tenant_id, created_at, updated_at) VALUES (?, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
-                        [relativePath, tenantId]
+                        'INSERT INTO ayarlar_genel_yazdirma_ayarlari (logo_png_path, is_active, tenant_id, created_at, updated_at, created_by, updated_by) VALUES (?, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)',
+                        [relativePath, tenantId, ub, ub]
                     );
                     result = await query('SELECT * FROM ayarlar_genel_yazdirma_ayarlari WHERE tenant_id = ?', [tenantId]);
                     console.log('✅ Yeni tenant kaydı oluşturuldu');
                 } else {
-                    // Tenant'a ait kayıt, güncelle
-                    console.log('✅ Mevcut tenant kaydı güncelleniyor, ID:', existing[0].id);
+                    const ub = await getCurrentUsername(req);
                     await run(
-                        'UPDATE ayarlar_genel_yazdirma_ayarlari SET logo_png_path = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
-                        [relativePath, existing[0].id, tenantId]
+                        'UPDATE ayarlar_genel_yazdirma_ayarlari SET logo_png_path = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND tenant_id = ?',
+                        [relativePath, ub, existing[0].id, tenantId]
                     );
                     result = await query('SELECT * FROM ayarlar_genel_yazdirma_ayarlari WHERE id = ?', [existing[0].id]);
                     console.log('✅ Kayıt güncellendi');
@@ -17912,20 +18121,21 @@ app.post('/api/ayarlar/yazdirma/logo', (req, res, next) => {
             } else {
                 console.log('⚠️ Mevcut kayıt yok, yeni kayıt oluşturuluyor...');
                 try {
+                    const ub = await getCurrentUsername(req);
                     await run(
-                        'INSERT INTO ayarlar_genel_yazdirma_ayarlari (logo_png_path, is_active, tenant_id, created_at, updated_at) VALUES (?, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
-                        [relativePath, tenantId]
+                        'INSERT INTO ayarlar_genel_yazdirma_ayarlari (logo_png_path, is_active, tenant_id, created_at, updated_at, created_by, updated_by) VALUES (?, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)',
+                        [relativePath, tenantId, ub, ub]
                     );
                     result = await query('SELECT * FROM ayarlar_genel_yazdirma_ayarlari WHERE tenant_id = ?', [tenantId]);
                     console.log('✅ Yeni kayıt oluşturuldu');
                 } catch (insertError) {
                     console.error('❌ INSERT hatası:', insertError);
-                    // Eğer UNIQUE constraint hatası varsa (tenant_id zaten var), güncelle
                     if (insertError.code === 'SQLITE_CONSTRAINT') {
                         console.log('⚠️ Bu tenant için kayıt zaten var, güncelleniyor...');
+                        const ub = await getCurrentUsername(req);
                         await run(
-                            'UPDATE ayarlar_genel_yazdirma_ayarlari SET logo_png_path = ?, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = ?',
-                            [relativePath, tenantId]
+                            'UPDATE ayarlar_genel_yazdirma_ayarlari SET logo_png_path = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE tenant_id = ?',
+                            [relativePath, ub, tenantId]
                         );
                         result = await query('SELECT * FROM ayarlar_genel_yazdirma_ayarlari WHERE tenant_id = ?', [tenantId]);
                         console.log('✅ Kayıt güncellendi (INSERT hatası sonrası)');
@@ -17938,15 +18148,17 @@ app.post('/api/ayarlar/yazdirma/logo', (req, res, next) => {
             // tenant_id kolonu yoksa eski yöntem
             const existing = await query('SELECT id FROM ayarlar_genel_yazdirma_ayarlari WHERE id = 1');
             if (existing.length > 0) {
+                const ub = await getCurrentUsername(req);
                 await run(
-                    'UPDATE ayarlar_genel_yazdirma_ayarlari SET logo_png_path = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1',
-                    [relativePath]
+                    'UPDATE ayarlar_genel_yazdirma_ayarlari SET logo_png_path = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = 1',
+                    [relativePath, ub]
                 );
                 result = await query('SELECT * FROM ayarlar_genel_yazdirma_ayarlari WHERE id = 1');
             } else {
+                const ub = await getCurrentUsername(req);
                 await run(
-                    'INSERT INTO ayarlar_genel_yazdirma_ayarlari (id, logo_png_path, is_active, created_at, updated_at) VALUES (1, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
-                    [relativePath]
+                    'INSERT INTO ayarlar_genel_yazdirma_ayarlari (id, logo_png_path, is_active, created_at, updated_at, created_by, updated_by) VALUES (1, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)',
+                    [relativePath, ub, ub]
                 );
                 result = await query('SELECT * FROM ayarlar_genel_yazdirma_ayarlari WHERE id = 1');
             }
@@ -18021,6 +18233,8 @@ async function ensureMesajSablonlariTable() {
                 mesaj_metni TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                created_by TEXT,
+                updated_by TEXT,
                 UNIQUE(tenant_id, sablon_turu)
             )
         `);
@@ -18032,6 +18246,10 @@ async function ensureMesajSablonlariTable() {
     const hasTenantId = colNames.includes('tenant_id');
     const hasCreatedAt = colNames.includes('created_at');
     const hasUpdatedAt = colNames.includes('updated_at');
+    const hasCreatedBy = colNames.includes('created_by');
+    const hasUpdatedBy = colNames.includes('updated_by');
+    if (!hasCreatedBy) { try { await run(`ALTER TABLE ${MESAJ_SABLONLARI_TABLE} ADD COLUMN created_by TEXT`); } catch (_) {} }
+    if (!hasUpdatedBy) { try { await run(`ALTER TABLE ${MESAJ_SABLONLARI_TABLE} ADD COLUMN updated_by TEXT`); } catch (_) {} }
     if (hasTenantId && hasCreatedAt && hasUpdatedAt) {
         return;
     }
@@ -18069,6 +18287,7 @@ app.get('/api/ayarlar/gonderim', async (req, res) => {
         await ensureMesajSablonlariTable();
         await ensureGonderimIletisimVeRaporTables();
 
+        const kullaniciAdiGonderim = await getCurrentUsername(req);
         let musteri_sablonu_whatsapp = null;
         try {
             const tenantSablonRows = await query(
@@ -18082,8 +18301,8 @@ app.get('/api/ayarlar/gonderim', async (req, res) => {
         if (musteri_sablonu_whatsapp == null) {
             try {
                 await run(
-                    `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                    [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, DEFAULT_MUSTERI_SIPARIS_SABLONU]
+                    `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`,
+                    [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, DEFAULT_MUSTERI_SIPARIS_SABLONU, kullaniciAdiGonderim, kullaniciAdiGonderim]
                 );
                 musteri_sablonu_whatsapp = DEFAULT_MUSTERI_SIPARIS_SABLONU;
             } catch (err) { /* zaten var */ }
@@ -18143,19 +18362,20 @@ app.put('/api/ayarlar/gonderim', async (req, res) => {
 
         if (musteri_sablonu_whatsapp !== undefined) {
             await ensureMesajSablonlariTable();
+            const kullaniciAdi = await getCurrentUsername(req);
             const mevcut = await query(
                 `SELECT id FROM ${MESAJ_SABLONLARI_TABLE} WHERE tenant_id = ? AND sablon_turu = ? LIMIT 1`,
                 [tenantId, MUSTERI_SIPARIS_SABLONU_TURU]
             );
             if (mevcut.length > 0) {
                 await run(
-                    `UPDATE ${MESAJ_SABLONLARI_TABLE} SET mesaj_metni = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-                    [musteri_sablonu_whatsapp || null, mevcut[0].id]
+                    `UPDATE ${MESAJ_SABLONLARI_TABLE} SET mesaj_metni = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ?`,
+                    [musteri_sablonu_whatsapp || null, kullaniciAdi, mevcut[0].id]
                 );
             } else {
                 await run(
-                    `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                    [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, musteri_sablonu_whatsapp || null]
+                    `INSERT INTO ${MESAJ_SABLONLARI_TABLE} (tenant_id, sablon_turu, mesaj_metni, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`,
+                    [tenantId, MUSTERI_SIPARIS_SABLONU_TURU, musteri_sablonu_whatsapp || null, kullaniciAdi, kullaniciAdi]
                 );
             }
         }
@@ -18586,7 +18806,8 @@ app.delete('/api/ayarlar/gonderim/iletisim-kisileri/:id', async (req, res) => {
         if (isNaN(id) || id <= 0) {
             return res.status(400).json({ success: false, error: 'Geçersiz id.' });
         }
-        await run('UPDATE ayarlar_gonderim_iletisim_kisileri SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?', [id, tenantId]);
+        const kullaniciAdi = await getCurrentUsername(req);
+        await run('UPDATE ayarlar_gonderim_iletisim_kisileri SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND tenant_id = ?', [kullaniciAdi, id, tenantId]);
         return res.json({ success: true });
     } catch (err) {
         console.error('❌ İletişim kişisi silinirken hata:', err);
@@ -18853,9 +19074,10 @@ app.put('/api/organizasyon-gruplari/:id', async (req, res) => {
             });
         }
         
+        const kullaniciAdi = await getCurrentUsername(req);
         updateFields.push('updated_at = CURRENT_TIMESTAMP');
-        updateValues.push(id);
-        updateValues.push(tenantId);
+        updateFields.push('updated_by = ?');
+        updateValues.push(kullaniciAdi, id, tenantId);
         
         await run(
             `UPDATE organizasyon_turleri SET ${updateFields.join(', ')} WHERE id = ? AND tenant_id = ?`,
@@ -19267,9 +19489,10 @@ app.post('/api/organizasyon-etiketleri', async (req, res) => {
         }
 
         const grupIdVal = (grup_id !== undefined && grup_id !== null && grup_id !== '') ? parseInt(grup_id) : null;
+        const kullaniciAdi = await getCurrentUsername(req);
         await run(
-            'INSERT INTO organizasyon_etiketleri (etiket_adi, grup_id, tenant_id, sira_no, is_active) VALUES (?, ?, ?, 0, 1)',
-            [String(etiket_adi).trim(), grupIdVal, tenantId]
+            'INSERT INTO organizasyon_etiketleri (etiket_adi, grup_id, tenant_id, sira_no, is_active, created_by, updated_by) VALUES (?, ?, ?, 0, 1, ?, ?)',
+            [String(etiket_adi).trim(), grupIdVal, tenantId, kullaniciAdi, kullaniciAdi]
         );
         const inserted = await query('SELECT id, grup_id, etiket_adi, sira_no, tenant_id FROM organizasyon_etiketleri WHERE id = last_insert_rowid()');
         res.json({ success: true, data: inserted[0] });
@@ -19307,7 +19530,9 @@ app.put('/api/organizasyon-etiketleri/:id', async (req, res) => {
         if (updates.length === 0) {
             return res.status(400).json({ success: false, error: 'Güncellenecek alan bulunamadı.' });
         }
-        values.push(id, tenantId);
+        const kullaniciAdi = await getCurrentUsername(req);
+        updates.push('updated_by = ?');
+        values.push(kullaniciAdi, id, tenantId);
         await run(
             `UPDATE organizasyon_etiketleri SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?`,
             values
@@ -19340,7 +19565,8 @@ app.delete('/api/organizasyon-etiketleri/:id', async (req, res) => {
         if (check.length === 0) {
             return res.status(404).json({ success: false, error: 'Organizasyon etiketi bulunamadı.' });
         }
-        await run('UPDATE organizasyon_etiketleri SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?', [id, tenantId]);
+        const kullaniciAdi = await getCurrentUsername(req);
+        await run('UPDATE organizasyon_etiketleri SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND tenant_id = ?', [kullaniciAdi, id, tenantId]);
         res.json({ success: true, message: 'Organizasyon etiketi silindi.' });
     } catch (error) {
         console.error('❌ Organizasyon etiketi silinirken hata:', error);
@@ -19408,9 +19634,10 @@ app.post('/api/teslimat-konumlari', async (req, res) => {
         const colNames = cols.map((c) => c.name);
         const hasMahalle = colNames.includes('mahalle');
         const hasAcikAdres = colNames.includes('acik_adres');
-        const insertCols = ['tenant_id', 'konum_adi', 'il', 'ilce'].concat(hasMahalle ? ['mahalle'] : []).concat(hasAcikAdres ? ['acik_adres'] : []).join(', ');
-        const placeholders = ['?', '?', '?', '?'].concat(hasMahalle ? ['?'] : []).concat(hasAcikAdres ? ['?'] : []).join(', ');
-        const values = [tenantId, String(konum_adi).trim(), il || '', ilce || ''].concat(hasMahalle ? [mahalle || ''] : []).concat(hasAcikAdres ? [acik_adres || ''] : []);
+        const kullaniciAdi = await getCurrentUsername(req);
+        const insertCols = ['tenant_id', 'konum_adi', 'il', 'ilce'].concat(hasMahalle ? ['mahalle'] : []).concat(hasAcikAdres ? ['acik_adres'] : []).concat(['created_by', 'updated_by']).join(', ');
+        const placeholders = ['?', '?', '?', '?'].concat(hasMahalle ? ['?'] : []).concat(hasAcikAdres ? ['?'] : []).concat(['?', '?']).join(', ');
+        const values = [tenantId, String(konum_adi).trim(), il || '', ilce || ''].concat(hasMahalle ? [mahalle || ''] : []).concat(hasAcikAdres ? [acik_adres || ''] : []).concat([kullaniciAdi, kullaniciAdi]);
         await run(`INSERT INTO ayarlar_genel_teslimat_konumlari (${insertCols}) VALUES (${placeholders})`, values);
         const inserted = await query('SELECT * FROM ayarlar_genel_teslimat_konumlari WHERE id = last_insert_rowid()');
         res.json({ success: true, data: inserted[0], message: 'Teslimat konumu eklendi.' });
@@ -19436,12 +19663,13 @@ app.put('/api/teslimat-konumlari/:id', async (req, res) => {
         const colNames = cols.map((c) => c.name);
         const hasMahalle = colNames.includes('mahalle');
         const hasAcikAdres = colNames.includes('acik_adres');
+        const kullaniciAdi = await getCurrentUsername(req);
         let updateSQL = 'UPDATE ayarlar_genel_teslimat_konumlari SET konum_adi=?, il=?, ilce=?';
         const updateValues = [konum_adi || '', il || '', ilce || ''];
         if (hasMahalle) { updateSQL += ', mahalle=?'; updateValues.push(mahalle || ''); }
         if (hasAcikAdres) { updateSQL += ', acik_adres=?'; updateValues.push(acik_adres || ''); }
-        updateSQL += ', updated_at=CURRENT_TIMESTAMP WHERE id=? AND (tenant_id=? OR tenant_id IS NULL)';
-        updateValues.push(id, tenantId);
+        updateSQL += ', updated_at=CURRENT_TIMESTAMP, updated_by=? WHERE id=? AND (tenant_id=? OR tenant_id IS NULL)';
+        updateValues.push(kullaniciAdi, id, tenantId);
         await run(updateSQL, updateValues);
         res.json({ success: true, message: 'Teslimat konumu güncellendi.' });
     } catch (error) {
@@ -19457,13 +19685,8 @@ app.delete('/api/teslimat-konumlari/:id', async (req, res) => {
         if (!tenantId) {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
         }
-        const cols = await query('PRAGMA table_info(ayarlar_genel_teslimat_konumlari)');
-        const hasAktif = cols.some((c) => c.name === 'aktif');
-        if (hasAktif) {
-            await run('UPDATE ayarlar_genel_teslimat_konumlari SET aktif=0, updated_at=CURRENT_TIMESTAMP WHERE id=? AND (tenant_id=? OR tenant_id IS NULL)', [id, tenantId]);
-        } else {
-            await run('DELETE FROM ayarlar_genel_teslimat_konumlari WHERE id=? AND (tenant_id=? OR tenant_id IS NULL)', [id, tenantId]);
-        }
+        const kullaniciAdi = await getCurrentUsername(req);
+        await run('UPDATE ayarlar_genel_teslimat_konumlari SET aktif=0, updated_at=CURRENT_TIMESTAMP, updated_by=? WHERE id=? AND (tenant_id=? OR tenant_id IS NULL)', [kullaniciAdi, id, tenantId]);
         res.json({ success: true, message: 'Teslimat konumu silindi.' });
     } catch (error) {
         console.error('❌ Teslimat konumu silinirken hata:', error);
@@ -19539,34 +19762,35 @@ app.put('/api/ayarlar/isletme', async (req, res) => {
         const hasLogoPath = cols.some(c => c.name === 'logo_path');
         const logoPathInBody = Object.prototype.hasOwnProperty.call(req.body, 'logo_path');
         const logoPathVal = logoPathInBody ? ((logo_path !== undefined && logo_path !== null && String(logo_path).trim() !== '') ? String(logo_path).trim() : null) : undefined;
+        const kullaniciAdi = await getCurrentUsername(req);
         const existing = await query('SELECT id FROM ayarlar_genel_isletme_ayarlari WHERE tenant_id = ? LIMIT 1', [tenantId]);
         if (existing.length > 0) {
             if (hasLogoPath && logoPathVal !== undefined) {
                 await run(
-                    `UPDATE ayarlar_genel_isletme_ayarlari SET isletme_adi=?, yetkili_kisi=?, telefon=?, whatsapp=?, eposta=?, website=?, vergi_dairesi=?, vergi_no=?, il=?, ilce=?, adres=?, logo_path=?, updated_at=CURRENT_TIMESTAMP WHERE tenant_id=?`,
-                    [isletme_adi || '', yetkili_kisi || '', telefon || '', whatsapp || '', eposta || '', website || '', vergi_dairesi || '', vergi_no || '', il || '', ilce || '', adres || '', logoPathVal, tenantId]
+                    `UPDATE ayarlar_genel_isletme_ayarlari SET isletme_adi=?, yetkili_kisi=?, telefon=?, whatsapp=?, eposta=?, website=?, vergi_dairesi=?, vergi_no=?, il=?, ilce=?, adres=?, logo_path=?, updated_at=CURRENT_TIMESTAMP, updated_by=? WHERE tenant_id=?`,
+                    [isletme_adi || '', yetkili_kisi || '', telefon || '', whatsapp || '', eposta || '', website || '', vergi_dairesi || '', vergi_no || '', il || '', ilce || '', adres || '', logoPathVal, kullaniciAdi, tenantId]
                 );
             } else if (hasLogoPath) {
                 await run(
-                    `UPDATE ayarlar_genel_isletme_ayarlari SET isletme_adi=?, yetkili_kisi=?, telefon=?, whatsapp=?, eposta=?, website=?, vergi_dairesi=?, vergi_no=?, il=?, ilce=?, adres=?, updated_at=CURRENT_TIMESTAMP WHERE tenant_id=?`,
-                    [isletme_adi || '', yetkili_kisi || '', telefon || '', whatsapp || '', eposta || '', website || '', vergi_dairesi || '', vergi_no || '', il || '', ilce || '', adres || '', tenantId]
+                    `UPDATE ayarlar_genel_isletme_ayarlari SET isletme_adi=?, yetkili_kisi=?, telefon=?, whatsapp=?, eposta=?, website=?, vergi_dairesi=?, vergi_no=?, il=?, ilce=?, adres=?, updated_at=CURRENT_TIMESTAMP, updated_by=? WHERE tenant_id=?`,
+                    [isletme_adi || '', yetkili_kisi || '', telefon || '', whatsapp || '', eposta || '', website || '', vergi_dairesi || '', vergi_no || '', il || '', ilce || '', adres || '', kullaniciAdi, tenantId]
                 );
             } else {
                 await run(
-                    `UPDATE ayarlar_genel_isletme_ayarlari SET isletme_adi=?, yetkili_kisi=?, telefon=?, whatsapp=?, eposta=?, website=?, vergi_dairesi=?, vergi_no=?, il=?, ilce=?, adres=?, updated_at=CURRENT_TIMESTAMP WHERE tenant_id=?`,
-                    [isletme_adi || '', yetkili_kisi || '', telefon || '', whatsapp || '', eposta || '', website || '', vergi_dairesi || '', vergi_no || '', il || '', ilce || '', adres || '', tenantId]
+                    `UPDATE ayarlar_genel_isletme_ayarlari SET isletme_adi=?, yetkili_kisi=?, telefon=?, whatsapp=?, eposta=?, website=?, vergi_dairesi=?, vergi_no=?, il=?, ilce=?, adres=?, updated_at=CURRENT_TIMESTAMP, updated_by=? WHERE tenant_id=?`,
+                    [isletme_adi || '', yetkili_kisi || '', telefon || '', whatsapp || '', eposta || '', website || '', vergi_dairesi || '', vergi_no || '', il || '', ilce || '', adres || '', kullaniciAdi, tenantId]
                 );
             }
         } else {
             if (hasLogoPath) {
                 await run(
-                    `INSERT INTO ayarlar_genel_isletme_ayarlari (tenant_id, isletme_adi, yetkili_kisi, telefon, whatsapp, eposta, website, vergi_dairesi, vergi_no, il, ilce, adres, logo_path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                    [tenantId, isletme_adi || '', yetkili_kisi || '', telefon || '', whatsapp || '', eposta || '', website || '', vergi_dairesi || '', vergi_no || '', il || '', ilce || '', adres || '', logoPathVal != null ? logoPathVal : null]
+                    `INSERT INTO ayarlar_genel_isletme_ayarlari (tenant_id, isletme_adi, yetkili_kisi, telefon, whatsapp, eposta, website, vergi_dairesi, vergi_no, il, ilce, adres, logo_path, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`,
+                    [tenantId, isletme_adi || '', yetkili_kisi || '', telefon || '', whatsapp || '', eposta || '', website || '', vergi_dairesi || '', vergi_no || '', il || '', ilce || '', adres || '', logoPathVal != null ? logoPathVal : null, kullaniciAdi, kullaniciAdi]
                 );
             } else {
                 await run(
-                    `INSERT INTO ayarlar_genel_isletme_ayarlari (tenant_id, isletme_adi, yetkili_kisi, telefon, whatsapp, eposta, website, vergi_dairesi, vergi_no, il, ilce, adres, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                    [tenantId, isletme_adi || '', yetkili_kisi || '', telefon || '', whatsapp || '', eposta || '', website || '', vergi_dairesi || '', vergi_no || '', il || '', ilce || '', adres || '']
+                    `INSERT INTO ayarlar_genel_isletme_ayarlari (tenant_id, isletme_adi, yetkili_kisi, telefon, whatsapp, eposta, website, vergi_dairesi, vergi_no, il, ilce, adres, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`,
+                    [tenantId, isletme_adi || '', yetkili_kisi || '', telefon || '', whatsapp || '', eposta || '', website || '', vergi_dairesi || '', vergi_no || '', il || '', ilce || '', adres || '', kullaniciAdi, kullaniciAdi]
                 );
             }
         }
@@ -19607,12 +19831,13 @@ app.post('/api/ayarlar/isletme/logo', (req, res, next) => {
         const hasLogoPath = cols.some(c => c.name === 'logo_path');
         if (hasLogoPath) {
             const existing = await query('SELECT id FROM ayarlar_genel_isletme_ayarlari WHERE tenant_id = ? LIMIT 1', [tenantId]);
+            const kullaniciAdi = await getCurrentUsername(req);
             if (existing.length > 0) {
-                await run('UPDATE ayarlar_genel_isletme_ayarlari SET logo_path = ?, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = ?', [relativePath, tenantId]);
+                await run('UPDATE ayarlar_genel_isletme_ayarlari SET logo_path = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE tenant_id = ?', [relativePath, kullaniciAdi, tenantId]);
             } else {
                 await run(
-                    'INSERT INTO ayarlar_genel_isletme_ayarlari (tenant_id, logo_path, created_at, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
-                    [tenantId, relativePath]
+                    'INSERT INTO ayarlar_genel_isletme_ayarlari (tenant_id, logo_path, created_at, updated_at, created_by, updated_by) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)',
+                    [tenantId, relativePath, kullaniciAdi, kullaniciAdi]
                 );
             }
         }
@@ -19624,7 +19849,7 @@ app.post('/api/ayarlar/isletme/logo', (req, res, next) => {
 });
 
 // ========== AYARLAR ÇİÇEK SEPETİ ==========
-const CICEKSEPETI_TABLE = 'ayarlar_ciceksepeti_ayalari';
+const CICEKSEPETI_TABLE = 'ayarlar_ciceksepeti_ayarlari';
 app.get('/api/ayarlar/ciceksepeti', async (req, res) => {
     try {
         const tenantId = req.tenantId || await getTenantId(req);
@@ -19683,36 +19908,72 @@ app.put('/api/ayarlar/ciceksepeti', async (req, res) => {
             try { await run(`ALTER TABLE ${CICEKSEPETI_TABLE} ADD COLUMN test_bildirimi INTEGER DEFAULT 0`); } catch (_) { }
             cols = await query(`PRAGMA table_info(${CICEKSEPETI_TABLE})`);
         }
+        const hasCreatedBy = cols.some(c => c.name === 'created_by');
+        const hasUpdatedBy = cols.some(c => c.name === 'updated_by');
+        if (!hasCreatedBy) { try { await run(`ALTER TABLE ${CICEKSEPETI_TABLE} ADD COLUMN created_by TEXT`); } catch (_) { } }
+        if (!hasUpdatedBy) { try { await run(`ALTER TABLE ${CICEKSEPETI_TABLE} ADD COLUMN updated_by TEXT`); } catch (_) { } }
+        if (!hasCreatedBy || !hasUpdatedBy) cols = await query(`PRAGMA table_info(${CICEKSEPETI_TABLE})`);
+        const kullaniciAdi = await getCurrentUsername(req);
         const { api_key, api_secret, api_mode, webhook_url, siparis_kontrol, otomatik_onay, ses_bildirimi, test_bildirimi } = req.body;
         const existing = await query(`SELECT id FROM ${CICEKSEPETI_TABLE} WHERE tenant_id = ? LIMIT 1`, [tenantId]);
         const hasTestBildirimiCol = cols.some(c => c.name === 'test_bildirimi');
+        const hasCB = cols.some(c => c.name === 'created_by');
+        const hasUB = cols.some(c => c.name === 'updated_by');
         const sk = siparis_kontrol != null ? parseInt(String(siparis_kontrol), 10) : 60;
         const oo = otomatik_onay ? 1 : 0;
         const sb = ses_bildirimi !== false && ses_bildirimi !== 0 ? 1 : 0;
         const tb = test_bildirimi ? 1 : 0;
         if (hasTestBildirimiCol) {
             if (existing && existing.length > 0) {
-                await run(
-                    `UPDATE ${CICEKSEPETI_TABLE} SET api_key=?, api_secret=?, api_mode=?, webhook_url=?, siparis_kontrol=?, otomatik_onay=?, ses_bildirimi=?, test_bildirimi=?, updated_at=CURRENT_TIMESTAMP WHERE tenant_id=?`,
-                    [api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb, tb, tenantId]
-                );
+                if (hasUB) {
+                    await run(
+                        `UPDATE ${CICEKSEPETI_TABLE} SET api_key=?, api_secret=?, api_mode=?, webhook_url=?, siparis_kontrol=?, otomatik_onay=?, ses_bildirimi=?, test_bildirimi=?, updated_at=CURRENT_TIMESTAMP, updated_by=? WHERE tenant_id=?`,
+                        [api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb, tb, kullaniciAdi, tenantId]
+                    );
+                } else {
+                    await run(
+                        `UPDATE ${CICEKSEPETI_TABLE} SET api_key=?, api_secret=?, api_mode=?, webhook_url=?, siparis_kontrol=?, otomatik_onay=?, ses_bildirimi=?, test_bildirimi=?, updated_at=CURRENT_TIMESTAMP WHERE tenant_id=?`,
+                        [api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb, tb, tenantId]
+                    );
+                }
             } else {
-                await run(
-                    `INSERT INTO ${CICEKSEPETI_TABLE} (tenant_id, api_key, api_secret, api_mode, webhook_url, siparis_kontrol, otomatik_onay, ses_bildirimi, test_bildirimi, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                    [tenantId, api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb, tb]
-                );
+                if (hasCB && hasUB) {
+                    await run(
+                        `INSERT INTO ${CICEKSEPETI_TABLE} (tenant_id, api_key, api_secret, api_mode, webhook_url, siparis_kontrol, otomatik_onay, ses_bildirimi, test_bildirimi, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`,
+                        [tenantId, api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb, tb, kullaniciAdi, kullaniciAdi]
+                    );
+                } else {
+                    await run(
+                        `INSERT INTO ${CICEKSEPETI_TABLE} (tenant_id, api_key, api_secret, api_mode, webhook_url, siparis_kontrol, otomatik_onay, ses_bildirimi, test_bildirimi, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+                        [tenantId, api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb, tb]
+                    );
+                }
             }
         } else {
             if (existing && existing.length > 0) {
-                await run(
-                    `UPDATE ${CICEKSEPETI_TABLE} SET api_key=?, api_secret=?, api_mode=?, webhook_url=?, siparis_kontrol=?, otomatik_onay=?, ses_bildirimi=?, updated_at=CURRENT_TIMESTAMP WHERE tenant_id=?`,
-                    [api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb, tenantId]
-                );
+                if (hasUB) {
+                    await run(
+                        `UPDATE ${CICEKSEPETI_TABLE} SET api_key=?, api_secret=?, api_mode=?, webhook_url=?, siparis_kontrol=?, otomatik_onay=?, ses_bildirimi=?, updated_at=CURRENT_TIMESTAMP, updated_by=? WHERE tenant_id=?`,
+                        [api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb, kullaniciAdi, tenantId]
+                    );
+                } else {
+                    await run(
+                        `UPDATE ${CICEKSEPETI_TABLE} SET api_key=?, api_secret=?, api_mode=?, webhook_url=?, siparis_kontrol=?, otomatik_onay=?, ses_bildirimi=?, updated_at=CURRENT_TIMESTAMP WHERE tenant_id=?`,
+                        [api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb, tenantId]
+                    );
+                }
             } else {
-                await run(
-                    `INSERT INTO ${CICEKSEPETI_TABLE} (tenant_id, api_key, api_secret, api_mode, webhook_url, siparis_kontrol, otomatik_onay, ses_bildirimi, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                    [tenantId, api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb]
-                );
+                if (hasCB && hasUB) {
+                    await run(
+                        `INSERT INTO ${CICEKSEPETI_TABLE} (tenant_id, api_key, api_secret, api_mode, webhook_url, siparis_kontrol, otomatik_onay, ses_bildirimi, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`,
+                        [tenantId, api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb, kullaniciAdi, kullaniciAdi]
+                    );
+                } else {
+                    await run(
+                        `INSERT INTO ${CICEKSEPETI_TABLE} (tenant_id, api_key, api_secret, api_mode, webhook_url, siparis_kontrol, otomatik_onay, ses_bildirimi, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+                        [tenantId, api_key || '', api_secret || '', api_mode || 'test', webhook_url || '', sk, oo, sb]
+                    );
+                }
             }
         }
         res.json({ success: true, message: 'Çiçek Sepeti ayarları kaydedildi.' });
@@ -19823,9 +20084,10 @@ app.post('/api/ciceksepeti/accept-order', async (req, res) => {
         );
         if (!rows || rows.length === 0) return res.status(404).json({ success: false, error: 'Sipariş bulunamadı.' });
         const row = rows[0];
+        const kullaniciAdi = await getCurrentUsername(req).catch(() => null);
         await run(
-            `UPDATE organizasyon_siparisler_ciceksepeti SET durum = 'kabul_edildi', updated_at = ${getTurkeyTimeSQL()} WHERE id = ? AND tenant_id = ?`,
-            [row.id, tenantId]
+            `UPDATE organizasyon_siparisler_ciceksepeti SET durum = 'kabul_edildi', updated_at = ${getTurkeyTimeSQL()}, updated_by = ? WHERE id = ? AND tenant_id = ?`,
+            [kullaniciAdi, row.id, tenantId]
         );
         const teslimTarih = row.teslim_tarihi;
         let kartId = null;
@@ -19898,16 +20160,17 @@ app.put('/api/ayarlar/konum', async (req, res) => {
         if (tableExists.length === 0) {
             return res.status(500).json({ success: false, error: 'Konum ayarları tablosu bulunamadı.' });
         }
+        const kullaniciAdi = await getCurrentUsername(req);
         const existing = await query('SELECT id FROM ayarlar_genel_konum_ayarlari WHERE tenant_id = ? LIMIT 1', [tenantId]);
         if (existing.length > 0) {
             await run(
-                `UPDATE ayarlar_genel_konum_ayarlari SET il_id=?, il_adi=?, ilce_id=?, ilce_adi=?, updated_at=CURRENT_TIMESTAMP WHERE tenant_id=?`,
-                [il_id || null, il_adi || '', ilce_id || null, ilce_adi || '', tenantId]
+                `UPDATE ayarlar_genel_konum_ayarlari SET il_id=?, il_adi=?, ilce_id=?, ilce_adi=?, updated_at=CURRENT_TIMESTAMP, updated_by=? WHERE tenant_id=?`,
+                [il_id || null, il_adi || '', ilce_id || null, ilce_adi || '', kullaniciAdi, tenantId]
             );
         } else {
             await run(
-                `INSERT INTO ayarlar_genel_konum_ayarlari (tenant_id, il_id, il_adi, ilce_id, ilce_adi, created_at, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-                [tenantId, il_id || null, il_adi || '', ilce_id || null, ilce_adi || '']
+                `INSERT INTO ayarlar_genel_konum_ayarlari (tenant_id, il_id, il_adi, ilce_id, ilce_adi, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`,
+                [tenantId, il_id || null, il_adi || '', ilce_id || null, ilce_adi || '', kullaniciAdi, kullaniciAdi]
             );
         }
         res.json({ success: true, message: 'Konum ayarları kaydedildi.' });
@@ -20055,6 +20318,9 @@ app.post('/api/organizasyon-turleri', async (req, res) => {
             insertValues.push(renk_kodu);
         }
         
+        const kullaniciAdi = await getCurrentUsername(req);
+        if (columnNames.includes('created_by')) { insertFields.push('created_by'); insertValues.push(kullaniciAdi); }
+        if (columnNames.includes('updated_by')) { insertFields.push('updated_by'); insertValues.push(kullaniciAdi); }
         insertFields.push('created_at', 'updated_at');
         insertValues.push('CURRENT_TIMESTAMP', 'CURRENT_TIMESTAMP');
         
@@ -20063,9 +20329,6 @@ app.post('/api/organizasyon-turleri', async (req, res) => {
         
         const insertSql = `INSERT INTO organizasyon_alt_turleri (${fieldsList}) VALUES (${placeholders})`;
         const finalValues = insertValues.filter(v => v !== 'CURRENT_TIMESTAMP');
-        
-        console.log('🔍 INSERT SQL:', insertSql);
-        console.log('🔍 INSERT Values:', finalValues);
         
         const result = await run(insertSql, finalValues);
         
@@ -20207,7 +20470,9 @@ app.put('/api/organizasyon-turleri/:id', async (req, res) => {
             });
         }
         
+        const kullaniciAdi = await getCurrentUsername(req);
         updateFields.push('updated_at = CURRENT_TIMESTAMP');
+        if (columnNames.includes('updated_by')) { updateFields.push('updated_by = ?'); updateValues.push(kullaniciAdi); }
         updateValues.push(id, tenantId);
         
         await run(
@@ -20373,7 +20638,8 @@ app.delete('/api/organizasyon-turleri/:id', async (req, res) => {
             });
         }
         
-        await query('UPDATE organizasyon_alt_turleri SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ? AND tenant_id = ?', [id, tenantId]);
+        const kullaniciAdi = await getCurrentUsername(req);
+        await query('UPDATE organizasyon_alt_turleri SET is_active = 0, updated_at = datetime(\'now\'), updated_by = ? WHERE id = ? AND tenant_id = ?', [kullaniciAdi, id, tenantId]);
         console.log(`✅ Organizasyon türü silindi: ID ${id}, Tenant: ${tenantId}`);
         res.json({ success: true, message: 'Organizasyon türü silindi' });
     } catch (error) {
@@ -20463,7 +20729,12 @@ app.put('/api/araclar/:id', async (req, res) => {
             updateFields.push('updated_at = CURRENT_TIMESTAMP');
         }
         
+        const kullaniciAdi = await getCurrentUsername(req);
         updateFields.push('updated_at = CURRENT_TIMESTAMP');
+        if (columnNames.includes('updated_by')) {
+            updateFields.push('updated_by = ?');
+            updateValues.push(kullaniciAdi);
+        }
         updateValues.push(id);
         
         if (columnNames.includes('tenant_id')) {
@@ -20560,6 +20831,15 @@ app.post('/api/araclar', async (req, res) => {
             insertFields.push('updated_at');
             insertValues.push('CURRENT_TIMESTAMP');
         }
+        const kullaniciAdi = await getCurrentUsername(req);
+        if (columnNames.includes('created_by')) {
+            insertFields.push('created_by');
+            insertValues.push(kullaniciAdi);
+        }
+        if (columnNames.includes('updated_by')) {
+            insertFields.push('updated_by');
+            insertValues.push(kullaniciAdi);
+        }
         
         const placeholders = insertFields.map(field => 
             field === 'created_at' || field === 'updated_at' ? 'CURRENT_TIMESTAMP' : '?'
@@ -20600,7 +20880,8 @@ app.delete('/api/araclar/:id', async (req, res) => {
         if (existing.length === 0) {
             return res.status(404).json({ success: false, error: 'Araç bulunamadı' });
         }
-        await run('DELETE FROM araclar WHERE id = ? AND tenant_id = ?', [id, tenantId]);
+        const kullaniciAdi = await getCurrentUsername(req);
+        await run('UPDATE araclar SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND tenant_id = ?', [kullaniciAdi, id, tenantId]);
         res.json({ success: true, message: 'Araç silindi' });
     } catch (error) {
         console.error('❌ Araç silinirken hata:', error);
@@ -22247,9 +22528,10 @@ app.post('/api/urun-gruplari', async (req, res) => {
         if (!ad) {
             return res.status(400).json({ success: false, error: 'Ürün grubu adı gereklidir.' });
         }
+        const kullaniciAdi = await getCurrentUsername(req);
         await run(
-            'INSERT INTO urunler_kategoriler (tenant_id, name, is_active) VALUES (?, ?, 1)',
-            [tenantId, ad]
+            'INSERT INTO urunler_kategoriler (tenant_id, name, is_active, created_by, updated_by) VALUES (?, ?, 1, ?, ?)',
+            [tenantId, ad, kullaniciAdi, kullaniciAdi]
         );
         const inserted = await query(
             'SELECT id, name AS ad, 1 AS durum FROM urunler_kategoriler WHERE id = last_insert_rowid()'
@@ -22296,7 +22578,9 @@ app.put('/api/urun-gruplari/:id', async (req, res) => {
         if (updates.length === 0) {
             return res.status(400).json({ success: false, error: 'Güncellenecek alan bulunamadı.' });
         }
-        values.push(id, tenantId);
+        const kullaniciAdi = await getCurrentUsername(req);
+        updates.push('updated_by = ?');
+        values.push(kullaniciAdi, id, tenantId);
         await run(
             `UPDATE urunler_kategoriler SET ${updates.join(', ')} WHERE id = ? AND tenant_id = ?`,
             values
@@ -22333,7 +22617,8 @@ app.delete('/api/urun-gruplari/:id', async (req, res) => {
         if (check.length === 0) {
             return res.status(404).json({ success: false, error: 'Ürün grubu bulunamadı.' });
         }
-        await run('UPDATE urunler_kategoriler SET is_active = 0 WHERE id = ? AND tenant_id = ?', [id, tenantId]);
+        const kullaniciAdi = await getCurrentUsername(req);
+        await run('UPDATE urunler_kategoriler SET is_active = 0, updated_by = ? WHERE id = ? AND tenant_id = ?', [kullaniciAdi, id, tenantId]);
         res.json({ success: true, message: 'Ürün grubu silindi.' });
     } catch (error) {
         console.error('❌ Ürün grubu silme hatası:', error);
@@ -22464,16 +22749,19 @@ app.post('/api/urunler', productUpload.single('urun_gorseli'), async (req, res) 
         }
         
         // Ürünü ekle
+        const kullaniciAdi = await getCurrentUsername(req);
         const result = await query(
-            `INSERT INTO urunler (tenant_id, urun_kategori_id, urun_adi, urun_fiyati, urun_gorseli, durum, is_active, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+            `INSERT INTO urunler (tenant_id, urun_kategori_id, urun_adi, urun_fiyati, urun_gorseli, durum, is_active, created_at, updated_at, created_by, updated_by)
+             VALUES (?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`,
             [
                 tenantId,
                 urun_kategori_id,
                 urun_adi,
                 urun_fiyati || 0,
                 urun_gorseli,
-                durum !== undefined ? durum : 1
+                durum !== undefined ? durum : 1,
+                kullaniciAdi,
+                kullaniciAdi
             ]
         );
         
@@ -22609,6 +22897,9 @@ app.put('/api/urunler/:id', productUpload.single('urun_gorseli'), async (req, re
         
         fields.push('updated_at = ?');
         values.push(new Date().toISOString());
+        const kullaniciAdi = await getCurrentUsername(req);
+        fields.push('updated_by = ?');
+        values.push(kullaniciAdi);
         values.push(id);
         
         await query(`UPDATE urunler SET ${fields.join(', ')} WHERE id = ? AND tenant_id = ?`, [...values, tenantId]);
@@ -22729,7 +23020,8 @@ app.delete('/api/urunler/:id', async (req, res) => {
         // ✅ DÜZELTME: Tenant kontrolü zaten yapıldı, sadece ID ile güncelle (daha güvenilir)
         // Silme işlemlerinde yalnızca is_active alanı pasife çekilir; durum alanı değiştirilmez
         // WHERE koşulunda tenant_id kullanmıyoruz çünkü zaten kontrol ettik
-        const updateSql = 'UPDATE urunler SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+        const kullaniciAdi = await getCurrentUsername(req);
+        const updateSql = 'UPDATE urunler SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ?';
         
         console.log(`🔄 UPDATE sorgusu:`, updateSql);
         console.log(`🔄 UPDATE parametreleri: [${productId}]`);
@@ -22744,7 +23036,7 @@ app.delete('/api/urunler/:id', async (req, res) => {
         let updateResult;
         try {
             // run helper fonksiyonu Promise döndürür ve changes'i kontrol eder
-            updateResult = await run(updateSql, [productId]);
+            updateResult = await run(updateSql, [kullaniciAdi, productId]);
             console.log(`✅ UPDATE sonucu (run helper):`, updateResult);
         } catch (updateError) {
             console.error(`❌ UPDATE hatası (catch):`, updateError);
@@ -22803,7 +23095,7 @@ app.delete('/api/urunler/:id', async (req, res) => {
                         if (finalIsActive !== 0) {
                             console.error(`❌ Checkpoint sonrası hala is_active=${finalIsActive}! UPDATE tekrar deneniyor...`);
                             // UPDATE'i tekrar dene
-                            const retryResult = await run(updateSql, [productId]);
+                            const retryResult = await run(updateSql, [kullaniciAdi, productId]);
                             console.log(`🔄 Retry UPDATE sonucu:`, retryResult);
                             
                             if (retryResult.changes === 0) {
@@ -22915,7 +23207,7 @@ app.get('/api/arac-takip/guncel-konumlar', async (req, res) => {
                 // araclar tablosu yoksa sadece araclar_takip verilerini döndür
                 const locations = await query(`
                     SELECT * FROM araclar_takip
-                    WHERE tenant_id = ?
+                    WHERE tenant_id = ? AND (is_active = 1 OR is_active IS NULL)
                     ORDER BY timestamp DESC
                     LIMIT 100
                 `, [tenantId]);
@@ -23263,10 +23555,10 @@ app.delete('/api/arac-takip/cleanup', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
         }
         
-        // araclar_takip tablosundaki tüm kayıtları sil
-        const result = await run(`DELETE FROM araclar_takip WHERE tenant_id = ?`, [tenantId]);
+        // araclar_takip tablosundaki tüm kayıtları soft delete (is_active = 0)
+        const result = await run(`UPDATE araclar_takip SET is_active = 0 WHERE tenant_id = ? AND (is_active = 1 OR is_active IS NULL)`, [tenantId]);
         
-        console.log(`✅ araclar_takip tablosu temizlendi: ${result.changes} kayıt silindi (Tenant: ${tenantId})`);
+        console.log(`✅ araclar_takip tablosu temizlendi (soft): ${result.changes} kayıt (Tenant: ${tenantId})`);
         
         res.json({
             success: true,
@@ -24084,10 +24376,11 @@ app.post('/api/kampanyalar', async (req, res) => {
         if (!ad || !mesaj || !baslangic_tarihi || !bitis_tarihi) {
             return res.status(400).json({ success: false, error: 'ad, mesaj, baslangic_tarihi, bitis_tarihi zorunludur' });
         }
+        const kullaniciAdi = await getCurrentUsername(req);
         const result = await run(
-            `INSERT INTO kampanyalar (ad, mesaj, musteri_grubu, baslangic_tarihi, bitis_tarihi, kupon_kodu, gorsel_path, durum, tenant_id, gonderildi)
-             VALUES (?, ?, ?, ?, ?, ?, ?, 'taslak', ?, 0)`,
-            [ad, mesaj || '', musteri_grubu || 'tum-musteriler', baslangic_tarihi, bitis_tarihi, kupon_kodu || null, gorsel_path || null, tenantId]
+            `INSERT INTO kampanyalar (ad, mesaj, musteri_grubu, baslangic_tarihi, bitis_tarihi, kupon_kodu, gorsel_path, durum, tenant_id, gonderildi, created_by, updated_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'taslak', ?, 0, ?, ?)`,
+            [ad, mesaj || '', musteri_grubu || 'tum-musteriler', baslangic_tarihi, bitis_tarihi, kupon_kodu || null, gorsel_path || null, tenantId, kullaniciAdi, kullaniciAdi]
         );
         const newRow = await query('SELECT * FROM kampanyalar WHERE id = ?', [result.lastID]);
         res.json({ success: true, data: newRow[0] });
@@ -24113,9 +24406,9 @@ app.put('/api/kampanyalar/:id', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Gönderilmiş kampanyalar düzenlenemez' });
         }
         await run(
-            `UPDATE kampanyalar SET ad = ?, mesaj = ?, musteri_grubu = ?, baslangic_tarihi = ?, bitis_tarihi = ?, kupon_kodu = ?, gorsel_path = COALESCE(?, gorsel_path), updated_at = CURRENT_TIMESTAMP
+            `UPDATE kampanyalar SET ad = ?, mesaj = ?, musteri_grubu = ?, baslangic_tarihi = ?, bitis_tarihi = ?, kupon_kodu = ?, gorsel_path = COALESCE(?, gorsel_path), updated_at = CURRENT_TIMESTAMP, updated_by = ?
              WHERE id = ? AND (tenant_id = ? OR tenant_id IS NULL)`,
-            [ad, mesaj, musteri_grubu || 'tum-musteriler', baslangic_tarihi, bitis_tarihi, kupon_kodu || null, gorsel_path, id, tenantId]
+            [ad, mesaj, musteri_grubu || 'tum-musteriler', baslangic_tarihi, bitis_tarihi, kupon_kodu || null, gorsel_path, await getCurrentUsername(req), id, tenantId]
         );
         const updated = await query('SELECT * FROM kampanyalar WHERE id = ?', [id]);
         res.json({ success: true, data: updated[0] });
@@ -24139,7 +24432,8 @@ app.delete('/api/kampanyalar/:id', async (req, res) => {
         if (existing[0].gonderildi === 1) {
             return res.status(400).json({ success: false, error: 'Gönderilmiş kampanyalar silinemez' });
         }
-        await run('DELETE FROM kampanyalar WHERE id = ? AND (tenant_id = ? OR tenant_id IS NULL)', [id, tenantId]);
+        const kullaniciAdi = await getCurrentUsername(req);
+        await run('UPDATE kampanyalar SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND (tenant_id = ? OR tenant_id IS NULL)', [kullaniciAdi, id, tenantId]);
         res.json({ success: true, message: 'Kampanya silindi' });
     } catch (error) {
         console.error('❌ Kampanya silme hatası:', error);
@@ -24199,9 +24493,10 @@ app.post('/api/sicak-satislar', async (req, res) => {
         const miktarVal = parseInt(miktar, 10) || 1;
         const tutarVal = parseFloat(tutar) || 0;
         const satisTuru = (satis_turu === 'havale' ? 'havale_eft' : (satis_turu || 'nakit'));
+        const kullaniciAdi = await getCurrentUsername(req);
         await run(
-            'INSERT INTO sicak_satislar (urun_adi, miktar, aciklama, satis_turu, tutar, tenant_id) VALUES (?, ?, ?, ?, ?, ?)',
-            [urun_adi.trim(), miktarVal, 'Sıcak Satış', satisTuru, tutarVal, tenantId]
+            'INSERT INTO sicak_satislar (urun_adi, miktar, aciklama, satis_turu, tutar, tenant_id, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [urun_adi.trim(), miktarVal, 'Sıcak Satış', satisTuru, tutarVal, tenantId, kullaniciAdi, kullaniciAdi]
         );
         const newRow = await query('SELECT * FROM sicak_satislar WHERE id = last_insert_rowid()');
         res.json({ success: true, data: newRow[0] });
@@ -24232,7 +24527,9 @@ app.put('/api/sicak-satislar/:id', async (req, res) => {
         if (updates.length === 0) {
             return res.status(400).json({ success: false, error: 'Güncellenecek alan yok' });
         }
-        values.push(id, tenantId);
+        const kullaniciAdi = await getCurrentUsername(req);
+        updates.push('updated_by = ?');
+        values.push(kullaniciAdi, id, tenantId);
         await run(`UPDATE sicak_satislar SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND (tenant_id = ? OR tenant_id IS NULL)`, values);
         const updated = await query('SELECT * FROM sicak_satislar WHERE id = ?', [id]);
         res.json({ success: true, data: updated[0] });
@@ -24253,7 +24550,8 @@ app.delete('/api/sicak-satislar/:id', async (req, res) => {
         if (!existing.length) {
             return res.status(404).json({ success: false, error: 'Sıcak satış bulunamadı' });
         }
-        await run('DELETE FROM sicak_satislar WHERE id = ? AND (tenant_id = ? OR tenant_id IS NULL)', [id, tenantId]);
+        const kullaniciAdi = await getCurrentUsername(req);
+        await run('UPDATE sicak_satislar SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND (tenant_id = ? OR tenant_id IS NULL)', [kullaniciAdi, id, tenantId]);
         res.json({ success: true, message: 'Sıcak satış silindi' });
     } catch (error) {
         console.error('❌ Sıcak satış silme hatası:', error);
@@ -24921,21 +25219,24 @@ app.post('/api/partner-firmalar/:id/odemeler', async (req, res) => {
         }
         
         await ensurePartnerCariHareketlerTurkce();
-        
-        const result = await run(`
-            INSERT INTO partner_cari_hareketler 
-            (tenant_id, partner_id, islem_tipi, tutar, odeme_yontemi, islem_tarihi_saati, odeme_yapan_kisi, aciklama)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            tenantId,
-            partner[0].id,
-            transaction_type,
-            parseFloat(amount),
-            normalizeOdemeYontemi(payment_method),
-            transaction_date,
-            responsible_person || null,
-            description || null
-        ]);
+        const pchCols = await query('PRAGMA table_info(partner_cari_hareketler)');
+        const pchN = (pchCols || []).map((c) => c.name);
+        if (!pchN.includes('created_by')) { try { await run('ALTER TABLE partner_cari_hareketler ADD COLUMN created_by TEXT'); } catch (_) {} }
+        if (!pchN.includes('updated_by')) { try { await run('ALTER TABLE partner_cari_hareketler ADD COLUMN updated_by TEXT'); } catch (_) {} }
+        const hasCB = (await query('PRAGMA table_info(partner_cari_hareketler)')).some((c) => c.name === 'created_by');
+        const hasUB = (await query('PRAGMA table_info(partner_cari_hareketler)')).some((c) => c.name === 'updated_by');
+        const kullaniciAdi = await getCurrentUsername(req);
+        const result = hasCB && hasUB
+            ? await run(`
+                INSERT INTO partner_cari_hareketler 
+                (tenant_id, partner_id, islem_tipi, tutar, odeme_yontemi, islem_tarihi_saati, odeme_yapan_kisi, aciklama, created_by, updated_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [tenantId, partner[0].id, transaction_type, parseFloat(amount), normalizeOdemeYontemi(payment_method), transaction_date, responsible_person || null, description || null, kullaniciAdi, kullaniciAdi])
+            : await run(`
+                INSERT INTO partner_cari_hareketler 
+                (tenant_id, partner_id, islem_tipi, tutar, odeme_yontemi, islem_tarihi_saati, odeme_yapan_kisi, aciklama)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `, [tenantId, partner[0].id, transaction_type, parseFloat(amount), normalizeOdemeYontemi(payment_method), transaction_date, responsible_person || null, description || null]);
         
         res.json({
             success: true,
@@ -25016,28 +25317,35 @@ app.put('/api/partner-firmalar/:id/odemeler/:paymentId', async (req, res) => {
         }
         
         await ensurePartnerCariHareketlerTurkce();
-        
-        await run(`
-            UPDATE partner_cari_hareketler
-            SET islem_tipi = ?,
-                tutar = ?,
-                odeme_yontemi = ?,
-                islem_tarihi_saati = ?,
-                odeme_yapan_kisi = ?,
-                aciklama = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = ? AND partner_id = ? AND tenant_id = ?
-        `, [
-            transaction_type,
-            parseFloat(amount),
-            normalizeOdemeYontemi(payment_method),
-            transaction_date,
-            responsible_person || null,
-            description || null,
-            paymentId,
-            partner[0].id,
-            tenantId
-        ]);
+        const kullaniciAdi = await getCurrentUsername(req);
+        const pchColsPut = await query('PRAGMA table_info(partner_cari_hareketler)');
+        const hasUBPut = (pchColsPut || []).some((c) => c.name === 'updated_by');
+        if (hasUBPut) {
+            await run(`
+                UPDATE partner_cari_hareketler
+                SET islem_tipi = ?,
+                    tutar = ?,
+                    odeme_yontemi = ?,
+                    islem_tarihi_saati = ?,
+                    odeme_yapan_kisi = ?,
+                    aciklama = ?,
+                    updated_at = CURRENT_TIMESTAMP,
+                    updated_by = ?
+                WHERE id = ? AND partner_id = ? AND tenant_id = ?
+            `, [transaction_type, parseFloat(amount), normalizeOdemeYontemi(payment_method), transaction_date, responsible_person || null, description || null, kullaniciAdi, paymentId, partner[0].id, tenantId]);
+        } else {
+            await run(`
+                UPDATE partner_cari_hareketler
+                SET islem_tipi = ?,
+                    tutar = ?,
+                    odeme_yontemi = ?,
+                    islem_tarihi_saati = ?,
+                    odeme_yapan_kisi = ?,
+                    aciklama = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ? AND partner_id = ? AND tenant_id = ?
+            `, [transaction_type, parseFloat(amount), normalizeOdemeYontemi(payment_method), transaction_date, responsible_person || null, description || null, paymentId, partner[0].id, tenantId]);
+        }
         
         res.json({
             success: true,
@@ -25109,12 +25417,14 @@ app.delete('/api/partner-firmalar/:id/odemeler/:paymentId', async (req, res) => 
         }
         
         // Ödeme kaydını silme - is_active = 0 yap (soft delete)
+        const kullaniciAdi = await getCurrentUsername(req);
         await run(`
             UPDATE partner_cari_hareketler
             SET is_active = 0,
-                updated_at = CURRENT_TIMESTAMP
+                updated_at = CURRENT_TIMESTAMP,
+                updated_by = ?
             WHERE id = ? AND partner_id = ? AND tenant_id = ?
-        `, [paymentId, partner[0].id, tenantId]);
+        `, [kullaniciAdi, paymentId, partner[0].id, tenantId]);
         
         res.json({
             success: true,
@@ -25177,8 +25487,8 @@ app.get('/api/partner-firmalar/:id/cari-ozet', async (req, res) => {
         
         const partnerFirmaAdi = partner[0].partner_firma_adi || partner[0].firma_adi;
         
-        // Partner siparişlerini bul
-        const siparisler = await query(`
+        // Alınan siparişler: partner'dan bize gelen (partner_siparis_turu NULL, '', 'gelen', 'alınan', 'alinan')
+        const alinanSiparisler = await query(`
             SELECT 
                 COUNT(*) as siparis_sayisi,
                 COALESCE(SUM(CAST(siparis_tutari AS REAL)), 0) as toplam_siparis
@@ -25186,12 +25496,25 @@ app.get('/api/partner-firmalar/:id/cari-ozet', async (req, res) => {
             WHERE partner_firma_adi = ?
                 AND tenant_id = ?
                 AND (is_active = 1 OR is_active IS NULL)
+                AND (partner_siparis_turu IS NULL OR partner_siparis_turu = ''
+                     OR LOWER(TRIM(partner_siparis_turu)) IN ('gelen', 'alınan', 'alinan'))
         `, [partnerFirmaAdi, tenantId]);
         
-        const siparisSayisi = siparisler[0]?.siparis_sayisi || 0;
-        const toplamSiparis = siparisler[0]?.toplam_siparis || 0;
+        // Verilen siparişler: partner'a verilen (partner_siparis_turu = 'verilen')
+        const verilenSiparisler = await query(`
+            SELECT COUNT(*) as verilen_sayisi
+            FROM siparisler
+            WHERE partner_firma_adi = ?
+                AND tenant_id = ?
+                AND (is_active = 1 OR is_active IS NULL)
+                AND LOWER(TRIM(partner_siparis_turu)) = 'verilen'
+        `, [partnerFirmaAdi, tenantId]);
         
-        // Toplam alacak: Sipariş tutarı
+        const siparisSayisi = alinanSiparisler[0]?.siparis_sayisi || 0;
+        const toplamSiparis = alinanSiparisler[0]?.toplam_siparis || 0;
+        const verilenSiparisSayisi = verilenSiparisler[0]?.verilen_sayisi || 0;
+        
+        // Toplam alacak: Alınan siparişlerin tutarı
         const toplamAlacak = siparisSayisi > 0 ? toplamSiparis : 0;
         
         await ensurePartnerCariHareketlerTurkce();
@@ -25209,15 +25532,19 @@ app.get('/api/partner-firmalar/:id/cari-ozet', async (req, res) => {
         
         const toplamTahsilat = tahsilatlar[0]?.toplam_tahsilat || 0;
         const toplamOdeme = tahsilatlar[0]?.toplam_odeme || 0;
-        const bakiye = toplamAlacak - toplamTahsilat + toplamOdeme;
+        // Bakiye: Toplam alacak (sipariş borcu) - yapılan ödemeler; tahsilat partnere yapılan ödeme sayılmaz
+        const bakiye = toplamAlacak - toplamOdeme;
         
         res.json({
             success: true,
             data: {
                 siparis_sayisi: siparisSayisi,
+                alinan_siparis_sayisi: siparisSayisi,
+                verilen_siparis_sayisi: verilenSiparisSayisi,
                 toplam_siparis: toplamSiparis,
                 toplam_alacak: toplamAlacak,
                 toplam_tahsilat: toplamTahsilat,
+                toplam_odeme: toplamOdeme,
                 bakiye: bakiye
             }
         });
@@ -25310,7 +25637,7 @@ app.get('/api/partner-payments/partner/:id/summary', async (req, res) => {
         
         const toplamTahsilat = tahsilatlar[0]?.toplam_tahsilat || 0;
         const toplamOdeme = tahsilatlar[0]?.toplam_odeme || 0;
-        const bakiye = toplamAlacak - toplamTahsilat + toplamOdeme;
+        const bakiye = toplamAlacak - toplamOdeme;
         
         res.json({
             success: true,
@@ -25319,6 +25646,7 @@ app.get('/api/partner-payments/partner/:id/summary', async (req, res) => {
                 toplam_siparis: toplamSiparis,
                 toplam_alacak: toplamAlacak,
                 toplam_tahsilat: toplamTahsilat,
+                toplam_odeme: toplamOdeme,
                 bakiye: bakiye
             }
         });
@@ -25934,7 +26262,7 @@ app.post('/api/partner-firmalar', async (req, res) => {
             });
         }
 
-        // Yeni partner firma ekle (yeni kolon isimleri)
+        const kullaniciAdi = await getCurrentUsername(req);
         const result = await run(`
             INSERT INTO partner_firmalar (
                 partner_firma_adi,
@@ -25948,8 +26276,10 @@ app.post('/api/partner-firmalar', async (req, res) => {
                 partner_ilce,
                 partner_mahalle,
                 tenant_id,
-                is_active
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                is_active,
+                created_by,
+                updated_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             String(adi).trim(),
             (partner_telefon ?? firma_tel) || null,
@@ -25962,7 +26292,9 @@ app.post('/api/partner-firmalar', async (req, res) => {
             partner_ilce || null,
             partner_mahalle || null,
             tenantId,
-            is_active !== undefined ? is_active : 1
+            is_active !== undefined ? is_active : 1,
+            kullaniciAdi,
+            kullaniciAdi
         ]);
 
         const newId = result.lastID;
@@ -26113,8 +26445,9 @@ app.put('/api/partner-firmalar/:id', async (req, res) => {
             });
         }
 
-        updateFields.push('updated_at = CURRENT_TIMESTAMP');
-        updateValues.push(id, tenantId);
+        const kullaniciAdi = await getCurrentUsername(req);
+        updateFields.push('updated_at = CURRENT_TIMESTAMP', 'updated_by = ?');
+        updateValues.push(kullaniciAdi, id, tenantId);
 
         const result = await execute(`
             UPDATE partner_firmalar SET
@@ -26161,9 +26494,10 @@ app.delete('/api/partner-firmalar/:id', async (req, res) => {
                 error: 'Partner firma bulunamadı'
             });
         }
+        const kullaniciAdi = await getCurrentUsername(req);
         await run(
-            'UPDATE partner_firmalar SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
-            [id, tenantId]
+            'UPDATE partner_firmalar SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND tenant_id = ?',
+            [kullaniciAdi, id, tenantId]
         );
         res.json({
             success: true,
@@ -26250,10 +26584,10 @@ app.post('/api/partner-firmalar/:id/logo', partnerLogoUpload.single('logo'), asy
             await updateTenantStorageUsage(tenantId, req.file.size, req);
         }
         
-        // Veritabanını güncelle
+        const kullaniciAdi = await getCurrentUsername(req);
         await run(
-            'UPDATE partner_firmalar SET partner_logo = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?',
-            [relativePath, id, tenantId]
+            'UPDATE partner_firmalar SET partner_logo = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id = ? AND tenant_id = ?',
+            [relativePath, kullaniciAdi, id, tenantId]
         );
         
         console.log('✅ Partner logo başarıyla yüklendi:', relativePath);

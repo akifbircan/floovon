@@ -677,18 +677,24 @@ export const CustomersPage: React.FC = () => {
           ) : (
             <div className="page-detail-card customers-detail-card" data-card-item>
               <div className="page-detail-card-top customers-detail-card-top custom-scrollbar">
-                {/* Toplam Sipariş & Kalan Bakiye - en üstte, alan genişliğinde yarı yarıya */}
-                <div className="page-detail-block page-detail-block-sep customers-detail-cari">
-                  <div className="customers-detail-cari-row">
-                    <div className="customers-detail-cari-cell">
-                      <span className="page-detail-label">Toplam Sipariş</span>
-                      <span className="page-detail-value">
-                        {cariOzet?.toplam_siparis_sayisi ?? selectedCustomer.toplam_siparis ?? selectedCustomer.orderCount ?? 0}
+                {/* Toplam Sipariş & Kalan Bakiye - ortak detail-cari stili (müşteriler + partner firmalar) */}
+                <div className="partners-detail-block partners-detail-block-sep detail-cari">
+                  <div className="detail-cari-row">
+                    <div className="detail-cari-cell">
+                      <span className="detail-cari-label">Toplam Sipariş</span>
+                      <span className="detail-cari-value">
+                        {cariOzet?.toplam_siparis_sayisi ?? cariOzet?.siparis_sayisi ?? selectedCustomer.toplam_siparis ?? selectedCustomer.orderCount ?? 0} Sipariş
                       </span>
                     </div>
-                    <div className="customers-detail-cari-cell">
-                      <span className="page-detail-label">Kalan Bakiye</span>
-                      <span className={`page-detail-value customers-detail-bakiye ${(cariOzet?.bakiye ?? selectedCustomer.bakiye ?? 0) >= 0 ? 'customers-detail-bakiye-pozitif' : 'customers-detail-bakiye-negatif'}`}>
+                    <div className="detail-cari-cell">
+                      <span className="detail-cari-label">Kalan Bakiye</span>
+                      <span
+                        className={`detail-cari-value detail-cari-bakiye ${
+                          (cariOzet?.bakiye ?? selectedCustomer.bakiye ?? 0) >= 0
+                            ? 'detail-cari-bakiye-pozitif'
+                            : 'detail-cari-bakiye-negatif'
+                        }`}
+                      >
                         {formatTL(cariOzet?.bakiye ?? selectedCustomer.bakiye ?? 0)}
                       </span>
                     </div>
@@ -696,7 +702,7 @@ export const CustomersPage: React.FC = () => {
                   {selectedCustomer && (
                     <button
                       type="button"
-                      className="customers-btn-cari customers-btn-cari-inline"
+                      className="btn-cari btn-cari-inline"
                       onClick={() => navigate(`/musteriler-cari/${selectedCustomer.id}`)}
                     >
                       <TurkishLira size={16} aria-hidden />

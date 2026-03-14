@@ -8,7 +8,7 @@ import { EmptyState } from '../../../shared/components/EmptyState';
 import { usePageAnimations } from '../../../shared/hooks/usePageAnimations';
 import { usePlan } from '../../../app/providers/PlanProvider';
 import { getProfileImageUrl } from '../../../shared/utils/userUtils';
-import { formatPhoneNumber, cleanPhoneForDatabase } from '../../../shared/utils/formatUtils';
+import { formatPhoneNumber, cleanPhoneForDatabase, formatSonEtkinlikDatetime } from '../../../shared/utils/formatUtils';
 import { usePhoneInput } from '../../../shared/hooks/usePhoneInput';
 import { showToast, showToastInteractive } from '../../../shared/utils/toastUtils';
 import { createPortal } from 'react-dom';
@@ -967,7 +967,7 @@ export const ProfilePage: React.FC = () => {
                             </td>
                             <td data-label="Son Etkinlik" className="profil-son-etkinlik">
                               {user.son_etkinlik?.trim() && user.son_etkinlik.trim() !== '-' ? (
-                                user.son_etkinlik
+                                formatSonEtkinlikDatetime(user.son_etkinlik)
                               ) : (
                                 <span className="profil-son-etkinlik-placeholder">(Henüz etkinlik yok)</span>
                               )}

@@ -325,7 +325,7 @@ body:has(.toast-overlay) {
   padding: 10px 18px;
   border: none;
   border-radius: 5px;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }

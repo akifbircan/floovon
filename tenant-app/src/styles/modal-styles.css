@@ -508,14 +508,17 @@
     width: 100% !important;
 }
 
-/* ========== DATE INPUT STİLLERİ - ESKİ SİSTEMDEN ========== */
-.yeni-kart-container .input-tarih-saat input[type="date"] {
+/* ========== DATE/TIME INPUT – yeni kart: kampanya formu gibi custom ok (native takvim/saat ikonu yok) ========== */
+.yeni-kart-container .input-tarih-saat input[type="date"],
+.yeni-kart-container .input-tarih-saat input[type="time"],
+.overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"],
+.overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"] {
     height: 40px !important;
     font-size: 14px !important;
     border: 1px solid var(--gray-light-cc) !important;
     border-radius: 4px !important;
-    appearance: auto !important;
-    -webkit-appearance: menulist !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
     background-color: var(--white) !important;
     color: var(--ana-renk) !important;
     cursor: pointer !important;
@@ -523,48 +526,50 @@
     box-sizing: border-box !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
     margin: 0 !important;
+    padding-right: 2.25rem !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.5rem center !important;
+    background-size: 1rem 1rem !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
 }
 
-.yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator {
-    opacity: 1 !important;
+.yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
+.yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator,
+.overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
+.overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator {
+    opacity: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
     cursor: pointer !important;
-    filter: brightness(0) saturate(100%);
 }
 
-/* Dark tema: takvim/saat ikonları açık renk */
+/* css-variables dark-mode indicator'ı ezmesin (yeni kartta native ikon gizli kalsın) */
 body.dark-mode .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
-html.dark-mode .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) !important;
-    opacity: 0.85 !important;
-}
-
-/* ========== TIME INPUT STİLLERİ ========== */
-.yeni-kart-container .input-tarih-saat input[type="time"] {
-    height: 40px !important;
-    font-size: 14px !important;
-    border: 1px solid var(--gray-light-cc) !important;
-    border-radius: 4px !important;
-    appearance: auto !important;
-    -webkit-appearance: menulist !important;
-    background-color: var(--white) !important;
-    color: var(--ana-renk) !important;
-    cursor: pointer !important;
-    outline: none !important;
-    box-sizing: border-box !important;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
-    margin: 0 !important;
-}
-
-.yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator {
-    opacity: 1 !important;
-    cursor: pointer !important;
-    filter: brightness(0) saturate(100%);
-}
-
 body.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator,
-html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) !important;
-    opacity: 0.85 !important;
+html.dark-mode .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
+html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator,
+body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator,
+html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
+html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator {
+    opacity: 0 !important;
+    filter: none !important;
+}
+
+body.dark-mode .yeni-kart-container .input-tarih-saat input[type="date"],
+body.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"],
+html.dark-mode .yeni-kart-container .input-tarih-saat input[type="date"],
+html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"],
+body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"],
+body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"],
+html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"],
+html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
 }
 
 .yeni-kart-container .input-tarih-saat .siparis-saat {
@@ -1414,7 +1419,7 @@ html.dark-mode .yeni-kart-container .input-tarih-saat input[type="time"]::-webki
 .yeni-musteri-container .musteri-logosu .dosya-yukle-alan .file-label {
     font-size: 12px !important;
     color: var(--gri70) !important;
-    text-align: center !important;
+    text-align: left !important;
 }
 
 .yeni-musteri-container .musteri-logosu .dosya-yukle-alan .remove-button {
@@ -2015,8 +2020,9 @@ body:has(.whatsapp-qr-modal) {
     gap: 8px 10px !important;
 }
 
-.sicak-satis-popup .header-alan .sicak-satis-modal-baslik > i:first-child {
-    margin-right: 6px !important;
+.sicak-satis-popup .header-alan .sicak-satis-modal-baslik > i:first-child,
+.sicak-satis-popup .header-alan .sicak-satis-modal-baslik > svg:first-of-type {
+  color: var(--sicak-satis) !important;
 }
 
 .sicak-satis-popup .sicak-satis-modal-subtitle {
@@ -2670,6 +2676,7 @@ background-color: var(--success-bg) !important;
     border-radius: 4px !important;
     font-size: 14px !important;
     font-weight: 600 !important;
+    width: 100% !important;
 }
 
 .modal-react-imza-section {
@@ -5571,14 +5578,15 @@ body div.overlay-yeni-musteri-container.show div.yeni-musteri-container.show {
 }
 
 /* TARİH/SAAT INPUT'LARI - ESKİ SİSTEMDEN */
+/* overlay-yeni-kart: date/time custom ok (üstteki .yeni-kart-container kurallarıyla aynı; bu blok tekrar native yapmasın) */
 .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"],
 .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"] {
     height: 40px !important;
     font-size: 14px !important;
     border: 1px solid var(--gray-light-cc) !important;
     border-radius: 4px !important;
-    appearance: auto !important;
-    -webkit-appearance: menulist !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
     background-color: var(--white) !important;
     color: var(--ana-renk) !important;
     cursor: pointer !important;
@@ -5586,22 +5594,31 @@ body div.overlay-yeni-musteri-container.show div.yeni-musteri-container.show {
     box-sizing: border-box !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
     margin: 0 !important;
+    padding-right: 2.25rem !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.5rem center !important;
+    background-size: 1rem 1rem !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
 }
 
 .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
 .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator {
-    opacity: 1 !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
     cursor: pointer !important;
-    filter: brightness(0) saturate(100%);
 }
 
-/* Dark tema: takvim/saat ikonları açık renk (modal en son yüklendiği için burada da override) */
-body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
-body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator,
-html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"]::-webkit-calendar-picker-indicator,
-html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) !important;
-    opacity: 0.85 !important;
+body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"],
+body.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"],
+html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="date"],
+html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-saat input[type="time"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
 }
 
 /* YENİ MÜŞTERİ MODAL */

@@ -34,15 +34,57 @@ async function getDb() {
     return db;
 }
 
+/**
+ * siparisler/siparis_kartlar tablosundaki müşteri adı kolonlarını tespit eder.
+ * Büyük/küçük harf duyarsız eşleme + tüm olası isim kolonları COALESCE ile tek değerde.
+ */
+async function getSiparisMusteriSelectParts(db) {
+    const tables = ['siparisler', 'siparis_kartlar'];
+    let tableName = null;
+    let columns = [];
+    for (const t of tables) {
+        try {
+            const info = await db.query(`PRAGMA table_info(${t})`);
+            if (info && info.length > 0) {
+                tableName = t;
+                columns = info.map((c) => c.name);
+                break;
+            }
+        } catch (_) {}
+    }
+    if (!tableName || columns.length === 0) {
+        return { tableName: 'siparisler', unvanSel: 'sk.musteri_unvan', isimSel: 'sk.musteri_isim_soyisim' };
+    }
+    const has = (n) => columns.some((c) => String(c).toLowerCase() === n.toLowerCase());
+    const col = (n) => {
+        const found = columns.find((c) => String(c).toLowerCase() === n.toLowerCase());
+        return found ? `sk.${found}` : null;
+    };
+    const unvanCols = ['musteri_unvan', 'musteri_unvani'].map(col).filter(Boolean);
+    const isimCols = ['musteri_isim_soyisim', 'musteri_ad_soyad', 'siparis_veren', 'musteri_adi', 'musteri_unvan', 'musteri_unvani'].map(col).filter(Boolean);
+    const unvanSel = unvanCols.length > 0 ? `COALESCE(${unvanCols.join(', ')}) AS musteri_unvan` : 'NULL AS musteri_unvan';
+    const isimSel = isimCols.length > 0 ? `COALESCE(${isimCols.join(', ')}) AS musteri_isim_soyisim` : 'NULL AS musteri_isim_soyisim';
+    return { tableName, unvanSel, isimSel };
+}
+
+/** API yanıtında her siparişte musteri_unvan ve musteri_isim_soyisim dolu olsun (frontend .siparis-veren için) */
+function normalizeSiparisMusteri(row) {
+    if (!row) return;
+    const unvan = row.musteri_unvan || row.musteri_unvani || '';
+    const isim = row.musteri_isim_soyisim || row.musteri_ad_soyad || row.siparis_veren || row.musteri_adi || row.musteri_unvan || row.musteri_unvani || '';
+    row.musteri_unvan = unvan || isim || null;
+    row.musteri_isim_soyisim = isim || unvan || null;
+}
+
 // Tüm sipariş kartlarını getir
 router.get('/', async (req, res) => {
     try {
         const db = await getDb();
-        
-        // Basit SQL sorgusu ile test et
+        const { tableName, unvanSel, isimSel } = await getSiparisMusteriSelectParts(db);
+
         const siparisKartlari = await db.query(`
             SELECT 
-                sk.id, sk.kart_sira, sk.organizasyon_kart_id, sk.musteri_unvan, sk.musteri_isim_soyisim,
+                sk.id, sk.kart_sira, sk.organizasyon_kart_id, ${unvanSel}, ${isimSel},
                 sk.siparis_veren_telefon, sk.urun_yazisi, sk.secilen_urun_yazi_dosyasi, sk.siparis_urun,
                 sk.siparis_urun_aciklama, sk.urun_gorsel, sk.arac_randevu_saat, sk.arac_markamodel, sk.arac_renk, sk.arac_plaka,
                 sk.siparis_tutari, sk.odeme_yontemi, sk.baglantili_siparisler, sk.ekstra_ucret_aciklama,
@@ -59,7 +101,7 @@ router.get('/', async (req, res) => {
                 ok.organizasyon_mahalle, ok.organizasyon_acik_adres,
                 ok.organizasyon_teslim_kisisi, ok.organizasyon_teslim_kisisi_telefon,
                 ok.organizasyon_teslim_tarih, ok.organizasyon_teslim_saat
-            FROM siparisler sk
+            FROM ${tableName} sk
             LEFT JOIN organizasyon_kartlar ok ON sk.organizasyon_kart_id = ok.id
             WHERE sk.status = 'aktif' 
                 AND COALESCE(CAST(sk.arsivli AS INTEGER), 0) = 0
@@ -67,6 +109,7 @@ router.get('/', async (req, res) => {
             ORDER BY sk.created_at DESC
         `);
 
+        siparisKartlari.forEach(normalizeSiparisMusteri);
         logger.info(`📦 ${siparisKartlari.length} sipariş kartı getirildi`);
         
         res.json({
@@ -90,10 +133,11 @@ router.get('/organizasyon/:organizasyonId', async (req, res) => {
         const { organizasyonId } = req.params;
         console.log('🔍 GET /organizasyon/:organizasyonId çağrıldı:', organizasyonId);
         const db = await getDb();
-        
+        const { tableName, unvanSel, isimSel } = await getSiparisMusteriSelectParts(db);
+
         let siparisler = await db.query(`
             SELECT 
-                sk.id, sk.kart_sira, sk.siparis_kodu, sk.organizasyon_kart_id, sk.musteri_unvan, sk.musteri_isim_soyisim,
+                sk.id, sk.kart_sira, sk.siparis_kodu, sk.organizasyon_kart_id, ${unvanSel}, ${isimSel},
                 sk.siparis_veren_telefon, sk.urun_yazisi, sk.secilen_urun_yazi_dosyasi, sk.siparis_urun,
                 sk.siparis_urun_id, sk.siparis_urun_aciklama, sk.urun_gorsel, sk.urun_gorsel as product_gorsel,
                 sk.arac_randevu_saat, sk.arac_markamodel, sk.arac_renk, sk.arac_plaka,
@@ -110,7 +154,7 @@ router.get('/organizasyon/:organizasyonId', async (req, res) => {
                 ok.organizasyon_mahalle, ok.organizasyon_acik_adres,
                 ok.organizasyon_teslim_tarih, ok.organizasyon_teslim_saat,
                 p.urun_adi as gercek_urun_adi
-            FROM siparisler sk
+            FROM ${tableName} sk
             LEFT JOIN organizasyon_kartlar ok ON sk.organizasyon_kart_id = ok.id
             LEFT JOIN products p ON sk.siparis_urun_id = p.id AND p.tenant_id = COALESCE(sk.tenant_id, ok.tenant_id)
             WHERE sk.organizasyon_kart_id = ? 
@@ -147,6 +191,7 @@ router.get('/organizasyon/:organizasyonId', async (req, res) => {
         }
         
         siparisler = uniqueSiparisler;
+        siparisler.forEach(normalizeSiparisMusteri);
 
         logger.info(`📦 ${siparisler.length} sipariş kartı getirildi (Organizasyon ID: ${organizasyonId})`);
         

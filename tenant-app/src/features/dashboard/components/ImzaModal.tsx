@@ -95,8 +95,13 @@ export const ImzaModal: React.FC<ImzaModalProps> = ({
     const stopDrawing = () => {
       isDrawingRef.current = false;
     };
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      startDrawing(e);
+    };
 
-    const handleTouch = (e: TouchEvent) => {
+    const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
       if (e.touches.length > 0) {
         draw(e);
@@ -110,8 +115,8 @@ export const ImzaModal: React.FC<ImzaModalProps> = ({
     canvas.addEventListener('mouseout', stopDrawing);
 
     // Touch events
-    canvas.addEventListener('touchstart', handleTouch, { passive: false });
-    canvas.addEventListener('touchmove', handleTouch, { passive: false });
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
     canvas.addEventListener('touchend', stopDrawing);
 
     return () => {
@@ -119,8 +124,8 @@ export const ImzaModal: React.FC<ImzaModalProps> = ({
       canvas.removeEventListener('mousemove', draw);
       canvas.removeEventListener('mouseup', stopDrawing);
       canvas.removeEventListener('mouseout', stopDrawing);
-      canvas.removeEventListener('touchstart', handleTouch);
-      canvas.removeEventListener('touchmove', handleTouch);
+      canvas.removeEventListener('touchstart', handleTouchStart);
+      canvas.removeEventListener('touchmove', handleTouchMove);
       canvas.removeEventListener('touchend', stopDrawing);
     };
   };

@@ -561,86 +561,88 @@ export const ReportsPage: React.FC = () => {
   return (
     <div className="page-wrapper page-wrapper--full flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden p-6">
       <div className="reports-panel-inner flex-1 flex flex-col min-h-0 overflow-hidden">
-        {/* Başlık + Yatay Tablar + Dışa Aktar */}
-        <div className="reports-header-bar mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="reports-tabs-horizontal flex gap-1">
-                <button
-                  type="button"
-                  className={`reports-tab-btn ${activeTab === 'satis' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('satis')}
-                >
-                  Satış Raporları
-                </button>
-                <button
-                  type="button"
-                  className={`reports-tab-btn ${activeTab === 'musteri' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('musteri')}
-                >
-                  Müşteri Raporları
-                </button>
-              </div>
-            </div>
-            <div ref={exportDropdownRef} className={`buton-disa-aktar clickdropdown page-export-dropdown ${exportMenuOpen ? 'is-open' : ''}`}>
-              <div className="btn-baslik">
-                <i className="icon-dashboard-disa-aktar" />
-                Dışa Aktar
-              </div>
-              <div className="dosya-tur clickdropbtn" onClick={() => setExportMenuOpen(!exportMenuOpen)}>
-                .xls
-                <ChevronDown size={12} />
-              </div>
-              {exportMenuOpen && (
-                <div className="dosya-tur-content clickdropdown-content">
-                  <div className="liste-baslik">Raporu Dışa Aktar</div>
-                  <hr />
-                  <button type="button" className="btn-disa-aktar" onClick={() => void handleExport('excel')}>
-                    <i className="icon-disa-aktar-excel" />
-                    Excel'e Aktar
-                  </button>
-                  <button type="button" className="btn-yazdir" onClick={() => void handleExport('print')}>
-                    <i className="icon-disa-aktar-yazdir" />
-                    Yazdır
-                  </button>
-                </div>
-              )}
+        {/* Başlık + Yatay Tablar */}
+        <div className="reports-header-bar mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="reports-tab-nav ayarlar-tab-nav">
+              <button
+                type="button"
+                className={`reports-tab-btn ayarlar-tab-btn ${activeTab === 'satis' ? 'active' : ''}`}
+                onClick={() => setActiveTab('satis')}
+              >
+                <TrendingUp size={18} aria-hidden />
+                Satış Raporları
+              </button>
+              <button
+                type="button"
+                className={`reports-tab-btn ayarlar-tab-btn ${activeTab === 'musteri' ? 'active' : ''}`}
+                onClick={() => setActiveTab('musteri')}
+              >
+                <Users size={18} aria-hidden />
+                Müşteri Raporları
+              </button>
             </div>
         </div>
 
-        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+        <div className="reports-scroll-area flex-1 flex flex-col min-h-0 overflow-auto">
             {activeTab === 'satis' && (
               <div className="reports-content">
                 <div className="reports-filtreler">
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="startDate">BAŞLANGIÇ TARİHİ:</label>
-                    <input id="startDate" type="date" value={baslangicTarihi} onChange={(e) => setBaslangicTarihi(e.target.value)} />
+                  <div className="reports-filtreler-sol flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="startDate">BAŞLANGIÇ TARİHİ:</label>
+                      <input id="startDate" type="date" value={baslangicTarihi} onChange={(e) => setBaslangicTarihi(e.target.value)} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="endDate">BİTİŞ TARİHİ:</label>
+                      <input id="endDate" type="date" value={bitisTarihi} onChange={(e) => setBitisTarihi(e.target.value)} min={baslangicTarihi} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label>SATIŞ TÜRÜ:</label>
+                      <select value={satisTuruFilter} onChange={(e) => setSatisTuruFilter(e.target.value)}>
+                        <option value="tumunu">Tümü</option>
+                        <option value="sicak_satis">Sıcak Satış</option>
+                        <option value="nakit">Nakit</option>
+                        <option value="havale_eft">Havale/EFT</option>
+                        <option value="pos">POS</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="urunFilter" className="whitespace-nowrap">ÜRÜN:</label>
+                      <select id="urunFilter" value={urunFilter} onChange={(e) => setUrunFilter(e.target.value)}>
+                        <option value="tumunu">Tümü</option>
+                        {urunListesi.map((u) => (
+                          <option key={u} value={u}>{u}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button type="button" className="btn-filtre-reset" onClick={handleClearFilters}>
+                      Filtreleri Temizle
+                    </button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="endDate">BİTİŞ TARİHİ:</label>
-                    <input id="endDate" type="date" value={bitisTarihi} onChange={(e) => setBitisTarihi(e.target.value)} min={baslangicTarihi} />
+                  <div ref={exportDropdownRef} className={`buton-disa-aktar clickdropdown page-export-dropdown ${exportMenuOpen ? 'is-open' : ''}`}>
+                    <div className="btn-baslik">
+                      <i className="icon-dashboard-disa-aktar" />
+                      Dışa Aktar
+                    </div>
+                    <div className="dosya-tur clickdropbtn" onClick={() => setExportMenuOpen(!exportMenuOpen)}>
+                      .xls
+                      <ChevronDown size={12} />
+                    </div>
+                    {exportMenuOpen && (
+                      <div className="dosya-tur-content clickdropdown-content">
+                        <div className="liste-baslik">Raporu Dışa Aktar</div>
+                        <hr />
+                        <button type="button" className="btn-disa-aktar" onClick={() => void handleExport('excel')}>
+                          <i className="icon-disa-aktar-excel" />
+                          Excel'e Aktar
+                        </button>
+                        <button type="button" className="btn-yazdir" onClick={() => void handleExport('print')}>
+                          <i className="icon-disa-aktar-yazdir" />
+                          Yazdır
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label>SATIŞ TÜRÜ:</label>
-                    <select value={satisTuruFilter} onChange={(e) => setSatisTuruFilter(e.target.value)}>
-                      <option value="tumunu">Tümü</option>
-                      <option value="sicak_satis">Sıcak Satış</option>
-                      <option value="nakit">Nakit</option>
-                      <option value="havale_eft">Havale/EFT</option>
-                      <option value="pos">POS</option>
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="urunFilter" className="whitespace-nowrap">ÜRÜN:</label>
-                    <select id="urunFilter" value={urunFilter} onChange={(e) => setUrunFilter(e.target.value)}>
-                      <option value="tumunu">Tümü</option>
-                      {urunListesi.map((u) => (
-                        <option key={u} value={u}>{u}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <button type="button" className="btn-filtre-reset" onClick={handleClearFilters}>
-                    Filtreleri Temizle
-                  </button>
                 </div>
 
                 <div className="reports-sorgu-baslik">
@@ -807,26 +809,52 @@ export const ReportsPage: React.FC = () => {
             {activeTab === 'musteri' && (
               <div className="reports-content">
                 <div className="reports-filtreler">
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="musteriStartDate">BAŞLANGIÇ TARİHİ:</label>
-                    <input id="musteriStartDate" type="date" value={baslangicTarihi} onChange={(e) => setBaslangicTarihi(e.target.value)} />
+                  <div className="reports-filtreler-sol flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="musteriStartDate">BAŞLANGIÇ TARİHİ:</label>
+                      <input id="musteriStartDate" type="date" value={baslangicTarihi} onChange={(e) => setBaslangicTarihi(e.target.value)} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="musteriEndDate">BİTİŞ TARİHİ:</label>
+                      <input id="musteriEndDate" type="date" value={bitisTarihi} onChange={(e) => setBitisTarihi(e.target.value)} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="musteriFilter">MÜŞTERİ:</label>
+                      <select id="musteriFilter" value={musteriFilter} onChange={(e) => setMusteriFilter(e.target.value)}>
+                        <option value="tumunu">Tümü</option>
+                        {musteriListesi.map((m) => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button type="button" className="btn-filtre-reset" onClick={handleClearFilters}>
+                      Filtreleri Temizle
+                    </button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="musteriEndDate">BİTİŞ TARİHİ:</label>
-                    <input id="musteriEndDate" type="date" value={bitisTarihi} onChange={(e) => setBitisTarihi(e.target.value)} />
+                  <div ref={exportDropdownRef} className={`buton-disa-aktar clickdropdown page-export-dropdown ${exportMenuOpen ? 'is-open' : ''}`}>
+                    <div className="btn-baslik">
+                      <i className="icon-dashboard-disa-aktar" />
+                      Dışa Aktar
+                    </div>
+                    <div className="dosya-tur clickdropbtn" onClick={() => setExportMenuOpen(!exportMenuOpen)}>
+                      .xls
+                      <ChevronDown size={12} />
+                    </div>
+                    {exportMenuOpen && (
+                      <div className="dosya-tur-content clickdropdown-content">
+                        <div className="liste-baslik">Raporu Dışa Aktar</div>
+                        <hr />
+                        <button type="button" className="btn-disa-aktar" onClick={() => void handleExport('excel')}>
+                          <i className="icon-disa-aktar-excel" />
+                          Excel'e Aktar
+                        </button>
+                        <button type="button" className="btn-yazdir" onClick={() => void handleExport('print')}>
+                          <i className="icon-disa-aktar-yazdir" />
+                          Yazdır
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="musteriFilter">MÜŞTERİ:</label>
-                    <select id="musteriFilter" value={musteriFilter} onChange={(e) => setMusteriFilter(e.target.value)}>
-                      <option value="tumunu">Tümü</option>
-                      {musteriListesi.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <button type="button" className="btn-filtre-reset" onClick={handleClearFilters}>
-                    Filtreleri Temizle
-                  </button>
                 </div>
 
                 <div className="reports-sorgu-baslik">

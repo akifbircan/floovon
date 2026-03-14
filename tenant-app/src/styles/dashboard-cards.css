@@ -154,6 +154,17 @@
   margin-left: auto; /* Sağa yaslamak için */
 }
 
+.ana-kart .kart-header-sag button,
+.ana-kart .kart-header-sag a {
+  cursor: pointer !important;
+}
+
+/* İçteki ikonlar olay alma ama cursor parent'tan gelsin */
+.ana-kart .kart-header-sag button * ,
+.ana-kart .kart-header-sag a * {
+  pointer-events: none;
+}
+
 /* Sipariş detay (göz) butonu kapsayıcısı – sirala-menu / kart-menu ile aynı seviye; link tüm alanı kaplasın */
 .ana-kart .siparis-detay-buton {
   display: flex;
@@ -579,13 +590,14 @@
   line-height: 0;
   padding: 0;
   margin: 0;
+  cursor: pointer !important;
 }
 
 .ana-kart .kart-header-alt-satir .alt-satir-sag .kart-gorsel img {
   height: 24px;
   width: auto;
   border-radius: 2px;
-  cursor: pointer;
+  cursor: pointer !important;
   transition: .3s ease-in-out;
   display: block;
   padding: 0;
@@ -705,6 +717,15 @@
   font-weight: 500;
   color: var(--gri70) !important; /* Gri renk görünür olmalı */
   height: 24px;
+  cursor: pointer !important;
+}
+.ana-kart .kart-header-alt-satir .alt-satir-sol .siparis-teslim-foto-ekle:hover {
+  background-color: var(--extra-light-gray);
+}
+
+.ana-kart .kart-header-alt-satir .alt-satir-sol .siparis-teslim-foto-ekle i,
+.ana-kart .kart-header-alt-satir .alt-satir-sol .siparis-teslim-foto-ekle .foto-sayi {
+  pointer-events: none;
   cursor: pointer;
 }
 
@@ -812,7 +833,6 @@
   justify-content: center;
   border: 1px solid var(--blue-transparent);
   border-radius: 5px;
-  background-color: var(--ultra-light-bg);
   color: var(--mor-primary-text);
   margin: 0 12px 0 12px;
   padding: 6px 0;
@@ -899,6 +919,7 @@
   opacity: 1 !important;
   /* width ve max-width kaldırıldı - container genişliğine otomatik uyum sağlasın */
   box-sizing: border-box !important;
+  margin-top: 1px !important;
 }
 
 /* GroupedOrderList içindeki sipariş kartları için */
@@ -939,7 +960,12 @@
   gap: 5px;
   /* width ve max-width kaldırıldı - container genişliğine otomatik uyum sağlasın */
   box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+/* Tek kural yeterli: .sk-kart-alan içindeki kartlar da .ana-kart altında olduğu için buna girer */
+/* .ana-kart .siparis-kart:hover {
+      border: 1px solid var(--mor-primary);
+} */
 
 /* Konum Grup - Mahalle Bazlı Gruplama */
 .sk-kart-alan .konum-grup {
@@ -1135,8 +1161,8 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
   min-width: auto;
   max-height: none;
   flex: 1;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
 /* Baslik - Sipariş Veren / Teslim Edilecek Kişi - .ana-kart içindeki sipariş kartları için */
 /* Sipariş kartı başlığı */
 .ana-kart .siparis-kart .baslik {
@@ -1160,18 +1186,18 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
   margin: 0 !important;
 }
 
+/* Sipariş veren alanı görünsün; sadece yanındaki taşı ikonu gizlensin */
 .ana-kart .siparis-kart .siparis-veren {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 6px;
   font-size: 13px !important;
   font-weight: 500;
-  white-space: wrap;
-  gap: 5px;
+  color: var(--ana-renk);
 }
 
 .ana-kart .siparis-kart .siparis-veren i {
-  font-size: 12px !important;
+  display: none !important;
 }
 
 .ana-kart .siparis-kart .teslim-kisisi {
@@ -1186,6 +1212,7 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
 
 .ana-kart .siparis-kart .teslim-kisisi i {
   font-size: 12px !important;
+  display: none !important;
 }
 
 .ana-kart .siparis-kart .siparis-veren-telefon,
@@ -1598,13 +1625,19 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
   justify-content: center;
   width: fit-content;
   font-size: 11px;
-  cursor: pointer;
+  cursor: pointer !important;
   text-wrap: wrap;
   user-select: none;
   border: 1px solid var(--input-border-gray);
   padding: 5px;
   border-radius: 4px;
   background-color: var(--border-renk);
+}
+
+.ana-kart .siparis-kart .urun-yazisi-mevcut i,
+.ana-kart .siparis-kart .urun-yazisi-mevcut span {
+  pointer-events: none;
+  cursor: pointer;
 }
 
 .ana-kart .siparis-kart .urun-yazisi-mevcut i {
@@ -2275,13 +2308,16 @@ table thead .table-sort-header .table-sort-icon {
   }
 }
 
-/* Raporlar filtre alanı - input/select/button stilleri */
+/* Raporlar filtre alanı - sol: filtreler, sağ: dışa aktar (space-between) */
 .reports-filtreler {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 24px;  
-  /* margin-bottom: 20px; */
+  justify-content: space-between;
+  gap: 24px;
+}
+.reports-filtreler-sol {
+  gap: 24px;
 }
 .reports-filtreler label {
   font-size: 12px;
@@ -2324,10 +2360,21 @@ table thead .table-sort-header .table-sort-icon {
   opacity: 0.9;
 }
 
+/* 1440px–1919px: filtre satırı – sol blok tam genişlik + space-between, container flex-end. 1920px+ masaüstünde yok. */
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .reports-filtreler {
+    justify-content: flex-end;
+  }
+  .reports-filtreler-sol {
+    gap: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
 /* Tab + Dışa Aktar alanının altına 1px border */
 .reports-header-bar {
   border-bottom: 1px solid var(--border-renk);
-  padding-bottom: 24px;
 }
 
 .page-panel-sag {
@@ -2484,7 +2531,7 @@ table thead .table-sort-header .table-sort-icon {
 } */
 
 .campaigns-table td {
-  padding: 10px 12px;
+  padding: 10px 12px !important;
   border-bottom: 1px solid var(--border-renk);
 }
 
@@ -3098,9 +3145,11 @@ html.dark-mode .campaigns-form select option {
 
 /* Detay paneli düzenle butonu - başlık yanında, Lucide ikon */
 .page-detail-btn-edit,
+.btn-cari,
 .customers-btn-cari,
 .customers-btn-duzenle,
-.partners-btn-duzenle {
+.partners-btn-duzenle,
+.partners-btn-cari {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
@@ -3115,9 +3164,11 @@ html.dark-mode .campaigns-form select option {
   transition: background-color 0.2s, color 0.2s;
 }
 .page-detail-btn-edit:hover,
+.btn-cari:hover,
 .customers-btn-cari:hover,
 .customers-btn-duzenle:hover,
-.partners-btn-duzenle:hover {
+.partners-btn-duzenle:hover,
+.partners-btn-cari:hover {
   background-color: var(--mor-primary);
   color: var(--white-only);
 }
@@ -3233,7 +3284,6 @@ html.dark-mode .campaigns-form select option {
 .customers-detail-unvan {
   font-size: 1.0625rem;
   font-weight: 600;
-  margin-bottom: 0.25rem;
 }
 .customers-detail-yetkili {
   font-size: 0.875rem;
@@ -3248,7 +3298,6 @@ html.dark-mode .campaigns-form select option {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  margin-bottom: 0.25rem;
 }
 .customers-detail-copy-btn {
   display: inline-flex;
@@ -3293,49 +3342,7 @@ html.dark-mode .campaigns-form select option {
   font-size: 13px;
 }
 
-/* Toplam Sipariş & Kalan Bakiye – grid ile ayrık satırlar */
-.customers-detail-cari {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-}
-.customers-detail-cari-row {
-  display: contents;
-}
-.customers-detail-cari-row:nth-child(2) .customers-detail-cari-cell {
-  grid-column: 1 / -1;
-}
-.customers-detail-cari-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  background: var(--lavender-bg);
-}
-.customers-detail-cari-cell .customers-detail-label {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-.customers-detail-cari-cell .customers-detail-value {
-  font-size: 1rem;
-  font-weight: 600;
-}
-.customers-btn-cari-inline {
-  grid-column: 1 / -1;
-  margin-top: 0;
-  width: 100%;
-  justify-content: center;
-}
-.customers-detail-bakiye-pozitif {
-  color: var(--success-green);
-  font-weight: 600;
-}
-.customers-detail-bakiye-negatif {
-  color: var(--accent-red);
-  font-weight: 600;
-}
+/* Toplam Sipariş & Kalan Bakiye – müşteriler sayfası ortak .detail-cari kullanıyor (yukarıda tanımlı) */
 
 .customers-detail-files-head {
   margin-bottom: 1rem;
@@ -3723,47 +3730,58 @@ html.dark-mode .campaigns-form select option {
   margin-bottom: 1rem;
 }
 
-.partners-detail-cari {
+/* Ortak cari blok (müşteriler + partner firmalar) */
+.detail-cari {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
-.partners-detail-cari-row {
+.detail-cari-row {
   display: contents;
 }
-.partners-detail-cari-row:nth-child(2) .partners-detail-cari-cell {
+.detail-cari-row:nth-child(2) .detail-cari-cell {
   grid-column: 1 / -1;
 }
-.partners-detail-cari-cell {
+.detail-cari-cell {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   min-width: 0;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   border-radius: 8px;
   background: var(--border-renk);
 }
-.partners-detail-cari-cell .partners-detail-label {
+.detail-cari-cell .detail-cari-label {
   margin-top: 0;
   margin-bottom: 0;
+  font-size: 0.75rem;
+  color: var(--gri70);
 }
-.partners-detail-cari-cell .partners-detail-value {
+.detail-cari-cell .detail-cari-value {
   font-size: 1rem;
   font-weight: 600;
+  color: var(--ana-renk);
 }
-.partners-btn-cari-inline {
+.detail-cari .btn-cari-inline {
   grid-column: 1 / -1;
   margin-top: 0;
   width: 100%;
   justify-content: center;
 }
-.partners-detail-bakiye-pozitif {
-  color: var(--success-green);
+.detail-cari-bakiye-pozitif {
+  color: var(--success-green) !important;
   font-weight: 600;
 }
-.partners-detail-bakiye-negatif {
-  color: var(--accent-red);
+.detail-cari-bakiye-negatif {
+  color: var(--accent-red) !important;
   font-weight: 600;
+}
+/* Bakiye rengi hücre içinde de geçerli olsun (.detail-cari-value rengini ezmesin) */
+.detail-cari-cell .detail-cari-value.detail-cari-bakiye-pozitif {
+  color: var(--success-green) !important;
+}
+.detail-cari-cell .detail-cari-value.detail-cari-bakiye-negatif {
+  color: var(--accent-red) !important;
 }
 
 /* ========== Partner Firma Modal – Sağdan açılan drawer ========== */

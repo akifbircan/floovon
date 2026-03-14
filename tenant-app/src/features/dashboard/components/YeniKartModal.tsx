@@ -493,39 +493,53 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
       if (activeTab === 'organizasyon') {
         // Validasyon
         if (!orgTur) {
-          setError('Lütfen organizasyon türünü seçin!');
+          const msg = 'Lütfen organizasyon türünü seçin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
         if (!teslimTarih) {
-          setError('Lütfen teslim tarihini seçin!');
+          const msg = 'Lütfen teslim tarihini seçin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
         if (!teslimKisisi.trim()) {
-          setError('Lütfen organizasyon sahibi bilgisini girin!');
+          const msg = 'Lütfen organizasyon sahibi bilgisini girin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
         if (!teslimKisisiTelefonInput.cleanValue.trim()) {
-          setError('Lütfen organizasyon sahibi telefonunu girin!');
+          const msg = 'Lütfen organizasyon sahibi telefonunu girin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
         // Telefon format kontrolü
         const cleanPhone = teslimKisisiTelefonInput.cleanValue;
         if (cleanPhone.length < 12) {
-          setError('Lütfen geçerli bir telefon numarası girin!');
+          const msg = 'Lütfen geçerli bir telefon numarası girin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
         if (!addressSelect.il || !addressSelect.ilce || !addressSelect.mahalle) {
-          setError('Lütfen adres bilgilerini eksiksiz doldurun!');
+          const msg = 'Lütfen adres bilgilerini eksiksiz doldurun!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
         if (!acikAdres.trim()) {
-          setError('Lütfen açık adresi girin!');
+          const msg = 'Lütfen açık adresi girin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
@@ -549,12 +563,16 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
         result = await createOrganizasyonKart(formData);
       } else if (activeTab === 'aracsusleme') {
         if (!aracRandevuTarih) {
-          setError('Lütfen randevu tarihini seçin!');
+          const msg = 'Lütfen randevu tarihini seçin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
         if (!aracSuslemeAltTur || !aracSuslemeAltTur.trim()) {
-          setError('Lütfen alt türü seçin!');
+          const msg = 'Lütfen alt türü seçin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
@@ -567,12 +585,16 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
         result = await createAracSuslemeKart(formData);
       } else if (activeTab === 'ozelsiparis') {
         if (!ozelSiparisTarih) {
-          setError('Lütfen teslim tarihini seçin!');
+          const msg = 'Lütfen teslim tarihini seçin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
         if (!ozelSiparisAltTur || !ozelSiparisAltTur.trim()) {
-          setError('Lütfen alt türü seçin!');
+          const msg = 'Lütfen alt türü seçin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
@@ -586,12 +608,16 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
         result = await createOzelSiparisKart(formData);
       } else if (activeTab === 'ozelgun') {
         if (!ozelGunTarih) {
-          setError('Lütfen teslim tarihini seçin!');
+          const msg = 'Lütfen teslim tarihini seçin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
         if (!ozelGunAltTur || !ozelGunAltTur.trim()) {
-          setError('Lütfen alt türü seçin!');
+          const msg = 'Lütfen alt türü seçin!';
+          setError(msg);
+          showToast('error', msg);
           setLoading(false);
           return;
         }
@@ -752,7 +778,7 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
                             <>
                               <img src={davetiyeGorselPreview} alt="Preview" className="davetiye-preview-img" />
                               <span className="secilen-dosya-metin">
-                                Seçilen dosya: {davetiyeGorsel?.name ?? ''}
+                                <strong>Seçilen dosya:</strong> {davetiyeGorsel?.name ?? ''}
                               </span>
                               <button
                                 type="button"
@@ -1277,11 +1303,7 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
                   </div>
                 )}
 
-                {error && (
-                  <div style={{ color: 'red', padding: '10px', marginTop: '10px' }}>
-                    {error}
-                  </div>
-                )}
+                {/* Hata mesajı artık sadece toast üzerinden gösteriliyor; form altında kırmızı blok yok */}
               </form>
             </div>
           </div>

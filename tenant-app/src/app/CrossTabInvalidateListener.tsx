@@ -3,8 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getInvalidateChannelName } from '../lib/crossTabInvalidate';
 
 /**
- * Diğer sekmelerden gelen "cache invalidate et" mesajlarını dinler.
- * Index'te sipariş güncellenince partner cari sekmesindeki liste anında yenilenir.
+ * BroadcastChannel: Aynı tarayıcıdaki diğer sekmelere invalidate mesajı.
+ * SSE (diğer oturumlara anında yansıma) RealtimeSSEListener içinde.
  */
 export function CrossTabInvalidateListener() {
   const queryClient = useQueryClient();

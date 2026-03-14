@@ -10,6 +10,7 @@ import { EmptyState } from '../../../shared/components/EmptyState';
 import { usePageAnimations } from '../../../shared/hooks/usePageAnimations';
 import { getUploadUrl } from '../../../shared/utils/urlUtils';
 import { formatTL, formatTLDisplayValue, parseTL, formatTutarInputLive, formatTutarInputKeyDown, formatPhoneNumber, cleanPhoneForDatabase, formatOdemeYontemiDisplay, normalizeOdemeYontemiForDb } from '../../../shared/utils/formatUtils';
+import { formatDateTimeShort } from '../../../shared/utils/dateUtils';
 import { SearchInput } from '../../../shared/components/SearchInput';
 import { X, ArrowLeftCircle, Pencil, Trash2, FileSearch, Eye } from 'lucide-react';
 import { getPrintLogoAndFooter, openPrintWindow, generateCariPrintHTMLWithHeader, downloadTableAsExcel, getPrintDateDDMMYYYY } from '../../dashboard/utils/exportUtils';
@@ -823,7 +824,7 @@ export const PartnerDetailPage: React.FC = () => {
                           return (
                             <tr key={order.id}>
                               <td data-label="Sipariş Kodu">{(order.siparis_kodu ?? raw.siparis_kodu) ? String(order.siparis_kodu ?? raw.siparis_kodu) : '—'}</td>
-                              <td data-label="Tarih-Saat">{tarih ? new Date(String(tarih)).toLocaleString('tr-TR') : '—'}</td>
+                              <td data-label="Tarih-Saat">{tarih ? formatDateTimeShort(tarih) : '—'}</td>
                               <td data-label="Ürün Adı">
                                 <div className="cari-table-urun-cell">
                                   {urunGorsel ? (
@@ -838,7 +839,7 @@ export const PartnerDetailPage: React.FC = () => {
                                 <div className={`cari-org-eski-yapi orgkart ${kartTur}`}>
                                   <div className="cari-org-badge-wrap">
                                     <span className="kart-tur">{String(kartTurDisplay ?? '')}</span>
-                                    <span className="kart-alt-tur">{altTurStr || '—'}</span>
+                                    {altTurStr?.trim() ? <span className="kart-alt-tur">{altTurStr}</span> : null}
                                   </div>
                                   <div className="cari-org-icerik">
                                     <div className="cari-org-primary">{String(primaryKonum)}</div>
@@ -927,7 +928,7 @@ export const PartnerDetailPage: React.FC = () => {
                           return (
                             <tr key={order.id}>
                               <td data-label="Sipariş Kodu">{(order.siparis_kodu ?? raw.siparis_kodu) ? String(order.siparis_kodu ?? raw.siparis_kodu) : '—'}</td>
-                              <td data-label="Tarih-Saat">{tarih ? new Date(String(tarih)).toLocaleString('tr-TR') : '—'}</td>
+                              <td data-label="Tarih-Saat">{tarih ? formatDateTimeShort(tarih) : '—'}</td>
                               <td data-label="Ürün Adı">
                                 <div className="cari-table-urun-cell">
                                   {urunGorsel ? (
@@ -942,7 +943,7 @@ export const PartnerDetailPage: React.FC = () => {
                                 <div className={`cari-org-eski-yapi orgkart ${kartTur}`}>
                                   <div className="cari-org-badge-wrap">
                                     <span className="kart-tur">{String(kartTurDisplay ?? '')}</span>
-                                    <span className="kart-alt-tur">{altTurStr || '—'}</span>
+                                    {altTurStr?.trim() ? <span className="kart-alt-tur">{altTurStr}</span> : null}
                                   </div>
                                   <div className="cari-org-icerik">
                                     <div className="cari-org-primary">{String(primaryKonum)}</div>
@@ -994,7 +995,7 @@ export const PartnerDetailPage: React.FC = () => {
                         {filteredOdemeler.map((o) => {
                           const row = (o as unknown) as Record<string, unknown>;
                           const d = getPayRowDisplay(row);
-                          const tarihStr = d.transactionDate ? (() => { try { const date = new Date(d.transactionDate); return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch { return '—'; } })() : '—';
+                          const tarihStr = d.transactionDate ? formatDateTimeShort(d.transactionDate) : '—';
                           const yontem = formatOdemeYontemiDisplay(d.paymentMethod);
                           return (
                           <tr key={String(row.id ?? o.id ?? Math.random())}>

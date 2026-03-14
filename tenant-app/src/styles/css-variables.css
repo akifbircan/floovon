@@ -289,6 +289,7 @@
   /* Raporlar */
   --rapor-sicak-bg: #ff0000ab;
   --rapor-sicak-color: #ffffff;
+  --sicak-satis: #ff6b35;
   --tur-odeme: #ffd8e9;
   --tur-tahsilat: #dfffeb;
 
@@ -832,6 +833,7 @@ html.dark-mode {
   /* Raporlar - Dark Mode */
   --rapor-sicak-bg: #ff0000ab;
   --rapor-sicak-color: #ffffff;
+  --sicak-satis: #ff8b5f;
   --tur-odeme: #9b3d66;
   --tur-tahsilat: #234c33;
 

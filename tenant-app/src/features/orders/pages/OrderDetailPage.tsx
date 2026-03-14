@@ -637,10 +637,13 @@ export const OrderDetailPage: React.FC = () => {
     }
 
     // Araç süsleme ve diğerleri: onay toast → teslim + WhatsApp
+    const isAracSusleme = kartTur === 'aracsusleme';
     showToastInteractive({
-      title: 'Sipariş Teslim Et',
-      message: 'Bu siparişi teslim edildi olarak işaretlemek istediğinize emin misiniz?',
-      confirmText: 'Evet, teslim edildi',
+      title: isAracSusleme ? 'Araç Süsleme Tamamlandı' : 'Sipariş Teslim Et',
+      message: isAracSusleme
+        ? 'Bu siparişi tamamlandı olarak işaretlemek istediğinize emin misiniz?'
+        : 'Bu siparişi teslim edildi olarak işaretlemek istediğinize emin misiniz?',
+      confirmText: isAracSusleme ? 'Evet, tamamlandı' : 'Evet, teslim edildi',
       cancelText: 'İptal',
       onConfirm: async () => {
         try {

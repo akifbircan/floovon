@@ -4,6 +4,7 @@ import { PagePermissionsProvider } from './providers/PagePermissionsProvider';
 import { PlanProvider } from './providers/PlanProvider';
 import { TenantSubscriptionGuard } from './providers/TenantSubscriptionGuard';
 import { CrossTabInvalidateListener } from './CrossTabInvalidateListener';
+import { RealtimeSSEListener } from './RealtimeSSEListener';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { MainLayout } from './layout/MainLayout';
 import { LoginPage } from '../features/auth/pages/LoginPage';
@@ -28,6 +29,7 @@ function App() {
     <>
       <CrossTabInvalidateListener />
       <AuthProvider>
+        <RealtimeSSEListener />
         <PagePermissionsProvider>
           <PlanProvider>
             <TenantSubscriptionGuard>

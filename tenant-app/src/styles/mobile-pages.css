@@ -34,8 +34,8 @@
     min-height: 0 !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0)) !important; /* Navbar altı boşluk, yapışmasın */
     box-sizing: border-box !important;
     -webkit-overflow-scrolling: touch;
@@ -103,33 +103,7 @@
     font-size: 0.875rem !important; /* 14px */
   }
 
-  /* Kampanya formu: date input'lar select'lerle aynı custom ok stilini kullansın (zemin transparent – dark tema uyumlu) */
-  .campaigns-form-wrap .campaigns-form input[type="date"] {
-    -webkit-appearance: none !important;
-    appearance: none !important;
-    position: relative !important;
-    padding-right: 2.25rem !important;
-    background-color: transparent !important;
-    background-repeat: no-repeat !important;
-    background-position: right 0.5rem center !important;
-    background-size: 1rem 1rem !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
-  }
-
-  .campaigns-form-wrap .campaigns-form input[type="date"]::-webkit-calendar-picker-indicator {
-    opacity: 0 !important;
-    position: absolute !important;
-    top: 0 !important;
-    right: 0 !important;
-    width: 2.25rem !important;
-    height: 100% !important;
-    cursor: pointer !important;
-  }
-
-  body.dark-mode .campaigns-form-wrap .campaigns-form input[type="date"],
-  html.dark-mode .campaigns-form-wrap .campaigns-form input[type="date"] {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
-  }
+  /* Date/time input stilleri mobilde date-time-input-global.css ile ortak (select ile aynı custom ok). */
 
   /* Mobilde tooltip gösterme – tıklayınca sabit kalma sorunu önlenir */
   .tooltip,
@@ -190,7 +164,7 @@ ul.notifications {
     max-width: 100% !important;
     min-height: 0 !important; /* main içinde scroll için */
     overflow-x: hidden !important;
-    border-radius: 12px;
+    border-radius: 12px !important;
     box-sizing: border-box;
     display: flex !important;
     flex-direction: column !important;
@@ -376,7 +350,8 @@ ul.notifications {
   }
   .customers-table tbody td.td-no-mobile-label::before,
   .campaigns-table-wrap .customers-table tbody td.td-no-mobile-label::before,
-  .campaigns-table tbody td.td-no-mobile-label::before {
+  .campaigns-table tbody td.td-no-mobile-label::before,
+  .campaigns-table tbody td.campaigns-td-gorsel::before {
     content: none !important;
     display: none !important;
   }
@@ -396,10 +371,25 @@ ul.notifications {
     text-align: right;
   }
 
-  /* Kampanya sayfası mobil: kampanya adı hücresi tamamen sola yaslı */
-  .campaigns-table tbody td.customers-td-code {
+  /* Kampanya sayfası mobil: görsel tek satırda solda, kampanya adı alt satırda solda */
+  .campaigns-table tbody td.campaigns-td-gorsel {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 0 8px 0 !important;
     text-align: left !important;
-    justify-content: flex-start !important;
+  }
+  .campaigns-table tbody td.campaigns-td-gorsel .campaigns-table-gorsel,
+  .campaigns-table tbody td.campaigns-td-gorsel .campaigns-gorsel-placeholder {
+    margin: 0 !important;
+  }
+  .campaigns-table tbody td.customers-td-code {
+    display: block !important;
+    width: 100% !important;
+    text-align: left !important;
+    padding: 0 0 8px 0 !important;
+  }
+  .campaigns-table tbody td.customers-td-code::before {
+    display: none !important;
   }
 
   /* Müşteriler sayfası: Ünvan & Yetkili, İletişim hücreleri mobilde sütun (bilgiler sığsın) */
@@ -2216,6 +2206,8 @@ ul.notifications {
     width: auto !important;
     max-width: 100% !important;
   }
+
+  
   .overlay-yeni-musteri-container .yeni-musteri-container .radio-buttons .radio-button {
     flex: 0 0 auto !important;
     width: auto !important;
@@ -2227,4 +2219,7 @@ ul.notifications {
     max-width: 16px !important;
     flex: 0 0 16px !important;
   }
+
+
+  
 }

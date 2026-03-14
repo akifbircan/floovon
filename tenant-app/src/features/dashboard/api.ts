@@ -52,6 +52,9 @@ interface BackendSiparis {
   organizasyon_kart_id?: number;
   musteri_unvan?: string;
   musteri_isim_soyisim?: string;
+  /** Eski/alternatif kolon adları (veritabanı migration sonrası uyumluluk) */
+  musteri_unvani?: string;
+  musteri_ad_soyad?: string;
   siparis_veren?: string;
   siparis_veren_telefon?: string;
   teslim_kisisi?: string;
@@ -88,7 +91,11 @@ interface BackendSiparis {
   product_gorsel?: string;
   urun_yazisi?: string;
   updated_at?: string;
-  updated_by?: number;
+  updated_by?: number | string;
+  updated_by_profil_resmi?: string;
+  updated_by_name?: string;
+  updated_by_soyad?: string;
+  updated_by_ad_soyad?: string;
   ekstra_ucret?: number;
   ekstra_ucret_aciklama?: string;
   teslim_ilce?: string;
@@ -222,7 +229,11 @@ function mapSiparis(backend: BackendSiparis): Order {
     musteriAdi:
       backend.musteri_isim_soyisim ||
       backend.musteri_unvan ||
+      (backend as any).musteri_ad_soyad ||
+      (backend as any).musteri_unvani ||
+      (backend as any).musteri_adi ||
       backend.siparis_veren ||
+      (backend as any).customer_name ||
       'Bilinmeyen',
     musteriUnvani: backend.musteri_unvan,
     tarih: backend.teslim_tarih || (typeof backend.teslim_tarihi === 'string' ? backend.teslim_tarihi : '') || '',
@@ -257,6 +268,9 @@ function mapSiparis(backend: BackendSiparis): Order {
     urunYazisi: backend.urun_yazisi,
     updatedAt: backend.updated_at,
     updatedBy: backend.updated_by?.toString(),
+    updatedByUser: (backend.updated_by_profil_resmi != null || backend.updated_by_name != null || backend.updated_by_ad_soyad != null)
+      ? { profil_resmi: backend.updated_by_profil_resmi, profile_image: backend.updated_by_profil_resmi, name: backend.updated_by_name, ad: backend.updated_by_name, surname: backend.updated_by_soyad, soyad: backend.updated_by_soyad, adSoyad: backend.updated_by_ad_soyad || [backend.updated_by_name, backend.updated_by_soyad].filter(Boolean).join(' ').trim() }
+      : undefined,
     // Ödeme bilgileri
     ekstraUcret: backend.ekstra_ucret,
     ekstraUcretAciklama: backend.ekstra_ucret_aciklama,
@@ -339,17 +353,16 @@ export async function getSiparisKartlariByOrganizasyon(
     return [];
   }
 
-  // ✅ DÜZELTME: Arşivlenmiş siparişleri filtrele (eski sistemdeki gibi)
+  // Arşivlenmiş siparişleri filtrele (eski sistemdeki gibi)
   // Eski sistemde: s.arsivli === 0 || s.arsivli === false || s.arsivli === null
   const filteredData = rawData.filter((backend) => {
     const arsivli = backend.arsivli || backend.archived || backend.arsivlenmis;
     // Arşivlenmemiş siparişleri al (arsivli === 0, false, null, undefined)
     return arsivli === 0 || arsivli === false || arsivli === null || arsivli === undefined;
   });
-  
+
   const mapped = filteredData.map((backend) => {
     const mapped = mapSiparis(backend);
-    // Backend'den gelen ham veriyi _raw olarak sakla (OrderCard'da kullanılmak üzere)
     (mapped as any)._raw = backend;
     return mapped;
   });

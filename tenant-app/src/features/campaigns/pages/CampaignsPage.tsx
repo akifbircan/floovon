@@ -516,7 +516,7 @@ export const CampaignsPage: React.FC = () => {
                 <table className="w-full page-table campaigns-table" id="kampanyalar-tablo-export">
                   <thead>
                     <tr>
-                      <th className="campaigns-th-gorsel">Görsel</th>
+                      <th className="campaigns-th-gorsel"></th>
                       <TableSortHeader field="ad" label="Kampanya Adı" currentSort={sortField} sortDirection={sortDir} onSort={handleSort} />
                       <TableSortHeader field="grubu" label="Müşteri Grubu" currentSort={sortField} sortDirection={sortDir} onSort={handleSort} className="customers-th-grubu" />
                       <TableSortHeader field="kupon" label="Kupon Kodu" currentSort={sortField} sortDirection={sortDir} onSort={handleSort} />
@@ -534,7 +534,7 @@ export const CampaignsPage: React.FC = () => {
                         onClick={() => setSelectedCampaignId(c.id)}
                         data-table-row
                       >
-                        <td className="campaigns-td-gorsel" data-label="Görsel">
+                        <td className="campaigns-td-gorsel td-no-mobile-label" data-label="">
                           {c.gorsel_path || c.gorsel ? (
                             <img
                               src={getUploadUrl(c.gorsel_path || c.gorsel || '')}
@@ -695,7 +695,7 @@ export const CampaignsPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <Upload size={18} strokeWidth={1.5} aria-hidden />
                           <span className="file-label">
-                            {uploadingImage ? 'Yükleniyor...' : 'Görsel sürükleyin veya tıklayın (max 5MB)'}
+                            {uploadingImage ? 'Yükleniyor...' : 'Kampanya görselini buraya sürükleyin veya tıklayın (Maks. 5MB)'}
                           </span>
                         </div>
                       </div>
@@ -934,7 +934,7 @@ export const CampaignsPage: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <Upload size={18} strokeWidth={1.5} aria-hidden />
                               <span className="file-label">
-                                {uploadingImage ? 'Yükleniyor...' : 'Görsel sürükleyin veya tıklayın (max 5MB)'}
+                                {uploadingImage ? 'Yükleniyor...' : 'Kampanya görselini buraya sürükleyin veya tıklayın (Maks. 5MB)'}
                               </span>
                             </div>
                           </div>

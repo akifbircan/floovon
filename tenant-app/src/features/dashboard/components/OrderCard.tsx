@@ -7,6 +7,7 @@ import { apiClient } from '../../../lib/api';
 import { formatPhoneNumber, formatTL, fixUploadUrl, appendIlceIlToAddress } from '../../../shared/utils/formatUtils';
 import { getUrunAdiFromId, createUrunYazisiHTML } from '../../../shared/utils/productUtils';
 import { createDuzenleyenHTML } from '../../../shared/utils/userUtils';
+import { formatDuzenleyenTarih } from '../../../shared/utils/dateUtils';
 import { useDeliveryTimeWarning } from '../hooks/useDeliveryTimeWarning';
 import { FileText, Download, Pencil, Archive, SquareCheck, X, Plug } from 'lucide-react';
 
@@ -43,14 +44,13 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, organizasyonKartTur
     return `tel:${telefon}`;
   }, [rawSiparis, order.telefon]);
 
-  // Müşteri adı - Legacy parity
+  // Müşteri adı (sipariş veren) – önce map'lenmiş order.musteriAdi, sonra _raw'taki tüm olası alanlar
   const musteriAdi = useMemo(() => {
-    return rawSiparis?.musteri_unvan || 
-           rawSiparis?.musteri_isim_soyisim || 
-           rawSiparis?.siparis_veren || 
-           rawSiparis?.customer_name || 
-           order.musteriAdi || 
-           'Müşteri Adı Yok';
+    const fromOrder = order.musteriAdi?.trim();
+    if (fromOrder) return fromOrder;
+    const r = rawSiparis || {};
+    const fallback = r.musteri_unvan || r.musteri_isim_soyisim || r.siparis_veren || (r as any).customer_name || (r as any).musteri_unvani || (r as any).musteri_ad_soyad || (r as any).musteri_adi || 'Müşteri Adı Yok';
+    return fallback;
   }, [rawSiparis, order.musteriAdi]);
 
   // Müşteri ID - Legacy parity
@@ -417,25 +417,20 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, organizasyonKartTur
 
   // ✅ REACT: getUserProfileImageUrl kaldırıldı - createDuzenleyenHTML içinde yapılıyor
 
-  // Düzenleyen HTML - React utility kullan (Çiçek Sepeti hariç)
+  // Düzenleyen HTML - işlemi yapan kullanıcının profil resmi (backend'den); yoksa oturum sahibi
   const duzenleyenHTML = useMemo(() => {
     const updatedAt = rawSiparis?.updated_at || rawSiparis?.updatedAt || order.updatedAt;
-    return createDuzenleyenHTML(updatedAt, currentUser);
-  }, [rawSiparis?.updated_at, rawSiparis?.updatedAt, order.updatedAt, currentUser]);
+    const editorUser = order.updatedByUser ?? (rawSiparis?.updated_by_profil_resmi != null || rawSiparis?.updated_by_name != null || rawSiparis?.updated_by_ad_soyad != null
+      ? { profil_resmi: rawSiparis?.updated_by_profil_resmi, profile_image: rawSiparis?.updated_by_profil_resmi, name: rawSiparis?.updated_by_name, ad: rawSiparis?.updated_by_name, surname: rawSiparis?.updated_by_soyad, soyad: rawSiparis?.updated_by_soyad, adSoyad: rawSiparis?.updated_by_ad_soyad || [rawSiparis?.updated_by_name, rawSiparis?.updated_by_soyad].filter(Boolean).join(' ').trim() }
+      : null);
+    return createDuzenleyenHTML(updatedAt, editorUser ?? currentUser);
+  }, [rawSiparis?.updated_at, rawSiparis?.updatedAt, rawSiparis?.updated_by_profil_resmi, rawSiparis?.updated_by_name, rawSiparis?.updated_by_soyad, rawSiparis?.updated_by_ad_soyad, order.updatedAt, order.updatedByUser, currentUser]);
 
-  // Çiçek Sepeti: API'den geldiğini göster – "Dzn: tarih saat" + Api ikonu
+  // Düzenleyen tarih: "13 Mart, 23:35" (backend updated_at – SQLite datetime yerel saat olarak parse)
   const duzenleyenApiTarih = useMemo(() => {
     const updatedAt = rawSiparis?.updated_at || rawSiparis?.updatedAt || order.updatedAt;
-    if (!updatedAt) return 'Dzn: —';
-    try {
-      const d = typeof updatedAt === 'string' ? new Date(updatedAt) : updatedAt;
-      if (isNaN(d.getTime())) return 'Dzn: —';
-      const tarihStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
-      const saatStr = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-      return `Dzn: ${tarihStr} ${saatStr}`;
-    } catch {
-      return 'Dzn: —';
-    }
+    const formatted = formatDuzenleyenTarih(updatedAt);
+    return formatted === '—' ? 'Dzn: —' : `Dzn: ${formatted}`;
   }, [rawSiparis?.updated_at, rawSiparis?.updatedAt, order.updatedAt]);
 
   return (

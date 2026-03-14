@@ -113,5 +113,59 @@ export function getCurrentWeekString(): string {
   return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
+const MONTH_NAMES_TR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
+/**
+ * SQLite/backend datetime'ı ("2026-03-13 23:35:23") yerel saat olarak parse et.
+ * UTC kullanılmaz; sunucu zaten localtime ile kaydettiği için aynı değeri yerel Date yap.
+ */
+export function parseDuzenleyenTarih(value: string | Date | null | undefined): Date | null {
+  if (value == null || value === '') return null;
+  if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+  const s = String(value).trim();
+  if (!s) return null;
+  // SQLite: "YYYY-MM-DD HH:mm:ss" veya "YYYY-MM-DD HH:mm"
+  const match = s.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (match) {
+    const [, y, m, d, h, min, sec] = match;
+    const date = new Date(Number(y), Number(m) - 1, Number(d), Number(h), Number(min), Number(sec) || 0);
+    return isNaN(date.getTime()) ? null : date;
+  }
+  const fallback = new Date(s.includes('T') ? s : s.replace(' ', 'T'));
+  return isNaN(fallback.getTime()) ? null : fallback;
+}
+
+/**
+ * Düzenleyen alanı için tarih/saat: "13 Mart, 23:35"
+ */
+export function formatDuzenleyenTarih(value: string | Date | null | undefined): string {
+  const d = parseDuzenleyenTarih(value);
+  if (!d) return '—';
+  const day = d.getDate();
+  const month = MONTH_NAMES_TR[d.getMonth()];
+  const hour = d.getHours();
+  const minute = d.getMinutes();
+  return `${day} ${month}, ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+/**
+ * Tablolarda kullanılacak tarih-saat: "21.01.2026 14:50" (saniye yok)
+ */
+export function formatDateTimeTable(value: string | Date | null | undefined): string {
+  const d = value == null || value === '' ? null : value instanceof Date ? value : new Date(String(value).replace(' ', 'T'));
+  if (!d || isNaN(d.getTime())) return '—';
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${dd}.${mm}.${yyyy} ${hh}:${min}`;
+}
+
+/**
+ * Tablolarda kullanılacak tarih-saat: "21.01.2026 14:50" (saniye yok). formatDateTimeTable ile aynı.
+ */
+export function formatDateTimeShort(value: string | Date | null | undefined): string {
+  return formatDateTimeTable(value);
+}
 

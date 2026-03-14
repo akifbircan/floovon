@@ -18,37 +18,15 @@
   border-radius: 15px;
 }
 
-/* Yatay tab butonları */
-.reports-tabs-horizontal {
-  display: flex;
-  gap: 4px;
-  background: var(--gray-light-f2);
-  padding: 4px;
-  border-radius: 8px;
+/* Sekme scroll alanı: içerik scroll çubuğuna yapışmasın; sol/sağ 1rem ile dengeli yatay boşluk */
+.reports-scroll-area {
+  /* padding-left: 1rem; */
+  padding-right: 1rem;
 }
 
-.reports-tab-btn {
-  padding: 8px 16px;
-  font-size: 15px;
-  font-weight: 700;
-  border: none;
-  background: transparent;
-  color: var(--gri70);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
+/* Raporlar sekmeleri: ayarlar/profil tab tasarımı ile aynı – ek ekstra stil yok,
+   sadece gerektiğinde küçük responsive ayarlar için .reports-tab-btn sınıfı kullanılabilir */
 
-.reports-tab-btn:hover {
-  color: var(--ana-renk);
-  background: var(--white);
-}
-
-.reports-tab-btn.active {
-  background: var(--mavi-renk);
-  color: var(--white-only);
-  box-shadow: 0 1px 2px var(--box-shadow-light);
-}
 
 /* İçerik alanı - Müşteriler/Partner/Kampanya tablo alanları ile uyumlu */
 .reports-content {
@@ -58,6 +36,15 @@
   /* margin-bottom: 24px; */
   background-color: transparent;
   color: var(--ana-renk);
+}
+
+/* Filtre satırı + Dışa Aktar dropdown: açıldığında alttaki alanların (istatistik, grafik, tablo) üstünde kalsın */
+.reports-content .reports-filtreler {
+  position: relative;
+  z-index: 100;
+}
+.reports-content .reports-filtreler .page-export-dropdown .dosya-tur-content.clickdropdown-content {
+  z-index: 10001;
 }
 
 /* Sayfa başlığı */
@@ -179,7 +166,7 @@
   font-size: 16px;
 }
 
-/* Tablo - reports-table (partners/customers benzeri); scrollbar sağ kenarda */
+/* Tablo - reports-table; sekme içeriği zaten scroll olduğu için tabloda scroll yok, tamamı görünsün */
 .reports-table-wrapper {
   background-color: var(--white);
   border-radius: 8px;
@@ -188,10 +175,8 @@
 }
 
 .reports-table-scroll {
-  max-height: calc(100vh - 320px);
-  overflow-x: auto;
-  overflow-y: auto;
-  padding-right: 10px;
+  max-height: none;
+  overflow: visible;
 }
 
 .reports-table-scroll.table-scrollbar {

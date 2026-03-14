@@ -10,6 +10,11 @@
   .page-wrapper,
   .page-wrapper--full {
     margin-right: 0 !important;
+    padding: 16px !important;
+  }
+
+  .page-panel-sag-inner {
+   margin: 0 !important;
   }
 
   /* Başlık alanı: "tarihleri arasındaki siparişleriniz:" metnini tablette gizle */
@@ -53,13 +58,7 @@
     margin-bottom: 0.75rem;
   }
 
-  /* ========== Raporlar sayfası: filtreler tablette 2 sütun grid ========== */
-  .reports-content .reports-filtreler {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px 48px;
-    align-items: end;
-  }
+  /* ========== Raporlar sayfası: filtreler tablette temel ayarlar ========== */
   .reports-content .reports-filtreler .flex {
     display: flex;
     align-items: center;
@@ -70,7 +69,7 @@
   .reports-filtreler label {
     max-width: 130px;
     min-width: 130px;
-}
+  }
 
   .reports-content .reports-filtreler input[type="date"],
   .reports-content .reports-filtreler input[type="text"],
@@ -79,8 +78,6 @@
     min-width: 0;
   }
   .reports-content .reports-filtreler .btn-filtre-reset {
-    grid-column: span 2;
-    justify-self: start;
     width: 100%;
   }
 
@@ -429,5 +426,48 @@
     min-width: 110px;
     flex-shrink: 0;
     font-size: 12px;
+  }
+}
+
+/* 1024px tablet görünümü: rapor filtreleri 2x2 grid + tam genişlik butonlar
+ *
+ * Satış/Müşteri raporları:
+ * 1. satır: BAŞLANGIÇ TARİHİ – BİTİŞ TARİHİ
+ * 2. satır: SATIŞ TÜRÜ – ÜRÜN / MÜŞTERİ
+ * 3. satır: Filtreleri Temizle (tam satır)
+ * 4. satır: Dışa Aktar butonu (tam satır)
+ */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .reports-content .reports-filtreler {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 32px;
+    align-items: end;
+  }
+
+  /* İçteki sol blok (filtreler) grid içine açılır, çocuklar grid item olur */
+  .reports-content .reports-filtreler .reports-filtreler-sol {
+    display: contents;
+  }
+
+  .reports-content .reports-filtreler .reports-filtreler-sol > .flex {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* Filtreleri Temizle: tam satır kaplasın */
+  .reports-content .reports-filtreler .btn-filtre-reset {
+    grid-column: 1 / -1;
+    justify-self: start;
+    width: 100%;
+  }
+
+  /* Dışa Aktar: tam satır kaplasın, sol hizalı */
+  .reports-content .reports-filtreler > .page-export-dropdown {
+    grid-column: 1 / -1;
+    justify-self: end;
   }
 }

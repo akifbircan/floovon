@@ -517,6 +517,7 @@ main[data-main-content]:has(.ayarlar-page) {
 @media (max-width: 600px) {
   .ayarlar-form-row-3 {
     grid-template-columns: 1fr;
+    width: 100%;
   }
 }
 .ayarlar-form-row .ayarlar-form-group,

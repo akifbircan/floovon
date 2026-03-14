@@ -23,7 +23,7 @@ import { usePhoneInput } from '../../../shared/hooks/usePhoneInput';
 import { getUploadUrl } from '../../../shared/utils/urlUtils';
 import { getProfileImageUrl } from '../../../shared/utils/userUtils';
 import { getApiBaseUrl } from '../../../lib/runtime';
-import { formatDateToDisplay } from '../../../shared/utils/dateUtils';
+import { formatDateToDisplay, formatDuzenleyenTarih } from '../../../shared/utils/dateUtils';
 import { appendIlceIlToAddress, formatPhoneNumber, formatTLDisplayValue, parseTL, formatTutarInputLive, formatTutarInputKeyDown } from '../../../shared/utils/formatUtils';
 import type { Order } from '../types';
 import { Lightbox } from '../../../shared/components/Lightbox';
@@ -466,6 +466,11 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
           organizasyonKartId: order?.organizasyon_id ?? undefined,
           musteriId: secilenMusteriId || (order as any)?.musteri_id || undefined,
         });
+        // Son Dzn tarihinin hemen görünmesi için refetch tamamlanana kadar bekle
+        const orgId = order?.organizasyon_id != null ? Number(order.organizasyon_id) : null;
+        if (orgId != null) {
+          await queryClient.refetchQueries({ queryKey: ['siparis-kartlar', orgId], type: 'active' });
+        }
         resetForm();
         onSuccess?.();
         onClose();
@@ -561,10 +566,11 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
                     <div className="gorsel-placeholder">
                       Bu organizasyona davetiye görseli eklenmemiş
                       <span className="gorsel-placeholder-yardim">
-                        Dilerseniz organizasyon kartını düzenle formundan davetiye görseli ekleyebilirsiniz.
+                        Dilerseniz organizasyon kartını düzenle formundan veya aşağıdaki buton ile davetiye görseli ekleyebilirsiniz.
                       </span>
                       <input
                         ref={davetiyeHizliYukleRef}
+                        id="davetiye-hizli-yukle-input"
                         type="file"
                         accept="image/*"
                         className="file-input-hidden"
@@ -595,15 +601,20 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
                           }
                         }}
                       />
-                      <button
-                        type="button"
+                      <label
+                        htmlFor="davetiye-hizli-yukle-input"
                         className="btn-davetiye-hizli-yukle"
-                        disabled={davetiyeYukleniyor}
-                        onClick={() => davetiyeHizliYukleRef.current?.click()}
+                        style={{
+                          cursor: davetiyeYukleniyor ? 'not-allowed' : 'pointer',
+                          opacity: davetiyeYukleniyor ? 0.7 : 1,
+                          marginBottom: 0,
+                          pointerEvents: davetiyeYukleniyor ? 'none' : 'auto',
+                        }}
+                        aria-disabled={davetiyeYukleniyor}
                       >
                         <Upload size={16} aria-hidden />
                         {davetiyeYukleniyor ? 'Yükleniyor...' : 'Davetiye görseli yükle'}
-                      </button>
+                      </label>
                     </div>
                   )
                 ) : (
@@ -1011,7 +1022,7 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
                     {urunYazisiDosya ? (
                       <>
                         <span className="secilen-dosya-metin">
-                          Seçilen dosya: {truncateFileName(urunYazisiDosya.name)}
+                          <strong>Seçilen dosya:</strong> {truncateFileName(urunYazisiDosya.name)}
                         </span>
                         <button
                           type="button"
@@ -1330,8 +1341,10 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
               <div className="duzenleyen">
                 <img
                   className="duzenleyen-profil-resmi"
-                  src={getProfileImageUrl(currentUser ?? undefined)}
-                  alt={(currentUser as any)?.kullaniciadi || (currentUser as any)?.username || 'Kullanıcı'}
+                  src={getProfileImageUrl((order as any)?.updatedByUser ?? currentUser ?? undefined)}
+                  alt={(order as any)?.updatedByUser?.adSoyad ?? (order as any)?.updatedByUser?.name ?? (order as any)?.updatedByUser?.ad ?? (currentUser as any)?.kullaniciadi ?? (currentUser as any)?.username ?? 'Kullanıcı'}
+                  data-tooltip={(order as any)?.updatedByUser?.adSoyad ?? [((order as any)?.updatedByUser?.name ?? (order as any)?.updatedByUser?.ad), ((order as any)?.updatedByUser?.surname ?? (order as any)?.updatedByUser?.soyad)].filter(Boolean).join(' ').trim() ?? (currentUser as any)?.kullaniciadi ?? (currentUser as any)?.username ?? 'Kullanıcı'}
+                  data-tooltip-pos="top"
                   onError={(e) => {
                     const backendBase = getApiBaseUrl().replace('/api', '');
                     (e.target as HTMLImageElement).src = `${backendBase}/assets/profil-default.jpg`;
@@ -1342,12 +1355,8 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
                     {(() => {
                       const raw = (order as any)?._raw || order;
                       const updatedAt = raw?.updated_at ?? raw?.updatedAt ?? order?.updatedAt ?? (order as any)?.createdAt ?? raw?.created_at;
-                      if (!updatedAt) return 'Henüz düzenlenmedi';
-                      const d = typeof updatedAt === 'string' && updatedAt.match(/^\d{4}-\d{2}-\d{2}/)
-                        ? new Date(updatedAt.replace(' ', 'T'))
-                        : new Date(updatedAt);
-                      if (isNaN(d.getTime())) return 'Henüz düzenlenmedi';
-                      return `${d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}, ${d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`;
+                      const formatted = formatDuzenleyenTarih(updatedAt);
+                      return formatted === '—' ? 'Henüz düzenlenmedi' : formatted;
                     })()}
                   </span>
                 </div>

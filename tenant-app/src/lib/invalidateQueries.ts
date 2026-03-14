@@ -130,10 +130,20 @@ export function invalidateSiparisGuncellemeQueries(
   queryClient.invalidateQueries({ queryKey: ['archived-orders'] });
 
   if (organizasyonKartId != null) {
+    const orgId = typeof organizasyonKartId === 'string' ? Number(organizasyonKartId) : organizasyonKartId;
     queryClient.invalidateQueries({ queryKey: ['siparis-kartlar', organizasyonKartId] });
+    queryClient.invalidateQueries({ queryKey: ['siparis-kartlar', orgId] });
     queryClient.invalidateQueries({ queryKey: ['siparis-kartlari', organizasyonKartId] });
     queryClient.invalidateQueries({ queryKey: ['organizasyon-siparisler', organizasyonKartId] });
     queryClient.invalidateQueries({ queryKey: ['organizasyon-kart-detail', organizasyonKartId] });
+  }
+
+  // Güncel updated_at'in hemen görünmesi için invalidate sonrası refetch tetikle
+  queryClient.refetchQueries({ queryKey: ['siparis-kartlar'], type: 'active' });
+  if (organizasyonKartId != null) {
+    const orgId = typeof organizasyonKartId === 'string' ? Number(organizasyonKartId) : organizasyonKartId;
+    queryClient.refetchQueries({ queryKey: ['siparis-kartlar', organizasyonKartId], type: 'active' });
+    queryClient.refetchQueries({ queryKey: ['siparis-kartlar', orgId], type: 'active' });
   }
 
   if (musteriId != null && musteriId !== '') {

@@ -167,6 +167,35 @@ export function formatTutarInputKeyDown(
 }
 
 /**
+ * "Son Etkinlik" / tablo tarih-saati: "04.03.2026 00:39" (saniye yok)
+ * Girdi: "2026-03-04 00:39:42" (YYYY-MM-DD HH:mm:ss)
+ * Çıktı: "04.03.2026 00:39" (DD.MM.YYYY HH:mm)
+ */
+export function formatSonEtkinlikDatetime(raw: string | undefined | null): string {
+  if (!raw) return '';
+  const s = String(raw).trim();
+  if (!s) return '';
+
+  const match = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (match) {
+    const [, y, m, d, h, min] = match;
+    return `${d}.${m}.${y}${h != null && min != null ? ` ${h}:${min}` : ''}`;
+  }
+
+  const parsed = new Date(s.replace(' ', 'T'));
+  if (!isNaN(parsed.getTime())) {
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const yyyy = parsed.getFullYear();
+    const hh = String(parsed.getHours()).padStart(2, '0');
+    const min = String(parsed.getMinutes()).padStart(2, '0');
+    return `${dd}.${mm}.${yyyy} ${hh}:${min}`;
+  }
+
+  return s;
+}
+
+/**
  * TL formatındaki string'i sayıya çevir ("1.234,56 TL" veya "1234,56" -> 1234.56)
  */
 export function parseTL(value: string | number | undefined | null): number {

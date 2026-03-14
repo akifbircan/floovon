@@ -1028,10 +1028,13 @@ export const DashboardPage: React.FC = () => {
           }
         }
         const { showToastInteractive } = await import('../../../shared/utils/toastUtils');
+        const isAracSusleme = (order as any).organizasyonKartTur === 'aracsusleme';
         showToastInteractive({
-          title: 'Sipariş Teslim Et',
-          message: 'Bu siparişi teslim edildi olarak işaretlemek istediğinize emin misiniz?',
-          confirmText: 'Evet, teslim edildi',
+          title: isAracSusleme ? 'Araç Süsleme Tamamlandı' : 'Sipariş Teslim Et',
+          message: isAracSusleme
+            ? 'Bu siparişi tamamlandı olarak işaretlemek istediğinize emin misiniz?'
+            : 'Bu siparişi teslim edildi olarak işaretlemek istediğinize emin misiniz?',
+          confirmText: isAracSusleme ? 'Evet, tamamlandı' : 'Evet, teslim edildi',
           cancelText: 'İptal',
           onConfirm: async () => {
             await startDeliverFlow(order);
@@ -1546,10 +1549,13 @@ export const DashboardPage: React.FC = () => {
       const order = pendingTeslimFlow.order;
       setPendingTeslimFlow(null);
       const { showToastInteractive } = await import('../../../shared/utils/toastUtils');
+      const isAracSusleme = (order as any).organizasyonKartTur === 'aracsusleme';
       showToastInteractive({
-        title: 'Sipariş Teslim Et',
-        message: 'Bu siparişi teslim edildi olarak işaretlemek istediğinize emin misiniz?',
-        confirmText: 'Evet, teslim edildi',
+        title: isAracSusleme ? 'Araç Süsleme Tamamlandı' : 'Sipariş Teslim Et',
+        message: isAracSusleme
+          ? 'Bu siparişi tamamlandı olarak işaretlemek istediğinize emin misiniz?'
+          : 'Bu siparişi teslim edildi olarak işaretlemek istediğinize emin misiniz?',
+        confirmText: isAracSusleme ? 'Evet, tamamlandı' : 'Evet, teslim edildi',
         cancelText: 'İptal',
         onConfirm: async () => {
           await startDeliverFlow(order);

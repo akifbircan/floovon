@@ -2311,7 +2311,7 @@ export const SettingsPage: React.FC = () => {
                             <>
                               <img src={urunGorselPreview} alt="Ürün görseli" className="davetiye-preview-img" />
                               <span className="secilen-dosya-metin">
-                                Seçilen dosya: {urunFormData.gorsel?.name}
+                                <strong>Seçilen dosya:</strong> {urunFormData.gorsel?.name}
                               </span>
                               <button
                                 type="button"

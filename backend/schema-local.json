@@ -633,7 +633,7 @@
       }
     ]
   },
-  "ayarlar_ciceksepeti_ayalari": {
+  "ayarlar_ciceksepeti_ayarlari": {
     "columns": [
       {
         "name": "tenant_id",

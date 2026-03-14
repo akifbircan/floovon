@@ -2,7 +2,7 @@
  * Migration: ÇiçekSepeti ile ilgili tablo isimleri
  *
  * - ciceksepeti_orders / siparisler_ciceksepeti → organizasyon_siparisler_ciceksepeti
- * - ciceksepeti_settings → ayarlar_ciceksepeti_ayalari
+ * - ciceksepeti_settings → ayarlar_ciceksepeti_ayarlari
  *
  * Çalıştırma: node backend/scripts/rename-ciceksepeti-tables.js
  */
@@ -53,10 +53,10 @@ async function main() {
     }
   }
 
-  // 3) ciceksepeti_settings → ayarlar_ciceksepeti_ayalari
+  // 3) ciceksepeti_settings → ayarlar_ciceksepeti_ayarlari
   try {
-    await run('ALTER TABLE ciceksepeti_settings RENAME TO ayarlar_ciceksepeti_ayalari;');
-    console.log('✅ ciceksepeti_settings → ayarlar_ciceksepeti_ayalari');
+    await run('ALTER TABLE ciceksepeti_settings RENAME TO ayarlar_ciceksepeti_ayarlari;');
+    console.log('✅ ciceksepeti_settings → ayarlar_ciceksepeti_ayarlari');
   } catch (e) {
     if (e.message && e.message.includes('no such table')) {
       console.log('⚠️ ciceksepeti_settings yok, atlanıyor.');

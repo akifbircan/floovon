@@ -4,11 +4,15 @@
  */
 
 import { getApiBaseUrl } from '../../lib/runtime';
+import { formatDuzenleyenTarih } from './dateUtils';
 
 export interface User {
   id?: number;
   name?: string;
   ad?: string;
+  surname?: string;
+  soyad?: string;
+  adSoyad?: string;
   profil_resmi?: string;
   profile_image?: string;
 }
@@ -27,62 +31,20 @@ export function createDuzenleyenHTML(
   const avatarUrl = getUserAvatar(currentUser, backendBase);
   const defaultProfileImage = `${backendBase}/assets/profil-default.jpg`;
   
-  // Tarih parse fonksiyonu
-  const parseTarih = (t: Date | string | undefined | null): Date => {
-    if (!t) return new Date();
-    
-    // Date object ise direkt dön
-    if (t instanceof Date) {
-      return isNaN(t.getTime()) ? new Date() : t;
-    }
-    
-    // String ise parse et
-    if (typeof t === 'string') {
-      // Boş string kontrolü
-      if (t.trim() === '') return new Date();
-      
-      // ISO 8601 formatı kontrolü
-      if (t.includes('T') && (t.endsWith('Z') || t.match(/[+-]\d{2}:\d{2}$/))) {
-        return new Date(t);
-      }
-      
-      // SQL datetime formatı (2025-01-15 10:30:00)
-      if (t.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)) {
-        const [datePart, timePart] = t.split(' ');
-        if (datePart && timePart) {
-          const [year, month, day] = datePart.split('-').map(Number);
-          const timeParts = timePart.split(':');
-          const hour = parseInt(timeParts[0]) || 0;
-          const minute = parseInt(timeParts[1]) || 0;
-          const second = parseInt(timeParts[2]) || 0;
-          const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-          if (!isNaN(date.getTime())) return date;
-        }
-      }
-      
-      // Diğer formatlar için Date constructor dene
-      const date = new Date(t);
-      if (!isNaN(date.getTime())) return date;
-    }
-    
-    return new Date();
-  };
-  
-  const tarihObj = parseTarih(tarih);
-  
-  if (isNaN(tarihObj.getTime())) {
+  const formatted = formatDuzenleyenTarih(tarih);
+  const adSoyad = currentUser?.adSoyad || [currentUser?.name || currentUser?.ad, currentUser?.surname || currentUser?.soyad].filter(Boolean).join(' ').trim() || (currentUser?.name || currentUser?.ad || 'Kullanıcı');
+  const tooltipText = adSoyad.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+  if (!formatted || formatted === '—') {
     return `
-      <img class="duzenleyen-profil-resmi" src="${avatarUrl}" alt="${currentUser?.name || currentUser?.ad || 'Kullanıcı'}" onerror="this.onerror=null; this.src='${defaultProfileImage}';">
+      <img class="duzenleyen-profil-resmi" src="${avatarUrl}" alt="${tooltipText}" data-tooltip="${tooltipText}" data-tooltip-pos="top" onerror="this.onerror=null; this.src='${defaultProfileImage}';">
       <div class="duzenleme-tarih">Son Dzn: <span>Henüz düzenlenmedi</span></div>
     `;
   }
-  
-  const tarihStr = tarihObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
-  const saatStr = tarihObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-  
+
   return `
-    <img class="duzenleyen-profil-resmi" src="${avatarUrl}" alt="${currentUser?.name || currentUser?.ad || 'Kullanıcı'}" onerror="this.onerror=null; this.src='${defaultProfileImage}';">
-    <div class="duzenleme-tarih">Son Dzn: <span>${tarihStr}, ${saatStr}</span></div>
+    <img class="duzenleyen-profil-resmi" src="${avatarUrl}" alt="${tooltipText}" data-tooltip="${tooltipText}" data-tooltip-pos="top" onerror="this.onerror=null; this.src='${defaultProfileImage}';">
+    <div class="duzenleme-tarih">Son Dzn: <span>${formatted}</span></div>
   `;
 }
 

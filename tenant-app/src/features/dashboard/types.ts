@@ -40,6 +40,8 @@ export interface Order {
   urunYazisi?: string;
   updatedAt?: string;
   updatedBy?: string;
+  /** Son düzenleyen kullanıcının profil resmi ve adı (backend'den; oturum sahibi değil işlemi yapan) */
+  updatedByUser?: { profil_resmi?: string; profile_image?: string; name?: string; ad?: string; surname?: string; soyad?: string; adSoyad?: string };
   // Ödeme bilgileri
   ekstraUcret?: number;
   ekstraUcretAciklama?: string;

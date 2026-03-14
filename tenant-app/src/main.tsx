@@ -31,6 +31,7 @@ import './styles/phone-landscape-warning.css';
 import './styles/tablet-notebook.css';
 /* Select Lucide ok – en sonda yüklenir, tüm select’lere uygulanır */
 import './styles/select-arrow-global.css';
+import './styles/date-time-input-global.css';
 
 // React Query client configuration
 const queryClient = new QueryClient({

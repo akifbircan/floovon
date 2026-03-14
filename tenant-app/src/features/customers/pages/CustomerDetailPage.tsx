@@ -9,6 +9,7 @@ import { ErrorState } from '../../../shared/components/ErrorState';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { usePageAnimations } from '../../../shared/hooks/usePageAnimations';
 import { formatTL, formatTLDisplayValue, parseTL, formatTutarInputLive, formatTutarInputKeyDown, formatPhoneNumber, cleanPhoneForDatabase, formatOdemeYontemiDisplay, normalizeOdemeYontemiForDb } from '../../../shared/utils/formatUtils';
+import { formatDateTimeShort } from '../../../shared/utils/dateUtils';
 import { getUploadUrl } from '../../../shared/utils/urlUtils';
 import { SearchInput } from '../../../shared/components/SearchInput';
 import { X, ArrowLeftCircle, Pencil, Trash2, FileDown, Mail, ListChecks, CircleDollarSign, Plus, XCircle, FileSearch, Eye, FileCheck, Send, Clock, FileText } from 'lucide-react';
@@ -983,9 +984,7 @@ export const CustomerDetailPage: React.FC = () => {
                           <tr key={order.id}>
                             <td data-label="Sipariş Kodu">{(order.siparis_kodu ?? raw.siparis_kodu) ? String(order.siparis_kodu ?? raw.siparis_kodu) : '—'}</td>
                             <td data-label="Tarih-Saat">
-                              {tarih
-                                ? new Date(String(tarih)).toLocaleString('tr-TR')
-                                : '—'}
+                              {tarih ? formatDateTimeShort(tarih) : '—'}
                             </td>
                             <td data-label="Ürün Adı">
                               <div className="cari-table-urun-cell">
@@ -1001,7 +1000,7 @@ export const CustomerDetailPage: React.FC = () => {
                               <div className={`cari-org-eski-yapi orgkart ${kartTur}`}>
                                 <div className="cari-org-badge-wrap">
                                   <span className="kart-tur">{kartTurDisplay}</span>
-                                  <span className="kart-alt-tur">{altTurStr || '—'}</span>
+                                  {altTurStr?.trim() ? <span className="kart-alt-tur">{altTurStr}</span> : null}
                                 </div>
                                 <div className="cari-org-icerik">
                                   <div className="cari-org-primary">{primaryKonum}</div>
@@ -1079,7 +1078,7 @@ export const CustomerDetailPage: React.FC = () => {
                           const tr = (t as unknown) as Record<string, unknown>;
                           const islemTarihi = t.islem_tarihi ?? t.islem_tarihi_saati ?? tr.islem_tarihi_saati ?? tr.transaction_date;
                           const tutar = t.tutar ?? t.tahsil_edilen_tutar ?? tr.tahsil_edilen_tutar ?? tr.amount;
-                          const tarihStr = islemTarihi ? (() => { try { const d = new Date(String(islemTarihi)); return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString('tr-TR'); } catch { return '—'; } })() : '—';
+                          const tarihStr = islemTarihi ? formatDateTimeShort(islemTarihi) : '—';
                           const aciklamaStr = getTahsilatField(tr, 'aciklama', 'description') || (t.aciklama ?? (tr.aciklama as string) ?? '') || '—';
                           const makbuzStr = getTahsilatField(tr, 'tahsilat_makbuz_no', 'makbuz_no') || (t.makbuz_no ?? t.tahsilat_makbuz_no ?? (tr.makbuz_no as string) ?? (tr.tahsilat_makbuz_no as string) ?? '') || '—';
                           const durumStr = getTahsilatField(tr, 'durum', 'status') || (t.durum ?? (tr.durum as string) ?? '') || '—';

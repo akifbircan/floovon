@@ -630,7 +630,7 @@ export const EditKartModal: React.FC<EditKartModalProps> = ({
                           <>
                             <img src={davetiyeGorselPreview} alt="Preview" className="davetiye-preview-img" />
                             <span className="secilen-dosya-metin">
-                              Seçilen dosya: {davetiyeGorsel?.name ?? (davetiyeGorselPreview ? 'Mevcut görsel' : '')}
+                              <strong>Seçilen dosya:</strong> {davetiyeGorsel?.name ?? (davetiyeGorselPreview ? 'Mevcut görsel' : '')}
                             </span>
                             <button
                               type="button"

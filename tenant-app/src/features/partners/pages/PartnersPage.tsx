@@ -131,6 +131,8 @@ export const PartnersPage: React.FC = () => {
       try {
         const result = await apiRequest<{
           siparis_sayisi?: number;
+          alinan_siparis_sayisi?: number;
+          verilen_siparis_sayisi?: number;
           toplam_siparis?: number;
           toplam_alacak?: number;
           toplam_tahsilat?: number;
@@ -502,29 +504,29 @@ export const PartnersPage: React.FC = () => {
           ) : (
             <div className="partners-detail-card" data-card-item>
               <div className="partners-detail-card-top custom-scrollbar">
-                <div className="partners-detail-block partners-detail-block-sep partners-detail-cari">
-                  <div className="partners-detail-cari-row">
-                    <div className="partners-detail-cari-cell">
-                      <span className="partners-detail-label">Alınan Toplam Sipariş</span>
-                      <span className="partners-detail-value">
-                        {cariOzet?.siparis_sayisi ?? cariOzet?.toplam_siparis ?? selectedPartner.toplam_siparis ?? 0}
+                <div className="partners-detail-block partners-detail-block-sep detail-cari">
+                  <div className="detail-cari-row">
+                    <div className="detail-cari-cell">
+                      <span className="detail-cari-label">Alınan Toplam Sipariş</span>
+                      <span className="detail-cari-value">
+                        {cariOzet?.siparis_sayisi ?? cariOzet?.toplam_siparis ?? selectedPartner.toplam_siparis ?? 0} Sipariş
                       </span>
                     </div>
-                    <div className="partners-detail-cari-cell">
-                      <span className="partners-detail-label">Verilen Toplam Sipariş</span>
-                      <span className="partners-detail-value">
-                        {0}
+                    <div className="detail-cari-cell">
+                      <span className="detail-cari-label">Verilen Toplam Sipariş</span>
+                      <span className="detail-cari-value">
+                        {cariOzet?.verilen_siparis_sayisi ?? 0} Sipariş
                       </span>
                     </div>
                   </div>
-                  <div className="partners-detail-cari-row">
-                    <div className="partners-detail-cari-cell">
-                      <span className="partners-detail-label">Kalan Bakiye</span>
+                  <div className="detail-cari-row">
+                    <div className="detail-cari-cell">
+                      <span className="detail-cari-label">Kalan Bakiye</span>
                       <span
-                        className={`partners-detail-value partners-detail-bakiye ${
+                        className={`detail-cari-value detail-cari-bakiye ${
                           (cariOzet?.bakiye ?? selectedPartner.bakiye ?? 0) >= 0
-                            ? 'partners-detail-bakiye-pozitif'
-                            : 'partners-detail-bakiye-negatif'
+                            ? 'detail-cari-bakiye-pozitif'
+                            : 'detail-cari-bakiye-negatif'
                         }`}
                       >
                         {formatTL(cariOzet?.bakiye ?? selectedPartner.bakiye ?? 0)}
@@ -534,7 +536,7 @@ export const PartnersPage: React.FC = () => {
                   {selectedPartner && (
                     <button
                       type="button"
-                      className="partners-btn-cari partners-btn-cari-inline"
+                      className="btn-cari btn-cari-inline"
                       onClick={() => navigate(`/partner-firmalar-cari/${selectedPartner.id}`)}
                     >
                       <TurkishLira size={16} aria-hidden />

@@ -529,7 +529,7 @@ export const YeniMusteriModal: React.FC<YeniMusteriModalProps> = ({
                       {urunYazisiGorsel ? (
                         <>
                           <span className="secilen-dosya-metin">
-                            Seçilen dosya: {truncateFileName(urunYazisiGorsel.name)}
+                            <strong>Seçilen dosya:</strong> {truncateFileName(urunYazisiGorsel.name)}
                           </span>
                           <button
                             type="button"

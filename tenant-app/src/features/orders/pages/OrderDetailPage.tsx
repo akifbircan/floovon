@@ -1189,6 +1189,14 @@ export const OrderDetailPage: React.FC = () => {
                         const urunAdi = siparis.siparis_urun ?? siparis.urun;
                         const urunGorsel = siparis.product_gorsel ?? siparis.urun_gorsel;
                         const tutar = siparis.siparis_tutari ?? siparis.tutar ?? siparis.toplam_tutar;
+                        const ekstraTutar = Number((siparis as any).ekstra_ucret_tutari ?? (siparis as any).ekstraUcret ?? 0) || 0;
+                        const ekstraAciklama = String((siparis as any).ekstra_ucret_aciklama ?? (siparis as any).ekstraUcretAciklama ?? '').trim();
+                        const anaTutar = Number(tutar) || 0;
+                        const fiyatMetni = anaTutar > 0
+                          ? (ekstraTutar > 0
+                            ? `${formatTL(anaTutar)} + ${ekstraTutar === Math.floor(ekstraTutar) ? `${Math.floor(ekstraTutar)} TL` : formatTL(ekstraTutar)}${ekstraAciklama ? ' ' + ekstraAciklama : ''}`
+                            : formatTL(anaTutar))
+                          : null;
                         const musteriAdi = siparis.musteri_isim_soyisim ?? siparis.musteri_unvan ?? siparis.musteri_adi ?? '—';
                         const durum = normalizeSiparisDurum(siparis.status ?? siparis.durum);
                         const teslimSaati = siparis.teslim_saat ?? siparis.teslim_saati;
@@ -1231,8 +1239,8 @@ export const OrderDetailPage: React.FC = () => {
                               ) : null}
                               <div className="siparis-urun-bilgi">
                                 <span className="siparis-urun-adi">{urunAdi ?? '—'}</span>
-                                {tutar != null && (
-                                  <span className="siparis-urun-fiyat">+{formatTL(Number(tutar))}</span>
+                                {fiyatMetni != null && (
+                                  <span className="siparis-urun-fiyat">{fiyatMetni}</span>
                                 )}
                               </div>
                             </div>
@@ -1398,8 +1406,14 @@ export const OrderDetailPage: React.FC = () => {
         const urunGorsel = s.product_gorsel ?? s.urun_gorsel;
         const isCiceksepeti = (s as any).kart_tur === 'Çiçek Sepeti';
         const siparisTutari = Number(s.siparis_tutari ?? s.tutar ?? 0) || 0;
-        const ekstraUcret = Number(s.ekstra_ucret_tutari ?? 0) || 0;
+        const ekstraUcret = Number(s.ekstra_ucret_tutari ?? (s as any).ekstraUcret ?? 0) || 0;
+        const ekstraAciklama = String(s.ekstra_ucret_aciklama ?? (s as any).ekstraUcretAciklama ?? '').trim();
         const toplamTutar = Number(s.toplam_tutar) || siparisTutari + ekstraUcret;
+        const fiyatGosterim = siparisTutari > 0
+          ? (ekstraUcret > 0
+            ? `${formatTL(siparisTutari)} + ${ekstraUcret === Math.floor(ekstraUcret) ? `${Math.floor(ekstraUcret)} TL` : formatTL(ekstraUcret)}${ekstraAciklama ? ' ' + ekstraAciklama : ''}`
+            : formatTL(siparisTutari))
+          : '—';
         const teslimAdresParts = [s.mahalle, s.acik_adres, s.teslim_ilce, s.teslim_il].filter(Boolean);
         const teslimAdresStr = teslimAdresParts.length > 0 ? teslimAdresParts.join(', ') : '—';
         const musteriAdresParts = [s.musteri_neighborhood, s.musteri_address, s.musteri_district, s.musteri_city].filter(Boolean);
@@ -1460,7 +1474,7 @@ export const OrderDetailPage: React.FC = () => {
                         <div className="urun-name">{urunAdi}</div>
                         <div className="urun-price">
                           <span>Sipariş Tutarı:</span>
-                          <strong>{siparisTutari > 0 ? formatTL(siparisTutari) : '—'}</strong>
+                          <strong>{fiyatGosterim}</strong>
                         </div>
                       </div>
                     </div>

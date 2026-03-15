@@ -97,6 +97,7 @@ interface BackendSiparis {
   updated_by_soyad?: string;
   updated_by_ad_soyad?: string;
   ekstra_ucret?: number;
+  ekstra_ucret_tutari?: number;
   ekstra_ucret_aciklama?: string;
   teslim_ilce?: string;
   teslim_il?: string;
@@ -271,8 +272,8 @@ function mapSiparis(backend: BackendSiparis): Order {
     updatedByUser: (backend.updated_by_profil_resmi != null || backend.updated_by_name != null || backend.updated_by_ad_soyad != null)
       ? { profil_resmi: backend.updated_by_profil_resmi, profile_image: backend.updated_by_profil_resmi, name: backend.updated_by_name, ad: backend.updated_by_name, surname: backend.updated_by_soyad, soyad: backend.updated_by_soyad, adSoyad: backend.updated_by_ad_soyad || [backend.updated_by_name, backend.updated_by_soyad].filter(Boolean).join(' ').trim() }
       : undefined,
-    // Ödeme bilgileri
-    ekstraUcret: backend.ekstra_ucret,
+    // Ödeme bilgileri (backend ekstra_ucret_tutari döner; ekstra_ucret eski/alternatif alan)
+    ekstraUcret: backend.ekstra_ucret_tutari ?? backend.ekstra_ucret,
     ekstraUcretAciklama: backend.ekstra_ucret_aciklama,
     toplamTutar: backend.toplam_tutar,
     // Teslim adresi detayları
@@ -428,11 +429,12 @@ export async function deliverAllOrdersInKart(
   const teslimEdilecekler = siparisler.filter((s) => (s.durum ?? (s as any).status) !== 'teslim');
   let basarili = 0;
   let basarisiz = 0;
-  const kartTur = (orgKart as any).kart_tur ?? (orgKart as any).kart_turu ?? '';
+  const kartTur = ((orgKart as any).kart_tur ?? (orgKart as any).kart_turu ?? '').toString();
   const isOzelKart = kartTur === 'ozelgun' || kartTur === 'ozelsiparis';
+  const isCiceksepeti = kartTur === 'Çiçek Sepeti' || kartTur.toLowerCase().includes('ciceksepeti') || kartTur.toLowerCase().includes('çiçek sepeti');
   for (const order of teslimEdilecekler) {
     try {
-      await teslimEtSiparis(order.id);
+      await teslimEtSiparis(order.id, isCiceksepeti ? { ciceksepeti: true } : undefined);
       if (options?.sendWhatsApp) {
         try {
           // Özel sipariş/özel gün: mesajda "teslim alan" siparişteki teslim kişisi olsun

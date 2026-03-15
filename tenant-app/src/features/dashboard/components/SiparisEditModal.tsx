@@ -154,18 +154,15 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
     return { teslimEdilen, toplam };
   }, [siparisler, organizasyonData?.toplam_siparis_sayisi, organizasyonData?.siparis_sayisi]);
 
-  // Form'u order verileriyle doldur - sadece modal açıldığında ve order değiştiğinde
+  // Form'u order verileriyle doldur - modal açıldığında veya order güncellendiğinde (refetch sonrası ekstra açıklama vb. gelsin)
   useEffect(() => {
     if (!isOpen || !order) {
       orderIdRef.current = null;
       return;
     }
-
-    // Sadece order ID değiştiğinde güncelle (sonsuz döngüyü önle)
-    if (orderIdRef.current === order.id) return;
     orderIdRef.current = order.id;
 
-    // State'leri set et
+    // State'leri set et (hem _raw hem mapped order'dan oku; böylece ekstra_ucret_aciklama her zaman gelir)
     const rawOrder = (order as any)._raw || order;
     setSecilenMusteriId(rawOrder.musteri_id || '');
     setMusteriUnvani(order.musteriAdi || rawOrder.musteri_unvan || '');
@@ -178,7 +175,9 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
     setSiparisUrun(order.urun || rawOrder.siparis_urun || '');
     setSiparisUrunAciklama((rawOrder as any).siparis_urun_aciklama || '');
     setSiparisTutari(formatTLDisplayValue(order.tutar ?? rawOrder.siparis_tutari ?? 0));
-    setEkstraUcretTutari(formatTLDisplayValue((rawOrder as any).ekstra_ucret_tutari ?? 0));
+    const aciklama = (rawOrder as any).ekstra_ucret_aciklama ?? order.ekstraUcretAciklama ?? (order as any).ekstra_ucret_aciklama ?? '';
+    setEkstraUcretAciklama(typeof aciklama === 'string' ? aciklama : '');
+    setEkstraUcretTutari(formatTLDisplayValue((rawOrder as any).ekstra_ucret_tutari ?? order.ekstraUcret ?? 0));
     const oy = (order.odemeYontemi || rawOrder.odeme_yontemi || 'nakit') as string;
     const oyNorm = (v: string) => {
       const l = (v || '').toLowerCase();
@@ -209,7 +208,7 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
     setSelectedIlce(order.teslimIlce || rawOrder.teslim_ilce || '');
     setSelectedMahalle(order.mahalle || rawOrder.teslim_mahalle || '');
     setTeslimAcikAdres((rawOrder as any).teslim_acik_adres || order.acikAdres || '');
-  }, [isOpen, order?.id]);
+  }, [isOpen, order?.id, order?.ekstraUcretAciklama, order?.ekstraUcret]);
 
   // Partner listesi yüklendiğinde mevcut siparişteki partner adına göre secilenPartnerId'yi eşle
   useEffect(() => {

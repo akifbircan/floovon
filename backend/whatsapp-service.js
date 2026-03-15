@@ -256,19 +256,44 @@ class WhatsAppService {
             this.currentTenantId = tenantId;
             this.tenantId = tenantId;
             
-            // Tenant bazlı session path oluştur
+            // Tenant bazlı session path – GÜNCELLEMEDEN ETKİLENMESİN: önce kullanıcı/AppData yolu (backend dışı)
+            const userDataRoot = process.env.APPDATA || process.env.USERPROFILE || process.env.HOME || '/tmp';
             const possiblePaths = [
-                path.join(__dirname, `.wwebjs_auth_tenant_${tenantId}`),
+                path.join(userDataRoot, 'Floovon', 'whatsapp_session', `tenant_${tenantId}`),
                 path.join(process.env.HOME || process.env.USERPROFILE || '/tmp', `.wwebjs_auth_floovon_tenant_${tenantId}`),
+                path.join(__dirname, `.wwebjs_auth_tenant_${tenantId}`),
                 path.join('/tmp', `.wwebjs_auth_floovon_tenant_${tenantId}`)
             ];
             
-            // Yazma izni olan ilk yolu kullan
-            this.sessionPath = possiblePaths[0]; // Varsayılan olarak backend klasörü
+            // Yazma izni olan ilk yolu kullan (varsayılan: kullanıcı veri klasörü – güncelleme sonrası bağlantı kopyalanmasın)
+            this.sessionPath = possiblePaths[0];
             try {
                 // Session klasörünü oluşturmayı dene
                 if (!fs.existsSync(this.sessionPath)) {
                     fs.mkdirSync(this.sessionPath, { recursive: true, mode: 0o755 });
+                }
+                // Bir kerelik taşıma: yeni yol boşsa, eski (backend içi) session varsa oradan kopyala – güncelleme sonrası tekrar bağlanma
+                const oldPath = path.join(__dirname, `.wwebjs_auth_tenant_${tenantId}`);
+                if (this.sessionPath === possiblePaths[0] && fs.existsSync(oldPath)) {
+                    try {
+                        const oldFiles = fs.readdirSync(oldPath);
+                        const newFiles = fs.readdirSync(this.sessionPath).filter((f) => !f.startsWith('.write'));
+                        if (oldFiles.length > 0 && newFiles.length === 0) {
+                            const copyDir = (src, dest) => {
+                                fs.mkdirSync(dest, { recursive: true });
+                                for (const name of fs.readdirSync(src)) {
+                                    const s = path.join(src, name);
+                                    const d = path.join(dest, name);
+                                    if (fs.statSync(s).isDirectory()) copyDir(s, d);
+                                    else fs.copyFileSync(s, d);
+                                }
+                            };
+                            copyDir(oldPath, this.sessionPath);
+                            console.log(`✅ WhatsApp session eski konumdan taşındı: ${oldPath} → ${this.sessionPath}`);
+                        }
+                    } catch (copyErr) {
+                        console.warn('⚠️ Session kopyalama atlandı:', copyErr?.message);
+                    }
                 }
                 // Yazma izni testi
                 const testFile = path.join(this.sessionPath, '.write_test');

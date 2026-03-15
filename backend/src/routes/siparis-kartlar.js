@@ -565,29 +565,48 @@ router.patch('/:id/deliver', async (req, res) => {
     try {
         const db = await getDb();
         const { id } = req.params;
+        const siparisTable = (await getSiparisMusteriSelectParts(db)).tableName;
 
-        // Sipariş bilgilerini al (bildirim için)
         const siparisBilgileri = await db.query(`
             SELECT sk.id, sk.organizasyon_kart_id, sk.musteri_unvan, sk.musteri_isim_soyisim,
                    sk.siparis_urun, sk.urun_gorsel, sk.teslim_kisisi, sk.siparis_teslim_kisisi_baskasi,
                    ok.organizasyon_kart_tur, ok.organizasyon_kart_etiket
-            FROM siparisler sk
+            FROM ${siparisTable} sk
             LEFT JOIN organizasyon_kartlar ok ON sk.organizasyon_kart_id = ok.id
             WHERE sk.id = ? AND sk.status = 'aktif'
         `, [id]);
-
-        // İmza gönderilmediyse (tümünü teslim vb.) eski teslim_imza_data temizlensin; arşiv sayfasında eski imza görünmesin
-        const result = await db.query(`
-            UPDATE siparisler SET
-                teslim_edildi = 1, 
-                teslim_edildi_tarih = CURRENT_TIMESTAMP,
-                arsivleme_sebebi = 'Teslim Edildi',
-                teslim_imza_data = NULL,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = ? AND status = 'aktif'
-        `, [id]);
-
-        if (result.changes === 0) {
+        let result = { changes: 0 };
+        if (siparisBilgileri.length > 0) {
+            result = await db.run(`
+                UPDATE ${siparisTable} SET
+                    teslim_edildi = 1,
+                    teslim_edildi_tarih = CURRENT_TIMESTAMP,
+                    arsivli = 1,
+                    arsivleme_tarih = datetime('now', 'localtime'),
+                    arsivleme_sebebi = 'Teslim Edildi',
+                    teslim_imza_data = NULL,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ? AND status = 'aktif'
+            `, [id]);
+        }
+        if (!result || result.changes === 0) {
+            const cicekExists = await db.query("SELECT name FROM sqlite_master WHERE type='table' AND name='organizasyon_siparisler_ciceksepeti'");
+            if (cicekExists && cicekExists.length > 0) {
+                const cicekResult = await db.run(`
+                    UPDATE organizasyon_siparisler_ciceksepeti SET
+                        arsivli = 1,
+                        arsivleme_tarih = datetime('now', 'localtime'),
+                        arsivleme_sebebi = 'Teslim Edildi',
+                        updated_at = datetime('now', 'localtime')
+                    WHERE id = ? AND (COALESCE(arsivli, 0) = 0)
+                `, [id]);
+                if (cicekResult && cicekResult.changes > 0) {
+                    try {
+                        await db.run(`UPDATE ${siparisTable} SET arsivli = 1, arsivleme_tarih = datetime('now', 'localtime'), arsivleme_sebebi = 'Teslim Edildi', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [id]);
+                    } catch (_) {}
+                    return res.json({ success: true, message: 'Sipariş kartı teslim edildi olarak işaretlendi' });
+                }
+            }
             return res.status(404).json({
                 success: false,
                 message: 'Sipariş kartı bulunamadı'
@@ -670,12 +689,15 @@ router.patch('/:id/deliver', async (req, res) => {
     }
 });
 
-// Sipariş kartını arşivle
+// Sipariş kartını arşivle – siparişler/siparis_kartlar tablosuna yaz (GET listesi ile aynı tablo)
 router.patch('/:id/archive', async (req, res) => {
     try {
         const db = await getDb();
         const { id } = req.params;
         const { arsivleme_sebebi } = req.body;
+
+        const { tableName } = await getSiparisMusteriSelectParts(db);
+        const siparisTable = tableName;
 
         // Önce sipariş kartının var olup olmadığını kontrol et ve bilgilerini al
         const mevcutSiparis = await db.query(`
@@ -683,7 +705,7 @@ router.patch('/:id/archive', async (req, res) => {
                    sk.urun_gorsel, sk.teslim_kisisi, sk.siparis_teslim_kisisi_baskasi,
                    sk.organizasyon_kart_id,
                    ok.organizasyon_kart_tur, ok.organizasyon_kart_etiket
-            FROM siparisler sk
+            FROM ${siparisTable} sk
             LEFT JOIN organizasyon_kartlar ok ON sk.organizasyon_kart_id = ok.id
             WHERE sk.id = ? AND sk.status = 'aktif'
         `, [id]);
@@ -697,8 +719,7 @@ router.patch('/:id/archive', async (req, res) => {
 
         const siparisBilgileri = mevcutSiparis[0];
 
-        // UPDATE işlemini yap - arsivli = 1 olarak ayarla
-        // ÖNEMLİ: arsivli alanı NULL olabilir veya string "1" olabilir, bu yüzden CAST kullanıyoruz
+        // UPDATE işlemini yap - arsivli = 1 olarak ayarla (siparisler/siparis_kartlar tablosuna yazıyoruz)
         const { teslim_imza_data } = req.body;
         
         logger.info('📝 [ARŞİVLEME] İmza verisi alındı:', {
@@ -709,7 +730,7 @@ router.patch('/:id/archive', async (req, res) => {
         });
         
         const updateResult = await db.query(`
-            UPDATE siparisler SET
+            UPDATE ${siparisTable} SET
                 arsivli = 1, 
                 arsivleme_tarih = datetime('now', 'localtime'),
                 arsivleme_sebebi = ?,
@@ -722,13 +743,13 @@ router.patch('/:id/archive', async (req, res) => {
         
         logger.info('✅ [ARŞİVLEME] Sipariş arşivlendi:', {
             siparisId: id,
+            table: siparisTable,
             changes: updateResult.changes || 0,
             hasImzaData: !!teslim_imza_data
         });
         
-        // ✅ DEBUG: UPDATE sonrası kontrol et
         const kontrolSonucu = await db.query(`
-            SELECT id, arsivli, status, is_active FROM siparisler WHERE id = ?
+            SELECT id, arsivli, status, is_active FROM ${siparisTable} WHERE id = ?
         `, [id]);
         logger.info(`🔍 UPDATE sonrası kontrol:`, kontrolSonucu[0]);
         
@@ -739,29 +760,27 @@ router.patch('/:id/archive', async (req, res) => {
             arsivleme_sebebi: arsivleme_sebebi || null
         });
         
-        // UPDATE sonucunu kontrol et
         if (!updateResult || (updateResult.changes !== undefined && updateResult.changes === 0)) {
-            logger.warn(`⚠️ Sipariş kartı güncellenemedi: ID ${id} - Changes: ${updateResult?.changes}`);
-            // UPDATE başarısız olduysa hata döndür
+            logger.warn(`⚠️ Sipariş kartı güncellenemedi: ID ${id} - Tablo: ${siparisTable}, Changes: ${updateResult?.changes}`);
             return res.status(400).json({
                 success: false,
                 message: 'Sipariş kartı güncellenemedi. Sipariş zaten arşivlenmiş olabilir veya bulunamadı.',
                 error: `UPDATE changes: ${updateResult?.changes || 0}`
             });
         } else {
-            logger.info(`✅ Sipariş kartı başarıyla arşivlendi: ID ${id} - Changes: ${updateResult.changes}`);
+            logger.info(`✅ Sipariş kartı başarıyla arşivlendi: ID ${id} - Tablo: ${siparisTable}, Changes: ${updateResult.changes}`);
         }
 
         // Organizasyon kartındaki sipariş sayısını güncelle
         const siparisKarti = await db.query(`
-            SELECT organizasyon_kart_id FROM siparisler WHERE id = ?
+            SELECT organizasyon_kart_id FROM ${siparisTable} WHERE id = ?
         `, [id]);
 
         if (siparisKarti.length > 0) {
             await db.query(`
                 UPDATE organizasyon_kartlar SET
                     toplam_siparis_sayisi = (
-                        SELECT COUNT(*) FROM siparisler 
+                        SELECT COUNT(*) FROM ${siparisTable} 
                         WHERE organizasyon_kart_id = ? 
                             AND status = 'aktif' 
                             AND COALESCE(CAST(arsivli AS INTEGER), 0) = 0
@@ -853,10 +872,10 @@ router.patch('/:id/unarchive', async (req, res) => {
     try {
         const db = await getDb();
         const { id } = req.params;
+        const { tableName: siparisTable } = await getSiparisMusteriSelectParts(db);
 
-        // Önce sipariş kartının var olup olmadığını ve arşivli olduğunu kontrol et
         const mevcutSiparis = await db.query(`
-            SELECT id, organizasyon_kart_id FROM siparisler 
+            SELECT id, organizasyon_kart_id FROM ${siparisTable} 
             WHERE id = ? AND status = 'aktif' AND CAST(arsivli AS INTEGER) = 1
         `, [id]);
 
@@ -869,7 +888,7 @@ router.patch('/:id/unarchive', async (req, res) => {
 
         // UPDATE işlemini yap – geri yüklenen siparişin eski teslim imzasını temizle (tekrar teslim edildiğinde eski imza tooltip’te görünmesin)
         const updateResult = await db.query(`
-            UPDATE siparisler SET
+            UPDATE ${siparisTable} SET
                 arsivli = 0, 
                 arsivleme_tarih = NULL,
                 arsivleme_sebebi = NULL,
@@ -904,18 +923,17 @@ router.patch('/:id/unarchive', async (req, res) => {
                             arsivleme_tarih = NULL,
                             arsivleme_sebebi = NULL,
                             toplam_siparis_sayisi = (
-                                SELECT COUNT(*) FROM siparisler 
+                                SELECT COUNT(*) FROM ${siparisTable} 
                                 WHERE organizasyon_kart_id = ? AND status = 'aktif' AND COALESCE(CAST(arsivli AS INTEGER), 0) = 0
                             ),
                             updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?
                     `, [organizasyonKartId, organizasyonKartId]);
                 } else {
-                    // Sadece sipariş sayısını güncelle
                     await db.query(`
                         UPDATE organizasyon_kartlar SET
                             toplam_siparis_sayisi = (
-                                SELECT COUNT(*) FROM siparisler 
+                                SELECT COUNT(*) FROM ${siparisTable} 
                                 WHERE organizasyon_kart_id = ? AND status = 'aktif' AND COALESCE(CAST(arsivli AS INTEGER), 0) = 0
                             ),
                             updated_at = CURRENT_TIMESTAMP

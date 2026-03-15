@@ -12,15 +12,19 @@ interface SiparisActionResponse {
 
 /**
  * Siparişi teslim et
- * ✅ DÜZELTME: PATCH /api/siparis-kartlar/{id}/deliver endpoint'ini kullan
- * Bu endpoint sadece teslim_edildi ve teslim_edildi_tarih alanlarını günceller
- * organizasyon_kart_id ve musteri_id alanlarını KORUR
+ * @param siparisId - Sipariş ID (organizasyon_siparisler_ciceksepeti.id veya siparisler.id)
+ * @param options.ciceksepeti - true ise backend sadece organizasyon_siparisler_ciceksepeti tablosunu günceller (id çakışmasında yanlış sipariş arşivlenmez)
  */
-export async function teslimEtSiparis(siparisId: string | number): Promise<SiparisActionResponse> {
+export async function teslimEtSiparis(
+  siparisId: string | number,
+  options?: { ciceksepeti?: boolean }
+): Promise<SiparisActionResponse> {
+  // Çiçek Sepeti: body zorunlu – backend aynı id'yi siparisler tablosunda aramasın, sadece organizasyon_siparisler_ciceksepeti güncellesin
   const response = await apiRequest<SiparisActionResponse>(
     `/siparis-kartlar/${siparisId}/deliver`,
     {
       method: 'PATCH',
+      data: options?.ciceksepeti === true ? { ciceksepeti: true } : {},
     }
   );
   if (response?.success && typeof window !== 'undefined') {

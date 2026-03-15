@@ -1488,18 +1488,48 @@ export const DashboardPage: React.FC = () => {
     }
     setTeslimEdilecekOrganizasyon(deliverOrganizasyonKart);
     setOrderActionModalOpen(false);
-    const kartTur = deliverOrganizasyonKart.kart_tur;
+    const kartTur = (deliverOrganizasyonKart.kart_tur ?? deliverOrganizasyonKart.kart_tur_display ?? '').toString().trim();
+    const isCiceksepeti = kartTur === 'Çiçek Sepeti' || kartTur.toLowerCase() === 'ciceksepeti' || /çiçek\s*sepeti/i.test(kartTur);
     if (kartTur === 'organizasyon') {
       setTeslimFotoModalOpen(true);
+    } else if (isCiceksepeti) {
+      // Çiçek Sepeti: sadece organizasyon_siparisler_ciceksepeti güncellensin (body.ciceksepeti: true zorunlu – yoksa aynı id başka org’da arşivlenir)
+      const orgId = order.organizasyon_id ?? deliverOrganizasyonKart?.id;
+      const orgIdNum = orgId != null ? Number(orgId) : null;
+      try {
+        await teslimEtSiparis(order.id, { ciceksepeti: true });
+        await handleTeslimEdildiWhatsApp(order, deliverOrganizasyonKart, order.musteriAdi || 'Müşteri', 'kendisi');
+        showToast('success', 'Sipariş teslim edildi');
+        const teslimId = Number(order.id);
+        if (orgIdNum != null && !Number.isNaN(teslimId)) {
+          const keyNum: [string, number] = ['siparis-kartlar', orgIdNum];
+          const keyStr = ['siparis-kartlar', String(orgId)] as const;
+          const mevcut = queryClient.getQueryData<any[]>(keyNum) ?? queryClient.getQueryData<any[]>(keyStr);
+          if (Array.isArray(mevcut)) {
+            const yeniListe = mevcut.filter((s) => Number(s?.id ?? (s as any)?._raw?.id) !== teslimId);
+            queryClient.setQueryData(keyNum, yeniListe);
+            queryClient.setQueryData(keyStr, yeniListe);
+          }
+        }
+        invalidateOrganizasyonKartQueries(queryClient, orgIdNum ?? undefined);
+        queryClient.refetchQueries({ queryKey: ['organizasyon-kartlar'] });
+        setTeslimEdilecekSiparis(null);
+        setTeslimEdilecekOrganizasyon(null);
+      } catch (error: any) {
+        console.error('Teslim işlemi hatası:', error);
+        showToast('error', error?.message || 'Teslim işlemi başarısız');
+        setTeslimEdilecekSiparis(null);
+        setTeslimEdilecekOrganizasyon(null);
+      }
     } else if (kartTur === 'aracsusleme') {
       try {
         await teslimEtSiparis(order.id);
         await handleTeslimEdildiWhatsApp(order, deliverOrganizasyonKart, order.musteriAdi || 'Müşteri', 'kendisi');
         showToast('success', 'Sipariş teslim edildi');
         invalidateOrganizasyonKartQueries(queryClient, order.organizasyon_id);
-        queryClient.refetchQueries({ queryKey: ['organizasyon-kartlar'] });
+        await queryClient.refetchQueries({ queryKey: ['organizasyon-kartlar'] });
         if (order.organizasyon_id) {
-          queryClient.refetchQueries({ queryKey: ['siparis-kartlar', order.organizasyon_id] });
+          await queryClient.refetchQueries({ queryKey: ['siparis-kartlar', order.organizasyon_id] });
         }
         setTeslimEdilecekSiparis(null);
         setTeslimEdilecekOrganizasyon(null);
@@ -1512,15 +1542,14 @@ export const DashboardPage: React.FC = () => {
     } else if (kartTur === 'ozelgun' || kartTur === 'ozelsiparis') {
       setImzaModalOpen(true);
     } else {
+      // Diğer kart türleri: normal teslim (body yok)
       try {
         await teslimEtSiparis(order.id);
         await handleTeslimEdildiWhatsApp(order, deliverOrganizasyonKart, order.musteriAdi || 'Müşteri', 'kendisi');
         showToast('success', 'Sipariş teslim edildi');
         invalidateOrganizasyonKartQueries(queryClient, order.organizasyon_id);
-        queryClient.refetchQueries({ queryKey: ['organizasyon-kartlar'] });
-        if (order.organizasyon_id) {
-          queryClient.refetchQueries({ queryKey: ['siparis-kartlar', order.organizasyon_id] });
-        }
+        await queryClient.refetchQueries({ queryKey: ['organizasyon-kartlar'] });
+        if (order.organizasyon_id) await queryClient.refetchQueries({ queryKey: ['siparis-kartlar', order.organizasyon_id] });
         setTeslimEdilecekSiparis(null);
         setTeslimEdilecekOrganizasyon(null);
       } catch (error: any) {
@@ -2071,11 +2100,21 @@ export const DashboardPage: React.FC = () => {
           if (arsivSebepModalTip === 'siparis' && teslimEdilecekSiparis?.id) {
             // Sipariş arşivle – Çiçek Sepeti kartındaki siparişse backend'e ciceksepeti: true gönder (organizasyon_siparisler_ciceksepeti güncellensin)
             const siparisKarti = kartlar?.find((k) => k.id === teslimEdilecekSiparis?.organizasyon_id);
-            const isCiceksepeti = siparisKarti?.kart_tur === 'ciceksepeti';
+            const kartTur = (siparisKarti?.kart_tur ?? siparisKarti?.kart_tur_display ?? '').toString().toLowerCase();
+            const isCiceksepeti = kartTur === 'ciceksepeti' || kartTur.includes('çiçek sepeti') || kartTur.includes('ciceksepeti');
             try {
               const result = await arsivleSiparis(teslimEdilecekSiparis.id, sebep, undefined, isCiceksepeti);
               if (result.success) {
                 showToast('success', 'Sipariş arşivlendi');
+                // Arşivlenen siparişi index'teki listeden hemen kaldır (özellikle Çiçek Sepeti'nde refetch gecikince kart ekranda kalıyordu)
+                const siparisKartlarKey = ['siparis-kartlar', teslimEdilecekSiparis.organizasyon_id] as const;
+                const mevcutListe = queryClient.getQueryData<any[]>(siparisKartlarKey);
+                if (Array.isArray(mevcutListe)) {
+                  queryClient.setQueryData(
+                    siparisKartlarKey,
+                    mevcutListe.filter((s) => (s?.id ?? (s as any)?._raw?.id) !== teslimEdilecekSiparis.id)
+                  );
+                }
                 invalidateOrganizasyonKartQueries(queryClient, teslimEdilecekSiparis.organizasyon_id);
                 queryClient.invalidateQueries({ queryKey: ['archived-orders'] });
                 await Promise.all([

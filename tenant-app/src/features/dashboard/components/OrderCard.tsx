@@ -395,7 +395,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, organizasyonKartTur
     
     // Eğer ekstra ücret varsa veya toplam_tutar siparis_tutari'den büyükse, "+" ikonu göster
     const plusIcon = (ekstraUcretRaw > 0 || toplamTutarRaw > siparisTutariRaw) ? <i className="uil uil-plus"></i> : null;
-    
     return (
       <>
         {plusIcon}
@@ -403,6 +402,15 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, organizasyonKartTur
       </>
     );
   }, [rawSiparis, order.tutar, order.ekstraUcret, order.toplamTutar]);
+
+  // Ekstra ücret varsa sipariş tutarı üzerinde tooltip: "+50 TL Yol Ücreti" formatında
+  const siparisTutariEkstraTooltip = useMemo(() => {
+    const ekstraUcretRaw = parseFloat(String(rawSiparis?.ekstra_ucret || order.ekstraUcret || 0));
+    if (ekstraUcretRaw <= 0) return null;
+    const ekstraAciklama = String(rawSiparis?.ekstra_ucret_aciklama ?? (order as any).ekstraUcretAciklama ?? '').trim();
+    const tutarMetin = ekstraUcretRaw === Math.floor(ekstraUcretRaw) ? `${Math.floor(ekstraUcretRaw)} TL` : formatTL(ekstraUcretRaw);
+    return `+${tutarMetin}${ekstraAciklama ? ' ' + ekstraAciklama : ' Ekstra Ücret'}`;
+  }, [rawSiparis?.ekstra_ucret, rawSiparis?.ekstra_ucret_aciklama, order.ekstraUcret, (order as any).ekstraUcretAciklama]);
 
   // Ödeme yöntemi – veritabanındaki değere göre etiket (form select ile uyumlu: nakit, pos, cari, havale-eft)
   const odemeYontemi = useMemo(() => {
@@ -668,7 +676,10 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, organizasyonKartTur
         </div>
         {/* Fiyat Bilgisi - Legacy parity */}
         <div className="fiyat-bilgisi">
-          <div className="siparis-tutari">
+          <div
+            className="siparis-tutari"
+            {...(siparisTutariEkstraTooltip ? { 'data-tooltip': siparisTutariEkstraTooltip, 'data-tooltip-pos': 'top' as const } : {})}
+          >
             {siparisTutari}
           </div>
           <div className="odeme-yontemi">

@@ -56,16 +56,20 @@ function formatTelefon(rawPhone: string | null | undefined): string | null {
 function getSiparisBilgileri(siparis: Order & { urun_yazi_dosyasi?: string; yazi_dosyasi?: string }): { urun: string; fiyat: string; yazi: string } {
   const urun = temizle(siparis.urun || '');
   
-  // Fiyat hesapla
-  const siparisTutari = siparis.tutar || 0;
-  const ekstraUcret = siparis.ekstraUcret || 0;
-  const ekstraUcretAciklama = temizle(siparis.ekstraUcretAciklama || '');
-  
+  // Fiyat hesapla: ana ürün fiyatı + varsa ekstra ücret ve açıklaması (örn. "1.850,50 TL + 50 TL Yol")
+  const siparisTutari = siparis.tutar || (siparis as any).siparis_tutari || 0;
+  const ekstraUcret = siparis.ekstraUcret ?? (siparis as any).ekstra_ucret_tutari ?? (siparis as any).ekstra_ucret ?? 0;
+  const ekstraUcretAciklama = temizle(siparis.ekstraUcretAciklama || (siparis as any).ekstra_ucret_aciklama || '');
+  const ekstraNum = Number(ekstraUcret);
+  const ekstraTlStr = ekstraNum > 0 && ekstraNum === Math.floor(ekstraNum)
+    ? `${Math.floor(ekstraNum)} TL`
+    : formatTL(ekstraUcret);
+
   let fiyat = '';
   if (ekstraUcret > 0 && ekstraUcretAciklama) {
-    fiyat = `(${formatTL(siparisTutari)} + ${formatTL(ekstraUcret)} ${ekstraUcretAciklama})`;
+    fiyat = `(${formatTL(siparisTutari)} + ${ekstraTlStr} ${ekstraUcretAciklama})`;
   } else if (ekstraUcret > 0) {
-    fiyat = `(${formatTL(siparisTutari)} + ${formatTL(ekstraUcret)})`;
+    fiyat = `(${formatTL(siparisTutari)} + ${ekstraTlStr})`;
   } else if (siparisTutari > 0) {
     fiyat = `(${formatTL(siparisTutari)})`;
   }
@@ -156,16 +160,19 @@ export async function createOrganizasyonWhatsAppMessage(
   const siparislerWithDetails = await Promise.all(
     siparisler.map(async (siparis) => {
       // Eğer siparişte ekstra ücret bilgisi yoksa, API'den çek
-      if (!siparis.ekstraUcret && !siparis.ekstraUcretAciklama && siparis.id) {
+      if ((siparis.ekstraUcret == null || siparis.ekstraUcret === 0) && !siparis.ekstraUcretAciklama && siparis.id) {
         try {
           const response = await apiClient.get(`/siparis-kartlar/${siparis.id}`);
           if (response.data?.success && response.data?.data) {
             const siparisData = response.data.data;
-            return {
-              ...siparis,
-              ekstraUcret: siparisData.ekstra_ucret || siparis.ekstraUcret,
-              ekstraUcretAciklama: siparisData.ekstra_ucret_aciklama || siparis.ekstraUcretAciklama,
-            };
+            const ekstraTutar = siparisData.ekstra_ucret_tutari ?? siparisData.ekstra_ucret;
+            if (ekstraTutar != null || siparisData.ekstra_ucret_aciklama) {
+              return {
+                ...siparis,
+                ekstraUcret: ekstraTutar ?? siparis.ekstraUcret,
+                ekstraUcretAciklama: siparisData.ekstra_ucret_aciklama || siparis.ekstraUcretAciklama || '',
+              };
+            }
           }
         } catch (error) {
           // Hata durumunda orijinal siparişi döndür

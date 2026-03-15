@@ -1,4 +1,16 @@
 // #region Çiçeksepeti Toast + Modal Integration
+/** Test siparişlerinde gerçek telefon asla gösterilmez; sadece bu numaralar kullanılır (backend ile aynı) */
+var CICEKSEPETI_TEST_PHONES = [
+    '+90 (506) 659 35 45',
+    '+90 (505) 156 36 63',
+    '+90 (507) 575 12 19'
+];
+function getCiceksepetiTestPhoneForDisplay(siparisNo) {
+    if (!siparisNo || typeof siparisNo !== 'string') return CICEKSEPETI_TEST_PHONES[0];
+    var h = 0;
+    for (var i = 0; i < siparisNo.length; i++) h = (h * 31 + siparisNo.charCodeAt(i)) >>> 0;
+    return CICEKSEPETI_TEST_PHONES[h % CICEKSEPETI_TEST_PHONES.length];
+}
 /** Sipariş kartı / detay popup ile aynı format: +90 (5XX) XXX XX XX */
 function formatPhoneForDisplay(phone) {
     if (!phone) return '';
@@ -607,12 +619,12 @@ class CiceksepetiFloovonIntegration {
         setText('modal-urun-name', order.urunAdi);
         setText('modal-urun-price', (order.fiyat != null ? order.fiyat : '') + ' TL');
         setText('modal-siparis-veren', order.siparisVeren);
-        setText('modal-siparis-veren-tel', order.siparisVerenTelefon ? (typeof window.formatPhoneNumber === 'function' ? window.formatPhoneNumber(order.siparisVerenTelefon) : formatPhoneForDisplay(order.siparisVerenTelefon)) : '-');
+        setText('modal-siparis-veren-tel', getCiceksepetiTestPhoneForDisplay(order.siparisNo));
         setText('modal-teslim-il', order.receiverCity || order.teslimIl || 'Belirtilmemiş');
         setText('modal-teslim-ilce', order.receiverDistrict || order.teslimIlce || 'Belirtilmemiş');
         setText('modal-teslim-mahalle', order.receiverRegion || order.teslimMahalle || 'Belirtilmemiş');
         setText('modal-teslim-kisi', order.teslimKisi || 'Belirtilmemiş');
-        setText('modal-teslim-kisi-tel', order.teslimKisiTelefon ? (typeof window.formatPhoneNumber === 'function' ? window.formatPhoneNumber(order.teslimKisiTelefon) : formatPhoneForDisplay(order.teslimKisiTelefon)) : 'Belirtilmemiş');
+        setText('modal-teslim-kisi-tel', getCiceksepetiTestPhoneForDisplay(order.siparisNo));
         setText('modal-teslim-adres', order.teslimAdresi || 'Belirtilmemiş');
         setText('modal-siparis-notu', order.urunYazisi);
         

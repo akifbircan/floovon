@@ -1828,6 +1828,7 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
 
 .ana-kart .siparis-kart .yazi-not:hover {
   background-color: var(--yazi-not) !important;
+  color: black !important;
 }
 
 .ana-kart .siparis-kart .yazi-not i {
@@ -1835,6 +1836,11 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
   font-size: 10px !important;
   margin-right: 4px !important;
 }
+
+.ana-kart .siparis-kart .yazi-not:hover i {
+  color: black !important;
+}
+
 
 /* Bağlantılı Siparişler */
 .ana-kart .siparis-kart .baglantili-siparisler {

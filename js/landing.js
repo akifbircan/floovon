@@ -238,7 +238,17 @@ async function loadPricingPlans() {
                 maximumFractionDigits: 0,
                 useGrouping: true
             });
-            const features = JSON.parse(plan.ozellikler || '[]');
+            // ozellikler bazen akıllı tırnak (" ") ile geliyor; JSON için düz tırnak (") gerekli
+            let features = [];
+            try {
+                const raw = (plan.ozellikler || '[]').toString();
+                const normalized = raw.replace(/[\u201C\u201D\u201E\u201F]/g, '"').replace(/[\u2018\u2019\u201A\u201B]/g, "'");
+                features = JSON.parse(normalized);
+            } catch (e) {
+                console.warn('Plan özellikleri parse edilemedi, boş liste kullanılıyor:', e.message);
+                features = [];
+            }
+            if (!Array.isArray(features)) features = [];
             const isFeatured = index === 1; // Pro Kurumsal featured
             
             const planCard = document.createElement('div');
@@ -272,8 +282,9 @@ async function loadPricingPlans() {
                         const isWhatsAppFeature = feature.toLowerCase().includes('whatsapp');
                         const isAracTakipFeature = feature.toLowerCase().includes('araç takip') || feature.toLowerCase().includes('arac takip');
                         const isKampanyaFeature = feature.toLowerCase().includes('kampanya');
+                        const isCicekSepetiFeature = feature.toLowerCase().includes('çiçek sepeti') || feature.toLowerCase().includes('cicek sepeti') || feature.toLowerCase().includes('ciceksepeti');
                         const isProPlan = index === 1; // Profesyonel paket
-                        const isFeaturedFeature = (isWhatsAppFeature || isAracTakipFeature || isKampanyaFeature) && isProPlan;
+                        const isFeaturedFeature = (isWhatsAppFeature || isAracTakipFeature || isKampanyaFeature || isCicekSepetiFeature) && isProPlan;
                         return `
                         <li class="landing-plan-feature">
                             <div class="landing-feature-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor">

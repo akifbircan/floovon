@@ -806,11 +806,15 @@ function updatePlanFeatures(features) {
     }
     
     features.forEach(feature => {
+        const fLower = (feature || '').toLowerCase();
+        const isFeatured = fLower.includes('whatsapp') || fLower.includes('araç takip') || fLower.includes('arac takip') || fLower.includes('kampanya') || fLower.includes('çiçek sepeti') || fLower.includes('cicek sepeti') || fLower.includes('ciceksepeti');
+        const badgeHtml = isFeatured ? '<span class="feature-item-badge">Öne çıkan</span>' : '';
         const li = document.createElement('li');
         li.className = 'feature-item';
         li.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            ${feature}
+            <span class="feature-item-text">${feature}</span>
+            ${badgeHtml}
         `;
         featuresList.appendChild(li);
     });

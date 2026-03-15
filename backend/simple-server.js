@@ -4853,6 +4853,19 @@ function query(sql, params = [], req = null) {
     });
 }
 
+/** Siparişlerin tutulduğu tablo adı: siparisler veya siparis_kartlar (GET listesi ile aynı tablo) */
+async function getSiparisTableName() {
+    try {
+        const info = await query("PRAGMA table_info(siparisler)");
+        if (info && info.length > 0) return 'siparisler';
+    } catch (_) {}
+    try {
+        const info = await query("PRAGMA table_info(siparis_kartlar)");
+        if (info && info.length > 0) return 'siparis_kartlar';
+    } catch (_) {}
+    return 'siparisler';
+}
+
 // kullanicilar tablosunda profil kolonu (profile_image veya profil_resmi) - 500 hatası önleme
 let _kullanicilarProfileCol = null;
 async function getKullanicilarProfileCol() {
@@ -11940,7 +11953,13 @@ app.get('/api/siparis-kartlar/organizasyon/:organizasyonId', async (req, res) =>
                 AND COALESCE(co.teslim_mahalle, '') = ? AND COALESCE(co.teslim_ilce, '') = ?
                 ORDER BY co.created_at ASC
             `, [teslimTarihi, orgMahalle, orgIlce]);
-            siparisler.forEach((s, i) => { s.kart_sira = i + 1; });
+            siparisler.forEach((s, i) => {
+                s.kart_sira = i + 1;
+                // Test siparişlerinde gerçek telefon gösterilmez; sadece izin verilen numaralar
+                const testPhone = CICEKSEPETI_TEST_PHONES[(s.id || i) % CICEKSEPETI_TEST_PHONES.length];
+                s.siparis_veren_telefon = testPhone;
+                s.teslim_kisisi_telefon = testPhone;
+            });
         } else {
             // Normal siparişler – sipariş veren ismi: tabloda musteri_unvan/musteri_isim_soyisim veya musteri_adi/musteri_unvani/musteri_ad_soyad/siparis_veren olabilir (büyük/küçük harf duyarsız)
             const skCols = await query('PRAGMA table_info(siparisler)');
@@ -12253,6 +12272,13 @@ app.get('/api/siparis-kartlar/archived', async (req, res) => {
                 WHERE (COALESCE(co.arsivli, 0) = 1) AND co.tenant_id = ?
                 ORDER BY COALESCE(co.arsivleme_tarih, co.updated_at, co.created_at) DESC
             `, [tenantId]);
+            if (arsivlenmisCiceksepeti && arsivlenmisCiceksepeti.length > 0) {
+                arsivlenmisCiceksepeti.forEach((s, i) => {
+                    const testPhone = CICEKSEPETI_TEST_PHONES[(s.id || i) % CICEKSEPETI_TEST_PHONES.length];
+                    s.siparis_veren_telefon = testPhone;
+                    s.teslim_kisisi_telefon = testPhone; // frontend teslim_kisisi_telefon okuyor
+                });
+            }
         } catch (e) {
             if (e && e.message && !e.message.includes('arsivli')) console.error('❌ Arşivlenmiş Çiçek Sepeti siparişleri getirilemedi:', e.message);
         }
@@ -13868,46 +13894,27 @@ async function removeMusteriRaporlari(siparisBilgileri, tenantId) {
 
 // Sipariş kartını teslim edildi olarak işaretle
 // ÖNEMLİ: Bu endpoint organizasyon_kart_id ve musteri_id alanlarını KORUR
+// Çiçek Sepeti: body.ciceksepeti === true ise önce organizasyon_siparisler_ciceksepeti'ne bak (id çakışmasında yanlış sipariş güncellenmesin)
 app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
     try {
         const { id } = req.params;
         const tenantId = req.tenantId || await getTenantId(req);
-        
+        const isCiceksepeti = !!(req.body && (req.body.ciceksepeti === true || req.body.ciceksepeti === 'true'));
+
         if (!tenantId) {
             return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı. Lütfen giriş yapın.' });
         }
 
-        // Sipariş var mı kontrol et – önce minimal SELECT (sadece id), kolon hatası olmasın
-        let siparisCheck;
-        try {
-            siparisCheck = await query(
-                `SELECT sk.id, sk.organizasyon_kart_id, sk.musteri_id, sk.musteri_unvan, sk.musteri_isim_soyisim,
-                        sk.siparis_urun, sk.urun_gorsel, sk.teslim_kisisi, sk.siparis_teslim_kisisi_baskasi,
-                        ok.organizasyon_kart_tur, ok.organizasyon_kart_etiket
-                 FROM siparisler sk
-                 LEFT JOIN organizasyon_kartlar ok ON sk.organizasyon_kart_id = ok.id
-                 WHERE sk.id = ? AND sk.tenant_id = ? AND sk.status = ?`,
-                [id, tenantId, 'aktif']
-            );
-        } catch (selectErr) {
-            console.error('❌ [Deliver] SELECT hatası (detaylı SELECT deneniyor):', selectErr.message);
-            siparisCheck = await query(
-                'SELECT id FROM siparisler WHERE id = ? AND tenant_id = ?',
-                [id, tenantId]
-            );
-            if (siparisCheck.length === 0) {
-                return res.status(404).json({ success: false, message: 'Sipariş kartı bulunamadı' });
-            }
-        }
+        const siparisTable = await getSiparisTableName();
 
-        if (!siparisCheck || siparisCheck.length === 0) {
-            // Çiçek Sepeti siparişi olabilir (organizasyon_siparisler_ciceksepeti)
+        // Çiçek Sepeti siparişi ise önce organizasyon_siparisler_ciceksepeti'ne bak (aynı id siparisler'de de varsa yanlış satır güncellenmesin)
+        if (isCiceksepeti) {
             const cicekRow = await query(
                 'SELECT id, siparis_veren, teslim_kisi, urun_adi, teslim_tarihi, teslim_mahalle, teslim_ilce FROM organizasyon_siparisler_ciceksepeti WHERE id = ? AND tenant_id = ? AND (COALESCE(arsivli, 0) = 0)',
                 [id, tenantId]
             );
             if (cicekRow && cicekRow.length > 0) {
-                const cicekKullanici = await getCurrentUsername(req);
+                const cicekKullanici = await getCurrentUsername(req).catch(() => null);
                 await execute(`
                     UPDATE organizasyon_siparisler_ciceksepeti SET
                         arsivli = 1,
@@ -13917,6 +13924,116 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
                         updated_by = ?
                     WHERE id = ? AND tenant_id = ?
                 `, [cicekKullanici, id, tenantId]);
+                try {
+                    const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId);
+                    if (kullaniciAdi) {
+                        const tableExists = await query(`SELECT name FROM sqlite_master WHERE type='table' AND name='bildirimler'`);
+                        if (tableExists.length > 0) {
+                            const row = cicekRow[0];
+                            let orgKartId = null;
+                            if (row.teslim_tarihi) {
+                                const orgKart = await query(
+                                    `SELECT id FROM organizasyon_kartlar WHERE tenant_id = ? AND organizasyon_teslim_tarih = ? AND organizasyon_kart_tur = 'Çiçek Sepeti' AND COALESCE(organizasyon_mahalle,'') = COALESCE(?, '') AND COALESCE(organizasyon_ilce,'') = COALESCE(?, '') LIMIT 1`,
+                                    [tenantId, row.teslim_tarihi, row.teslim_mahalle || '', row.teslim_ilce || '']
+                                );
+                                if (orgKart && orgKart.length > 0) orgKartId = orgKart[0].id;
+                            }
+                            await execute(`
+                                INSERT INTO bildirimler (
+                                    kullanici_adi, tip, baslik, mesaj,
+                                    musteri_unvani, teslim_kisisi, siparis_adi, organizasyon_adi,
+                                    organizasyon_alt_tur, siparis_teslim_kisisi_baskasi, urun_resmi,
+                                    siparis_id, organizasyon_id, arsivleme_sebebi, tenant_id,
+                                    is_read, created_at
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                            `, [
+                                kullaniciAdi,
+                                'teslim_edildi',
+                                'Sipariş Teslim Edildi',
+                                `${row.siparis_veren || 'Müşteri'} siparişi teslim edildi`,
+                                row.siparis_veren || null,
+                                row.teslim_kisi || null,
+                                row.urun_adi || null,
+                                'Çiçek Sepeti',
+                                null,
+                                null,
+                                null,
+                                id,
+                                orgKartId,
+                                'Teslim Edildi',
+                                tenantId
+                            ]);
+                        }
+                    }
+                } catch (bildirimErr) {
+                    console.error('❌ Çiçek Sepeti teslim bildirim hatası:', bildirimErr.message);
+                }
+                return res.json({
+                    success: true,
+                    message: 'Sipariş kartı teslim edildi olarak işaretlendi'
+                });
+            }
+            return res.status(404).json({
+                success: false,
+                message: 'Sipariş kartı bulunamadı'
+            });
+        }
+
+        // Sipariş var mı kontrol et – siparisler/siparis_kartlar tablosunda (GET listesi ile aynı tablo)
+        let siparisCheck;
+        try {
+            siparisCheck = await query(
+                `SELECT sk.id, sk.organizasyon_kart_id, sk.musteri_id, sk.musteri_unvan, sk.musteri_isim_soyisim,
+                        sk.siparis_urun, sk.urun_gorsel, sk.teslim_kisisi, sk.siparis_teslim_kisisi_baskasi,
+                        ok.organizasyon_kart_tur, ok.organizasyon_kart_etiket
+                 FROM ${siparisTable} sk
+                 LEFT JOIN organizasyon_kartlar ok ON sk.organizasyon_kart_id = ok.id
+                 WHERE sk.id = ? AND sk.tenant_id = ? AND sk.status = ?`,
+                [id, tenantId, 'aktif']
+            );
+        } catch (selectErr) {
+            console.error('❌ [Deliver] SELECT hatası (detaylı SELECT deneniyor):', selectErr.message);
+            siparisCheck = await query(
+                `SELECT id FROM ${siparisTable} WHERE id = ? AND tenant_id = ?`,
+                [id, tenantId]
+            );
+            if (siparisCheck.length === 0) {
+                return res.status(404).json({ success: false, message: 'Sipariş kartı bulunamadı' });
+            }
+        }
+
+        if (!siparisCheck || siparisCheck.length === 0) {
+            // Çiçek Sepeti siparişi (organizasyon_siparisler_ciceksepeti) – arşiv alanlarına yaz, index/arşiv sayfası ile uyumlu olsun
+            const cicekRow = await query(
+                'SELECT id, siparis_veren, teslim_kisi, urun_adi, teslim_tarihi, teslim_mahalle, teslim_ilce FROM organizasyon_siparisler_ciceksepeti WHERE id = ? AND tenant_id = ? AND (COALESCE(arsivli, 0) = 0)',
+                [id, tenantId]
+            );
+            if (cicekRow && cicekRow.length > 0) {
+                const cicekKullanici = await getCurrentUsername(req).catch(() => null);
+                await execute(`
+                    UPDATE organizasyon_siparisler_ciceksepeti SET
+                        arsivli = 1,
+                        arsivleme_tarih = datetime('now', 'localtime'),
+                        arsivleme_sebebi = 'Teslim Edildi',
+                        updated_at = datetime('now', 'localtime'),
+                        updated_by = ?
+                    WHERE id = ? AND tenant_id = ?
+                `, [cicekKullanici, id, tenantId]);
+                // Aynı sipariş siparisler/siparis_kartlar tablosunda da varsa (senkron kopya) oraya da arşiv alanlarını yaz
+                try {
+                    await execute(`
+                        UPDATE ${siparisTable} SET
+                            arsivli = 1,
+                            arsivleme_tarih = datetime('now', 'localtime'),
+                            arsivleme_sebebi = 'Teslim Edildi',
+                            updated_at = datetime('now', 'localtime')
+                        WHERE id = ? AND tenant_id = ?
+                    `, [id, tenantId]);
+                } catch (syncErr) {
+                    if (syncErr && syncErr.message && !syncErr.message.includes('no such column')) {
+                        console.warn('⚠️ [Deliver] siparis tablosuna arşiv yazma (Çiçek Sepeti sync):', syncErr.message);
+                    }
+                }
                 try {
                     const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId);
                     if (kullaniciAdi) {
@@ -13981,10 +14098,10 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
         // Tümünü teslim akışında imza alınmadığı için eski teslim_imza_data temizlenir; arşiv sayfasında eski imza görünmesin
         const kullaniciAdi = await getCurrentUsername(req);
         const updateCandidates = [
-            { sql: `UPDATE siparisler SET status = 'teslim_edildi', arsivli = 1, arsivleme_tarih = datetime('now', 'localtime'), arsivleme_sebebi = 'Teslim Edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime'), updated_by = ? WHERE id = ? AND status = 'aktif' AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] },
-            { sql: `UPDATE siparisler SET status = 'teslim_edildi', arsivli = 1, arsivleme_tarih = datetime('now', 'localtime'), arsivleme_sebebi = 'Teslim Edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime'), updated_by = ? WHERE id = ? AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] },
-            { sql: `UPDATE siparisler SET status = 'teslim_edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime'), updated_by = ? WHERE id = ? AND status = 'aktif' AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] },
-            { sql: `UPDATE siparisler SET status = 'teslim_edildi', teslim_imza_data = NULL, updated_by = ? WHERE id = ? AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] }
+            { sql: `UPDATE ${siparisTable} SET status = 'teslim_edildi', arsivli = 1, arsivleme_tarih = datetime('now', 'localtime'), arsivleme_sebebi = 'Teslim Edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime'), updated_by = ? WHERE id = ? AND status = 'aktif' AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] },
+            { sql: `UPDATE ${siparisTable} SET status = 'teslim_edildi', arsivli = 1, arsivleme_tarih = datetime('now', 'localtime'), arsivleme_sebebi = 'Teslim Edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime'), updated_by = ? WHERE id = ? AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] },
+            { sql: `UPDATE ${siparisTable} SET status = 'teslim_edildi', teslim_imza_data = NULL, updated_at = datetime('now', 'localtime'), updated_by = ? WHERE id = ? AND status = 'aktif' AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] },
+            { sql: `UPDATE ${siparisTable} SET status = 'teslim_edildi', teslim_imza_data = NULL, updated_by = ? WHERE id = ? AND tenant_id = ?`, params: [kullaniciAdi, id, tenantId] }
         ];
         for (const { sql, params } of updateCandidates) {
             try {
@@ -14091,7 +14208,7 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
             kart_tur
         } = req.body || {};
 
-        const isCiceksepetiSiparis = ciceksepeti === true || kart_tur === 'ciceksepeti' || kart_tur === 'Çiçek Sepeti';
+        const isCiceksepetiSiparis = ciceksepeti === true || (kart_tur && (String(kart_tur).toLowerCase() === 'ciceksepeti' || String(kart_tur).toLowerCase().includes('çiçek sepeti')));
 
         console.log('📝 [ARŞİVLEME] İmza verisi alındı:', {
             siparisId: id,
@@ -14176,16 +14293,83 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
             });
         }
 
-        // Normal sipariş: siparisler tablosu
+        // Normal sipariş: siparisler/siparis_kartlar tablosu (getSiparisTableName ile aynı tablo)
+        const siparisTable = await getSiparisTableName();
         const siparisCheck = await query(
             `SELECT id, teslim_kisisi, musteri_unvan, musteri_isim_soyisim, 
                     siparis_veren_telefon, siparis_tutari, arsivleme_tarih, 
                     teslim_tarih, created_at
-             FROM siparisler WHERE id = ? AND tenant_id = ?`,
+             FROM ${siparisTable} WHERE id = ? AND tenant_id = ?`,
             [id, tenantId]
         );
         
         if (siparisCheck.length === 0) {
+            // Sipariş bu tabloda yoksa Çiçek Sepeti siparişi olabilir (frontend ciceksepeti göndermemiş olabilir)
+            const cicekRow = await query(
+                'SELECT id, siparis_veren, teslim_kisi, urun_adi, teslim_tarihi, teslim_mahalle, teslim_ilce FROM organizasyon_siparisler_ciceksepeti WHERE id = ? AND tenant_id = ? AND (COALESCE(arsivli, 0) = 0)',
+                [id, tenantId]
+            );
+            if (cicekRow && cicekRow.length > 0) {
+                const cicekKullanici = await getCurrentUsername(req).catch(() => null);
+                await execute(`
+                    UPDATE organizasyon_siparisler_ciceksepeti SET
+                        arsivli = 1,
+                        arsivleme_tarih = datetime('now', 'localtime'),
+                        arsivleme_sebebi = ?,
+                        updated_at = datetime('now', 'localtime'),
+                        updated_by = ?
+                    WHERE id = ? AND tenant_id = ?
+                `, [arsivleme_sebebi || null, cicekKullanici, id, tenantId]);
+                try {
+                    const kullaniciAdi = await getBildirimKullaniciAdi(req, tenantId);
+                    if (kullaniciAdi) {
+                        const tableExists = await query(`SELECT name FROM sqlite_master WHERE type='table' AND name='bildirimler'`);
+                        if (tableExists.length > 0) {
+                            const row = cicekRow[0];
+                            let orgKartId = null;
+                            if (row.teslim_tarihi) {
+                                const orgKart = await query(
+                                    `SELECT id FROM organizasyon_kartlar WHERE tenant_id = ? AND organizasyon_teslim_tarih = ? AND organizasyon_kart_tur = 'Çiçek Sepeti' AND COALESCE(organizasyon_mahalle,'') = COALESCE(?, '') AND COALESCE(organizasyon_ilce,'') = COALESCE(?, '') LIMIT 1`,
+                                    [tenantId, row.teslim_tarihi, row.teslim_mahalle || '', row.teslim_ilce || '']
+                                );
+                                if (orgKart && orgKart.length > 0) orgKartId = orgKart[0].id;
+                            }
+                            await execute(`
+                                INSERT INTO bildirimler (
+                                    kullanici_adi, tip, baslik, mesaj,
+                                    musteri_unvani, teslim_kisisi, siparis_adi, organizasyon_adi,
+                                    organizasyon_alt_tur, siparis_teslim_kisisi_baskasi, urun_resmi,
+                                    siparis_id, organizasyon_id, arsivleme_sebebi, tenant_id,
+                                    is_read, created_at
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                            `, [
+                                kullaniciAdi,
+                                'arsivlendi',
+                                'Sipariş Arşivlendi',
+                                `${row.siparis_veren || 'Müşteri'} siparişi arşivlendi`,
+                                row.siparis_veren || null,
+                                row.teslim_kisi || null,
+                                row.urun_adi || null,
+                                'Çiçek Sepeti',
+                                null,
+                                null,
+                                null,
+                                id,
+                                orgKartId,
+                                arsivleme_sebebi || null,
+                                tenantId
+                            ]);
+                        }
+                    }
+                } catch (bildirimErr) {
+                    console.error('❌ Çiçek Sepeti arşivleme bildirim hatası:', bildirimErr.message);
+                }
+                return res.json({
+                    success: true,
+                    message: 'Sipariş kartı arşivlendi',
+                    data: { id }
+                });
+            }
             return res.status(403).json({
                 success: false,
                 error: 'Bu sipariş kartına erişim yetkiniz yok'
@@ -14203,9 +14387,8 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
 
         let result;
         try {
-            // Arşivle: id + tenant_id yeterli (status 'aktif' veya 'teslim_edildi' olabilir – teslim sonrası imza ile arşivde 404 vermemek için status koşulu yok)
             result = await execute(`
-                UPDATE siparisler SET
+                UPDATE ${siparisTable} SET
                     arsivli = 1, 
                     arsivleme_tarih = datetime('now', 'localtime'),
                     arsivleme_sebebi = ?,
@@ -14260,7 +14443,7 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
             userId = req.userId || req.user?.id || null;
         }
         const siparisKoduResult = await query(
-            'SELECT siparis_kodu FROM siparisler WHERE id = ?',
+            `SELECT siparis_kodu FROM ${siparisTable} WHERE id = ?`,
             [id]
         );
         const siparisKodu = siparisKoduResult && siparisKoduResult.length > 0 
@@ -14294,7 +14477,7 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
 
         // Organizasyon kartındaki sipariş sayısını güncelle
         const siparisKarti = await query(`
-            SELECT organizasyon_kart_id FROM siparisler WHERE id = ? AND tenant_id = ?
+            SELECT organizasyon_kart_id FROM ${siparisTable} WHERE id = ? AND tenant_id = ?
         `, [id, tenantId]);
 
         if (siparisKarti.length > 0 && siparisKarti[0].organizasyon_kart_id) {
@@ -14303,7 +14486,7 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                 
                 // Önce sipariş sayısını hesapla
                 const siparisSayisi = await query(`
-                    SELECT COUNT(*) as count FROM siparisler 
+                    SELECT COUNT(*) as count FROM ${siparisTable} 
                     WHERE organizasyon_kart_id = ? AND status = 'aktif' AND COALESCE(CAST(arsivli AS INTEGER), 0) = 0 AND tenant_id = ?
                 `, [organizasyonKartId, tenantId]);
                 
@@ -14333,7 +14516,7 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                     SELECT musteri_unvan, musteri_isim_soyisim, siparis_veren_telefon, 
                            siparis_tutari, ekstra_ucret_tutari, toplam_tutar, arsivleme_tarih, 
                            teslim_tarih, created_at, siparis_urun, urun_yazisi, odeme_yontemi
-                    FROM siparisler 
+                    FROM ${siparisTable} 
                     WHERE id = ? AND tenant_id = ?
                 `, [id, tenantId]);
                 
@@ -20641,6 +20824,18 @@ app.post('/api/ayarlar/ciceksepeti/manuel-kontrol', async (req, res) => {
 });
 
 // ---------- Çiçek Sepeti: sipariş kaydet (test/onay akışı) ----------
+// Test siparişlerinde gerçek telefon kullanılmaz; sadece aşağıdaki numaralar kullanılır.
+const CICEKSEPETI_TEST_PHONES = [
+    '+90 (506) 659 35 45',
+    '+90 (505) 156 36 63',
+    '+90 (507) 575 12 19'
+];
+function getCiceksepetiTestPhone(siparisNo) {
+    if (!siparisNo || typeof siparisNo !== 'string') return CICEKSEPETI_TEST_PHONES[0];
+    let h = 0;
+    for (let i = 0; i < siparisNo.length; i++) h = (h * 31 + siparisNo.charCodeAt(i)) >>> 0;
+    return CICEKSEPETI_TEST_PHONES[h % CICEKSEPETI_TEST_PHONES.length];
+}
 // Tablo: organizasyon_siparisler_ciceksepeti (eski adı ciceksepeti_orders)
 app.post('/api/ciceksepeti/test-order', async (req, res) => {
     try {
@@ -20658,9 +20853,10 @@ app.post('/api/ciceksepeti/test-order', async (req, res) => {
             return;
         }
         const siparis_veren = body.siparis_veren || null;
-        const siparis_veren_telefon = body.siparis_veren_telefon || null;
+        const testPhone = getCiceksepetiTestPhone(siparis_no);
+        const siparis_veren_telefon = testPhone;
         const teslim_kisi = body.teslim_kisi || null;
-        const teslim_kisi_telefon = body.teslim_kisi_telefon || null;
+        const teslim_kisi_telefon = testPhone;
         const teslim_il = body.teslim_il || body.receiverCity || null;
         const teslim_ilce = body.teslim_ilce || body.receiverDistrict || null;
         const teslim_mahalle = body.teslim_mahalle || body.receiverRegion || null;

@@ -2387,7 +2387,8 @@ export const SettingsPage: React.FC = () => {
     editingOrganizasyonTuruId ||
     editingEtiketId ||
     editingTeslimatId ||
-    editingAracId
+    editingAracId ||
+    editingBankaId
   );
   React.useEffect(() => {
     if (!ayarlarFormActive) return;
@@ -2398,7 +2399,7 @@ export const SettingsPage: React.FC = () => {
       if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
     }, 50);
     return () => clearTimeout(t);
-  }, [ayarlarFormActive, editingUrunId, editingUrunGrubuId, editingOrganizasyonTuruId, editingEtiketId, editingTeslimatId, editingAracId]);
+  }, [ayarlarFormActive, editingUrunId, editingUrunGrubuId, editingOrganizasyonTuruId, editingEtiketId, editingTeslimatId, editingAracId, editingBankaId]);
 
   return (
     <div className="ayarlar-page page-wrapper">

@@ -700,7 +700,7 @@ export const CustomerDetailPage: React.FC = () => {
     { value: 'iptal', label: 'İptal', Icon: XCircle },
   ];
 
-  const handleFaturaPdf = (f: Fatura) => {
+  const handleFaturaPdf = async (f: Fatura) => {
     const tenantId = localStorage.getItem('floovon_tenant_id');
     if (!id || !tenantId) {
       showToast('error', 'Oturum bilgisi bulunamadı.');
@@ -708,8 +708,31 @@ export const CustomerDetailPage: React.FC = () => {
     }
     const base = getApiBaseUrl();
     const pdfUrl = `${base}/tenants/${tenantId}/customers/${id}/faturalar/${f.id}/pdf`;
-    window.open(pdfUrl, '_blank', 'noopener,noreferrer');
-    showToast('success', 'Fatura PDF açıldı.');
+    const fileName = `Fatura-${(f.fatura_no || f.id || 'fatura').toString().replace(/[/\\?%*:|"]/g, '-')}.pdf`;
+    try {
+      const res = await fetch(pdfUrl, { credentials: 'include', mode: 'cors' });
+      if (!res.ok) throw new Error('Fatura alınamadı.');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('success', 'Fatura indirildi.');
+    } catch {
+      const a = document.createElement('a');
+      a.href = pdfUrl;
+      a.download = fileName;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('success', 'Fatura indirildi.');
+    }
   };
 
   const handleFaturaMail = (f: Fatura) => {

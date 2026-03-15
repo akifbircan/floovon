@@ -1617,6 +1617,14 @@ ul.notifications {
     flex-direction: column;
   }
 
+  .cari-tablo-toolbar {
+    flex-direction: column;
+  }
+
+  .cari-toplu-fatura-kes-btn {
+    width: 100%;
+  }
+
   /* Cari tablo: sadece sayfa scroll; yatay taşma varsa overflow-x (scrollbar yine gizli) */
   .cari-table-wrapper {
     overflow-x: auto;

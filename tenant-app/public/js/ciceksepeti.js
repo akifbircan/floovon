@@ -532,15 +532,22 @@ class CiceksepetiFloovonIntegration {
             if (!container) return;
         }
         
+        // Test sipariş bildirimi kapalıyken anasayfada test siparişlerini gösterme
+        var testBildirimiEnabled = localStorage.getItem('ciceksepeti_test_bildirimi') === 'true';
+        var ordersToShow = testBildirimiEnabled ? this.pendingOrders : (this.pendingOrders.filter(function(o) { return !o.isTest; }));
+        
         // Mevcut toast'ı kaldır
         const existingToast = container.querySelector('.ciceksepeti-toast');
         if (existingToast) {
             existingToast.remove();
         }
         
-        if (this.pendingOrders.length === 0) return;
+        if (ordersToShow.length === 0) {
+            if (this.isIndexPage()) container.style.display = 'none';
+            return;
+        }
         
-        const toast = this.createToast();
+        const toast = this.createToast(ordersToShow);
         container.appendChild(toast);
         
         // Animasyon için timeout
@@ -549,11 +556,12 @@ class CiceksepetiFloovonIntegration {
         }, 100);
     }
     
-    createToast() {
+    createToast(ordersToShow) {
+        var list = (ordersToShow && ordersToShow.length) ? ordersToShow : this.pendingOrders;
         const toast = document.createElement('div');
         toast.className = 'ciceksepeti-toast';
         
-        const orderItems = this.pendingOrders.map(order => `
+        const orderItems = list.map(order => `
             <div class="ciceksepeti-toast-order-item" data-order-id="${order.siparisNo}">
                 <div class="ciceksepeti-order-content">
                     <div class="ciceksepeti-order-title">Yeni sipariş geldi!</div>

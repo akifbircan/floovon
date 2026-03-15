@@ -462,6 +462,25 @@ export const DashboardPage: React.FC = () => {
     queryClient.refetchQueries({ queryKey: ['siparis-kartlar'] });
   }, []); // Sadece mount'ta çalış
 
+  // Çiçek Sepeti test sipariş bildirimi: anasayfada ciceksepeti.js doğru ayarı okusun diye API'den senkronize et
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await apiClient.get<{ success?: boolean; data?: { test_bildirimi?: boolean } }>('/ayarlar/ciceksepeti');
+        if (cancelled || !res.data?.data) return;
+        const tb = Boolean(res.data.data.test_bildirimi);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ciceksepeti_test_bildirimi', tb ? 'true' : 'false');
+          window.dispatchEvent(new CustomEvent('ciceksepetiTestBildirimiChanged'));
+        }
+      } catch {
+        // Ayar yoksa veya hata varsa sessizce geç
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   // ✅ REACT: Kartlar render edildikten sonra ürün yazısı mevcut butonlarını kontrol et
   React.useEffect(() => {
     if (!kartlarLoading && kartlar && kartlar.length > 0) {

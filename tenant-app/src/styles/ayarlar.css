@@ -436,7 +436,7 @@ main[data-main-content]:has(.ayarlar-page) {
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-  height: 100px;
+  /* height: 100px; */
 }
 .ayarlar-logo-alan-inline .ayarlar-logo-img,
 .ayarlar-logo-alan-inline .ayarlar-logo-placeholder {

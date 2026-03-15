@@ -3326,7 +3326,7 @@ export const SettingsPage: React.FC = () => {
                       <EmptyState variant="soft" title="Henüz banka hesabı eklenmemiş" description="Sol taraftaki formdan yeni hesap ekleyebilirsiniz." icon={<FileSearch size={28} aria-hidden />} />
                     ) : (
                       <div className="overflow-x-auto">
-                        <table className="w-full ayarlar-tablosu">
+                        <table className="w-full ayarlar-tablosu ayarlar-tablosu--banka-hesaplari">
                           <thead>
                             <tr>
                               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Banka</th>
@@ -3338,9 +3338,9 @@ export const SettingsPage: React.FC = () => {
                           <tbody className="divide-y divide-gray-200">
                             {bankaHesaplari.map((b) => (
                               <tr key={b.id}>
-                                <td data-label="Banka">{b.banka_adi || '—'}</td>
-                                <td data-label="IBAN">{b.iban || '—'}</td>
-                                <td data-label="Şube">{[b.sube, b.hesap_sahibi].filter(Boolean).join(' · ') || '—'}</td>
+                                <td>{b.banka_adi || '—'}</td>
+                                <td>{b.iban || '—'}</td>
+                                <td>{[b.sube, b.hesap_sahibi].filter(Boolean).join(' · ') || '—'}</td>
                                 <td className="table-col-islem">
                                   <div className="islem-ikonlar">
                                     <button type="button" className="islem-ikon duzenle-ikon" aria-label="Düzenle" onClick={() => { setBankaForm({ banka_adi: b.banka_adi || '', iban: b.iban || '', sube: b.sube || '', hesap_sahibi: b.hesap_sahibi || '', aciklama: b.aciklama || '' }); setEditingBankaId(b.id); }}><Pencil size={16} /></button>

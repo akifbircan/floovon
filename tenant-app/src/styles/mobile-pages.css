@@ -1793,6 +1793,11 @@ ul.notifications {
     content: none !important;
     display: none !important;
   }
+  /* Banka Hesap Bilgileri sekmesi: kart görünümünde data-label gösterme */
+  .ayarlar-page table.ayarlar-tablosu.ayarlar-tablosu--banka-hesaplari tbody tr td::before {
+    content: none !important;
+    display: none !important;
+  }
   .ayarlar-page .ayarlar-tablosu tbody tr td > *,
   .ayarlar-page table.ayarlar-tablosu tbody tr td > * {
     order: 1;

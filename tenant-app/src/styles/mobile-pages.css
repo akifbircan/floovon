@@ -2004,7 +2004,18 @@ ul.notifications {
   }
 
   .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel .ayarlar-panel-header {
-   flex-direction: column !important;
+    flex-direction: column !important;
+    gap: .5rem !important;
+  }
+  .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel .ayarlar-panel-header-sol {
+    flex-direction: row !important;
+  }
+
+  .ayarlar-panel-desc { 
+    align-items: center !important;
+    border: 1px solid var(--border-renk);
+    padding: 10px;
+    border-radius: 10px;
   }
 
   .ayarlar-sol-kolon,

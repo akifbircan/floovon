@@ -34,10 +34,11 @@ function insertWhatsAppConnectionLog(tenantId, eventType, opts) {
     const turkeyNow = getTurkeyTimeString();
     const connAt = connection_at != null ? connection_at : (eventType === 'connected' ? turkeyNow : null);
     const discAt = disconnect_at != null ? disconnect_at : (eventType === 'disconnected' ? turkeyNow : null);
+    const createdBy = session_owner_user || null;
     return new Promise((resolve) => {
         db.run(
-            'INSERT INTO whatsapp_baglantilar_logs (tenant_id, event_type, whatsapp_phone_number, whatsapp_user_name, session_owner_user, disconnect_reason, connection_at, disconnect_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [tenantId, eventType, phone_number || null, user_name || null, session_owner_user || null, disconnect_reason || null, connAt, discAt],
+            'INSERT INTO whatsapp_baglantilar_logs (tenant_id, event_type, whatsapp_phone_number, whatsapp_user_name, session_owner_user, disconnect_reason, connection_at, disconnect_at, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [tenantId, eventType, phone_number || null, user_name || null, session_owner_user || null, disconnect_reason || null, connAt, discAt, createdBy],
             (err) => {
                 if (err) console.error('❌ whatsapp_baglantilar_logs INSERT hatası:', err.message, err);
                 else {

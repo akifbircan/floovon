@@ -53,6 +53,10 @@ main[data-main-content]:has(.ayarlar-page) {
   .ayarlar-page {
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
+
+  .ayarlar-ciceksepeti-bildirim-butonlar {
+    flex-direction: column;
+  }
 }
 
 /* Ayarlar: dış sayfada scroll yok, scroll sadece iç panellerde (.ayarlar-panel) – wrapper'da scrollbar titremesin */
@@ -116,7 +120,8 @@ main[data-main-content]:has(.ayarlar-page) {
 }
 /* Panel doğrudan tab içeriğindeyse scroll panelde; mobilde de kaydırma çalışsın diye flex + min-height: 0 */
 .ayarlar-tab-icerik > div.ayarlar-panel {
-  flex: 1;
+  flex: auto;
+  /* flex: none; */
   min-height: 0;
   overflow-y: auto !important;
   overflow-x: hidden;
@@ -212,8 +217,9 @@ main[data-main-content]:has(.ayarlar-page) {
 
 /* Ayarlar kartları (sağ kolon tablo paneli) – scroll panel içinde; scrollbar sağ kenarda */
 .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel {
-  flex: 1;
-  min-height: 200px;
+  /* flex: 1; */
+  flex: initial;
+    min-height: 200px;
   max-height: 100%;
   overflow-y: auto !important;
   display: flex;
@@ -221,11 +227,12 @@ main[data-main-content]:has(.ayarlar-page) {
   /* padding-right: 0; */
 }
 
-/* Sağ kolon panel: başlık sabit, içerik alanı kalan yüksekliği kaplasın; sağ boşluk içerikte */
+/* Sağ kolon panel: header alanı küçülmesin, içerik (2. child) kalan yüksekliği kaplasın */
 .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel .ayarlar-panel-header {
   flex-shrink: 0;
-  /* flex-direction: column; */
-  /* padding-right: 10px; */
+}
+.ayarlar-page .ayarlar-sag-kolon .ayarlar-panel .ayarlar-panel-header-sol {
+  flex-shrink: 0;
 }
 
 .ayarlar-page .ayarlar-sag-kolon .ayarlar-panel > *:nth-child(2) {
@@ -246,7 +253,7 @@ main[data-main-content]:has(.ayarlar-page) {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--ana-renk);
-  margin: 0 0 1rem 0;
+  /* margin: 0 0 1rem 0; */
 }
 
 /* Ayarlar paneli form başlığı – sol kolon form + sağ kolon panel */
@@ -258,10 +265,12 @@ main[data-main-content]:has(.ayarlar-page) {
   margin: 0 0 1rem 0;
 }
 
+.ayarlar-panel-header-sol .ayarlar-panel-title,
 .ayarlar-panel-header .ayarlar-panel-title {
   margin-bottom: 0;
 }
 
+.ayarlar-panel-header-sol .ayarlar-panel-form-title,
 .ayarlar-panel-header .ayarlar-panel-form-title {
   margin-bottom: 0;
 }
@@ -290,43 +299,46 @@ main[data-main-content]:has(.ayarlar-page) {
   color: var(--gri70);
   margin: 0 0 1rem 0;
 }
+.ayarlar-panel-header-sol .ayarlar-panel-desc,
 .ayarlar-panel-header .ayarlar-panel-desc {
-  margin-top: 0.25rem;
-  margin-bottom: 0;
+  margin: 0;
 }
+/* .ayarlar-panel-header-sol .ayarlar-panel-title + .ayarlar-panel-desc,
 .ayarlar-panel-header .ayarlar-panel-title + .ayarlar-panel-desc {
   margin-bottom: 1rem;
-}
+} */
 
-/* Ayarlar panel header: solda search, sağda başlık + badge */
+/* Ayarlar panel header: dış wrapper (başlık+badge sol, arama sağ) */
 .ayarlar-panel-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 24px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 .ayarlar-panel-header > div {
   flex: 1;
   min-width: 0;
 }
 
+/* İç sol blok: başlık + badge (wrapper içinde veya tek başına) */
 .ayarlar-panel-header-sol {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   flex-shrink: 0;
+  margin-bottom: 1rem;
+}
+.ayarlar-panel-header .ayarlar-panel-header-sol {
+  margin-bottom: 0;
 }
 
-.ayarlar-panel-header .search-input-wrapper {
+.ayarlar-panel-header-sol .search-input-wrapper {
   width: 100%;
   min-width: 0;
   flex: 1;
-}
-
-.ayarlar-panel-header .ayarlar-panel-title {
-  margin-bottom: 0;
 }
 
 .ayarlar-count-badge {
@@ -404,6 +416,7 @@ main[data-main-content]:has(.ayarlar-page) {
 
 
 
+.ayarlar-panel-header-sol .ayarlar-panel-title + .ayarlar-panel-desc,
 .ayarlar-panel-header .ayarlar-panel-title + .ayarlar-panel-desc {
   margin-top: 0;
   margin-bottom: 0;
@@ -614,6 +627,48 @@ main[data-main-content]:has(.ayarlar-page) {
   padding: 1.5rem;
   min-height: 320px;
 }
+
+/* Çiçek Sepeti: fatura ayarlarındaki gibi – başlık solda, (i) ikon + açıklama sağda, aynı satır */
+.ayarlar-ciceksepeti-sol .ayarlar-panel-header,
+.ayarlar-ciceksepeti-sol .ayarlar-panel-header-sol,
+.ayarlar-ciceksepeti-baslik-kutu .ayarlar-panel-header,
+.ayarlar-ciceksepeti-baslik-kutu .ayarlar-panel-header-sol {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.ayarlar-ciceksepeti-sol .ayarlar-panel-header .ayarlar-panel-title,
+.ayarlar-ciceksepeti-sol .ayarlar-panel-header-sol .ayarlar-panel-title,
+.ayarlar-ciceksepeti-baslik-kutu .ayarlar-panel-header .ayarlar-panel-title,
+.ayarlar-ciceksepeti-baslik-kutu .ayarlar-panel-header-sol .ayarlar-panel-title {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+.ayarlar-ciceksepeti-sol .ayarlar-panel-header .ayarlar-panel-desc,
+.ayarlar-ciceksepeti-sol .ayarlar-panel-header-sol .ayarlar-panel-desc,
+.ayarlar-ciceksepeti-baslik-kutu .ayarlar-panel-header .ayarlar-panel-desc,
+.ayarlar-ciceksepeti-baslik-kutu .ayarlar-panel-header-sol .ayarlar-panel-desc {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  text-align: right;
+  justify-content: flex-end;
+}
+.ayarlar-ciceksepeti-sol .ayarlar-panel-header .ayarlar-panel-desc .ayarlar-panel-desc-icon,
+.ayarlar-ciceksepeti-sol .ayarlar-panel-header-sol .ayarlar-panel-desc .ayarlar-panel-desc-icon,
+.ayarlar-ciceksepeti-baslik-kutu .ayarlar-panel-header .ayarlar-panel-desc .ayarlar-panel-desc-icon,
+.ayarlar-ciceksepeti-baslik-kutu .ayarlar-panel-header-sol .ayarlar-panel-desc .ayarlar-panel-desc-icon {
+  flex-shrink: 0;
+  color: var(--mor-primary);
+}
+
 .ayarlar-ciceksepeti-sekme-baslik {
   font-size: 1.125rem;
   font-weight: 600;
@@ -673,14 +728,11 @@ main[data-main-content]:has(.ayarlar-page) {
 .ayarlar-ciceksepeti-baslik-kutu .ayarlar-ciceksepeti-sekme-baslik { margin-top: 0; }
 .ayarlar-ciceksepeti-baslik-kutu .ayarlar-ciceksepeti-sekme-desc { margin-bottom: 0; }
 
-/* Sağ kolon: API durumu (Bağlantı, Son Kontrol, Toplam Sipariş) kutusu */
-.ayarlar-ciceksepeti-durum-kutu {
-  border: 1px solid var(--border-renk);
-  border-radius: 8px;
-  padding: 1rem;
+/* Sağ kolon: API durumu alanı doğrudan .ayarlar-ciceksepeti-sag içinde */
+.ayarlar-ciceksepeti-sag .ayarlar-ciceksepeti-durum-alan {
   margin-bottom: 0.75rem;
 }
-.ayarlar-ciceksepeti-durum-kutu .ayarlar-ciceksepeti-durum-alan .ayarlar-form-group:last-child {
+.ayarlar-ciceksepeti-sag .ayarlar-ciceksepeti-durum-alan .ayarlar-form-group:last-child {
   margin-bottom: 0;
 }
 
@@ -701,6 +753,39 @@ main[data-main-content]:has(.ayarlar-page) {
 .ayarlar-ciceksepeti-test-butonlar .ayarlar-btn {
   justify-content: center;
   text-align: center;
+}
+
+/* Çiçek Sepeti: Telefon bildirimleri – iki buton alanı doldurur, farklı renkler (variable) */
+.ayarlar-ciceksepeti-bildirim-butonlar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 6px;
+  width: 100%;
+}
+.ayarlar-ciceksepeti-bildirim-butonlar .ayarlar-btn {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+}
+.ayarlar-ciceksepeti-bildirim-butonlar .ayarlar-btn:first-child {
+  background-color: var(--mor-primary);
+  color: var(--white-only, #fff) !important;
+  border-color: var(--mor-primary);
+}
+.ayarlar-ciceksepeti-bildirim-butonlar .ayarlar-btn:first-child:hover:not(:disabled) {
+  background-color: var(--mor-primary-hover);
+  border-color: var(--mor-primary-hover);
+  color: var(--white-only, #fff) !important;
+}
+.ayarlar-ciceksepeti-bildirim-butonlar .ayarlar-btn:last-child {
+  background-color: var(--yesil-destek, #19ba39);
+  color: #fff !important;
+  border-color: var(--yesil-destek, #19ba39);
+}
+.ayarlar-ciceksepeti-bildirim-butonlar .ayarlar-btn:last-child:hover:not(:disabled) {
+  filter: brightness(0.92);
+  color: #fff !important;
 }
 
 @media (max-width: 1024px) {
@@ -1061,7 +1146,7 @@ main[data-main-content]:has(.ayarlar-page) {
   flex-direction: column;
   gap: 0.3rem;
 }
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .ayarlar-fatura-row {
     grid-template-columns: 1fr;
   }

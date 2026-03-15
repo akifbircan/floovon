@@ -193,7 +193,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <button
               onClick={onCicekSepeti}
               className="ciceksepeti-integration-btn"
-              data-tooltip="Çiçek Sepeti vb. entegratör siparişlerini kontrol edin"
+              data-tooltip="Çiçek Sepeti siparişini kontrol edin"
               data-tooltip-pos="bottom"
             >
               <i className="fa-solid fa-arrows-rotate"></i>

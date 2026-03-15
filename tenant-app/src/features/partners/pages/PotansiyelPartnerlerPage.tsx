@@ -368,7 +368,7 @@ export const PotansiyelPartnerlerPage: React.FC = () => {
           </div>
         </div>
 
-        {/* İstatistik Kartları - Partner Firma sayıları (ikon solda) */}
+        {/* İstatistik Kartları - Partner Firmalar sayıları (ikon solda) */}
         <div className="potansiyel-istatistik-grid">
           <div className="potansiyel-istatistik-kart">
             <div className="potansiyel-istatistik-row">
@@ -378,7 +378,7 @@ export const PotansiyelPartnerlerPage: React.FC = () => {
               <div>
                 <div className="potansiyel-istatistik-sayi">{toplamPartner}</div>
                 <div className="potansiyel-istatistik-label">
-                  {hasFilter ? 'Filtrelenen Partner Firma' : 'Türkiye Geneli Partner Firma'}
+                  {hasFilter ? 'Filtrelenen Partner Firmalar' : 'Türkiye Geneli Partner Firmalar'}
                 </div>
               </div>
             </div>
@@ -392,10 +392,10 @@ export const PotansiyelPartnerlerPage: React.FC = () => {
                 <div className="potansiyel-istatistik-sayi">{sehirdekiPartner}</div>
                 <div className="potansiyel-istatistik-label">
                   {ilFilter
-                    ? `${ilFilter} şehrindeki Partner Firma`
+                    ? `${ilFilter} şehrindeki Partner Firmalar`
                     : cicekciIl
-                      ? `${cicekciIl} şehrindeki Partner Firma`
-                      : "Türkiye'deki Partner Firma"}
+                      ? `${cicekciIl} şehrindeki Partner Firmalar`
+                      : "Türkiye'deki Partner Firmalar"}
                 </div>
               </div>
             </div>
@@ -409,12 +409,12 @@ export const PotansiyelPartnerlerPage: React.FC = () => {
                 <div className="potansiyel-istatistik-sayi">{ilcedekiPartner}</div>
                 <div className="potansiyel-istatistik-label">
                   {ilceFilter
-                    ? `${ilceFilter} ilçesindeki Partner Firma`
+                    ? `${ilceFilter} ilçesindeki Partner Firmalar`
                     : ilFilter
-                      ? `${ilFilter} şehrindeki tüm ilçelerdeki Partner Firma`
+                      ? `${ilFilter} şehrindeki tüm ilçelerdeki Partner Firmalar`
                       : cicekciIlce
-                        ? `${cicekciIlce} ilçesindeki Partner Firma`
-                        : 'İlçedeki Partner Firma'}
+                        ? `${cicekciIlce} ilçesindeki Partner Firmalar`
+                        : 'İlçedeki Partner Firmalar'}
                 </div>
               </div>
             </div>

@@ -1079,7 +1079,7 @@ export const OrderDetailPage: React.FC = () => {
               <div className="teslim-edilen-siparis-foto-galeri">
                 <div className="headerbox">
                   <h3 className="title">
-                    Teslim Edilen Siparişler Foto Galeri
+                    Teslim Edilen Siparişler Galeri
                     {(fotograflar?.length ?? 0) > 0 && (
                       <span className="page-title-badge">{fotograflar?.length ?? 0}</span>
                     )}

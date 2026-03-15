@@ -329,6 +329,12 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
   width: auto;
   max-width: 100%;
   object-fit: cover;
+  transition: .3s ease-in-out;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-gorsel img:hover {
+ scale: 0.95;
+ transition: .3s ease-in-out;
 }
 
 .kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman {
@@ -687,7 +693,7 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--siparis-detay-tablo-satir);
+  background: var(--white-only);
 }
 .sag-detay-alan .siparis-listesi .td-siparis-urun .siparis-urun-ciceksepeti-emblemi img {
   width: 36px;
@@ -732,6 +738,7 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
 .sag-detay-alan .siparis-listesi .td-musteri-ve-urun-yazisi .siparis-musteri-telefon {
   font-size: 11px;
   color: var(--gri70);
+  margin-bottom: 3px;
 }
 
 .sag-detay-alan .siparis-listesi .td-musteri-ve-urun-yazisi .siparis-urun-yazisi {

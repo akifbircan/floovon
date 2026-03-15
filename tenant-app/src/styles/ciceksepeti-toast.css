@@ -16,7 +16,7 @@
 }
 
 /* Mobil: popup dikeyde ortalı, üst tarafa yakın (header altında rahat görünsün) */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .ciceksepeti-toast-container {
     position: fixed !important;
     top: 18px !important;

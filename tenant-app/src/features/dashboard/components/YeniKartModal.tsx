@@ -186,18 +186,24 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
     queryKey: ['organizasyon-turleri'],
     queryFn: () => getOrganizasyonTurleri(),
     enabled: isOpen,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const { data: organizasyonGruplari = [] } = useQuery({
     queryKey: ['organizasyon-gruplari'],
     queryFn: getOrganizasyonGruplari,
     enabled: isOpen,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const { data: organizasyonEtiketleri = [], refetch: refetchEtiketler } = useQuery({
     queryKey: ['organizasyon-etiketleri'],
     queryFn: () => getOrganizasyonEtiketleri(),
     enabled: isOpen,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   // Sekmeye göre grup id eşlemesi (organizasyon, aracsusleme, ozelsiparis, ozelgun)
@@ -272,14 +278,16 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Modal kapandığında formu resetle; açıldığında dirty sıfırla
+  // Modal kapandığında formu resetle; açıldığında dirty sıfırla ve etiket/tür listelerini tazele (çok sayfa gezdikten sonra etiket isimleri görünsün)
   useEffect(() => {
     if (!isOpen) {
       resetForm();
     } else {
       setDirty(false);
+      refetchTurler();
+      refetchEtiketler();
     }
-  }, [isOpen, resetForm]);
+  }, [isOpen, resetForm, refetchTurler, refetchEtiketler]);
 
   const requestClose = useCallback(() => {
     if (!isDirty) {

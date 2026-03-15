@@ -2843,7 +2843,9 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
                                         session_owner_user TEXT,
                                         disconnect_reason TEXT,
                                         connection_at TEXT,
-                                        disconnect_at TEXT
+                                        disconnect_at TEXT,
+                                        created_by TEXT,
+                                        updated_by TEXT
                                     )
                                     `, (e2) => {
                                         if (e2) { reject(e2); return; }
@@ -11589,8 +11591,8 @@ app.patch('/api/organizasyon-kartlar/:id/archive', async (req, res) => {
                                     INSERT INTO bildirimler (
                                         kullanici_adi, tip, baslik, mesaj,
                                         musteri_unvani, organizasyon_adi, arsivleme_sebebi,
-                                        organizasyon_id, tenant_id, is_read, created_at
-                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                                        organizasyon_id, tenant_id, is_read, created_at, created_by
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, ?)
                                 `, [
                                     kullaniciAdi,
                                     'arsivlendi',
@@ -11600,7 +11602,8 @@ app.patch('/api/organizasyon-kartlar/:id/archive', async (req, res) => {
                                     'Çiçek Sepeti',
                                     arsivleme_sebebi || null,
                                     id,
-                                    tenantId
+                                    tenantId,
+                                    kullaniciAdi
                                 ]);
                             }
                         }
@@ -13490,14 +13493,15 @@ app.put('/api/siparis-kartlar/:id/organizasyon', async (req, res) => {
         const eskiOrgId = siparisCheck[0].organizasyon_kart_id;
         
         // Organizasyon kartını güncelle (kart_sira varsa onu da güncelle)
-        const updateFields = ['organizasyon_kart_id = ?', `updated_at = ${getTurkeyTimeSQL()}`];
-        const updateParams = [organizasyon_kart_id];
-        
+        const kullaniciAdiSiparis = await getCurrentUsername(req);
+        const updateFields = ['organizasyon_kart_id = ?', `updated_at = ${getTurkeyTimeSQL()}`, 'updated_by = ?'];
+        const updateParams = [organizasyon_kart_id, kullaniciAdiSiparis];
+
         if (kart_sira !== undefined && Number.isInteger(kart_sira) && kart_sira > 0) {
-            updateFields.splice(1, 0, 'kart_sira = ?');
-            updateParams.splice(1, 0, kart_sira);
+            updateFields.splice(2, 0, 'kart_sira = ?');
+            updateParams.splice(2, 0, kart_sira);
         }
-        
+
         await execute(
             `UPDATE siparisler SET ${updateFields.join(', ')} WHERE id = ?`,
             [...updateParams, parsedSiparisId]
@@ -13552,8 +13556,9 @@ app.put('/api/siparis-kartlar/:id/organizasyon', async (req, res) => {
 
 // Sipariş kartını arşivle
 // Müşteri raporları tablosunu güncelle (sipariş teslim edildiğinde)
-async function updateMusteriRaporlari(siparisBilgileri, tenantId) {
+async function updateMusteriRaporlari(siparisBilgileri, tenantId, req = null) {
     try {
+        const kullaniciAdi = req ? await getCurrentUsername(req) : null;
         // Müşteri bilgilerini al
         const musteriUnvan = siparisBilgileri.musteri_unvan || null;
         const musteriIsimSoyisim = siparisBilgileri.musteri_isim_soyisim || null;
@@ -13684,6 +13689,10 @@ async function updateMusteriRaporlari(siparisBilgileri, tenantId) {
             updateValues.push(teslimTarihi);
             
             updateFields.push('updated_at = CURRENT_TIMESTAMP');
+            if (kullaniciAdi && columnNames.includes('updated_by')) {
+                updateFields.push('updated_by = ?');
+                updateValues.push(kullaniciAdi);
+            }
             
             // Müşteri bilgilerini de güncelle (boşsa)
             if (!rapor.musteri_unvan && musteriUnvan) {
@@ -13723,6 +13732,14 @@ async function updateMusteriRaporlari(siparisBilgileri, tenantId) {
                 insertFields.push('tenant_id');
                 insertValues.push(tenantId);
             }
+            if (kullaniciAdi && columnNames.includes('created_by')) {
+                insertFields.push('created_by');
+                insertValues.push(kullaniciAdi);
+            }
+            if (kullaniciAdi && columnNames.includes('updated_by')) {
+                insertFields.push('updated_by');
+                insertValues.push(kullaniciAdi);
+            }
             
             const placeholders = insertFields.map(() => '?').join(', ');
             const fieldsList = insertFields.join(', ');
@@ -13741,8 +13758,9 @@ async function updateMusteriRaporlari(siparisBilgileri, tenantId) {
 }
 
 // Müşteri raporlarından siparişi çıkar (sipariş geri yüklendiğinde)
-async function removeMusteriRaporlari(siparisBilgileri, tenantId) {
+async function removeMusteriRaporlari(siparisBilgileri, tenantId, req = null) {
     try {
+        const kullaniciAdi = req ? await getCurrentUsername(req) : null;
         // Müşteri bilgilerini al
         const musteriUnvan = siparisBilgileri.musteri_unvan || null;
         const musteriIsimSoyisim = siparisBilgileri.musteri_isim_soyisim || null;
@@ -13844,10 +13862,9 @@ async function removeMusteriRaporlari(siparisBilgileri, tenantId) {
                     whereClause += ' AND tenant_id = ?';
                     raporSilValues.push(tenantId);
                 }
-                const raporSilKullanici = await getCurrentUsername(req);
                 await execute(
                     `UPDATE musteri_raporlari SET is_active = 0, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE ${whereClause}`,
-                    [raporSilKullanici, ...raporSilValues]
+                    [kullaniciAdi, ...raporSilValues]
                 );
                 
                 console.log(`✅ Müşteri raporu silindi (sipariş geri yüklendi): Müşteri ID ${rapor.id}, Müşteri: ${musteriUnvan || musteriIsimSoyisim}`);
@@ -13866,6 +13883,10 @@ async function removeMusteriRaporlari(siparisBilgileri, tenantId) {
                 updateValues.push(yeniOrtalamaTutar);
                 
                 updateFields.push('updated_at = CURRENT_TIMESTAMP');
+                if (kullaniciAdi && columnNames.includes('updated_by')) {
+                    updateFields.push('updated_by = ?');
+                    updateValues.push(kullaniciAdi);
+                }
                 
                 let whereClause = 'id = ?';
                 updateValues.push(rapor.id);
@@ -13944,8 +13965,8 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
                                     musteri_unvani, teslim_kisisi, siparis_adi, organizasyon_adi,
                                     organizasyon_alt_tur, siparis_teslim_kisisi_baskasi, urun_resmi,
                                     siparis_id, organizasyon_id, arsivleme_sebebi, tenant_id,
-                                    is_read, created_at
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                                    is_read, created_at, created_by
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, ?)
                             `, [
                                 kullaniciAdi,
                                 'teslim_edildi',
@@ -13961,7 +13982,8 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
                                 id,
                                 orgKartId,
                                 'Teslim Edildi',
-                                tenantId
+                                tenantId,
+                                kullaniciAdi
                             ]);
                         }
                     }
@@ -14054,8 +14076,8 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
                                     musteri_unvani, teslim_kisisi, siparis_adi, organizasyon_adi,
                                     organizasyon_alt_tur, siparis_teslim_kisisi_baskasi, urun_resmi,
                                     siparis_id, organizasyon_id, arsivleme_sebebi, tenant_id,
-                                    is_read, created_at
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                                    is_read, created_at, created_by
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, ?)
                             `, [
                                 kullaniciAdi,
                                 'teslim_edildi',
@@ -14071,7 +14093,8 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
                                 id,
                                 orgKartId,
                                 'Teslim Edildi',
-                                tenantId
+                                tenantId,
+                                kullaniciAdi
                             ]);
                             console.log(`✅ Çiçek Sepeti teslim edildi bildirimi oluşturuldu: Sipariş ID ${id}, Kullanıcı: ${kullaniciAdi}`);
                         }
@@ -14148,8 +14171,8 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
                             musteri_unvani, teslim_kisisi, siparis_adi, organizasyon_adi,
                             organizasyon_alt_tur, siparis_teslim_kisisi_baskasi, urun_resmi,
                             siparis_id, organizasyon_id, arsivleme_sebebi, tenant_id,
-                            is_read, created_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                            is_read, created_at, created_by
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, ?)
                     `, [
                         kullaniciAdi,
                         'teslim_edildi',
@@ -14165,7 +14188,8 @@ app.patch('/api/siparis-kartlar/:id/deliver', async (req, res) => {
                         id,
                         siparisBilgileri.organizasyon_kart_id || null,
                         'Teslim Edildi',
-                        tenantId
+                        tenantId,
+                        kullaniciAdi
                     ]);
                     console.log(`✅ Teslim bildirimi oluşturuldu: Sipariş ID ${id}, Kullanıcı: ${kullaniciAdi}`);
                 }
@@ -14256,8 +14280,8 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                                     musteri_unvani, teslim_kisisi, siparis_adi, organizasyon_adi,
                                     organizasyon_alt_tur, siparis_teslim_kisisi_baskasi, urun_resmi,
                                     siparis_id, organizasyon_id, arsivleme_sebebi, tenant_id,
-                                    is_read, created_at
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                                    is_read, created_at, created_by
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, ?)
                             `, [
                                 kullaniciAdi,
                                 'arsivlendi',
@@ -14273,7 +14297,8 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                                 id,
                                 orgKartId,
                                 arsivleme_sebebi || null,
-                                tenantId
+                                tenantId,
+                                kullaniciAdi
                             ]);
                             console.log(`✅ Çiçek Sepeti arşivleme bildirimi oluşturuldu: Sipariş ID ${id}, Kullanıcı: ${kullaniciAdi}`);
                         }
@@ -14340,8 +14365,8 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                                     musteri_unvani, teslim_kisisi, siparis_adi, organizasyon_adi,
                                     organizasyon_alt_tur, siparis_teslim_kisisi_baskasi, urun_resmi,
                                     siparis_id, organizasyon_id, arsivleme_sebebi, tenant_id,
-                                    is_read, created_at
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                                    is_read, created_at, created_by
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, ?)
                             `, [
                                 kullaniciAdi,
                                 'arsivlendi',
@@ -14357,7 +14382,8 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                                 id,
                                 orgKartId,
                                 arsivleme_sebebi || null,
-                                tenantId
+                                tenantId,
+                                kullaniciAdi
                             ]);
                         }
                     }
@@ -14522,7 +14548,7 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                 
                 if (guncellenmisSiparis.length > 0) {
                     // Müşteri raporlarına ekle
-                    await updateMusteriRaporlari(guncellenmisSiparis[0], tenantId);
+                    await updateMusteriRaporlari(guncellenmisSiparis[0], tenantId, req);
                     
                     // Satış raporlarına (sicak_satislar) ekle
                     try {
@@ -14602,8 +14628,8 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                             musteri_unvani, teslim_kisisi, siparis_adi, organizasyon_adi,
                             organizasyon_alt_tur, siparis_teslim_kisisi_baskasi, urun_resmi,
                             siparis_id, organizasyon_id, arsivleme_sebebi, tenant_id,
-                            is_read, created_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+                            is_read, created_at, created_by
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, ?)
                     `, [
                         kullaniciAdi,
                         'arsivlendi',
@@ -14619,7 +14645,8 @@ app.patch('/api/siparis-kartlar/:id/archive', async (req, res) => {
                         id,
                         siparisBilgileri.organizasyon_kart_id || null,
                         arsivleme_sebebi || null,
-                        tenantId
+                        tenantId,
+                        kullaniciAdi
                     ]);
                     console.log(`✅ Arşivleme bildirimi oluşturuldu: Sipariş ID ${id}, Kullanıcı: ${kullaniciAdi}`);
                 }
@@ -14897,7 +14924,7 @@ app.patch('/api/siparis-kartlar/:id/unarchive', async (req, res) => {
                     created_at: siparisKarti[0].created_at
                 };
                 
-                await removeMusteriRaporlari(siparisBilgileri, tenantId);
+                await removeMusteriRaporlari(siparisBilgileri, tenantId, req);
                 
                 // Satış raporlarından (sicak_satislar) siparişi çıkar
                 try {
@@ -15632,7 +15659,8 @@ app.get('/api/tenants/:tenantId/customers/:customerId/faturalar/:faturaId/pdf', 
                 return res.status(500).send('Fatura PDF oluşturulamadı. Lütfen daha sonra tekrar deneyin.');
             }
             const pdfYolu = `uploads/tenants/${tenantId}/customers/${customerFolder}/faturalar/${pdfFileName}`;
-            await run('UPDATE musteri_faturalar SET pdf_yolu = ?, updated_at = datetime(\'now\') WHERE id = ?', [pdfYolu, fatura.id]);
+            const kullaniciAdi = await getCurrentUsername(req);
+            await run('UPDATE musteri_faturalar SET pdf_yolu = ?, updated_at = datetime(\'now\'), updated_by = ? WHERE id = ?', [pdfYolu, kullaniciAdi, fatura.id]);
         }
 
         res.setHeader('Content-Type', 'application/pdf');
@@ -26964,16 +26992,18 @@ app.post('/api/partner-siparis', async (req, res) => {
         if (updateFields.length === 0) {
             return res.status(400).json({ success: false, error: 'Güncellenecek alan bulunamadı' });
         }
-        
-        updateValues.push(siparis_id, tenantId);
-        
+
+        const kullaniciAdiPartner = await getCurrentUsername(req);
+        updateFields.push('updated_at = datetime(\'now\')', 'updated_by = ?');
+        updateValues.push(kullaniciAdiPartner, siparis_id, tenantId);
+
         await run(
-            `UPDATE siparisler SET ${updateFields.join(', ')}, updated_at = datetime('now') WHERE id = ? AND tenant_id = ?`,
+            `UPDATE siparisler SET ${updateFields.join(', ')} WHERE id = ? AND tenant_id = ?`,
             updateValues
         );
-        
+
         const updated = await query('SELECT * FROM siparisler WHERE id = ? AND tenant_id = ?', [siparis_id, tenantId]);
-        
+
         res.json({
             success: true,
             data: updated[0],

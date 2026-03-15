@@ -53,6 +53,14 @@
   cursor: default;
 }
 
+/* 1440px ve üzeri: başlık altı "tarihleri arasındaki siparişleriniz:" metnini gizle */
+@media (min-width: 1440px) {
+  .dashboard-container .dashboard-header .baslik-alan .baslik-tarih-aciklama,
+  .dashboard-container .dashboard-header-mobile .baslik-alan .baslik-tarih-aciklama {
+    display: none !important;
+  }
+}
+
 .dashboard-container .dashboard-header .butonlar,
 .dashboard-container .dashboard-header-mobile .butonlar {
   display: flex;
@@ -72,6 +80,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-weight: 500;
   font-size: 13px;
@@ -184,6 +193,7 @@
   font-size: 13px;
   font-weight: 500;
   position: relative;
+  height: 40px;
 }
 
 /* Tablet ve mobilde (max-width: 1439px) buton yazılarını gizle – sadece masaüstünde görünsün */
@@ -496,7 +506,7 @@
 /* #endregion Index Header - "kart-filtreler" Kart Filtreler */
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .dashboard-header .baslik-alan,
   .dashboard-header-mobile .baslik-alan {
     flex-direction: column;

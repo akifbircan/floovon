@@ -15,7 +15,7 @@ import { formatPhoneNumber, cleanPhoneForDatabase, formatTutarInputLive, formatT
 import { usePhoneInput } from '../../../shared/hooks/usePhoneInput';
 import { useAddressSelect } from '../../dashboard/hooks/useAddressSelect';
 import { getKonumAyarlari } from '../../dashboard/api/formActions';
-import { Trash2, FileSearch, Package, Settings, Truck, Send, Pencil, Upload, Info, Wrench, Clock, ShoppingCart, Plug, RefreshCw, Bell, FileText } from 'lucide-react';
+import { Trash2, FileSearch, Package, Settings, Truck, Send, Pencil, Upload, Info, Wrench, Clock, ShoppingCart, Plug, RefreshCw, Bell, FileText, HelpCircle } from 'lucide-react';
 import { WhatsAppQRModal } from '../../dashboard/components/WhatsAppQRModal';
 import { FaturaTab } from './FaturaTab';
 
@@ -59,8 +59,15 @@ interface OrganizasyonEtiketi {
 
 /** Gönderim ayarları – sipariş listesi WhatsApp numaraları (WhatsApp bağlantısı header popup’tan yönetiliyor) */
 /** Çiçek Sepeti API ayarları – API Key, Secret, Mod, Webhook, Sipariş kontrolü, Test siparişi */
-function CiceksepetiAyarlariForm() {
+function CiceksepetiAyarlariForm(
+  { onDirtyChange, submitFormRef, onAfterSave }: {
+    onDirtyChange?: (dirty: boolean) => void;
+    submitFormRef?: React.MutableRefObject<(() => void) | null>;
+    onAfterSave?: () => void;
+  }
+) {
   const queryClient = useQueryClient();
+  const formRef = React.useRef<HTMLFormElement>(null);
   const { data: cicekData, isLoading } = useQuery({
     queryKey: ['ayarlar-ciceksepeti'],
     queryFn: async () => {
@@ -98,6 +105,51 @@ function CiceksepetiAyarlariForm() {
       }
     }
   }, [cicekData]);
+
+  const isDirty = Boolean(cicekData && typeof cicekData === 'object' && (
+    apiKey !== ((cicekData.api_key as string) ?? '') ||
+    apiSecret !== ((cicekData.api_secret as string) ?? '') ||
+    apiMode !== (((cicekData.api_mode as string) || 'test') as 'test' | 'live') ||
+    siparisKontrol !== String((cicekData.siparis_kontrol as number) ?? (cicekData.siparis_kontrol as string) ?? '60') ||
+    otomatikOnay !== Boolean(cicekData.otomatik_onay) ||
+    sesBildirimi !== (cicekData.ses_bildirimi !== false && cicekData.ses_bildirimi !== 0) ||
+    testBildirimi !== Boolean((cicekData as { test_bildirimi?: boolean }).test_bildirimi)
+  ));
+  React.useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  React.useEffect(() => {
+    if (submitFormRef) {
+      submitFormRef.current = () => formRef.current?.requestSubmit();
+      return () => { submitFormRef.current = null; };
+    }
+  }, [submitFormRef]);
+
+  const revertForm = () => {
+    if (cicekData && typeof cicekData === 'object') {
+      setApiKey((cicekData.api_key as string) ?? '');
+      setApiSecret((cicekData.api_secret as string) ?? '');
+      setApiMode(((cicekData.api_mode as string) || 'test') as 'test' | 'live');
+      setSiparisKontrol(String((cicekData.siparis_kontrol as number) ?? (cicekData.siparis_kontrol as string) ?? '60'));
+      setOtomatikOnay(Boolean(cicekData.otomatik_onay));
+      setSesBildirimi(cicekData.ses_bildirimi !== false && cicekData.ses_bildirimi !== 0);
+      setTestBildirimi(Boolean((cicekData as { test_bildirimi?: boolean }).test_bildirimi));
+    }
+    onDirtyChange?.(false);
+  };
+
+  const handleVazgec = () => {
+    showToastInteractive({
+      title: 'Değişiklikleri Kaydet',
+      message: 'Kaydedilmeyen değişiklikler var! Değişiklikleri kaydetmek istiyor musunuz?',
+      confirmText: 'Evet, Kaydet',
+      cancelText: 'İptal',
+      onConfirm: () => formRef.current?.requestSubmit(),
+      onCancel: revertForm,
+    });
+  };
+
   const webhookUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/ciceksepeti/webhook` : '';
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -120,6 +172,7 @@ function CiceksepetiAyarlariForm() {
         window.dispatchEvent(new CustomEvent('ciceksepetiTestBildirimiChanged'));
       }
       showToast('success', 'Çiçek Sepeti ayarları kaydedildi.');
+      onAfterSave?.();
     } catch (err: unknown) {
       showToast('error', (err as Error)?.message || 'Kaydedilemedi.');
     } finally {
@@ -274,11 +327,7 @@ function CiceksepetiAyarlariForm() {
   return (
     <div className="ayarlar-ciceksepeti-wrapper">
       <div className="ayarlar-ciceksepeti-sol">
-        <h3 className="ayarlar-ciceksepeti-sekme-baslik">Çiçek Sepeti API Ayarları</h3>
-        <p className="ayarlar-ciceksepeti-sekme-desc">
-          Çiçek Sepeti platformu ile entegrasyon için gerekli API bilgilerini giriniz. Bu ayarlar sayesinde Çiçek Sepeti üzerinden gelen siparişler otomatik olarak sisteminize aktarılacaktır.
-        </p>
-        <form id="ayarlar-ciceksepeti-form" className="ayarlar-form" onSubmit={handleSubmit}>
+        <form ref={formRef} id="ayarlar-ciceksepeti-form" className="ayarlar-form" onSubmit={handleSubmit}>
           <div className="ayarlar-form-group">
             <label className="ayarlar-label">API KEY</label>
             <input type="password" className="ayarlar-input" placeholder="Çiçek Sepeti API Key'inizi giriniz" value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" />
@@ -371,38 +420,41 @@ function CiceksepetiAyarlariForm() {
                   )}
                   {notifPermission === 'granted' && (
                     <>
-                      <button
-                        type="button"
-                        className="ayarlar-btn ayarlar-btn-secondary"
-                        style={{ marginTop: 6, marginRight: 8 }}
-                        onClick={() => {
-                          const integration = (window as any).ciceksepetiIntegration;
-                          if (integration && typeof integration.showSystemNotification === 'function') {
-                            integration.showSystemNotification('Test — Çiçek Sepeti', 'Bildirim ayarı çalışıyor. Yeni siparişte böyle görünecek.');
-                            if (localStorage.getItem('ciceksepeti_ses_bildirimi') !== 'false' && typeof integration.playNotificationSound === 'function') {
-                              integration.playNotificationSound();
+                      <div className="ayarlar-ciceksepeti-bildirim-butonlar">
+                        <button
+                          type="button"
+                          className="ayarlar-btn"
+                          onClick={() => {
+                            const integration = (window as any).ciceksepetiIntegration;
+                            if (integration && typeof integration.showSystemNotification === 'function') {
+                              integration.showSystemNotification('Test — Çiçek Sepeti', 'Bildirim ayarı çalışıyor. Yeni siparişte böyle görünecek.');
+                              if (localStorage.getItem('ciceksepeti_ses_bildirimi') !== 'false' && typeof integration.playNotificationSound === 'function') {
+                                integration.playNotificationSound();
+                              }
+                              showToast('success', 'Test bildirimi gönderildi. Bildirim çubuğuna veya kilidi ekranına bakın.');
+                            } else {
+                              try {
+                                new (window as any).Notification('Test — Çiçek Sepeti', { body: 'Bildirim ayarı çalışıyor.' });
+                                showToast('success', 'Test bildirimi gönderildi.');
+                              } catch (err) {
+                                showToast('error', 'Bu cihazda bildirim gösterilemedi. Bazı telefonlarda (örn. iPhone) yalnızca uygulama arka plandayken veya site ana ekrana eklendiyse çalışır.');
+                              }
                             }
-                            showToast('success', 'Test bildirimi gönderildi. Bildirim çubuğuna veya kilidi ekranına bakın.');
-                          } else {
-                            try {
-                              new (window as any).Notification('Test — Çiçek Sepeti', { body: 'Bildirim ayarı çalışıyor.' });
-                              showToast('success', 'Test bildirimi gönderildi.');
-                            } catch (err) {
-                              showToast('error', 'Bu cihazda bildirim gösterilemedi. Bazı telefonlarda (örn. iPhone) yalnızca uygulama arka plandayken veya site ana ekrana eklendiyse çalışır.');
-                            }
-                          }
-                        }}
-                      >
-                        Şimdi test bildirimi gönder
-                      </button>
-                      <button
-                        type="button"
-                        className="ayarlar-btn ayarlar-btn-ghost"
-                        style={{ marginTop: 6, fontSize: '0.875rem' }}
-                        onClick={() => showToast('info', 'Bildirimleri kapatmak için tarayıcı veya telefon ayarlarından bu site için bildirim iznini kapatın. (Örn. Chrome: adres çubuğundaki kilit/bilgi simgesi → Site ayarları → Bildirimler)')}
-                      >
-                        Bildirimleri nasıl kapatırım?
-                      </button>
+                          }}
+                        >
+                          <Bell size={18} aria-hidden />
+                          Şimdi test bildirimi gönder
+                        </button>
+                        <button
+                          type="button"
+                          className="ayarlar-btn"
+                          style={{ fontSize: '0.875rem' }}
+                          onClick={() => showToast('info', 'Bildirimleri kapatmak için tarayıcı veya telefon ayarlarından bu site için bildirim iznini kapatın. (Örn. Chrome: adres çubuğundaki kilit/bilgi simgesi → Site ayarları → Bildirimler)')}
+                        >
+                          <HelpCircle size={18} aria-hidden />
+                          Bildirimleri nasıl kapatırım?
+                        </button>
+                      </div>
                       <small className="ayarlar-help" style={{ display: 'block', marginTop: 8 }}>
                         Görünmüyorsa: Bazı telefonlarda (özellikle iPhone) bildirimler yalnızca sekme arka plandayken veya site ana ekrana eklendiyse çıkar. Opera/Chrome Android’de genelde çalışır.
                       </small>
@@ -429,37 +481,33 @@ function CiceksepetiAyarlariForm() {
         </form>
       </div>
       <div className="ayarlar-ciceksepeti-sag">
-        <div className="ayarlar-ciceksepeti-baslik-kutu">
-          <h3 className="ayarlar-ciceksepeti-sekme-baslik">API Durumu ve Test Sonuçları</h3>
-          <p className="ayarlar-ciceksepeti-sekme-desc">
-            Çiçek Sepeti API bağlantınızın durumunu kontrol edin ve test işlemlerini gerçekleştirin.
-          </p>
+        <div className="ayarlar-sekme-baslik-wrapper">
+          <label className="ayarlar-label ayarlar-sekme-baslik">API Durumu ve Test Sonuçları</label>
+          <p className="ayarlar-fatura-bolum-aciklama">Çiçek Sepeti API bağlantınızın durumunu kontrol edin ve test işlemlerini gerçekleştirin.</p>
         </div>
-        <div className="ayarlar-ciceksepeti-durum-kutu">
-          <div className="ayarlar-ciceksepeti-durum-alan">
-            <div className="ayarlar-form-group">
-              <label className="ayarlar-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Wrench size={16} aria-hidden /> API Bağlantısı
-              </label>
-              <span className="ayarlar-count-badge ayarlar-count-badge-ciceksepeti" style={{ backgroundColor: apiStatus === 'ok' ? 'var(--mor-primary)' : 'var(--sari-uyari, #f59e0b)', color: '#fff', padding: '0.25rem 0.5rem', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600 }}>
-                {apiStatus === 'ok' ? 'KAYITLI' : 'BİLİNMİYOR'}
-              </span>
-              <small className="ayarlar-help" style={{ display: 'block', marginTop: '0.25rem' }}>
-                {apiStatus === 'ok' ? 'API bilgileri kayıtlı.' : 'API bağlantısı henüz test edilmedi'}
-              </small>
-            </div>
-            <div className="ayarlar-form-group">
-              <label className="ayarlar-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Clock size={16} aria-hidden /> Son Kontrol
-              </label>
-              <span className="ayarlar-help">{sonKontrol || 'Henüz kontrol edilmedi'}</span>
-            </div>
-            <div className="ayarlar-form-group">
-              <label className="ayarlar-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <ShoppingCart size={16} aria-hidden /> Toplam Sipariş
-              </label>
-              <span className="ayarlar-help">{toplamSiparis} sipariş</span>
-            </div>
+        <div className="ayarlar-ciceksepeti-durum-alan">
+          <div className="ayarlar-form-group">
+            <label className="ayarlar-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Wrench size={16} aria-hidden /> API Bağlantısı
+            </label>
+            <span className="ayarlar-count-badge ayarlar-count-badge-ciceksepeti" style={{ backgroundColor: apiStatus === 'ok' ? 'var(--mor-primary)' : 'var(--sari-uyari, #f59e0b)', color: '#fff', padding: '0.25rem 0.5rem', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600 }}>
+              {apiStatus === 'ok' ? 'KAYITLI' : 'BİLİNMİYOR'}
+            </span>
+            <small className="ayarlar-help" style={{ display: 'block', marginTop: '0.25rem' }}>
+              {apiStatus === 'ok' ? 'API bilgileri kayıtlı.' : 'API bağlantısı henüz test edilmedi'}
+            </small>
+          </div>
+          <div className="ayarlar-form-group">
+            <label className="ayarlar-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Clock size={16} aria-hidden /> Son Kontrol
+            </label>
+            <span className="ayarlar-help">{sonKontrol || 'Henüz kontrol edilmedi'}</span>
+          </div>
+          <div className="ayarlar-form-group">
+            <label className="ayarlar-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <ShoppingCart size={16} aria-hidden /> Toplam Sipariş
+            </label>
+            <span className="ayarlar-help">{toplamSiparis} sipariş</span>
           </div>
         </div>
         <div className="ayarlar-ciceksepeti-test-butonlar">
@@ -478,7 +526,9 @@ function CiceksepetiAyarlariForm() {
         </div>
       </div>
       <div className="ayarlar-ciceksepeti-actions">
-        <button type="button" className="ayarlar-btn ayarlar-btn-secondary">VAZGEÇ</button>
+        {isDirty && (
+          <button type="button" className="ayarlar-btn ayarlar-btn-secondary" onClick={handleVazgec}>VAZGEÇ</button>
+        )}
         <button type="submit" form="ayarlar-ciceksepeti-form" className="ayarlar-btn ayarlar-btn-primary" disabled={saving || isLoading}>{saving ? 'KAYDEDİLİYOR...' : 'AYARLARI KAYDET'}</button>
       </div>
     </div>
@@ -898,7 +948,7 @@ function GonderimAyarlariTab() {
         <div className={`flex flex-col lg:flex-row gap-6 ayarlar-form-row ${editingIletisimId ? 'ayarlar-form-active' : ''}`}>
           <div className="ayarlar-sol-kolon">
             <div className="ayarlar-panel-form">
-              <h3 className="ayarlar-panel-form-title">{editingIletisimId ? 'Kişiyi Düzenle' : 'Yeni Kişi / Numara Ekle'}</h3>
+              <h3 className="ayarlar-panel-form-title">{editingIletisimId ? 'Kişiyi Düzenle' : 'Yeni İletişim Kişisi Ekle'}</h3>
               <p className="ayarlar-panel-desc ayarlar-panel-desc-iletisim">
                 Kart menüsündeki &quot;WhatsApp Sipariş Listesi Gönder&quot; ve &quot;Sipariş Şablonu ve IBAN Bilgisi Gönder&quot; butonlarında seçilecek numaralar. WhatsApp bağlantısı için üst menüdeki WhatsApp butonunu kullanın.
               </p>
@@ -928,7 +978,7 @@ function GonderimAyarlariTab() {
           </div>
           <div className="ayarlar-sag-kolon">
             <div className="ayarlar-panel">
-              <div className="ayarlar-panel-header">
+              <div className="ayarlar-panel-header-sol">
                 <h3 className="ayarlar-panel-form-title">Sipariş Listesi WhatsApp Numaraları</h3>
                 <span className="ayarlar-count-badge">{kisiler.length} Kişi</span>
               </div>
@@ -1213,6 +1263,34 @@ export const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'veri' | 'genel' | 'arac' | 'gonderim' | 'fatura' | 'ciceksepeti'>('veri');
   const [activeSubTab, setActiveSubTab] = useState<'urunler' | 'urun-gruplari' | 'organizasyon-turleri' | 'organizasyon-etiketleri'>('urunler');
   const [genelSubTab, setGenelSubTab] = useState<'isletme' | 'konum' | 'teslimat' | 'yazdirma' | 'banka' | 'ciceksepeti'>('isletme');
+  const [ciceksepetiDirty, setCiceksepetiDirty] = useState(false);
+  const ciceksepetiSubmitRef = React.useRef<(() => void) | null>(null);
+  const pendingTabRef = React.useRef<'veri' | 'genel' | 'arac' | 'gonderim' | 'fatura' | 'ciceksepeti' | null>(null);
+
+  const handleTabChange = (tab: 'veri' | 'genel' | 'arac' | 'gonderim' | 'fatura' | 'ciceksepeti') => {
+    if (activeTab === 'ciceksepeti' && ciceksepetiDirty) {
+      showToastInteractive({
+        title: 'Değişiklikleri Kaydet',
+        message: 'Kaydedilmeyen değişiklikler var! Değişiklikleri kaydetmek istiyor musunuz?',
+        confirmText: 'Evet, Kaydet',
+        cancelText: 'İptal',
+        onConfirm: () => {
+          pendingTabRef.current = tab;
+          ciceksepetiSubmitRef.current?.();
+        },
+        onCancel: () => {},
+      });
+      return;
+    }
+    setActiveTab(tab);
+  };
+
+  const handleCiceksepetiAfterSave = () => {
+    if (pendingTabRef.current) {
+      setActiveTab(pendingTabRef.current);
+      pendingTabRef.current = null;
+    }
+  };
 
   // Tablo sıralama durumları
   const [urunSortField, setUrunSortField] = useState<string | null>(null);
@@ -2408,7 +2486,7 @@ export const SettingsPage: React.FC = () => {
           <button
             type="button"
             data-tab="veri"
-            onClick={() => setActiveTab('veri')}
+            onClick={() => handleTabChange('veri')}
             className={`ayarlar-tab-btn ${activeTab === 'veri' ? 'active' : ''}`}
           >
             <Package size={18} />
@@ -2417,7 +2495,7 @@ export const SettingsPage: React.FC = () => {
           <button
             type="button"
             data-tab="genel"
-            onClick={() => setActiveTab('genel')}
+            onClick={() => handleTabChange('genel')}
             className={`ayarlar-tab-btn ${activeTab === 'genel' ? 'active' : ''}`}
           >
             <Settings size={18} />
@@ -2427,7 +2505,7 @@ export const SettingsPage: React.FC = () => {
             <button
               type="button"
               data-tab="arac"
-              onClick={() => setActiveTab('arac')}
+              onClick={() => handleTabChange('arac')}
               className={`ayarlar-tab-btn ${activeTab === 'arac' ? 'active' : ''}`}
             >
               <Truck size={18} />
@@ -2438,7 +2516,7 @@ export const SettingsPage: React.FC = () => {
             <button
               type="button"
               data-tab="gonderim"
-              onClick={() => setActiveTab('gonderim')}
+              onClick={() => handleTabChange('gonderim')}
               className={`ayarlar-tab-btn ${activeTab === 'gonderim' ? 'active' : ''}`}
             >
               <Send size={18} />
@@ -2448,7 +2526,7 @@ export const SettingsPage: React.FC = () => {
           <button
             type="button"
             data-tab="fatura"
-            onClick={() => setActiveTab('fatura')}
+            onClick={() => handleTabChange('fatura')}
             className={`ayarlar-tab-btn ${activeTab === 'fatura' ? 'active' : ''}`}
           >
             <FileText size={18} />
@@ -2458,7 +2536,7 @@ export const SettingsPage: React.FC = () => {
             <button
               type="button"
               data-tab="ciceksepeti"
-              onClick={() => setActiveTab('ciceksepeti')}
+              onClick={() => handleTabChange('ciceksepeti')}
               className={`ayarlar-tab-btn ${activeTab === 'ciceksepeti' ? 'active' : ''}`}
             >
               <ShoppingCart size={18} />
@@ -3319,7 +3397,7 @@ export const SettingsPage: React.FC = () => {
                 </div>
                 <div className="ayarlar-sag-kolon">
                   <div className="ayarlar-panel">
-                    <div className="ayarlar-panel-header">
+                    <div className="ayarlar-panel-header-sol">
                       <h3 className="ayarlar-panel-form-title">Banka Hesapları</h3>
                       <span className="ayarlar-count-badge">{bankaHesaplari.length} Hesap</span>
                     </div>
@@ -3409,7 +3487,7 @@ export const SettingsPage: React.FC = () => {
                 </div>
                 <div className="ayarlar-sag-kolon">
                   <div className="ayarlar-panel">
-                    <div className="ayarlar-panel-header">
+                    <div className="ayarlar-panel-header-sol">
                       <h3 className="ayarlar-panel-form-title">Teslimat Konumları Listesi</h3>
                       <span className="ayarlar-count-badge">{teslimatKonumlari.length} Konum</span>
                     </div>
@@ -3585,7 +3663,14 @@ export const SettingsPage: React.FC = () => {
               </button>
             </div>
             <div className="ayarlar-panel">
-              <CiceksepetiAyarlariForm />
+              <div className="ayarlar-panel-header">
+                <h2 className="ayarlar-panel-title">Çiçek Sepeti API Ayarları</h2>
+                <p className="ayarlar-panel-desc">
+                  <Info size={18} className="ayarlar-help-icon ayarlar-panel-desc-icon" aria-hidden />
+                  API bilgilerinizi girerek Çiçek Sepeti siparişlerini otomatik sisteminize aktarın.
+                </p>
+              </div>
+              <CiceksepetiAyarlariForm onDirtyChange={setCiceksepetiDirty} submitFormRef={ciceksepetiSubmitRef} onAfterSave={handleCiceksepetiAfterSave} />
             </div>
           </div>
         )}
@@ -3605,7 +3690,7 @@ export const SettingsPage: React.FC = () => {
             <div className={`flex flex-col lg:flex-row gap-6 ayarlar-form-row ${editingAracId ? 'ayarlar-form-active' : ''}`}>
               <div className="ayarlar-sol-kolon">
                 <div className="ayarlar-panel-form">
-                  <h3 className="ayarlar-panel-form-title">{editingAracId ? 'Aracı Düzenle' : 'Araç Ekle'}</h3>
+                  <h3 className="ayarlar-panel-form-title">{editingAracId ? 'Aracı Düzenle' : 'Yeni Araç Ekle'}</h3>
                   <form className="ayarlar-form" onSubmit={handleAracSubmit}>
                     <div className="ayarlar-form-group">
                       <label className="ayarlar-label">Plaka *</label>
@@ -3686,8 +3771,9 @@ export const SettingsPage: React.FC = () => {
               </div>
               <div className="ayarlar-sag-kolon">
                 <div className="ayarlar-panel">
-                  <div className="ayarlar-panel-header">
+                  <div className="ayarlar-panel-header-sol">
                     <h3 className="ayarlar-panel-form-title">Araç Listesi</h3>
+                    <span className="ayarlar-count-badge">{araclar.length} Araç</span>
                   </div>
                   {araclarLoading ? (
                     <div className="ayarlar-loading"><LoadingSpinner size="md" /></div>

@@ -1,0 +1,24 @@
+/**
+ * RESPONSIVE BREAKPOINTS – Tek referans
+ * Tüm projede bu değerler kullanılmalı; media query'lerde tutarlılık için.
+ *
+ * MOBILE:     max-width: 767px   (mobil üst sınır)
+ * TABLET:     min-width: 768px and max-width: 1439px
+ * NOTEBOOK:   min-width: 1024px and max-width: 1439px  (tablet alt aralığı, gerektiğinde)
+ * DESKTOP:    min-width: 1440px
+ *
+ * 1024px: Bazı sayfalarda (ayarlar, profil, header, order-detail) max-width: 1024px
+ * veya min-width: 1024px kullanılır; notebook/dar ekran bandı için bilinçli tercih.
+ *
+ * Kural: Mobil = 767 ve altı. Tablet = 768 ile 1439 arası. 768 kullanıldığında
+ * max-width için 767, min-width için 768 yazılır (çakışma/boşluk olmasın).
+ *
+ * JS/React'ta kullanım için (isteğe bağlı):
+ */
+:root {
+  --bp-mobile-max: 767;
+  --bp-tablet-min: 768;
+  --bp-tablet-max: 1439;
+  --bp-desktop-min: 1440;
+  --bp-notebook-min: 1024;
+}

@@ -8,6 +8,7 @@ import './index.css';
 
 initErrorLogger();
 import './styles/css-variables.css';
+import './styles/responsive-breakpoints.css';
 import './styles/floovon-dashboard.css';
 import './styles/floovon-dashboard-codes.css';
 import './styles/login-custom.css';

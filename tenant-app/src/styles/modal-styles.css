@@ -702,14 +702,14 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
 .yeni-kart-container .etiket-grup .radio-label {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 6px !important;
     cursor: pointer !important;
     user-select: none !important;
     text-transform: uppercase !important;
     font-weight: bold !important;
     border: 1px solid var(--auto-color-43-11a34c) !important;
     border-radius: 5px !important;
-    padding: 4px 10px !important;
+    padding: 4px 6px !important;
     font-size: 13px !important;
     color: var(--ana-renk) !important;
 }
@@ -1456,7 +1456,7 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
     display: flex !important;
     align-items: center !important;
     justify-content: flex-end !important;
-    padding: 40px  0 0 20px !important;
+    padding: 40px  0 0 0 !important;
 }
 
 .yeni-musteri-container .alt-alan .duzenleyen {
@@ -2033,7 +2033,7 @@ body:has(.whatsapp-qr-modal) {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .yeni-kart-container {
         width: 100vw !important;
         max-width: 100vw !important;

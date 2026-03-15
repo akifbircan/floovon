@@ -813,7 +813,7 @@ export const Header: React.FC = () => {
                     id="search-box"
                     className="web-search-input"
                     type="search"
-                    placeholder="Sipariş, organizasyon veya müşteri arayın"
+                    placeholder="Siparişler içerisinde arayın"
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
                   />
@@ -860,7 +860,7 @@ export const Header: React.FC = () => {
                       id="search-box"
                       className="web-search-input"
                       type="search"
-                      placeholder="Sipariş, organizasyon veya müşteri arayın"
+                      placeholder="Siparişler içerisinde arayın"
                       value={searchQuery}
                       onChange={(e) => handleSearch(e.target.value)}
                     />

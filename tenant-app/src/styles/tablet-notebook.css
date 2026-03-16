@@ -462,6 +462,18 @@ width: 100% !important;
     flex-shrink: 0;
     font-size: 12px;
     text-transform: none;
+    text-align: left !important;
+  }
+
+  /* Arşiv siparişler – tablet kart görünümünde: Araç süslemede Teslim Edilecek Kişi + Adres gizle */
+  .arsiv-tablosu tbody tr.orgkart-aracsusleme td[data-label="Teslim Edilecek Kişi"],
+  .arsiv-tablosu tbody tr.orgkart-aracsusleme td[data-label="Adres"] {
+    display: none !important;
+  }
+  .arsiv-tablosu tbody tr.orgkart-aracsusleme td[data-label="Teslim Edilecek Kişi"]::before,
+  .arsiv-tablosu tbody tr.orgkart-aracsusleme td[data-label="Adres"]::before {
+    content: none !important;
+    display: none !important;
   }
 
 
@@ -495,6 +507,7 @@ width: 100% !important;
     padding-bottom: 4px !important;
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
+    height: 56px !important;
   }
   .ayarlar-page .ayarlar-tab-nav::-webkit-scrollbar {
     display: none !important;

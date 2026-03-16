@@ -169,7 +169,7 @@
   --box-bg-light: #F2F5FC;
   --lavender-bg: #F6F3FA;
   --light-violet-bg: #f7eaff;
-  --pattern-bg-light-1: #fafafa;
+  --pattern-bg-light-1: #e8ebf1;
   --pattern-bg-light-2: #f0f0f0;
   --peach-tint: #FEF6EC;
   --info-card-bg: #dbe4e7;
@@ -668,7 +668,7 @@ html.dark-mode {
   --gray-basic: #666;
   /* Popup’larda ikincil metin: daha açık gri (okunabilirlik) */
   --gray-popup-secondary: #b4b4be;
-  --pattern-bg-light-1: #1a1a1a;
+  --pattern-bg-light-1: #2d2c37;
   --pattern-bg-light-2: #2a2a2a;
   --export-button-blue: #474852;
   --export-button-text: #ffffff;

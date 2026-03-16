@@ -20032,6 +20032,7 @@ app.get('/api/organizasyon-etiketleri', async (req, res) => {
                     et.etiket_adi, 
                     et.sira_no, 
                     et.tenant_id, 
+                    ${hasIsActive ? 'COALESCE(et.is_active, 1) AS is_active,' : ''}
                     ${hasDurum ? 'COALESCE(et.durum, 1) AS durum' : '1 AS durum'},
                     COALESCE(grp.grup_adi, grp.tur_adi, grp.name) AS grup_adi,
                     ${renkSelect}
@@ -20048,6 +20049,7 @@ app.get('/api/organizasyon-etiketleri', async (req, res) => {
                     etiket_adi, 
                     sira_no, 
                     tenant_id, 
+                    ${hasIsActive ? 'COALESCE(is_active, 1) AS is_active,' : ''}
                     ${hasDurum ? 'COALESCE(durum, 1) AS durum' : '1 AS durum'},
                     NULL AS grup_adi,
                     NULL AS renk_kodu
@@ -20075,7 +20077,7 @@ app.get('/api/organizasyon-etiketleri', async (req, res) => {
         } catch (queryErr) {
             console.warn('Organizasyon etiketleri ana sorgu başarısız, minimal sorgu deneniyor:', queryErr.message);
             rows = await query(
-                `SELECT id, grup_id, etiket_adi, sira_no, tenant_id, 1 AS durum, NULL AS grup_adi FROM organizasyon_etiketleri WHERE (tenant_id = ? OR tenant_id IS NULL) ORDER BY sira_no ASC, etiket_adi ASC`,
+                `SELECT id, grup_id, etiket_adi, sira_no, tenant_id, 1 AS durum, NULL AS grup_adi FROM organizasyon_etiketleri WHERE (tenant_id = ? OR tenant_id IS NULL)${hasIsActive ? ' AND COALESCE(is_active, 1) = 1' : ''} ORDER BY sira_no ASC, etiket_adi ASC`,
                 [tenantId]
             );
         }

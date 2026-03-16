@@ -1036,9 +1036,11 @@ export const OrderDetailPage: React.FC = () => {
                   <div className="sahip-ve-zaman">
                     {kartTur === 'organizasyon' && (
                       <div className="organizasyon-sahibi">
-                        <i className="ikon icon-organizasyon-sahibi" aria-hidden />
                         <div className="organizasyon-bilgiler-wrapper">
-                          <div className="baslik">Organizasyon Sahibi</div>
+                          <div className="baslik">
+                            <i className="icon-organizasyon-sahibi" aria-hidden />
+                            Organizasyon Sahibi
+                          </div>
                           <div className="isim-soyisim">{(organizasyonKart.organizasyon_sahibi ?? organizasyonKart.teslim_kisisi) ?? '—'}</div>
                           {(organizasyonKart.organizasyon_sahibi_telefon ?? organizasyonKart.teslim_kisisi_telefon) ? (
                             <div className="siparis-veren-telefon">
@@ -1050,10 +1052,14 @@ export const OrderDetailPage: React.FC = () => {
                       </div>
                     )}
                     <div className="teslim-zaman">
-                      <i className="ikon icon-teslim-tarihi-ve-saati" aria-hidden />
                       <div className="organizasyon-teslim-bilgileri-wrapper">
                         <div className="baslik">
-                          {kartTur === 'aracsusleme' ? 'Randevu Tarihi' : kartTur === 'ozelgun' || kartTur === 'ozelsiparis' ? 'Teslimat Tarihi' : 'Teslimat Tarihi & Saati'}
+                          <i className="icon-teslim-tarihi-ve-saati" aria-hidden />
+                          {kartTur === 'aracsusleme'
+                            ? 'Randevu Tarihi'
+                            : kartTur === 'ozelgun' || kartTur === 'ozelsiparis'
+                              ? 'Teslimat Tarihi'
+                              : 'Teslimat Tarihi & Saati'}
                         </div>
                         <div className="tarih">
                           {(organizasyonKart.teslim_tarihi ?? organizasyonKart.teslim_tarih)

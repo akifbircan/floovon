@@ -374,11 +374,20 @@
   }
 
   .empty-message {
-    margin: 20px;
+    margin: 14px !important;
   }
 
   .empty-message .message {
     width: 80% !important;
+  }
+
+  /* Dashboard mobil: boş ekranda .items container'ı gizle (alt boşluk olmasın) */
+  .dashboard-container-wrapper .grid-container .grid-item.main:has(.empty-message) .items {
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
   }
 
   /* Mobilde arama + butonlar dashboard içindeki aynı kapsayıcıda (mobile-search-ve-baslik-wrapper) olduğu için header'daki bandı gizle */
@@ -577,7 +586,7 @@
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    padding: 0 12px 0 40px;
+    padding: 0 12px 1px 24px;
     font-size: 13px;
     color: var(--ana-renk);
     background-color: var(--white);
@@ -644,6 +653,10 @@
     min-width: 0;
     box-sizing: border-box;
   }
+
+  .empty-message .message span {
+ font-size: 12px;
+}
 
   .mobile-baslik-alan .mobile-baslik-metin {
     display: flex;

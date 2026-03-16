@@ -110,8 +110,15 @@
     color: var(--gray-subtle-dark);
     height: 100%;
     border-radius: 20px;
-    background: repeating-linear-gradient(-45deg, var(--pattern-bg-light-1), var(--pattern-bg-light-2) 5px, transparent 5px, transparent 10px);
+    background: repeating-linear-gradient(
+        -45deg,
+        var(--pattern-bg-light-1),
+        var(--pattern-bg-light-1) 5px,
+        transparent 5px,
+        transparent 10px
+    );
     margin-left: 24px;
+    margin-right: 24px;
 }
 
 /* Empty message hidden class override - JavaScript ile kontrol ediliyor */
@@ -121,7 +128,6 @@
 
 .empty-message i {
     font-size: 48px !important;
-    color: var(--gray-classic);
     margin-bottom: 14px;
 }
 
@@ -152,7 +158,13 @@
     font-weight: 400;
     color: var(--gray-subtle-dark);
     border-radius: 20px;
-    background: repeating-linear-gradient(-45deg, var(--pattern-bg-light-1), var(--pattern-bg-light-2) 5px, transparent 5px, transparent 10px);
+    background: repeating-linear-gradient(
+        -45deg,
+        var(--pattern-bg-light-1),
+        var(--pattern-bg-light-1) 5px,
+        transparent 5px,
+        transparent 10px
+    );
     margin-right: 24px;
 }
 

@@ -182,7 +182,7 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
   }, [isOpen, activeTab]);
 
   // Organizasyon türleri ve etiketleri
-  const { data: organizasyonTurleri = [], refetch: refetchTurler } = useQuery<OrganizasyonTuru[]>({
+  const { data: organizasyonTurleriRaw = [], refetch: refetchTurler } = useQuery<OrganizasyonTuru[]>({
     queryKey: ['organizasyon-turleri'],
     queryFn: () => getOrganizasyonTurleri(),
     enabled: isOpen,
@@ -198,7 +198,7 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
     staleTime: 0,
   });
 
-  const { data: organizasyonEtiketleri = [], refetch: refetchEtiketler } = useQuery({
+  const { data: organizasyonEtiketleriRaw = [], refetch: refetchEtiketler } = useQuery({
     queryKey: ['organizasyon-etiketleri'],
     queryFn: () => getOrganizasyonEtiketleri(),
     enabled: isOpen,
@@ -219,7 +219,17 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
     return t ? t.id : null;
   }, [organizasyonGruplari]);
 
-  const etiketleriOrganizasyon = organizasyonEtiketleri.filter((e) => e.grup_id === getGrupIdForTab('organizasyon') || (getGrupIdForTab('organizasyon') == null && (e.grup_id == null || e.grup_id === 0)));
+  // Select/listelerde sadece aktif kayıtlar (pasif tabloda kalır, dropdown'da görünmez)
+  const organizasyonEtiketleri = useMemo(
+    () => organizasyonEtiketleriRaw.filter((e) => (e as any).durum === undefined || (e as any).durum === 1),
+    [organizasyonEtiketleriRaw],
+  );
+
+  const etiketleriOrganizasyon = organizasyonEtiketleri.filter(
+    (e) =>
+      e.grup_id === getGrupIdForTab('organizasyon') ||
+      (getGrupIdForTab('organizasyon') == null && (e.grup_id == null || e.grup_id === 0)),
+  );
   const etiketleriAracSusleme = organizasyonEtiketleri.filter((e) => e.grup_id === getGrupIdForTab('aracsusleme'));
   const etiketleriOzelSiparis = organizasyonEtiketleri.filter((e) => e.grup_id === getGrupIdForTab('ozelsiparis'));
   const etiketleriOzelGun = organizasyonEtiketleri.filter((e) => e.grup_id === getGrupIdForTab('ozelgun'));
@@ -229,7 +239,15 @@ export const YeniKartModal: React.FC<YeniKartModalProps> = ({
   const ozelGunGrupId = getGrupIdForTab('ozelgun');
   const ozelSiparisGrupId = getGrupIdForTab('ozelsiparis');
   const aracSuslemeGrupId = getGrupIdForTab('aracsusleme');
-  const turleriOrganizasyon = organizasyonTurleri.filter((t) => t.grup_id === organizasyonGrupId || (organizasyonGrupId == null && (t.grup_id == null || t.grup_id === 0)));
+
+  const organizasyonTurleri = useMemo(
+    () => organizasyonTurleriRaw.filter((t) => (t as any).durum === undefined || (t as any).durum === 1),
+    [organizasyonTurleriRaw],
+  );
+
+  const turleriOrganizasyon = organizasyonTurleri.filter(
+    (t) => t.grup_id === organizasyonGrupId || (organizasyonGrupId == null && (t.grup_id == null || t.grup_id === 0)),
+  );
   const turleriOzelGun = organizasyonTurleri.filter((t) => t.grup_id === ozelGunGrupId);
   const turleriOzelSiparis = organizasyonTurleri.filter((t) => t.grup_id === ozelSiparisGrupId);
   const turleriAracSusleme = organizasyonTurleri.filter((t) => t.grup_id === aracSuslemeGrupId);

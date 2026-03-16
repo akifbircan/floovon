@@ -629,10 +629,12 @@ function YazdirmaAyarlariForm() {
           <div className="ayarlar-yazdirma-notlar" style={{ flex: '1', minWidth: '260px' }}>
             <div className="ayarlar-form-group" style={{ marginBottom: 0 }}>
               <div className="ayarlar-yazdirma-notlar">
-                <Info size={18} className="ayarlar-help-icon" aria-hidden />
                 <div>
-                  <span className="ayarlar-label" style={{ display: 'block', marginBottom: '0.25rem' }}>Yazdırma Notları</span>
-                  <p className="ayarlar-panel-desc" style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.5 }}>
+                  <span className="ayarlar-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    <Info size={18} className="ayarlar-help-icon" aria-hidden />
+                    Yazdırma Notları
+                  </span>
+                  <p className="ayarlar-yazdirma-desc" style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.5 }}>
                     Bu alandan yüklediğiniz PNG logo, tüm yazdırma çıktılarında ve sipariş künyesi çıktılarında kullanılacaktır. Logonun güncellenebilmesi için yükleme sonrasında mutlaka kaydedin.
                   </p>
                 </div>
@@ -671,6 +673,14 @@ function GonderimAyarlariTab() {
     const subtab = searchParams.get('subtab');
     if (subtab === 'iletisim' || subtab === 'mesaj-sablonlari' || subtab === 'rapor') setGonderimSubTab(subtab);
   }, [searchParams]);
+
+  // Gönderim alt sekmeleri: aktif buton değiştiğinde butonu görünecek şekilde kaydır
+  React.useEffect(() => {
+    const el = document.querySelector('.ayarlar-tab-icerik .ayarlar-subtab-nav .ayarlar-subtab-btn.active');
+    if (el && el instanceof HTMLElement) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [gonderimSubTab]);
 
   const { data: gonderimData, isLoading } = useQuery({
     queryKey: ['ayarlar-gonderim'],
@@ -1149,7 +1159,10 @@ function GonderimAyarlariTab() {
               {bankaHesaplariMesaj.length > 0 && (
               <div className="ayarlar-form-group" style={{ marginTop: 16 }}>
                 <label className="ayarlar-label">Mesajda kullanılacak IBAN bilgileri</label>
-                <p className="ayarlar-panel-desc" style={{ marginTop: 4, marginBottom: 8 }}>Şablonda kullanılacak banka/IBAN hesaplarını işaretleyin. Hesap eklemek için Genel → Banka Hesap Bilgileri sekmesine gidin.</p>
+                <p className="ayarlar-panel-desc" style={{ marginTop: 4, marginBottom: 8 }}>
+                  <Info size={18} className="ayarlar-help-icon ayarlar-panel-desc-icon" aria-hidden />
+                  Şablonda kullanılacak banka/IBAN hesaplarını işaretleyin. Hesap eklemek için Genel → Banka Hesap Bilgileri sekmesine gidin.
+                </p>
                 <div className="overflow-x-auto">
                   <table className="w-full ayarlar-tablosu">
                     <thead>
@@ -1395,6 +1408,20 @@ export const SettingsPage: React.FC = () => {
   });
   const urunGruplari = Array.isArray(urunGruplariData) ? urunGruplariData : [];
 
+  // Select/dropdown listelerde sadece aktif kayıtlar görünsün (pasif tabloda kalır, listede görünmez)
+  const urunGruplariAktif = React.useMemo(
+    () => (Array.isArray(urunGruplari) ? urunGruplari.filter((g) => (g.durum ?? 1) === 1) : []),
+    [urunGruplari],
+  );
+  const urunGruplariDropdown = React.useMemo(() => {
+    const akt = urunGruplariAktif;
+    const currentAd = urunFormData.grup?.trim();
+    if (!currentAd) return akt;
+    const current = urunGruplari.find((g) => (g.ad || '').trim() === currentAd);
+    if (current && !akt.some((g) => g.id === current.id)) return [...akt, current];
+    return akt;
+  }, [urunGruplariAktif, urunGruplari, urunFormData.grup]);
+
   const { data: organizasyonTurleriData } = useQuery({
     queryKey: ['organizasyon-turleri'],
     queryFn: async () => {
@@ -1448,9 +1475,15 @@ export const SettingsPage: React.FC = () => {
     queryKey: ['organizasyon-etiketleri'],
     queryFn: async () => {
       try {
-        const result = await apiRequest<any[] | { data?: any[] }>('/organizasyon-etiketleri?all=1', { method: 'GET' });
+        // Ürün grupları / organizasyon türleri gibi: parametresiz GET = backend sadece silinmemiş kayıtları döner
+        const result = await apiRequest<any[] | { data?: any[] }>('/organizasyon-etiketleri', { method: 'GET' });
         const list = Array.isArray(result) ? result : (result?.data && Array.isArray(result.data) ? result.data : []);
-        return list.map((row: any) => ({
+        // Backend bazen silinmiş (is_active=0) de dönebiliyor; aynı davranış için listeden çıkar
+        const activeList = list.filter((row: any) => {
+          const v = row.is_active ?? row.isActive;
+          return v !== 0 && v !== '0' && v !== false;
+        });
+        return activeList.map((row: any) => ({
           id: Number(row.id),
           ad: String(row.etiket_adi ?? row.etiketAdi ?? row.ad ?? '').trim(),
           grup_id: row.grup_id ?? row.grupId,
@@ -2441,20 +2474,11 @@ export const SettingsPage: React.FC = () => {
     }
   }, [activeTab]);
 
-  /** Subtab değişince ilgili subtab butonunu görünür yap */
+  /** Subtab değişince ilgili subtab butonunu görünür yap (aktif butonu merkeze kaydır) */
   React.useEffect(() => {
-    if (activeTab === 'veri') {
-      const el = document.querySelector(`.ayarlar-tab-icerik .ayarlar-subtab-nav button[data-subtab="${activeSubTab}"]`);
-      if (el && el instanceof HTMLElement) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    } else if (activeTab === 'genel') {
-      const el = document.querySelector(`.ayarlar-tab-icerik .ayarlar-subtab-nav button[data-subtab="${genelSubTab}"]`);
-      if (el && el instanceof HTMLElement) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    } else if (activeTab === 'gonderim') {
-      const el = document.querySelector(`.ayarlar-tab-icerik .ayarlar-subtab-nav button[data-subtab="iletisim"]`);
-      if (el && el instanceof HTMLElement) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    } else if (activeTab === 'arac') {
-      const el = document.querySelector(`.ayarlar-tab-icerik .ayarlar-subtab-nav button[data-subtab="arac"]`);
-      if (el && el instanceof HTMLElement) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    const el = document.querySelector('.ayarlar-tab-icerik .ayarlar-subtab-nav .ayarlar-subtab-btn.active');
+    if (el && el instanceof HTMLElement) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
   }, [activeTab, activeSubTab, genelSubTab]);
 
@@ -2657,7 +2681,7 @@ export const SettingsPage: React.FC = () => {
                           required
                         >
                           <option value="">Seçiniz</option>
-                          {Array.isArray(urunGruplari) && urunGruplari.map((grup) => (
+                          {Array.isArray(urunGruplariDropdown) && urunGruplariDropdown.map((grup) => (
                             <option key={grup.id} value={grup.ad}>{grup.ad}</option>
                           ))}
                         </select>
@@ -3019,7 +3043,7 @@ export const SettingsPage: React.FC = () => {
                                 <td data-label="Durum" className="px-4 py-3 text-sm table-col-durum">
                                   <button
                                     type="button"
-                                    className={`ayarlar-badge ${grup.durum === 1 ? 'ayarlar-badge-aktif' : 'ayarlar-badge-pasif'}`}
+                                    className={`durum-badge ${grup.durum === 1 ? 'durum-badge-aktif' : 'durum-badge-pasif'}`}
                                     data-tooltip="Ürün kategorisi durumunu güncellemek için tıklayın"
                                     onClick={async () => {
                                       try {
@@ -3316,11 +3340,16 @@ export const SettingsPage: React.FC = () => {
                                           confirmText: 'Evet, Sil',
                                           cancelText: 'İptal',
                                           onConfirm: async () => {
+                                            const silinecekId = etiket.id;
                                             try {
-                                              await apiRequest(`/organizasyon-etiketleri/${etiket.id}`, {
+                                              await apiRequest(`/organizasyon-etiketleri/${silinecekId}`, {
                                                 method: 'DELETE',
                                               });
-                                              queryClient.invalidateQueries({ queryKey: ['organizasyon-etiketleri'] });
+                                              queryClient.setQueryData(
+                                                ['organizasyon-etiketleri'],
+                                                (prev: OrganizasyonEtiketi[] | undefined) =>
+                                                  Array.isArray(prev) ? prev.filter((e) => e.id !== silinecekId) : prev
+                                              );
                                               setEditingEtiketId(null);
                                               setOrganizasyonEtiketiFormData({ ad: '', grupId: null });
                                               showToast('success', 'Organizasyon etiketi silindi.');

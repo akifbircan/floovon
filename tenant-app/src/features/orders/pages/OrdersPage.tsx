@@ -582,8 +582,12 @@ export const OrdersPage: React.FC = () => {
                                             </div>
                                           </td>
                                         </tr>
-                                        {liste.map((o) => (
-                                          <tr key={o.id} className="grup-satir-row">
+                                        {liste.map((o) => {
+                                          const turRaw = String(o.organizasyon_kart_tur || o.kart_tur || '');
+                                          const tur = turRaw.toLowerCase();
+                                          const isAracSusleme = tur === 'aracsusleme' || tur.includes('araç') || tur.includes('arac');
+                                          return (
+                                          <tr key={o.id} className={`grup-satir-row ${isAracSusleme ? 'orgkart-aracsusleme' : ''}`}>
                                             <td data-label="Tarih">{maybeEmpty(formatTarihKisa(o.teslim_tarih || o.arsivleme_tarih))}</td>
                                             <td data-label="Teslim Saati">{o.teslim_saat || o.organizasyon_teslim_saat || <span className="td-empty">—</span>}</td>
                                             <td data-label="Organizasyon">
@@ -649,7 +653,7 @@ export const OrdersPage: React.FC = () => {
                                               </button>
                                             </td>
                                           </tr>
-                                        ))}
+                                        )})}
                                       </React.Fragment>
                                     );
                                   });

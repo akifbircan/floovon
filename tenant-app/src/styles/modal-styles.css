@@ -4975,6 +4975,7 @@ color: var(--ana-renk) !important;
     flex-direction: column !important;
     align-items: flex-end !important;
     gap: 16px !important;
+    padding-bottom: 0 !important;
   }
 
   .yeni-siparis-container .alt-alan .duzenleyen {
@@ -4982,6 +4983,44 @@ color: var(--ana-renk) !important;
     align-self: flex-start;
     justify-self: flex-start;
   }
+
+  .yeni-siparis-container .organizasyon-kutu .org-adres-bilgileri {
+    align-items: center !important;
+    gap: 0px !important;
+}
+
+.yeni-siparis-container .organizasyon-kutu .org-adres-bilgileri .acik-adres {
+    text-align: center !important;
+    font-size: 13px !important;
+}
+
+  .yeni-siparis-container .organizasyon-kutu .org-adres-bilgileri .konum {
+    font-size: 20px !important;
+}
+
+.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman {
+    flex-direction: column !important;
+}
+
+.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman {
+    flex-direction: column !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .organizasyon-sahibi {
+    width: 100%;
+    align-items: center !important;
+}
+
+.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .organizasyon-sahibi,
+.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman {
+
+    align-items: center !important;
+    width: 100% !important;
+}
+
 
 
   .overlay-yeni-siparis-container .yeni-siparis-container .organizasyon-kutu .kart-gorseli {
@@ -5289,7 +5328,15 @@ color: var(--ana-renk) !important;
   }
 
   .ayarlar-logo-alan-inline {
-    justify-content: flex-start;
+    justify-content: center;
+}
+
+.ayarlar-help {
+    text-align: center;
+}
+
+.ayarlar-form-group-checkbox {
+    align-items: center;
 }
 
   .ayarlar-form-actions button {

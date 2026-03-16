@@ -946,6 +946,17 @@ ul.notifications {
     align-items: flex-end;
   }
 
+  /* Arşiv siparişler – mobil kart görünümünde: Araç süslemede Teslim Edilecek Kişi + Adres gizle */
+  .arsiv-tablosu tr.orgkart-aracsusleme td[data-label="Teslim Edilecek Kişi"],
+  .arsiv-tablosu tr.orgkart-aracsusleme td[data-label="Adres"] {
+    display: none !important;
+  }
+  .arsiv-tablosu tr.orgkart-aracsusleme td[data-label="Teslim Edilecek Kişi"]::before,
+  .arsiv-tablosu tr.orgkart-aracsusleme td[data-label="Adres"]::before {
+    content: none !important;
+    display: none !important;
+  }
+
   .arsiv-btn-filtre-reset {
     width: 100%;
   }
@@ -1236,6 +1247,25 @@ ul.notifications {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .isim-soyisim {
+  font-size: 15px !important;
+}
+
+.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman .tarih,
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .tarih {
+  font-size: 15px;
+}
+
+.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman .saat,
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .saat-icerik {
+  font-size: 16px !important;
+  height: auto !important;
+}
+
+.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .saat-icerik .saat-etiket, .kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .saat-icerik .saat-veri {
+  font-size: inherit !important;
 }
 
   /* Kart detay sol alan: teslim edilen foto galerisi mobilde görünsün; grid ve fotoğraflar çökmesin */

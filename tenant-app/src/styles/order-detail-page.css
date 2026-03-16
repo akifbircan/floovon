@@ -301,6 +301,8 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
   color: var(--ana-renk);
 }
 
+
+
 .kart-detay-container .sol-detay-alan .organizasyon-kutu .org-adres-bilgileri .acik-adres,
 .kart-detay-container .sol-detay-alan .organizasyon-kutu .org-adres-bilgileri .ilce-il {
   font-size: 13px;
@@ -346,6 +348,7 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
   gap: 16px;
 }
 
+
 /* Araç süsleme, özel sipariş, özel gün: sadece teslim-zaman (organizasyon-sahibi yok) */
 .kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.aracsusleme .sahip-ve-zaman,
 .kart-detay-container .sol-detay-alan .organizasyon-kutu.orgkart.ozelsiparis .sahip-ve-zaman,
@@ -353,19 +356,13 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
   grid-template-columns: 1fr;
 }
 
-.kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .ikon {
+.organizasyon-bilgiler-wrapper,
+.organizasyon-teslim-bilgileri-wrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 40px;
-  min-height: 40px;
-  height: 40px;
-  background-color: var(--overlay-gray-light);
-  border-radius: 8px;
-  font-size: 18px;
-  color: var(--ana-renk);
+  flex-direction: column;
+  gap: 5px;
 }
+
 
 .kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .organizasyon-sahibi,
 .kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .teslim-zaman {
@@ -375,14 +372,22 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
 }
 
 .kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .baslik {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   color: var(--gri70);
   padding: 0;
 }
 
+/* .kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .baslik i {
+  font-size: 16px;
+  color: var(--ana-renk);
+} */
+
 .kart-detay-container .sol-detay-alan .organizasyon-kutu .sahip-ve-zaman .isim-soyisim {
   color: var(--ana-renk);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
 }
 

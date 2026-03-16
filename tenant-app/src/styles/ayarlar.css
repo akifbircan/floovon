@@ -284,12 +284,20 @@ main[data-main-content]:has(.ayarlar-page) {
 }
 .ayarlar-panel-desc:has(.ayarlar-panel-desc-icon) {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
 }
 .ayarlar-panel-desc .ayarlar-panel-desc-icon {
   flex-shrink: 0;
   color: var(--mor-primary);
+}
+
+/* Yazdırma ayarları – özel açıklama metni */
+.ayarlar-yazdirma-desc {
+  font-size: 0.875rem;
+  color: var(--gri70);
+  margin: 0;
+  line-height: 1.5;
 }
 
 /* İletişim ayarları: açıklama metni daha küçük punto */

@@ -170,11 +170,11 @@
 .yeni-siparis-container .container-ozelgun .organizasyon-kutu .left .org-tur {
   display: inline-flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   border-radius: 5px;
-  padding: 6px 9px;
-  height: 36px;
+  padding: 5px 8px;
+  height: 30px;
   width: fit-content;
 }
 
@@ -198,7 +198,7 @@
   color: var(--karttur-bg-ozelgun-text);
 }
 
-.yeni-siparis-container .organizasyon-kutu .left .kart-alt-tur {
+/* .yeni-siparis-container .organizasyon-kutu .left .kart-alt-tur {
   display: inline-flex;
   align-items: center;
   font-size: 13px;
@@ -206,6 +206,16 @@
   border-radius: 5px;
   padding: 6px 9px;
   height: 36px;
+  width: fit-content;
+} */
+.yeni-siparis-container .organizasyon-kutu .left .kart-alt-tur {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 5px;
+  padding: 5px 8px;
+  height: 30px;
   width: fit-content;
 }
 
@@ -238,7 +248,7 @@
   font-weight: 600;
   color: var(--ana-renk);
   border-radius: 5px;
-  padding: 6px 9px;
+  padding: 5px 7px;
   text-transform: uppercase;
   width: fit-content;
 }
@@ -339,6 +349,7 @@
 
 .yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .organizasyon-sahibi .teslim-kisisi-telefon {
   display: flex;  
+  align-items: center;
   font-size: 11px;
   font-weight: 500;
   padding: 4px 8px;
@@ -348,6 +359,7 @@
   color: var(--ana-renk);
   background-color: var(--white);
   gap: 3px;
+  
 }
 
 .yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .organizasyon-sahibi .teslim-kisisi-telefon:hover {
@@ -360,12 +372,26 @@
   text-decoration: none;
 }
 
-.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman {
+/* .yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman {
   display: flex;
   flex-direction: column;
   gap: 5px;
   width: 50%;
   border-left: 1px solid var(--overlay-gray-light);
+} */
+
+.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 50%;
+  /* border: 1px solid #d1d1d1; */
+  background-color: var(--white);
+  padding: 12px 6px;
+  border-radius: 8px;
+  max-width: 200px;
+    min-width: 200px;
 }
 
 .yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .modal-yeni-siparis-baslik,
@@ -385,12 +411,27 @@
   font-weight: 500;
 }
 
-.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman .saat {
+/* .yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman .saat {
   display: flex;
   align-items: center;
   font-size: 14px;
   font-weight: 600;
   gap: 5px;
+} */
+
+.yeni-siparis-container .organizasyon-kutu .sahip-ve-zaman .teslim-zaman .saat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background-color: var(--white);
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  color: var(--ana-renk);
+  font-size: 13px;
+  font-weight: 500;
+  height: 30px;
+  width: fit-content;
 }
 
 .yeni-siparis-container .organizasyon-kutu .vr {

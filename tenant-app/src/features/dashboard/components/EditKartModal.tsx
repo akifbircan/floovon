@@ -66,13 +66,13 @@ export const EditKartModal: React.FC<EditKartModalProps> = ({
   const [activeTab, setActiveTab] = useState<string>('organizasyon');
 
   // Organizasyon türleri ve etiketleri
-  const { data: organizasyonTurleri = [], refetch: refetchTurler } = useQuery<OrganizasyonTuru[]>({
+  const { data: organizasyonTurleriRaw = [], refetch: refetchTurler } = useQuery<OrganizasyonTuru[]>({
     queryKey: ['organizasyon-turleri'],
     queryFn: () => getOrganizasyonTurleri(),
     enabled: isOpen,
   });
 
-  const { data: organizasyonEtiketleri = [], refetch: refetchEtiketler } = useQuery<OrganizasyonEtiketi[]>({
+  const { data: organizasyonEtiketleriRaw = [], refetch: refetchEtiketler } = useQuery<OrganizasyonEtiketi[]>({
     queryKey: ['organizasyon-etiketleri'],
     queryFn: () => getOrganizasyonEtiketleri(),
     enabled: isOpen,
@@ -101,11 +101,28 @@ export const EditKartModal: React.FC<EditKartModalProps> = ({
   const ozelGunGrupId = getGrupIdForTab('ozelgun');
   const ozelSiparisGrupId = getGrupIdForTab('ozelsiparis');
   const aracSuslemeGrupId = getGrupIdForTab('aracsusleme');
-  const turleriOrganizasyon = organizasyonTurleri.filter((t) => t.grup_id === organizasyonGrupId || (organizasyonGrupId == null && (t.grup_id == null || t.grup_id === 0)));
+
+  // Select/listelerde sadece aktif kayıtlar (pasif tabloda kalır, dropdown'da görünmez)
+  const organizasyonTurleri = useMemo(
+    () => organizasyonTurleriRaw.filter((t) => (t as any).durum === undefined || (t as any).durum === 1),
+    [organizasyonTurleriRaw],
+  );
+  const organizasyonEtiketleri = useMemo(
+    () => organizasyonEtiketleriRaw.filter((e) => (e as any).durum === undefined || (e as any).durum === 1),
+    [organizasyonEtiketleriRaw],
+  );
+
+  const turleriOrganizasyon = organizasyonTurleri.filter(
+    (t) => t.grup_id === organizasyonGrupId || (organizasyonGrupId == null && (t.grup_id == null || t.grup_id === 0)),
+  );
   const turleriOzelGun = organizasyonTurleri.filter((t) => t.grup_id === ozelGunGrupId);
   const turleriOzelSiparis = organizasyonTurleri.filter((t) => t.grup_id === ozelSiparisGrupId);
   const turleriAracSusleme = organizasyonTurleri.filter((t) => t.grup_id === aracSuslemeGrupId);
-  const etiketleriOrganizasyon = organizasyonEtiketleri.filter((e) => e.grup_id === organizasyonGrupId || (organizasyonGrupId == null && (e.grup_id == null || e.grup_id === 0)));
+  const etiketleriOrganizasyon = organizasyonEtiketleri.filter(
+    (e) =>
+      e.grup_id === organizasyonGrupId ||
+      (organizasyonGrupId == null && (e.grup_id == null || e.grup_id === 0)),
+  );
   const etiketleriAracSusleme = organizasyonEtiketleri.filter((e) => e.grup_id === aracSuslemeGrupId);
   const etiketleriOzelSiparis = organizasyonEtiketleri.filter((e) => e.grup_id === ozelSiparisGrupId);
   const etiketleriOzelGun = organizasyonEtiketleri.filter((e) => e.grup_id === ozelGunGrupId);

@@ -3641,6 +3641,25 @@ html.dark-mode .modal-react-whatsapp-info-content {
     margin: 0 !important;
 }
 
+.modal-react-whatsapp-info-qr-hint-mobile {
+    display: none !important;
+}
+@media (max-width: 767px) {
+    .modal-react-whatsapp-info-qr-hint-mobile {
+        display: block !important;
+        margin: 12px auto 0 !important;
+        max-width: 280px !important;
+        font-size: 0.8125rem !important;
+        line-height: 1.45 !important;
+        color: var(--gri70) !important;
+        font-weight: 400 !important;
+    }
+    body.dark-mode .modal-react-whatsapp-info-qr-hint-mobile,
+    html.dark-mode .modal-react-whatsapp-info-qr-hint-mobile {
+        color: var(--gray-popup-secondary) !important;
+    }
+}
+
 .modal-react-whatsapp-info-footer {
     display: flex !important;
     flex-direction: column !important;

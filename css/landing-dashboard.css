@@ -915,6 +915,12 @@ body.modal-open {
   white-space: nowrap;
 }
 
+/* Profesyonel plan: Yapay zeka sipariş analizi — öne çıkan özellik */
+.feature-item-badge--ai-featured {
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  box-shadow: 0 1px 4px rgba(91, 33, 182, 0.35);
+}
+
 .subscription-actions {
   display: flex;
   gap: 12px;
@@ -1787,6 +1793,28 @@ body.modal-open {
   padding: 4px 0;
   padding-left: 20px;
   position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.plan-option-feature-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.plan-option-feature-badge {
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .plan-option-features li::before {

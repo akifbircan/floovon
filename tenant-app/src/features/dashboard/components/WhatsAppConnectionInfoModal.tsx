@@ -338,6 +338,9 @@ export const WhatsAppConnectionInfoModal: React.FC<WhatsAppConnectionInfoModalPr
           <div className="modal-react-whatsapp-info-error-state">
             <AlertTriangle className="modal-react-whatsapp-info-error-icon" size={48} strokeWidth={1.5} aria-hidden />
             <p>WhatsApp bağlantısı bulunamadı.</p>
+            <p className="modal-react-whatsapp-info-qr-hint-mobile">
+              Masaüstü veya Tablet üzerinden QR kodu telefonunuzla tarayın.
+            </p>
           </div>
         )}
 

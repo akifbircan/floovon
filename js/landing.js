@@ -139,6 +139,45 @@ function initLandingTheme() {
 }
 
 /**
+ * Fiyat kartı kısa açıklaması (plan id / kod / ada göre)
+ */
+function getLandingPlanTagline(plan) {
+    const code = String(plan.plan_kodu || '').toLowerCase();
+    const ad = String(plan.plan_adi || '').toLowerCase();
+    const id = Number(plan.id);
+
+    // Kurumsal / Enterprise (genelde 3. plan)
+    if (id === 3 || code === 'enterprise' || /\benterprise\b/i.test(ad)) {
+        return 'Çok şube ve yüksek sipariş hacmi için ölçeklenebilir kurumsal altyapı ve öncelikli destek.';
+    }
+
+    // Profesyonel (sizin plan id 2 + yaygın kodlar)
+    if (
+        id === 2 ||
+        code.includes('profesyonel') ||
+        code === 'pro_kurumsal' ||
+        code === 'professional' ||
+        ad.includes('profesyonel')
+    ) {
+        return 'WhatsApp, entegrasyonlar ve yapay zeka destekli analiz. Büyüyen çiçekçiler için tam güç.';
+    }
+
+    // Başlangıç / Basic
+    if (
+        id === 1 ||
+        code === 'basic' ||
+        code === 'starter' ||
+        /baslang/.test(code) ||
+        ad.includes('başlang') ||
+        ad.includes('baslang')
+    ) {
+        return 'Sipariş ve müşteriyi tek yerden yönetin. Dijitale geçmek için sade ve güçlü bir başlangıç.';
+    }
+
+    return 'Siparişten teslimata tek platformda zamandan kazanın ve müşteri deneyimini yükseltin.';
+}
+
+/**
  * Paketleri API'den yükle ve göster
  */
 async function loadPricingPlans() {
@@ -253,11 +292,17 @@ async function loadPricingPlans() {
             
             const planCard = document.createElement('div');
             planCard.className = `landing-pricing-card${isFeatured ? ' featured' : ''}`;
-            const popularBadge = isFeatured ? '<div class="landing-pricing-popular">En Popüler</div>' : '';
+            const popularBadge = isFeatured
+                ? `<div class="landing-pricing-popular-shell">
+                    <span class="landing-pricing-popular-ring" aria-hidden="true"></span>
+                    <span class="landing-pricing-popular-ring landing-pricing-popular-ring--delayed" aria-hidden="true"></span>
+                    <div class="landing-pricing-popular"><span class="landing-pricing-popular-pulse">En Popüler</span></div>
+                </div>`
+                : '';
             planCard.innerHTML = `
                 ${popularBadge}
                 <h3 class="landing-plan-name">${plan.plan_adi}</h3>
-                <p class="landing-plan-desc">${plan.plan_adi} paketi</p>
+                <p class="landing-plan-desc">${getLandingPlanTagline(plan)}</p>
                 <div class="landing-plan-price">
                     <span class="landing-price-currency">₺</span>
                     <span class="landing-price-amount" data-monthly="${monthlyPriceValue}" data-yearly="${yearlyPriceValue}">${monthlyPrice}</span>
@@ -279,12 +324,17 @@ async function loadPricingPlans() {
                         <span>${plan.max_depolama_gb} GB depolama</span>
                     </li>
                     ${features.map(feature => {
-                        const isWhatsAppFeature = feature.toLowerCase().includes('whatsapp');
-                        const isAracTakipFeature = feature.toLowerCase().includes('araç takip') || feature.toLowerCase().includes('arac takip');
-                        const isKampanyaFeature = feature.toLowerCase().includes('kampanya');
-                        const isCicekSepetiFeature = feature.toLowerCase().includes('çiçek sepeti') || feature.toLowerCase().includes('cicek sepeti') || feature.toLowerCase().includes('ciceksepeti');
-                        const isProPlan = index === 1; // Profesyonel paket
-                        const isFeaturedFeature = (isWhatsAppFeature || isAracTakipFeature || isKampanyaFeature || isCicekSepetiFeature) && isProPlan;
+                        const fLow = feature.toLowerCase();
+                        const isWhatsAppFeature = fLow.includes('whatsapp');
+                        const isAracTakipFeature = fLow.includes('araç takip') || fLow.includes('arac takip');
+                        const isKampanyaFeature = fLow.includes('kampanya');
+                        const isCicekSepetiFeature = fLow.includes('çiçek sepeti') || fLow.includes('cicek sepeti') || fLow.includes('ciceksepeti');
+                        const isYapayZekaSiparisAnaliz = fLow.includes('yapay zeka') && (fLow.includes('sipariş') || fLow.includes('siparis')) && fLow.includes('analiz');
+                        const isProPlan = Number(plan.id) === 2; // Profesyonel (veritabanı plan id)
+                        const isFeaturedFeature = isProPlan && (
+                            isYapayZekaSiparisAnaliz ||
+                            isWhatsAppFeature || isAracTakipFeature || isKampanyaFeature || isCicekSepetiFeature
+                        );
                         return `
                         <li class="landing-plan-feature">
                             <div class="landing-feature-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -297,7 +347,7 @@ async function loadPricingPlans() {
                     }).join('')}
                 </ul>
                 <a href="./purchase.html?plan=${plan.plan_kodu}&billing=monthly" class="landing-btn-plan ${isFeatured ? 'landing-btn-plan-primary' : 'landing-btn-plan-secondary'}" data-billing="monthly" data-plan-code="${plan.plan_kodu}">
-                    ${isFeatured ? 'Başla' : 'Paketi Seç'}
+                    Şimdi Satın Alın
                 </a>
             `;
             
@@ -310,34 +360,49 @@ async function loadPricingPlans() {
         }
         
         // Pricing kartları oluşturulduktan sonra animasyonu tetikle
-        if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-            // Kısa bir gecikme ile animasyonu başlat (DOM güncellemesi için)
-            setTimeout(() => {
+        setTimeout(() => {
+            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
                 gsap.utils.toArray('.landing-pricing-card').forEach((c, i) => {
-                    gsap.to(c, { 
-                        opacity: 1, 
-                        y: 0, 
-                        duration: 0.8, 
-                        ease: 'power3.out', 
-                        scrollTrigger: { 
-                            trigger: c, 
+                    gsap.to(c, {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.8,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: c,
                             start: 'top 85%',
                             toggleActions: 'play none none reverse',
                             once: true
-                        }, 
-                        delay: i * 0.15 
+                        },
+                        delay: i * 0.15
                     });
                 });
-            }, 100);
-        } else {
-            // GSAP yoksa direkt göster
-            document.querySelectorAll('.landing-pricing-card').forEach(card => {
-                if (card) {
-                    card.style.opacity = '1';
-                    card.style.transform = 'none';
-                }
-            });
-        }
+            } else {
+                document.querySelectorAll('.landing-pricing-card').forEach((card) => {
+                    if (card) {
+                        card.style.opacity = '1';
+                        card.style.transform = 'none';
+                    }
+                });
+            }
+            // Metin pulse: ScrollTrigger şartı değil (sadece GSAP yeterli)
+            if (typeof gsap !== 'undefined' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                gsap.utils.toArray('.landing-pricing-popular-pulse').forEach((el) => {
+                    gsap.set(el, { transformOrigin: 'center center' });
+                    gsap.fromTo(
+                        el,
+                        { scale: 1 },
+                        {
+                            scale: 1.07,
+                            duration: 1.15,
+                            ease: 'sine.inOut',
+                            repeat: -1,
+                            yoyo: true
+                        }
+                    );
+                });
+            }
+        }, 100);
         
     } catch (error) {
         console.error('Paketler yüklenirken hata:', error);

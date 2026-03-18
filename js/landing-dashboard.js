@@ -6,6 +6,21 @@
 // Global billing period değişkeni (dashboard modal için)
 window.dashboardBillingPeriod = 'monthly';
 
+/** Profesyonel planda (id 2) yapay zeka sipariş analizi satırı */
+function isYapayZekaSiparisAnalizOzellik(feature) {
+    const s = String(feature || '').toLowerCase();
+    return s.includes('yapay zeka') && (s.includes('sipariş') || s.includes('siparis')) && s.includes('analiz');
+}
+
+function escapeHtmlDashboard(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
     // URL parametrelerinden tenant ve username al
     const urlParams = new URLSearchParams(window.location.search);
@@ -767,7 +782,7 @@ async function loadPlanFeatures(apiBase, planId) {
         const result = await response.json();
         
         if (result.success && result.data) {
-            const plan = result.data.find(p => p.id === planId);
+            const plan = result.data.find(p => Number(p.id) === Number(planId));
             if (plan) {
                 // Özellikleri parse et
                 let features = [];
@@ -783,7 +798,7 @@ async function loadPlanFeatures(apiBase, planId) {
                         features = plan.ozellikler;
                     }
                 }
-                updatePlanFeatures(features);
+                updatePlanFeatures(features, planId);
             }
         }
     } catch (error) {
@@ -793,8 +808,10 @@ async function loadPlanFeatures(apiBase, planId) {
 
 /**
  * Plan özelliklerini güncelle
+ * @param {string[]} features
+ * @param {number} [planId] — Profesyonel (2) için yapay zeka satırında "ÖNE ÇIKAN ÖZELLİK"
  */
-function updatePlanFeatures(features) {
+function updatePlanFeatures(features, planId) {
     const featuresList = document.getElementById('plan-features-list');
     if (!featuresList) return;
     
@@ -805,15 +822,23 @@ function updatePlanFeatures(features) {
         return;
     }
     
+    const pid = Number(planId);
     features.forEach(feature => {
         const fLower = (feature || '').toLowerCase();
-        const isFeatured = fLower.includes('whatsapp') || fLower.includes('araç takip') || fLower.includes('arac takip') || fLower.includes('kampanya') || fLower.includes('çiçek sepeti') || fLower.includes('cicek sepeti') || fLower.includes('ciceksepeti');
-        const badgeHtml = isFeatured ? '<span class="feature-item-badge">Öne çıkan</span>' : '';
+        const isAiFeatured = pid === 2 && isYapayZekaSiparisAnalizOzellik(feature);
+        const isPinkFeatured = fLower.includes('whatsapp') || fLower.includes('araç takip') || fLower.includes('arac takip') || fLower.includes('kampanya') || fLower.includes('çiçek sepeti') || fLower.includes('cicek sepeti') || fLower.includes('ciceksepeti');
+        let badgeHtml = '';
+        if (isAiFeatured) {
+            badgeHtml = '<span class="feature-item-badge feature-item-badge--ai-featured">ÖNE ÇIKAN ÖZELLİK</span>';
+        } else if (isPinkFeatured) {
+            badgeHtml = '<span class="feature-item-badge">Öne çıkan</span>';
+        }
+        const safeText = escapeHtmlDashboard(feature);
         const li = document.createElement('li');
         li.className = 'feature-item';
         li.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <span class="feature-item-text">${feature}</span>
+            <span class="feature-item-text">${safeText}</span>
             ${badgeHtml}
         `;
         featuresList.appendChild(li);
@@ -950,7 +975,13 @@ async function loadPlansForModal(apiBase) {
                         ${isCurrent ? '<span class="current-badge">Mevcut Plan</span>' : ''}
                     </div>
                     <ul class="plan-option-features">
-                        ${features.length > 0 ? features.map(f => `<li>${f}</li>`).join('') : '<li>Özellik bilgisi bulunmuyor.</li>'}
+                        ${features.length > 0 ? features.map(f => {
+                            const esc = escapeHtmlDashboard(f);
+                            const aiBadge = Number(plan.id) === 2 && isYapayZekaSiparisAnalizOzellik(f)
+                                ? '<span class="plan-option-feature-badge">ÖNE ÇIKAN ÖZELLİK</span>'
+                                : '';
+                            return `<li><span class="plan-option-feature-text">${esc}</span>${aiBadge}</li>`;
+                        }).join('') : '<li>Özellik bilgisi bulunmuyor.</li>'}
                     </ul>
                     <button type="button" class="plan-select-btn ${isCurrent ? 'disabled' : ''}" ${isCurrent ? 'disabled' : ''} data-plan-id="${plan.id}" data-plan-name="${plan.plan_adi || 'Bilinmeyen Plan'}" data-monthly-price="${monthlyPrice}" data-yearly-price="${yearlyPrice}">
                         ${isCurrent ? 'Mevcut Plan' : 'Bu Plana Geç'}

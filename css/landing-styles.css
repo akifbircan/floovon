@@ -19,9 +19,57 @@
             --accent: #ec0972;
             --accent-light: #ff6bb3;
             --accent-glow: rgba(236, 9, 114, 0.4);
+            --landing-on-dark-06: rgba(255, 255, 255, 0.06);
+            --landing-border-subtle: var(--landing-on-dark-06);
+            --landing-plan-feature-border: var(--landing-border-subtle);
+            --landing-on-dark-05: rgba(255, 255, 255, 0.05);
+            --landing-on-dark-08: rgba(255, 255, 255, 0.08);
+            --landing-on-dark-1: rgba(255, 255, 255, 0.1);
+            --landing-on-dark-12: rgba(255, 255, 255, 0.12);
+            --landing-on-dark-15: rgba(255, 255, 255, 0.15);
+            --landing-on-dark-24: rgba(255, 255, 255, 0.24);
+            --landing-on-dark-3: rgba(255, 255, 255, 0.3);
+            --landing-on-dark-4: rgba(255, 255, 255, 0.4);
+            --landing-on-dark-5: rgba(255, 255, 255, 0.5);
+            --landing-on-dark-7: rgba(255, 255, 255, 0.7);
+            --landing-on-dark-9: rgba(255, 255, 255, 0.9);
+            --landing-header-bg: rgba(12, 12, 16, 0.9);
+            --landing-header-bg-scrolled: rgba(12, 12, 16, 0.98);
+            --landing-light-surface: #f8fafc;
+            --landing-light-surface-90: rgba(248, 250, 252, 0.9);
+            --landing-light-surface-98: rgba(248, 250, 252, 0.98);
+            --landing-light-border: #e2e8f0;
+            --landing-light-border-hover: #cbd5e1;
+            --landing-light-muted: #475569;
+            --landing-light-text: #2e3237;
+            --landing-accent-shadow: rgba(236, 9, 114, 0.3);
+            --landing-accent-ring: rgba(236, 9, 114, 0.75);
+            --landing-accent-ring-soft: rgba(236, 9, 114, 0.45);
             --green: #22c55e;
             --yellow: #facc15;
             --blue: #3b82f6;
+            --landing-slate-100: #f1f5f9;
+            --landing-footer-tint: #f2f6f9;
+            --landing-slate-800: #1e293b;
+            --landing-slate-500: #64748b;
+            --landing-amber-500: #f59e0b;
+            --landing-gray-200-ui: #e5e7eb;
+            --landing-pink-border-ui: #f3cadd;
+            --landing-orange-500: #f97316;
+            --landing-orange-400: #fb923c;
+            --landing-purple-500: #8b5cf6;
+            --landing-purple-400: #a78bfa;
+            --landing-blue-400: #60a5fa;
+            --landing-green-400: #4ade80;
+            --landing-traffic-red: #ff5f57;
+            --landing-traffic-yellow: #febc2e;
+            --landing-traffic-green: #28c840;
+            --landing-whatsapp-from: #25d366;
+            --landing-whatsapp-to: #128c7e;
+            --landing-tag-yellow: #fef3c7;
+            --landing-tag-blue: #dbeafe;
+            --landing-tag-green: #d1fae5;
+            --landing-tag-pink: #fce7f3;
         }
 
         html {
@@ -50,43 +98,43 @@
             right: 0;
             z-index: 1000;
             padding: 16px 0;
-            background: rgba(12, 12, 16, 0.9);
+            background: var(--landing-header-bg);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid var(--landing-on-dark-06);
             transition: all 0.4s ease;
         }
 
         .landing-header.scrolled {
             padding: 12px 0;
-            background: rgba(12, 12, 16, 0.98);
+            background: var(--landing-header-bg-scrolled);
         }
 
         /* LIGHT HEADER (landing.html hariç diğer sayfalar için) */
         .landing-header.light-header {
-            background: rgba(248, 250, 252, 0.9);
-            border-bottom: 1px solid #e2e8f0;
+            background: var(--landing-light-surface-90);
+            border-bottom: 1px solid var(--landing-light-border);
         }
 
         .landing-header.light-header.scrolled {
-            background: rgba(248, 250, 252, 0.98);
+            background: var(--landing-light-surface-98);
         }
 
         .landing-header.light-header .landing-nav a {
-            color: #475569;
+            color: var(--landing-light-muted);
         }
 
         .landing-header.light-header .landing-nav a:hover {
-            color: #2e3237;
+            color: var(--landing-light-text);
         }
 
         .landing-header.light-header .landing-btn-ghost {
-            color: #475569;
-            border-color: #e2e8f0;
+            color: var(--landing-light-muted);
+            border-color: var(--landing-light-border);
         }
 
         .landing-header.light-header .landing-btn-ghost:hover {
-            color: #2e3237;
-            border-color: #cbd5e1;
+            color: var(--landing-light-text);
+            border-color: var(--landing-light-border-hover);
         }
 
         .landing-header.light-header .landing-btn-primary {
@@ -96,7 +144,7 @@
 
         .landing-header.light-header .landing-btn-primary:hover {
             background: var(--accent-light);
-            box-shadow: 0 10px 30px rgba(236, 9, 114, 0.3);
+            box-shadow: 0 10px 30px var(--landing-accent-shadow);
         }
 
         .landing-header-inner {
@@ -146,7 +194,7 @@
             width: 52px;
             height: 28px;
             border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.24);
+            border: 1px solid var(--landing-on-dark-24);
             background: rgba(15, 23, 42, 0.9);
             display: flex;
             align-items: center;
@@ -176,31 +224,31 @@
             width: 22px;
             height: 22px;
             border-radius: 999px;
-            background: #ffffff;
+            background: var(--white);
             box-shadow: 0 4px 10px rgba(15, 23, 42, 0.6);
             transition: transform 0.25s ease;
         }
 
         body.theme-light .landing-theme-toggle {
             background: rgba(248, 250, 252, 0.95);
-            border-color: var(--border-light, #e2e8f0);
+            border-color: var(--border-light, var(--landing-light-border));
         }
 
         body.theme-light .landing-theme-toggle-icon-sun {
-            color: #f59e0b;
+            color: var(--landing-amber-500);
         }
 
         body.theme-light .landing-theme-toggle-icon-moon {
-            color: #64748b;
+            color: var(--landing-slate-500);
         }
 
         body.theme-dark .landing-theme-toggle-icon-sun {
             /* Karanlık temada da beyaz thumb üzerinde belirgin sarı güneş */
-            color: #facc15;
+            color: var(--yellow);
         }
 
         body.theme-dark .landing-theme-toggle-icon-moon {
-            color: #e5e7eb;
+            color: var(--landing-gray-200-ui);
         }
         
         @media (max-width: 768px) {
@@ -313,14 +361,14 @@
 
         /* Landing header (dark) için login-button - beyaz yazı */
         .landing-header:not(.light-header) .login-button {
-            color: rgba(255, 255, 255, 0.9);
-            border-color: rgba(255, 255, 255, 0.15);
+            color: var(--landing-on-dark-9);
+            border-color: var(--landing-on-dark-15);
         }
 
         .landing-header:not(.light-header) .login-button:hover {
             color: var(--white);
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--landing-on-dark-3);
+            background: var(--landing-on-dark-05);
         }
 
         .landing-btn-ghost {
@@ -371,8 +419,8 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--landing-on-dark-06);
+            border: 1px solid var(--landing-on-dark-1);
             padding: 8px 20px;
             border-radius: 100px;
             font-size: 14px;
@@ -393,7 +441,7 @@
         /* Light temada hero rozetinin pembe çerçeve ile görünür olması için */
         body.theme-light .landing-hero-badge {
             background: rgba(248, 250, 252, 0.9);
-            border-color: #f3cadd;
+            border-color: var(--landing-pink-border-ui);
             color: var(--text-secondary);
         }
 
@@ -448,7 +496,7 @@
 
         .landing-btn-hero {
             background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            color: white;
+            color: var(--white);
             padding: 18px 40px;
             border-radius: 100px;
             font-size: 16px;
@@ -468,19 +516,19 @@
         }
 
         .landing-btn-secondary {
-            background: rgba(255, 255, 255, 0.06);
+            background: var(--landing-on-dark-06);
             color: var(--white);
             padding: 18px 40px;
             border-radius: 100px;
             font-size: 16px;
             font-weight: 600;
             text-decoration: none;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--landing-on-dark-1);
             transition: all 0.3s;
         }
 
         .landing-btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.12);
+            background: var(--landing-on-dark-12);
             transform: translateY(-2px);
         }
 
@@ -499,7 +547,7 @@
 
         .landing-stat-card-clean {
             background: var(--dark-800);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--landing-on-dark-06);
             border-radius: 24px;
             padding: 40px;
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -529,7 +577,7 @@
         }
 
         .landing-stat-card-clean:hover {
-            border-color: rgba(255, 255, 255, 0.15);
+            border-color: var(--landing-on-dark-15);
             transform: translateY(-8px);
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
         }
@@ -556,7 +604,7 @@
         .landing-stat-badge-icon {
             width: 36px;
             height: 36px;
-            background: linear-gradient(135deg, #f97316, #fb923c);
+            background: linear-gradient(135deg, var(--landing-orange-500), var(--landing-orange-400));
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -593,18 +641,18 @@
         }
 
         .landing-florist-badge-1 {
-            background: linear-gradient(135deg, #ec0972, #ff6bb3);
-            color: white;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: var(--white);
         }
 
         .landing-florist-badge-2 {
-            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-            color: white;
+            background: linear-gradient(135deg, var(--landing-purple-500), var(--landing-purple-400));
+            color: var(--white);
         }
 
         .landing-florist-badge-3 {
-            background: linear-gradient(135deg, #22c55e, #4ade80);
-            color: white;
+            background: linear-gradient(135deg, var(--green), var(--landing-green-400));
+            color: var(--white);
         }
 
         .landing-florist-badge-more {
@@ -763,7 +811,7 @@
 
         .landing-showcase-card {
             background: var(--dark-800);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--landing-on-dark-06);
             border-radius: 28px;
             padding: 48px;
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -775,7 +823,7 @@
         }
 
         .landing-showcase-card:hover {
-            border-color: rgba(255, 255, 255, 0.12);
+            border-color: var(--landing-on-dark-12);
             transform: translateY(-8px) scale(1);
         }
 
@@ -873,7 +921,7 @@
         .landing-flow-center span {
             font-size: 12px;
             font-weight: 700;
-            color: white;
+            color: var(--white);
         }
 
         .landing-flow-items {
@@ -919,8 +967,8 @@
         }
 
         .landing-flow-item-1 .landing-flow-item-icon {
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: white;
+            background: linear-gradient(135deg, var(--blue), var(--landing-blue-400));
+            color: var(--white);
         }
 
         .landing-flow-item-2 {
@@ -930,8 +978,8 @@
         }
 
         .landing-flow-item-2 .landing-flow-item-icon {
-            background: linear-gradient(135deg, #22c55e, #4ade80);
-            color: white;
+            background: linear-gradient(135deg, var(--green), var(--landing-green-400));
+            color: var(--white);
         }
 
         .landing-flow-item-3 {
@@ -941,8 +989,8 @@
         }
 
         .landing-flow-item-3 .landing-flow-item-icon {
-            background: linear-gradient(135deg, #f97316, #fb923c);
-            color: white;
+            background: linear-gradient(135deg, var(--landing-orange-500), var(--landing-orange-400));
+            color: var(--white);
         }
 
         .landing-flow-item-4 {
@@ -952,15 +1000,15 @@
         }
 
         .landing-flow-item-4 .landing-flow-item-icon {
-            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-            color: white;
+            background: linear-gradient(135deg, var(--landing-purple-500), var(--landing-purple-400));
+            color: var(--white);
         }
 
         .landing-flow-connections {
             position: absolute;
             width: 200px;
             height: 200px;
-            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border: 2px dashed var(--landing-on-dark-1);
             border-radius: 50%;
             animation: rotate 20s linear infinite;
         }
@@ -1006,13 +1054,13 @@
         }
 
         .landing-app-icon-whatsapp {
-            background: linear-gradient(135deg, #25D366, #128C7E);
-            color: white;
+            background: linear-gradient(135deg, var(--landing-whatsapp-from), var(--landing-whatsapp-to));
+            color: var(--white);
         }
 
         .landing-app-icon-purple {
             background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            color: white;
+            color: var(--white);
         }
 
         /* Mini Dashboard - Larger */
@@ -1024,7 +1072,7 @@
             border-radius: 18px;
             display: flex;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--landing-on-dark-1);
             opacity: 0;
             transform: scale(0.9);
         }
@@ -1130,7 +1178,7 @@
             background: var(--dark-800);
             border-radius: 24px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--landing-on-dark-06);
             box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
             opacity: 1;
             transform: none;
@@ -1142,7 +1190,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid var(--landing-on-dark-06);
         }
 
         .landing-mockup-dots {
@@ -1157,15 +1205,15 @@
         }
 
         .landing-dot-red {
-            background: #ff5f57;
+            background: var(--landing-traffic-red);
         }
 
         .landing-dot-yellow {
-            background: #febc2e;
+            background: var(--landing-traffic-yellow);
         }
 
         .landing-dot-green {
-            background: #28c840;
+            background: var(--landing-traffic-green);
         }
 
         .landing-mockup-url {
@@ -1192,7 +1240,7 @@
         .landing-skeleton-sidebar {
             width: 56px;
             background: var(--dark-700);
-            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            border-right: 1px solid var(--landing-on-dark-06);
             padding: 16px 10px;
             display: flex;
             flex-direction: column;
@@ -1211,7 +1259,7 @@
         .landing-skeleton-nav-item {
             width: 32px;
             height: 32px;
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--landing-on-dark-08);
             border-radius: 8px;
         }
 
@@ -1232,7 +1280,7 @@
             justify-content: space-between;
             padding: 14px 20px;
             background: var(--dark-700);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid var(--landing-on-dark-06);
         }
 
         .landing-skeleton-tabs {
@@ -1243,12 +1291,12 @@
         .landing-skeleton-tab {
             width: 80px;
             height: 32px;
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--landing-on-dark-08);
             border-radius: 6px;
         }
 
         .landing-skeleton-tab.active {
-            background: rgba(255, 255, 255, 0.15);
+            background: var(--landing-on-dark-15);
         }
 
         .landing-skeleton-btn-primary {
@@ -1272,7 +1320,7 @@
             flex: 1;
             background: var(--dark-700);
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--landing-on-dark-06);
             padding: 14px;
             display: flex;
             flex-direction: column;
@@ -1284,7 +1332,7 @@
             align-items: center;
             gap: 8px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid var(--landing-on-dark-06);
         }
 
         .landing-skeleton-dot {
@@ -1294,12 +1342,12 @@
         }
 
         .landing-skeleton-dot-pink { background: var(--accent); }
-        .landing-skeleton-dot-blue { background: #3b82f6; }
-        .landing-skeleton-dot-green { background: #22c55e; }
-        .landing-skeleton-dot-purple { background: #8b5cf6; }
+        .landing-skeleton-dot-blue { background: var(--blue); }
+        .landing-skeleton-dot-green { background: var(--green); }
+        .landing-skeleton-dot-purple { background: var(--landing-purple-500); }
 
         .landing-skeleton-line {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--landing-on-dark-1);
             border-radius: 4px;
         }
 
@@ -1326,7 +1374,7 @@
         .landing-skeleton-badge {
             width: 20px;
             height: 18px;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--landing-on-dark-1);
             border-radius: 10px;
         }
 
@@ -1341,9 +1389,9 @@
         }
 
         .landing-skeleton-card-pink { border-left-color: var(--accent); }
-        .landing-skeleton-card-blue { border-left-color: #3b82f6; }
-        .landing-skeleton-card-green { border-left-color: #22c55e; }
-        .landing-skeleton-card-purple { border-left-color: #8b5cf6; }
+        .landing-skeleton-card-blue { border-left-color: var(--blue); }
+        .landing-skeleton-card-green { border-left-color: var(--green); }
+        .landing-skeleton-card-purple { border-left-color: var(--landing-purple-500); }
 
         .landing-skeleton-card-faded {
             opacity: 0.6;
@@ -1374,7 +1422,7 @@
             padding: 20px 12px;
             background: var(--dark-600);
             border-radius: 8px;
-            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border: 2px dashed var(--landing-on-dark-1);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1384,7 +1432,7 @@
         .landing-skeleton-empty-icon {
             width: 24px;
             height: 24px;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--landing-on-dark-1);
             border-radius: 50%;
         }
 
@@ -1400,14 +1448,14 @@
             max-width: 180px;
             background: var(--dark-700);
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--landing-on-dark-06);
             padding: 14px;
         }
 
         .landing-skeleton-calendar-header {
             width: 100%;
             height: 14px;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--landing-on-dark-1);
             border-radius: 4px;
             margin-bottom: 12px;
         }
@@ -1421,7 +1469,7 @@
         .landing-skeleton-day {
             flex: 1;
             height: 28px;
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--landing-on-dark-08);
             border-radius: 4px;
         }
 
@@ -1448,14 +1496,14 @@
         .landing-skeleton-stat-num {
             width: 30px;
             height: 20px;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--landing-on-dark-1);
             border-radius: 4px;
         }
 
         .landing-skeleton-stat-label {
             width: 50px;
             height: 10px;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--landing-on-dark-1);
             border-radius: 4px;
         }
 
@@ -1502,10 +1550,10 @@
         }
 
         .landing-testimonial-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--landing-on-dark-05);
             border-radius: 24px;
             padding: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--landing-on-dark-1);
             transition: all 0.5s;
             opacity: 0;
             transform: translateY(40px);
@@ -1514,7 +1562,7 @@
         .landing-testimonial-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--landing-on-dark-08);
         }
 
         .landing-testimonial-stars {
@@ -1526,7 +1574,7 @@
         .landing-star {
             width: 20px;
             height: 20px;
-            fill: #facc15;
+            fill: var(--yellow);
         }
 
         .landing-testimonial-text {
@@ -1551,7 +1599,7 @@
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            color: white;
+            color: var(--white);
             font-size: 14px;
         }
 
@@ -1577,10 +1625,10 @@
             display: flex;
             justify-content: center;
             gap: 4px;
-            background: #f1f5f9;
+            background: var(--landing-slate-100);
             padding: 4px;
             border-radius: 100px;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
             width: fit-content;
             margin-left: auto;
             margin-right: auto;
@@ -1588,7 +1636,7 @@
 
         /* Landing sayfası için dark tema toggle */
         .landing-pricing-section .landing-pricing-toggle {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--landing-on-dark-1);
             backdrop-filter: blur(10px);
         }
 
@@ -1615,7 +1663,7 @@
 
         /* Landing sayfası için dark tema toggle buton */
         .landing-pricing-section .landing-toggle-btn {
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--landing-on-dark-7);
         }
 
         .landing-pricing-section .landing-toggle-btn.active {
@@ -1625,7 +1673,7 @@
 
         .landing-toggle-discount {
             background: var(--green);
-            color: white;
+            color: var(--white);
             font-size: 11px;
             padding: 4px 8px;
             border-radius: 100px;
@@ -1635,6 +1683,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 24px;
+            align-items: start; /* Kartlar aynı satırda eşit uzamasın; içeriğe göre yükseklik */
         }
         
         .landing-pricing-loading {
@@ -1647,13 +1696,16 @@
 
         .landing-pricing-card {
             background: var(--dark-800);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--landing-on-dark-06);
             border-radius: 24px;
             padding: 40px;
             position: relative;
+            overflow: visible; /* En Popüler halkaları üstte kesilmesin */
             transition: all 0.5s;
             opacity: 0;
             transform: translateY(40px);
+            height: fit-content;
+            align-self: start;
         }
         
         /* Fallback: Eğer animasyon çalışmazsa pricing kartlarını göster */
@@ -1667,7 +1719,7 @@
         }
 
         body.theme-light .landing-pricing-section .landing-pricing-toggle {
-            background: #f1f5f9;
+            background: var(--landing-slate-100);
             backdrop-filter: none;
         }
 
@@ -1689,7 +1741,7 @@
 
         .landing-pricing-card:hover {
             transform: translateY(-8px);
-            border-color: rgba(255, 255, 255, 0.12);
+            border-color: var(--landing-on-dark-12);
         }
 
         .landing-pricing-card.featured {
@@ -1702,18 +1754,67 @@
             box-shadow: 0 0 60px rgba(236, 9, 114, 0.2);
         }
 
-        .landing-pricing-popular {
+        /* Rozet kabuğu: kart köşesinde konum + dışarı taşan halkalar */
+        .landing-pricing-popular-shell {
             position: absolute;
             top: -22px;
-            /* left: 50%; */
             right: 0;
             transform: translateX(-50%);
+            display: inline-block;
+            z-index: 2;
+        }
+
+        .landing-pricing-popular-ring {
+            position: absolute;
+            inset: -5px;
+            border-radius: 100px;
+            border: 2px solid var(--landing-accent-ring);
+            pointer-events: none;
+            z-index: 0;
+            transform-origin: center center;
+            animation: landing-popular-ring-stroke 2.5s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+        }
+
+        .landing-pricing-popular-ring--delayed {
+            animation-delay: 1.25s;
+            border-color: var(--landing-accent-ring-soft);
+        }
+
+        @keyframes landing-popular-ring-stroke {
+            0% {
+                transform: scale(1);
+                opacity: 0.95;
+            }
+            55% {
+                opacity: 0.35;
+            }
+            100% {
+                transform: scale(1.65);
+                opacity: 0;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .landing-pricing-popular-ring {
+                animation: none;
+                display: none;
+            }
+        }
+
+        .landing-pricing-popular {
+            position: relative;
+            z-index: 1;
             background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            color: white;
+            color: var(--white);
             font-size: 20px;
             font-weight: 600;
             padding: 6px 16px;
             border-radius: 100px;
+        }
+
+        .landing-pricing-popular-pulse {
+            display: inline-block;
+            will-change: transform;
         }
 
         .landing-plan-name {
@@ -1724,15 +1825,18 @@
 
         .landing-plan-desc {
             font-size: 14px;
+            line-height: 1.5;
             color: var(--gray-400);
             margin-bottom: 24px;
+            max-width: 48ch;
+            letter-spacing: 0.01em;
         }
 
         .landing-plan-price {
             display: flex;
             align-items: center;
             gap: 4px;
-            margin-bottom: 32px;
+            margin-bottom: 20px;
             position: relative;
         }
         
@@ -1748,7 +1852,7 @@
         
         .landing-plan-discount {
             background: var(--green);
-            color: white;
+            color: var(--white);
             font-size: 11px;
             font-weight: 600;
             padding: 4px 8px;
@@ -1758,7 +1862,7 @@
         
         .landing-feature-badge {
             background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            color: white;
+            color: var(--white);
             font-size: 10px;
             font-weight: 600;
             padding: 3px 8px;
@@ -1794,11 +1898,15 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 8px 0;
+            border-bottom: 1px solid var(--landing-plan-feature-border);
             font-size: 14px;
             color: var(--gray-200);
         }
+/* 
+        .landing-plan-feature:hover {
+            background: var(--landing-on-dark-06);
+        } */
 
         .landing-plan-feature:last-child {
             border-bottom: none;
@@ -1826,7 +1934,7 @@
             width: 100%;
             padding: 16px;
             border-radius: 100px;
-            font-size: 14px;
+            font-size: 18px;
             font-weight: 600;
             text-align: center;
             text-decoration: none;
@@ -1835,7 +1943,7 @@
 
         .landing-btn-plan-primary {
             background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            color: white;
+            color: var(--white);
             box-shadow: 0 0 30px var(--accent-glow);
         }
 
@@ -1943,7 +2051,7 @@
                 0 30px 60px -30px rgba(236, 9, 114, 0.2);
             /* transform: rotateY(-5deg) rotateX(2deg); */
             transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            /* border: 1px solid rgba(255, 255, 255, 0.1); */
+            /* border: 1px solid var(--landing-on-dark-1); */
         }
 
         /* .landing-screenshot-item:nth-child(even) .landing-screenshot-frame {
@@ -1991,7 +2099,7 @@
 
         /* SCREENSHOT SKELETON STYLES */
         .landing-screenshot-skeleton {
-            background: #f8fafc;
+            background: var(--landing-light-surface);
         }
 
         .landing-ss-header {
@@ -2000,7 +2108,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid var(--landing-on-dark-06);
         }
 
         .landing-ss-dots {
@@ -2015,9 +2123,9 @@
             background: var(--dark-500);
         }
 
-        .landing-ss-dots span:nth-child(1) { background: #ff5f57; }
-        .landing-ss-dots span:nth-child(2) { background: #febc2e; }
-        .landing-ss-dots span:nth-child(3) { background: #28c840; }
+        .landing-ss-dots span:nth-child(1) { background: var(--landing-traffic-red); }
+        .landing-ss-dots span:nth-child(2) { background: var(--landing-traffic-yellow); }
+        .landing-ss-dots span:nth-child(3) { background: var(--landing-traffic-green); }
 
         .landing-ss-url {
             flex: 1;
@@ -2033,8 +2141,8 @@
 
         .landing-ss-sidebar {
             width: 50px;
-            background: #ffffff;
-            border-right: 1px solid #e2e8f0;
+            background: var(--white);
+            border-right: 1px solid var(--landing-light-border);
             padding: 14px 8px;
             display: flex;
             flex-direction: column;
@@ -2059,7 +2167,7 @@
         .landing-ss-nav span {
             width: 28px;
             height: 28px;
-            background: #e2e8f0;
+            background: var(--landing-light-border);
             border-radius: 6px;
         }
 
@@ -2070,7 +2178,7 @@
         .landing-ss-main {
             flex: 1;
             padding: 14px;
-            background: #f1f5f9;
+            background: var(--landing-slate-100);
         }
 
         .landing-ss-topbar {
@@ -2079,7 +2187,7 @@
             justify-content: space-between;
             margin-bottom: 14px;
             padding: 10px 12px;
-            background: #ffffff;
+            background: var(--white);
             border-radius: 8px;
         }
 
@@ -2091,12 +2199,12 @@
         .landing-ss-tabs span {
             width: 60px;
             height: 24px;
-            background: #e2e8f0;
+            background: var(--landing-light-border);
             border-radius: 4px;
         }
 
         .landing-ss-tabs span.landing-active {
-            background: #1e293b;
+            background: var(--landing-slate-800);
         }
 
         .landing-ss-btn {
@@ -2114,7 +2222,7 @@
         .landing-ss-card {
             flex: 1;
             padding: 12px;
-            background: #ffffff;
+            background: var(--white);
             border-radius: 8px;
             border-left: 3px solid var(--accent);
             display: flex;
@@ -2123,8 +2231,8 @@
         }
 
         .landing-ss-card-pink { border-left-color: var(--accent); }
-        .landing-ss-card-blue { border-left-color: #3b82f6; }
-        .landing-ss-card-green { border-left-color: #22c55e; }
+        .landing-ss-card-blue { border-left-color: var(--blue); }
+        .landing-ss-card-green { border-left-color: var(--green); }
 
         .landing-ss-card-tag {
             width: 40px;
@@ -2132,13 +2240,13 @@
             border-radius: 3px;
         }
 
-        .landing-ss-tag-yellow { background: #fef3c7; }
-        .landing-ss-tag-blue { background: #dbeafe; }
-        .landing-ss-tag-green { background: #d1fae5; }
-        .landing-ss-tag-pink { background: #fce7f3; }
+        .landing-ss-tag-yellow { background: var(--landing-tag-yellow); }
+        .landing-ss-tag-blue { background: var(--landing-tag-blue); }
+        .landing-ss-tag-green { background: var(--landing-tag-green); }
+        .landing-ss-tag-pink { background: var(--landing-tag-pink); }
 
         .landing-ss-line {
-            background: #e2e8f0;
+            background: var(--landing-light-border);
             border-radius: 3px;
         }
 
@@ -2149,7 +2257,7 @@
         .landing-ss-price {
             width: 40px;
             height: 12px;
-            background: #d1fae5;
+            background: var(--landing-tag-green);
             border-radius: 3px;
             margin-top: 4px;
         }
@@ -2163,7 +2271,7 @@
 
         .landing-ss-customer-list {
             width: 40%;
-            background: #ffffff;
+            background: var(--white);
             border-radius: 8px;
             padding: 10px;
             display: flex;
@@ -2177,7 +2285,7 @@
             gap: 10px;
             padding: 10px;
             border-radius: 6px;
-            background: #f8fafc;
+            background: var(--landing-light-surface);
         }
 
         .landing-ss-customer-item.active {
@@ -2188,7 +2296,7 @@
         .landing-ss-avatar {
             width: 32px;
             height: 32px;
-            background: #e2e8f0;
+            background: var(--landing-light-border);
             border-radius: 50%;
         }
 
@@ -2201,7 +2309,7 @@
 
         .landing-ss-customer-detail {
             flex: 1;
-            background: #ffffff;
+            background: var(--white);
             border-radius: 8px;
             padding: 14px;
         }
@@ -2212,13 +2320,13 @@
             gap: 12px;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid var(--landing-slate-100);
         }
 
         .landing-ss-avatar-lg {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+            background: linear-gradient(135deg, var(--landing-light-border), var(--landing-light-border-hover));
             border-radius: 50%;
         }
 
@@ -2237,7 +2345,7 @@
         .landing-ss-stat-card {
             flex: 1;
             padding: 12px;
-            background: #f8fafc;
+            background: var(--landing-light-surface);
             border-radius: 6px;
             display: flex;
             flex-direction: column;
@@ -2248,14 +2356,14 @@
         .landing-ss-stat-num {
             width: 30px;
             height: 18px;
-            background: #e2e8f0;
+            background: var(--landing-light-border);
             border-radius: 4px;
         }
 
         .landing-ss-stat-label {
             width: 50px;
             height: 8px;
-            background: #e2e8f0;
+            background: var(--landing-light-border);
             border-radius: 3px;
         }
 
@@ -2269,7 +2377,7 @@
 
         .landing-ss-chart-area {
             flex: 1;
-            background: #ffffff;
+            background: var(--white);
             border-radius: 8px;
             padding: 14px;
         }
@@ -2277,7 +2385,7 @@
         .landing-ss-chart-header {
             width: 100px;
             height: 14px;
-            background: #e2e8f0;
+            background: var(--landing-light-border);
             border-radius: 4px;
             margin-bottom: 16px;
         }
@@ -2291,7 +2399,7 @@
 
         .landing-ss-bar {
             flex: 1;
-            background: #e2e8f0;
+            background: var(--landing-light-border);
             border-radius: 4px 4px 0 0;
         }
 
@@ -2310,7 +2418,7 @@
             align-items: center;
             gap: 10px;
             padding: 12px;
-            background: #ffffff;
+            background: var(--white);
             border-radius: 8px;
         }
 
@@ -2320,9 +2428,9 @@
             border-radius: 8px;
         }
 
-        .landing-ss-icon-green { background: #d1fae5; }
-        .landing-ss-icon-pink { background: #fce7f3; }
-        .landing-ss-icon-blue { background: #dbeafe; }
+        .landing-ss-icon-green { background: var(--landing-tag-green); }
+        .landing-ss-icon-pink { background: var(--landing-tag-pink); }
+        .landing-ss-icon-blue { background: var(--landing-tag-blue); }
 
         .landing-ss-stat-content {
             flex: 1;
@@ -2678,7 +2786,7 @@ align-items: flex-start !important;
             opacity: 0;
             transform: translateY(100px);
             background: var(--dark-800);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--landing-on-dark-1);
             border-bottom: none;
         }
 
@@ -2702,7 +2810,7 @@ align-items: flex-start !important;
             display: flex;
             align-items: center;
             gap: 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid var(--landing-on-dark-06);
         }
 
         .landing-cta-screen-body {
@@ -2724,7 +2832,7 @@ align-items: flex-start !important;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border: 2px dashed var(--landing-on-dark-1);
         }
 
         .landing-cta-upload-area span {
@@ -2758,7 +2866,7 @@ align-items: flex-start !important;
 
         .landing-footer-col a {
             display: flex;
-            color: rgba(255, 255, 255, 0.4);
+            color: var(--landing-on-dark-4);
             text-decoration: none;
             font-size: 15px;
             padding: 10px 0;
@@ -2804,21 +2912,21 @@ align-items: flex-start !important;
             width: 54px;
             height: 54px;
             border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid var(--landing-on-dark-12);
             background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-decoration: none;
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--landing-on-dark-5);
             padding: 0;
             line-height: 0;
         }
 
         .landing-footer-social-icon:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.3);
+            background: var(--landing-on-dark-05);
+            border-color: var(--landing-on-dark-3);
             transform: translateY(-4px) scale(1.05);
             color: var(--white);
         }
@@ -2837,7 +2945,7 @@ align-items: flex-start !important;
             justify-content: space-between;
             align-items: center;
             padding: 32px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid var(--landing-on-dark-05);
         }
 
         .landing-footer-copyright {
@@ -2999,6 +3107,7 @@ align-items: flex-start !important;
         body.theme-light {
             background: var(--bg-light);
             color: var(--text-dark);
+            --landing-plan-feature-border: rgba(15, 23, 42, 0.08);
         }
 
         body.theme-light .landing-hero {
@@ -3056,7 +3165,7 @@ align-items: flex-start !important;
 
         body.theme-light .landing-footer {
             /* background: var(--bg-light); */
-            background: #f2f6f9;
+            background: var(--landing-footer-tint);
         }
 
         body.theme-light .landing-footer .landing-footer-col h4 {

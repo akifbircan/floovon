@@ -85,6 +85,18 @@
   position: relative; /* Menü için positioning context */
 }
 
+/*
+ * Sohbetten sipariş kaydı sonrası kart vurgusu (DashboardPage → floovon:sohbetten-siparis-kaydedildi).
+ * Renkler: --sohbetten-kayit-kart-border, --sohbetten-kayit-kart-shadow (css-variables.css).
+ */
+.ana-kart.ana-kart--sohbetten-kayit-vurgu {
+  outline: none !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: var(--sohbetten-kayit-kart-border) !important;
+  /* box-shadow: var(--sohbetten-kayit-kart-shadow) !important; */
+}
+
 /* Organizasyon kartı ve içindeki tüm elementler için cursor override */
 .ana-kart,
 .ana-kart * {
@@ -239,7 +251,7 @@
   display: block;
   width: 14px;
   height: 14px;
-  color: inherit;
+  color: var(--ana-renk) !important;
 }
 
 /* Sipariş detay: link tüm buton alanını kaplasın (zemine tıklanınca da gitsin) */
@@ -251,7 +263,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: inherit;
+  color: var(--ana-renk) !important;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1151,7 +1163,7 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
   margin: 0 12px 5px 12px;
   position: relative;
   z-index: 666;
-  gap: 5px;
+  gap: 4px;
   visibility: visible;
   opacity: 1;
   /* width ve max-width kaldırıldı - container genişliğine otomatik uyum sağlasın */
@@ -1606,9 +1618,6 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
   overflow: hidden;
 }
 
-.ana-kart .siparis-kart .urun-yazisi-wrapper i {
-  padding-right: 5px;
-}
 
 .ana-kart .siparis-kart .icon-urun-yazisi {
   font-size: 16px;
@@ -1617,6 +1626,7 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
 .ana-kart .siparis-kart .urun-yazisi {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
 .ana-kart .siparis-kart .urun-yazisi-mevcut {
@@ -1775,8 +1785,11 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
 
 /* Ürün yazısı dosya alanı - dosya seçildiğinde */
 .ana-kart .siparis-kart .urun-yazisi-dosya {
+  display: flex;
+  align-items: center;
   cursor: pointer;
   user-select: none;
+  gap: 2px;
 }
 
 .ana-kart .siparis-kart .urun-yazisi-dosya:hover {
@@ -1852,7 +1865,7 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
   padding: 2px 5px;
   width: fit-content;
   font-size: 12px;
-  gap: 2px;
+  gap: 3px;
   cursor: default;
 }
 
@@ -1865,14 +1878,13 @@ html.dark-mode .ana-kart .kart-header-sol .kart-tur .kart-tur-ciceksepeti-logo {
   padding: 2px 5px;
   width: fit-content;
   font-size: 12px;
-  gap: 2px;
+  gap: 3px;
   cursor: default;
   background-color: var(--gray-ultra-light);
 }
 
 .ana-kart .siparis-kart .icon-baglantili-siparisler {
   font-size: 10px;
-  padding-right: 4px;
 }
 
 .ana-kart .siparis-kart .teslimat-konum .il-ilce {

@@ -6,6 +6,7 @@ import { Header } from './Header';
 import { Navbar } from './Navbar';
 import { MobileNavbar } from './MobileNavbar';
 import { PhoneLandscapeWarning } from './PhoneLandscapeWarning';
+import { VehicleDetailModalProvider } from '../../features/dashboard/context/VehicleDetailModalContext';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -87,6 +88,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }, [location.pathname]);
 
   return (
+    <VehicleDetailModalProvider>
     <div className="min-h-screen flex overflow-hidden">
       {/* Sidebar - Sol tarafta, sayfanın başından sonuna kadar */}
       <Navbar />
@@ -251,6 +253,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         document.body
       )}
     </div>
+    </VehicleDetailModalProvider>
   );
 };
 

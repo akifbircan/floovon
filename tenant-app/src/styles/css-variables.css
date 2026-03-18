@@ -214,6 +214,8 @@
   --whatsapp-green: #075E54;
   --whatsapp-green-hover: #055a50;
   --whatsapp-text: #fff;
+  --sohbetten-kayit-kart-border: var(--whatsapp-green);
+  --sohbetten-kayit-kart-shadow: 0 0 0 3px color-mix(in srgb, var(--whatsapp-green) 28%, transparent);
 
   /* Auto Color Variables */
   --auto-color-1-1959a9: #373d3f;
@@ -524,6 +526,26 @@
   --edit-button-bg-hover: #bfd4ca;
   --partner-siparis-input-bg: #fff2f8;
   --dark-green-button: #005530;
+
+  /* Uyarı / bilgi kutuları (modal, form) */
+  --warning-bg: #faf5eb;
+  --warning-box-text: #3f3a33;
+
+  /* Stillerde var(--x, #hex) kullanılmaz; tüm varsayılanlar burada */
+  --gray-50: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #cbd5e1;
+  --gray-400: #9ca3af;
+  --gri50: #9ca3af;
+  --white-alpha-35: rgba(255, 255, 255, 0.35);
+  --button-disabled-bg: #9ca3af;
+  --button-disabled-text: #ffffff;
+  --sohbetten-step-strong: #1e3a5f;
+  --sohbetten-tarih-prefix: #334155;
+  --sohbetten-tarih-value: #1e293b;
+  --mor-primary-light: rgba(106, 72, 184, 0.12);
+  --tablo-satir-hover: rgba(106, 72, 184, 0.06);
+  --searchable-select-dropdown-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Dark Mode Variables */
@@ -651,6 +673,8 @@ html.dark-mode {
   --whatsapp-green: #25D366;
   --whatsapp-green-hover: #1da851;
   --whatsapp-text: #fff;
+  --sohbetten-kayit-kart-border: var(--whatsapp-green);
+  --sohbetten-kayit-kart-shadow: 0 0 0 3px color-mix(in srgb, var(--whatsapp-green) 28%, transparent);
   --gray-light-comon: #31323b;
   --gray-ui-bg: #3b3b3b;
   --gray-text-base: #999;
@@ -991,6 +1015,24 @@ html.dark-mode {
   --fatura-taslak-color: #ffb178;
   --fatura-gonderildi-bg: #1a2d4d;
   --fatura-gonderildi-color: #699dff;
+
+  --warning-bg: #3d1221;
+  --warning-box-text: #e8e0d4;
+
+  --gray-50: rgba(255, 255, 255, 0.06);
+  --gray-200: rgba(255, 255, 255, 0.12);
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gri50: #6b7280;
+  --white-alpha-35: rgba(255, 255, 255, 0.35);
+  --button-disabled-bg: #4b5563;
+  --button-disabled-text: #e5e7eb;
+  --sohbetten-step-strong: #93c5fd;
+  --sohbetten-tarih-prefix: #94a3b8;
+  --sohbetten-tarih-value: #ffffff;
+  --mor-primary-light: rgba(109, 40, 217, 0.12);
+  --tablo-satir-hover: rgba(109, 40, 217, 0.06);
+  --searchable-select-dropdown-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
 }
 
 /* Light tema: date/time varsayılan ikon rengi (siyah/koyu) */

@@ -1298,6 +1298,12 @@ async function loadVehicleList() {
             return;
         }
 
+        // React SPA: liste VehicleTrackingArea ile yönetiliyor — innerHTML ile ezme.
+        // Aksi halde tıklanınca açılan detay popup DOM bozulması / yarış ile anında kapanıyor.
+        if (vehicleListContainer.getAttribute('data-react-vehicle-list') === 'true') {
+            return;
+        }
+
         // Toplam araç sayısını multi-title-count'a ekle
         const toplamAracSayisi = data.data ? data.data.length : 0;
         const multiTitleCount = document.getElementById('multiTitleCount');
@@ -1347,9 +1353,9 @@ async function loadVehicleList() {
                 multiTitle.textContent = 'Araç Takibi';
             }
             vehicleListContainer.innerHTML = `
-                <div class="no-vehicle-message" style="padding: 20px; text-align: center; color: var(--gray-classic);">
-                    <span style="display: block; margin-bottom: 10px;">${LUCIDE_VAN_ICON_32}</span>
-                    <p style="margin-top: 10px; font-size: 14px; line-height: 1.5;">
+                <div class="no-vehicle-message">
+                    <span class="no-vehicle-message__icon">${LUCIDE_VAN_ICON_32}</span>
+                    <p class="no-vehicle-message__text">
                         Herhangi bir araç eklenmemiş. Araç eklemek için Ayarlar > Araç Takip ayarlarından yeni araç ekleyebilirsiniz.
                     </p>
                 </div>

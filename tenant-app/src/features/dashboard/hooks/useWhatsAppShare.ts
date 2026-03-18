@@ -3,6 +3,7 @@ import { apiClient } from '@/lib/api';
 import { showToast } from '../../../shared/utils/toastUtils';
 import { cleanPhoneForDatabase } from '../../../shared/utils/formatUtils';
 import { createOrganizasyonWhatsAppMessage, createOrderWhatsAppMessage } from '../utils/whatsappMessageUtils';
+import { buildMesajSablonuBankaBlokuAsync } from '../utils/musteriBankaWhatsappBlok';
 
 export type WhatsAppShareMode = 'list' | 'template';
 
@@ -75,7 +76,6 @@ export function useWhatsAppShare() {
   }, [checkWhatsAppStatus]);
 
   const musteriSablonRef = React.useRef<string>('');
-  const mesajdaKullanilacakBankaIdsRef = React.useRef<number[]>([]);
 
   // Gönderim ayarlarından telefon numaralarını ve müşteri şablonunu yükle
   const loadContacts = useCallback(async (): Promise<WhatsAppContact[]> => {
@@ -86,8 +86,6 @@ export function useWhatsAppShare() {
       if (result.success && result.data) {
         const ayarlar = result.data;
         musteriSablonRef.current = (ayarlar.musteri_sablonu_whatsapp || '').trim();
-        const ids = ayarlar.mesajda_kullanilacak_banka_ids;
-        mesajdaKullanilacakBankaIdsRef.current = Array.isArray(ids) ? ids : [];
         const kisiler: WhatsAppContact[] = [];
         
         // siparis_listesi_whatsapp alanını parse et
@@ -175,37 +173,15 @@ export function useWhatsAppShare() {
     const m = modeOverride ?? shareModeRef.current;
     if (m === 'template') {
       let template = (musteriSablonRef.current || '').trim();
-      const bankaIds = mesajdaKullanilacakBankaIdsRef.current;
-      if (bankaIds.length > 0) {
-        try {
-          const bankRes = await apiClient.get<{ success?: boolean; data?: Array<{ id: number; banka_adi?: string; iban?: string; sube?: string; hesap_sahibi?: string }> }>('/ayarlar/fatura/banka-hesaplari');
-          const tumHesaplar = bankRes.data?.data ?? [];
-          const secilenler = tumHesaplar.filter((b) => bankaIds.includes(b.id));
-          const satirlar: string[] = [];
-          secilenler.forEach((b) => {
-            const ad = (b.banka_adi || '').trim();
-            const iban = (b.iban || '').trim();
-            const subeSahibi = [b.sube, b.hesap_sahibi].filter(Boolean).join(' · ').trim();
-            if (ad || iban) {
-              satirlar.push(ad ? `*${ad}*` : '');
-              if (iban) satirlar.push(`IBAN: ${iban}`);
-              if (subeSahibi) satirlar.push(subeSahibi);
-              satirlar.push('');
-            }
-          });
-          const bankaMetni = satirlar.join('\n').trimEnd();
-          if (bankaMetni) {
-            const ibanBlok =
-              'Sipariş ücretini aşağıdaki IBAN hesaplarımıza gönderebilirsiniz:\n\n' +
-              '-----------------------\n' +
-              bankaMetni +
-              '\n-----------------------\n\n' +
-              '_Lütfen EFT/Havale işlemi açıklamasına isminizi ve sipariş detayını yazınız._';
-            template = template ? `${template}\n\n${ibanBlok}` : ibanBlok;
-          }
-        } catch (_) {
-          // Banka listesi alınamazsa şablon olduğu gibi kalır
+      try {
+        const bankaMetniBlok = await buildMesajSablonuBankaBlokuAsync();
+        if (bankaMetniBlok) {
+          const ibanBlok =
+            'Sipariş ücretini aşağıdaki IBAN hesaplarımıza gönderebilirsiniz:\n\n' + bankaMetniBlok;
+          template = template ? `${template}\n\n${ibanBlok}` : ibanBlok;
         }
+      } catch (_) {
+        // Banka listesi alınamazsa şablon olduğu gibi kalır
       }
       return template;
     }

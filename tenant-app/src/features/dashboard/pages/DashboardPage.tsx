@@ -88,6 +88,53 @@ export const DashboardPage: React.FC = () => {
     };
   }, []); // ✅ DÜZELTME: searchQuery dependency'sini kaldırdık - sonsuz döngüyü önlemek için
 
+  /** WhatsApp sohbetten sipariş kaydı: kart listesini yenile, ilgili organizasyon kartına kaydır */
+  React.useEffect(() => {
+    const handler = async (ev: Event) => {
+      const e = ev as CustomEvent<{ organizasyonKartId?: number }>;
+      const raw = e.detail?.organizasyonKartId;
+      if (raw == null || Number.isNaN(Number(raw))) return;
+      const organizasyonId = Number(raw);
+      try {
+        await invalidateOrganizasyonKartQueries(queryClient, organizasyonId);
+        await queryClient.refetchQueries({ queryKey: ['siparis-kartlar', organizasyonId] });
+        await queryClient.refetchQueries({ queryKey: ['organizasyon-kartlar'] });
+      } catch {
+        /* ignore */
+      }
+      const scrollToCard = () => {
+        const el = document.querySelector(
+          `[data-organizasyon-id="${organizasyonId}"]`
+        ) as HTMLElement | null;
+        if (!el) return false;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        const anaKart = el.querySelector('.ana-kart') as HTMLElement | null;
+        if (anaKart) {
+          anaKart.classList.add('ana-kart--sohbetten-kayit-vurgu');
+          gsap.killTweensOf(anaKart);
+          gsap.set(anaKart, { scale: 1 });
+          const tl = gsap.timeline({ repeat: 1 });
+          tl.to(anaKart, { scale: 0.97, duration: 0.3, ease: 'power2.out' }).to(anaKart, {
+            scale: 1,
+            duration: 0.3,
+            ease: 'power2.in',
+          });
+          tl.eventCallback('onComplete', () => {
+            gsap.set(anaKart, { scale: 1, clearProps: 'scale' });
+            anaKart.classList.remove('ana-kart--sohbetten-kayit-vurgu');
+          });
+        }
+        return true;
+      };
+      window.setTimeout(() => {
+        if (!scrollToCard()) window.setTimeout(() => scrollToCard(), 650);
+      }, 450);
+    };
+    window.addEventListener('floovon:sohbetten-siparis-kaydedildi', handler as EventListener);
+    return () =>
+      window.removeEventListener('floovon:sohbetten-siparis-kaydedildi', handler as EventListener);
+  }, [queryClient]);
+
   // ✅ REACT: Header'daki "Yeni Kart" ve "Müşteri Ekle" butonlarından gelen event'leri dinle (Araç Takip Header'da global)
   useEffect(() => {
     const onOpenYeniKart = () => setYeniKartModalOpen(true);

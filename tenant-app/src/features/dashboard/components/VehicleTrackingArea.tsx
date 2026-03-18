@@ -4,12 +4,11 @@
  * Teslimatta aktif vehicle-item tıklanınca detay popup açılır.
  */
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Van, MapPin } from 'lucide-react';
 import { useVehicleTracking, type Vehicle } from '../hooks/useVehicleTracking';
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner';
-
-const VehicleDetailModal = lazy(() => import('./VehicleDetailModal').then((m) => ({ default: m.VehicleDetailModal })));
+import { useVehicleDetailModal } from '../context/VehicleDetailModalContext';
 
 export const VehicleTrackingArea: React.FC = () => {
   const {
@@ -22,9 +21,11 @@ export const VehicleTrackingArea: React.FC = () => {
     getAddressFromCoordinates,
   } = useVehicleTracking();
 
-  const [detailVehicle, setDetailVehicle] = useState<Vehicle | null>(null);
+  const { openVehicleDetail } = useVehicleDetailModal();
   const [locationTexts, setLocationTexts] = useState<Record<string, string>>({});
-  
+  /** Aynı dokunuşta pointerup + click çift açılmasın; klavye sadece click kullanır */
+  const openedViaPointerRef = React.useRef(false);
+
   // ✅ KRİTİK: vehicles array'inin içeriğini takip et - referans değişikliği yerine içerik değişikliğini kontrol et
   const vehiclesKeyRef = React.useRef<string>('');
   const isProcessingRef = React.useRef<boolean>(false);
@@ -134,18 +135,29 @@ export const VehicleTrackingArea: React.FC = () => {
     };
   }, [vehiclesKey, vehicles.length, getAddressFromCoordinates]);
 
-  const handleVehicleClick = (vehicle: Vehicle) => {
+  const isVehicleTeslimatta = React.useCallback((vehicle: Vehicle) => {
     const durum = (vehicle.durum || vehicle.arac_durum || '').toString().toLowerCase().trim();
     const isActiveFromDB =
       vehicle.is_active !== undefined
         ? vehicle.is_active === 1 || vehicle.is_active === true || vehicle.is_active === '1'
         : true;
-    const isActive = durum === 'teslimatta' && isActiveFromDB;
+    return durum === 'teslimatta' && isActiveFromDB;
+  }, []);
 
-    if (isActive) {
-      setDetailVehicle(vehicle);
-    }
-  };
+  const openDetailForVehicle = React.useCallback(
+    (vehicle: Vehicle, source: 'pointer' | 'click') => {
+      if (!isVehicleTeslimatta(vehicle)) return;
+      if (source === 'click' && openedViaPointerRef.current) return;
+      if (source === 'pointer') {
+        openedViaPointerRef.current = true;
+        window.setTimeout(() => {
+          openedViaPointerRef.current = false;
+        }, 450);
+      }
+      openVehicleDetail({ ...vehicle }, driverName);
+    },
+    [driverName, openVehicleDetail, isVehicleTeslimatta]
+  );
 
   return (
     <>
@@ -169,15 +181,15 @@ export const VehicleTrackingArea: React.FC = () => {
           </span>
         </div>
       </div>
-      <div className="vehicle-list">
+      <div className="vehicle-list" data-react-vehicle-list="true">
         {isLoading ? (
-          <div style={{ padding: '20px', textAlign: 'center' }}>
+          <div className="vehicle-list-loading">
             <LoadingSpinner size="sm" />
           </div>
         ) : vehicles.length === 0 ? (
-          <div className="no-vehicle-message" style={{ padding: '20px', textAlign: 'center', color: 'var(--gray-classic)' }}>
-            <Van size={32} className="vehicle-tracking-lucide-icon" style={{ marginBottom: '10px', opacity: 0.3 }} aria-hidden />
-            <p style={{ marginTop: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+          <div className="no-vehicle-message">
+            <Van size={32} className="no-vehicle-message__icon vehicle-tracking-lucide-icon" aria-hidden />
+            <p className="no-vehicle-message__text">
               Herhangi bir araç eklenmemiş. Araç eklemek için Ayarlar &gt; Araç Takip ayarlarından yeni araç ekleyebilirsiniz.
             </p>
           </div>
@@ -204,8 +216,44 @@ export const VehicleTrackingArea: React.FC = () => {
                 data-durum={durum}
                 data-konum-lat={vehicle.konum_lat}
                 data-konum-lng={vehicle.konum_lng}
-                style={{ cursor: isActive ? 'pointer' : 'default' }}
-                onClick={() => handleVehicleClick(vehicle)}
+                style={{ cursor: isActive ? 'pointer' : 'default', touchAction: isActive ? 'manipulation' : undefined }}
+                role={isActive ? 'button' : undefined}
+                tabIndex={isActive ? 0 : undefined}
+                aria-label={isActive ? `${vehicle.plaka || 'Araç'} teslimat detayı` : undefined}
+                onPointerDown={(e) => {
+                  if (!isActive) return;
+                  const el = e.currentTarget as HTMLDivElement;
+                  el.dataset._vdPtr = `${e.clientX},${e.clientY}`;
+                }}
+                onPointerCancel={(e) => {
+                  delete (e.currentTarget as HTMLDivElement).dataset._vdPtr;
+                }}
+                onPointerUp={(e) => {
+                  if (!isActive) return;
+                  if (e.pointerType === 'mouse' && e.button !== 0) return;
+                  const el = e.currentTarget as HTMLDivElement;
+                  const raw = el.dataset._vdPtr;
+                  delete el.dataset._vdPtr;
+                  if (!raw) return;
+                  const [sx, sy] = raw.split(',').map(Number);
+                  const dx = e.clientX - sx;
+                  const dy = e.clientY - sy;
+                  if (dx * dx + dy * dy > 196) return;
+                  e.stopPropagation();
+                  openDetailForVehicle(vehicle, 'pointer');
+                }}
+                onClick={(ev) => {
+                  if (!isActive) return;
+                  ev.stopPropagation();
+                  openDetailForVehicle(vehicle, 'click');
+                }}
+                onKeyDown={(e) => {
+                  if (!isActive) return;
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openDetailForVehicle(vehicle, 'click');
+                  }
+                }}
               >
                 <div className="vehicle-main-info">
                   <div className="vehicle-plate">
@@ -228,16 +276,6 @@ export const VehicleTrackingArea: React.FC = () => {
       </div>
     </div>
 
-    {detailVehicle && (
-      <Suspense fallback={null}>
-        <VehicleDetailModal
-          open={!!detailVehicle}
-          vehicle={detailVehicle}
-          driverName={driverName}
-          onClose={() => setDetailVehicle(null)}
-        />
-      </Suspense>
-    )}
     </>
   );
 };

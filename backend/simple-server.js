@@ -42,6 +42,7 @@ const { generateMusteriInvoiceHtml } = require('./utils/fatura-sablon-musteri');
 
 // Abonelik mail şablonları modülü
 const abonelikMailTemplates = require('./mail-templates/abonelik-mail-templates');
+const sohbettenSiparisPrompts = require('./prompts/sohbettenSiparisPrompts');
 
 /** Ödeme yöntemini veritabanı formatına normalize eder: nakit | havale_eft | pos | cari */
 function normalizeOdemeYontemi(val) {
@@ -4201,7 +4202,13 @@ async function initBildirimlerTable() {
         await addColumnIfMissing('bildirimler', 'link', 'TEXT');
         await addColumnIfMissing('bildirimler', 'tenant_id', 'INTEGER');
         await addColumnIfMissing('bildirimler', 'read_at', 'DATETIME');
-        
+        // Silinmiş organizasyonlara işaret eden bildirimleri temizle (organizasyon 119 vb. 404 hatalarını kaldırır)
+        try {
+            const cleared = await run(
+                `UPDATE bildirimler SET organizasyon_id = NULL WHERE organizasyon_id IS NOT NULL AND organizasyon_id NOT IN (SELECT id FROM organizasyon_kartlar)`
+            );
+            if (cleared && cleared.changes > 0) console.log(`✅ Bildirimler: ${cleared.changes} adet silinmiş organizasyon referansı temizlendi`);
+        } catch (e) { /* ignore */ }
         console.log('✅ bildirimler tablosu kolonları kontrol edildi');
     } catch (error) {
         console.error('❌ Bildirimler tablosu oluşturma hatası:', error);
@@ -7288,24 +7295,33 @@ app.get('/api/bildirimler', async (req, res) => {
         sql += ` ORDER BY created_at DESC LIMIT ?`;
         params.push(Math.min(parseInt(limit, 10) || 20, 100));
         const rows = await query(sql, params);
-        const data = rows.map((r) => ({
-            id: r.id,
-            tip: r.tip,
-            baslik: r.baslik,
-            musteri_unvani: r.musteri_unvani ?? r.musteri_adi,
-            teslim_kisisi: r.teslim_kisisi,
-            siparis_adi: r.siparis_adi,
-            organizasyon_adi: r.organizasyon_adi,
-            organizasyon_alt_tur: r.organizasyon_alt_tur,
-            siparis_teslim_kisisi_baskasi: r.siparis_teslim_kisisi_baskasi,
-            urun_resmi: r.urun_resmi,
-            arsivleme_sebebi: r.arsivleme_sebebi,
-            siparis_id: r.siparis_id,
-            organizasyon_id: r.organizasyon_id,
-            // Sadece açıkça 1/true ise okundu; null/0/undefined = okunmamış
-            is_read: Number(r.is_read) === 1 || r.is_read === true,
-            created_at: r.created_at,
-        }));
+        const orgIds = [...new Set(rows.map((r) => r.organizasyon_id).filter((id) => id != null && id !== ''))];
+        let validOrgIds = new Set();
+        if (orgIds.length > 0) {
+            const placeholders = orgIds.map(() => '?').join(',');
+            const existing = await query(`SELECT id FROM organizasyon_kartlar WHERE id IN (${placeholders}) AND (tenant_id = ? OR tenant_id IS NULL)`, [...orgIds, tenantId]);
+            existing.forEach((r) => validOrgIds.add(r.id));
+        }
+        const data = rows.map((r) => {
+            const orgId = r.organizasyon_id != null && validOrgIds.has(Number(r.organizasyon_id)) ? r.organizasyon_id : null;
+            return {
+                id: r.id,
+                tip: r.tip,
+                baslik: r.baslik,
+                musteri_unvani: r.musteri_unvani ?? r.musteri_adi,
+                teslim_kisisi: r.teslim_kisisi,
+                siparis_adi: r.siparis_adi,
+                organizasyon_adi: r.organizasyon_adi,
+                organizasyon_alt_tur: r.organizasyon_alt_tur,
+                siparis_teslim_kisisi_baskasi: r.siparis_teslim_kisisi_baskasi,
+                urun_resmi: r.urun_resmi,
+                arsivleme_sebebi: r.arsivleme_sebebi,
+                siparis_id: r.siparis_id,
+                organizasyon_id: orgId,
+                is_read: Number(r.is_read) === 1 || r.is_read === true,
+                created_at: r.created_at,
+            };
+        });
         res.json({ success: true, data });
     } catch (error) {
         console.error('❌ Bildirimler yüklenirken hata:', error);
@@ -12544,6 +12560,102 @@ app.post('/api/qr/scan', async (req, res) => {
     } catch (error) {
         console.error('❌ POST /api/qr/scan hatası:', error);
         res.status(500).json({ success: false, message: 'Sipariş aranırken hata oluştu.', error: error.message });
+    }
+});
+
+/** Sipariş öncesi: aynı müşteri (isim+tel) veya aynı teslim kişisi (isim+tel) aktif siparişte var mı */
+function normalizeSiparisPhoneMatch(p) {
+    if (p == null || p === '') return '';
+    let d = String(p).replace(/\D/g, '');
+    if (d.length >= 12 && d.startsWith('90')) d = d.slice(-10);
+    else if (d.length === 11 && d.startsWith('0')) d = d.slice(1);
+    else if (d.length > 10) d = d.slice(-10);
+    return d;
+}
+function normalizeSiparisNameMatch(s) {
+    if (!s || typeof s !== 'string') return '';
+    return s
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .replace(/ı/g, 'i')
+        .replace(/İ/g, 'i')
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c');
+}
+
+app.post('/api/siparis-kartlar/check-duplicate', async (req, res) => {
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        const {
+            musteri_isim_soyisim,
+            musteri_unvan,
+            siparis_veren_telefon,
+            teslim_kisisi,
+            teslim_kisisi_telefon
+        } = req.body || {};
+        const custNameRaw = (musteri_isim_soyisim || musteri_unvan || '').trim();
+        const custPhone = normalizeSiparisPhoneMatch(siparis_veren_telefon);
+        const teslimNameRaw = (teslim_kisisi || '').trim();
+        const teslimPhone = normalizeSiparisPhoneMatch(teslim_kisisi_telefon);
+
+        if (!custNameRaw || custPhone.length < 10) {
+            return res.json({
+                success: true,
+                duplicateMusteri: false,
+                duplicateTeslim: false
+            });
+        }
+
+        const nCust = normalizeSiparisNameMatch(custNameRaw);
+        const nTeslim = teslimNameRaw.length >= 2 ? normalizeSiparisNameMatch(teslimNameRaw) : '';
+        const hasTeslim = nTeslim.length >= 2 && teslimPhone.length >= 10;
+
+        let sql = `
+            SELECT id, musteri_unvan, musteri_isim_soyisim, siparis_veren_telefon, teslim_kisisi, teslim_kisisi_telefon
+            FROM siparisler
+            WHERE tenant_id = ? AND status = 'aktif' AND COALESCE(CAST(arsivli AS INTEGER), 0) = 0
+        `;
+        const params = [tenantId];
+        try {
+            const cols = await query('PRAGMA table_info(siparisler)');
+            const names = (cols || []).map((c) => c.name);
+            if (names.includes('is_active')) {
+                sql += ' AND (is_active = 1 OR is_active IS NULL) ';
+            }
+        } catch (e) {
+            /* devam */
+        }
+
+        const rows = await query(sql, params);
+        let duplicateMusteri = false;
+        let duplicateTeslim = false;
+
+        for (const r of rows || []) {
+            const rCustName = normalizeSiparisNameMatch(
+                ((r.musteri_isim_soyisim || r.musteri_unvan || '') + '').trim()
+            );
+            const rCustPhone = normalizeSiparisPhoneMatch(r.siparis_veren_telefon);
+            if (rCustName === nCust && rCustPhone === custPhone && rCustPhone.length >= 10) {
+                duplicateMusteri = true;
+            }
+            if (hasTeslim) {
+                const rTeslimName = normalizeSiparisNameMatch((r.teslim_kisisi || '').trim());
+                const rTeslimPhone = normalizeSiparisPhoneMatch(r.teslim_kisisi_telefon);
+                if (rTeslimName === nTeslim && rTeslimPhone === teslimPhone && rTeslimPhone.length >= 10) {
+                    duplicateTeslim = true;
+                }
+            }
+            if (duplicateMusteri && duplicateTeslim) break;
+        }
+
+        res.json({ success: true, duplicateMusteri, duplicateTeslim });
+    } catch (error) {
+        console.error('❌ POST /api/siparis-kartlar/check-duplicate:', error);
+        res.status(500).json({ success: false, message: error.message || 'Kontrol başarısız' });
     }
 });
 
@@ -20681,6 +20793,89 @@ app.delete('/api/ayarlar/fatura/banka-hesaplari/:id', async (req, res) => {
     }
 });
 
+// ========== AYARLAR YAPAY ZEKA (OpenAI API key, model) ==========
+const YAPAY_ZEKA_TABLE = 'ayarlar_yapay_zeka';
+async function ensureAyarlarYapayZekaTable() {
+    await run(`
+        CREATE TABLE IF NOT EXISTS ${YAPAY_ZEKA_TABLE} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tenant_id INTEGER NOT NULL UNIQUE,
+            enabled INTEGER DEFAULT 1,
+            openai_api_key TEXT,
+            model TEXT DEFAULT 'gpt-4o-mini',
+            updated_at TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+    // Migration: enabled kolonu yoksa ekle
+    try {
+        const cols = await query(`PRAGMA table_info(${YAPAY_ZEKA_TABLE})`);
+        const hasEnabled = Array.isArray(cols) && cols.some(c => String(c.name || '').toLowerCase() === 'enabled');
+        if (!hasEnabled) {
+            await run(`ALTER TABLE ${YAPAY_ZEKA_TABLE} ADD COLUMN enabled INTEGER DEFAULT 1`);
+        }
+    } catch (_) { }
+}
+function maskApiKey(key) {
+    if (!key || typeof key !== 'string') return '';
+    const s = key.trim();
+    if (s.length <= 11) return '••••••••';
+    return s.substring(0, 7) + '••••••••' + s.substring(s.length - 4);
+}
+app.get('/api/ayarlar/yapay-zeka', async (req, res) => {
+    try {
+        await ensureAyarlarYapayZekaTable();
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) return res.json({ success: true, enabled: true, apiKeyMasked: '', model: 'gpt-4o-mini' });
+        const rows = await query(`SELECT enabled, openai_api_key, model FROM ${YAPAY_ZEKA_TABLE} WHERE tenant_id = ? LIMIT 1`, [tenantId]);
+        const row = rows && rows[0] ? rows[0] : {};
+        const key = (row.openai_api_key || '').toString().trim();
+        res.json({
+            success: true,
+            enabled: row.enabled !== 0 && row.enabled !== false,
+            apiKeyMasked: key ? maskApiKey(key) : '',
+            model: (row.model || 'gpt-4o-mini').toString()
+        });
+    } catch (error) {
+        console.error('❌ Yapay Zeka ayarları yüklenirken hata:', error?.message || error);
+        res.status(500).json({ success: false, error: 'Ayarlar yüklenemedi', message: error?.message });
+    }
+});
+app.post('/api/ayarlar/yapay-zeka', async (req, res) => {
+    try {
+        await ensureAyarlarYapayZekaTable();
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        const { apiKey, model, enabled } = req.body || {};
+        const modelVal = (model || 'gpt-4o-mini').toString().trim();
+        const enabledVal = (enabled === false || enabled === 0 || enabled === '0') ? 0 : 1;
+        const existing = await query(`SELECT id, openai_api_key, enabled FROM ${YAPAY_ZEKA_TABLE} WHERE tenant_id = ?`, [tenantId]);
+        const keyToSave = (apiKey && typeof apiKey === 'string' && apiKey.trim()) ? apiKey.trim() : (existing && existing[0] ? (existing[0].openai_api_key || '') : '');
+        if (existing && existing.length > 0) {
+            await run(
+                `UPDATE ${YAPAY_ZEKA_TABLE} SET enabled = ?, openai_api_key = ?, model = ?, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = ?`,
+                [enabledVal, keyToSave, modelVal, tenantId]
+            );
+        } else {
+            await run(
+                `INSERT INTO ${YAPAY_ZEKA_TABLE} (tenant_id, enabled, openai_api_key, model, updated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+                [tenantId, enabledVal, keyToSave, modelVal]
+            );
+        }
+        const rows = await query(`SELECT enabled, openai_api_key, model FROM ${YAPAY_ZEKA_TABLE} WHERE tenant_id = ?`, [tenantId]);
+        const row = rows && rows[0] ? rows[0] : {};
+        res.json({
+            success: true,
+            enabled: row.enabled !== 0 && row.enabled !== false,
+            apiKeyMasked: row.openai_api_key ? maskApiKey(row.openai_api_key) : '',
+            model: (row.model || 'gpt-4o-mini').toString()
+        });
+    } catch (error) {
+        console.error('❌ Yapay Zeka ayarları kaydedilirken hata:', error?.message || error);
+        res.status(500).json({ success: false, error: 'Kaydedilemedi', message: error?.message });
+    }
+});
+
 // ========== AYARLAR ÇİÇEK SEPETİ ==========
 const CICEKSEPETI_TABLE = 'ayarlar_ciceksepeti_ayarlari';
 app.get('/api/ayarlar/ciceksepeti', async (req, res) => {
@@ -21751,12 +21946,10 @@ try {
 // WhatsApp status endpoint
 app.get('/api/whatsapp/status', async (req, res) => {
     if (!getWhatsAppService) {
-        // getWhatsAppService null ise, servis yüklenmemiş demektir
-        // Ama frontend'de installed kontrolü yapmıyoruz, sadece success: false döndürüyoruz
         return res.json({
-            success: false,
-            message: 'WhatsApp servisi şu anda kullanılamıyor. Lütfen backend sunucusunu kontrol edin.',
-            installed: true, // Frontend'de installed kontrolü yapmıyoruz
+            success: true,
+            installed: false,
+            message: 'WhatsApp servisi yüklü değil. Backend\'i yeniden başlatın veya npm install yapın.',
             isReady: false,
             isAuthenticated: false,
             hasQRCode: false,
@@ -22255,6 +22448,1046 @@ app.post('/api/whatsapp/disconnect', async (req, res) => {
             error: 'WhatsApp bağlantısı kesilemedi',
             message: error.message
         });
+    }
+});
+
+// Sohbet geçmişi listesi (Sohbet Geçmişi popup için)
+app.get('/api/whatsapp/chats', async (req, res) => {
+    if (!getWhatsAppService) {
+        return res.status(200).json({ success: true, chats: [], message: 'WhatsApp servisi kurulu değil.' });
+    }
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) {
+            return res.status(200).json({ success: true, chats: [], message: 'Oturum bulunamadı.' });
+        }
+        const whatsappService = getWhatsAppService(tenantId);
+        if (!whatsappService || typeof whatsappService.getRecentChats !== 'function') {
+            return res.status(200).json({ success: true, chats: [], message: 'WhatsApp servisi hazır değil.' });
+        }
+        if (!whatsappService.isReady || !whatsappService.client) {
+            return res.status(200).json({ success: true, chats: [], message: 'WhatsApp bağlı değil.' });
+        }
+        const limit = Math.min(parseInt(req.query.limit, 10) || 50, 100);
+        const chats = await whatsappService.getRecentChats(limit);
+        const list = Array.isArray(chats) ? chats : [];
+        if (list.length === 0) {
+            return res.json({
+                success: true,
+                chats: [],
+                message: 'Sohbet geçmişi henüz yüklenmedi. Birkaç saniye sonra tekrar Sohbet Geçmişi\'ne tıklayın.'
+            });
+        }
+        return res.json({ success: true, chats: list });
+    } catch (error) {
+        const errMsg = error?.message || '';
+        console.error('❌ GET /api/whatsapp/chats hatası:', errMsg);
+        const isWWebJSError = /getChatModel|reading 'update'|Evaluation failed|WWebJS/i.test(errMsg);
+        const userMessage = isWWebJSError
+            ? 'WhatsApp Web sürümü ile geçici uyumsuzluk. Lütfen birkaç dakika sonra tekrar deneyin.'
+            : (errMsg || 'Sohbet geçmişi alınamadı.');
+        return res.status(200).json({
+            success: true,
+            chats: [],
+            message: userMessage
+        });
+    }
+});
+
+/**
+ * Müşteri son mesajlarda teslimi BUGÜN istiyorsa true (yarını forma yazmayı engelle).
+ * Çiçekçi mesajındaki "yarın" veya eski satırdaki yarın, müşteri bugün dediyse geçersiz sayılır.
+ */
+function floovonCustomerBugunTeslimWins(custBlob) {
+    const lines = String(custBlob || '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) return false;
+    const last = lines[lines.length - 1] || '';
+    if (/\b(yarın|yarin|yarına|yarina)\b/i.test(last) && !/\b(bugün|bugun|bu\s+gün)\b/i.test(last)) {
+        if (/teslim|gönder|gonder|gitsin|olsun|kapı|kapi|adres|[1-9]\d?\s*(de|da|te|ta)\b|saat/i.test(last)) return false;
+    }
+    const recent = lines.slice(-18).join('\n');
+    if (!/\b(bugün|bugun|bu\s+gün|bugüne)\b/i.test(recent)) return false;
+    const deliv = /teslim|gönder|gonder|gönderin|atın|atin|yolla|çiçek|cicek|sipariş|siparis|gelsin|lazım|lazim|şimdi|hemen|acil|acele|öğle|ogle|akşam|aksam|saat|kapı|kapi|adrese|alıcı|alıcıya|\d{1,2}\s*(de|da|te|ta)\b|bu\s*gün\s*(içinde|içi|olsun)|aynı\s*gün|isterim|olsun|edin|ediniz|rica|günü\s*içi/i.test(recent);
+    if (deliv) return true;
+    if (lines.length >= 2 && /^(bugün|bugun|bu\s+gün)[.!?\s]*$/i.test(last)) return true;
+    return false;
+}
+
+/** Müşteri metninde teslim için "bugün/yarın" (genel sohbet değil) */
+function floovonRelativeDeliveryYmdFromCustomerOnly(custBlob, baseYmd) {
+    const ymdAddDays = (base, delta) => {
+        const [y, mo, d] = String(base).split('-').map(Number);
+        if (!y || !mo || !d) return '';
+        const u = Date.UTC(y, mo - 1, d + delta);
+        const dt = new Date(u);
+        return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`;
+    };
+    const lines = String(custBlob || '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) return '';
+    const fold = (t) => String(t).toLowerCase()
+        .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
+    const hasDeliverySignal = (t) => {
+        const x = fold(t);
+        return /teslim|gönder|gonder|sipariş|siparis|çiçek|cicek|çiçeğ|adrese|kapı|kapi|yolla|gitsin|gonderin|getirin|paket|buketi?|alıcı|ne zaman|zaman|saat|öğle|ogle|öğlen|akşam|aksam|sabah|\d{1,2}\s*:\s*\d{2}|\d{1,2}\s*(de|da|te|ta)\b|yarın\s*teslim|yarına\s*kadar|yarın\s+gönder|bugün\s*teslim|bugun\s*teslim|bugüne/.test(x);
+    };
+    if (floovonCustomerBugunTeslimWins(custBlob)) return baseYmd;
+    const weakAddr = (t) => /mahalle|ilce|ilçe|sokak|cadde|no\s*\d|apart|daire|kat\b|5\d{9}/i.test(fold(t));
+    const socialYarin = (triple) => /arıyorum|ararim|görüş|gorus|musait|müsait|görüşürüz|gorusuruz|yarın\s*arar|yarın\s*görüş/i.test(triple);
+    for (let i = lines.length - 1; i >= 0; i--) {
+        const L = lines[i];
+        const fl = fold(L);
+        const prev = i > 0 ? lines[i - 1] : '';
+        const next = i < lines.length - 1 ? lines[i + 1] : '';
+        const triple = `${prev} ${L} ${next}`;
+        const yarin = /\b(yarın|yarına|yarin|yarina)\b/i.test(L);
+        const bugun = /\b(bugün|bugüne|bugun|bugune)\b/i.test(L);
+        if (yarin) {
+            if (/yarın\s+teslim|yarına\s*kadar|yarın\s+gönder|yarın\s*saat|yarin\s*saat/i.test(L)) {
+                return ymdAddDays(baseYmd, 1);
+            }
+            if (/\b(yarın|yarin)\s+[1-9]|yarın\s+1[0-9]/i.test(L) && /\d{1,2}\s*(de|da|te|ta)\b/.test(fl)) {
+                return ymdAddDays(baseYmd, 1);
+            }
+            if (socialYarin(triple) && !hasDeliverySignal(L) && !hasDeliverySignal(prev)) continue;
+            if (hasDeliverySignal(L) || hasDeliverySignal(prev) || hasDeliverySignal(next)) {
+                return ymdAddDays(baseYmd, 1);
+            }
+            if (weakAddr(prev) && i === lines.length - 1 && L.length < 40) {
+                return ymdAddDays(baseYmd, 1);
+            }
+        }
+        if (bugun && (hasDeliverySignal(L) || /bugün\s*teslim|bugun\s*teslim|bugüne/.test(fl))) {
+            return baseYmd;
+        }
+    }
+    return '';
+}
+
+/** Müşteri açıkça teslim GÜNÜ söylediyse true (sadece saat yetmez) */
+function floovonCustomerHasExplicitDeliveryDate(custBlob) {
+    const baseIst = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+    if (floovonRelativeDeliveryYmdFromCustomerOnly(custBlob, baseIst)) return true;
+    const s = String(custBlob).toLowerCase()
+        .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
+    if (/\bobur\s*gun|obur\s*gun|ertesi\s*gun\b/.test(s)) return true;
+    if (/\b(\d{1,2})\s*gun\s*sonra\b/.test(s)) return true;
+    if (/\biki\s*gun\s*sonra\b/.test(s)) return true;
+    if (/\b(uc|üc)\s*gun\s*sonra\b|3\s*gun\s*sonra\b/.test(s)) return true;
+    if (/\bbugun|bu\s*gun\b/.test(s) && /teslim|gonder|getir|aksam|akşam|saat|ogle|oglen|bugun\s*teslim|bu\s*gun\s*teslim/.test(s)) return true;
+    const raw = String(custBlob);
+    if (/\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b/.test(raw)) return true;
+    if (/\b20\d{2}-\d{1,2}-\d{1,2}\b/.test(raw)) return true;
+    if (/\b\d{1,2}\s*(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik)\b/i.test(s)) return true;
+    if (/\b\d{1,2}\.\d{1,2}(\.\d{2,4})?\b/.test(String(custBlob))) return true;
+    return false;
+}
+
+/** Çiçekçi ([Ben]) kısa teslim zamanı mesajları: yarın, 19.03, 2 de vb. */
+function floovonShopSchedulingTextFromMessages(messagesChronoOldestFirst) {
+    if (!Array.isArray(messagesChronoOldestFirst)) return '';
+    const parts = [];
+    for (const m of messagesChronoOldestFirst) {
+        if (!m || !m.fromMe || !m.body) continue;
+        const t = String(m.body).trim().replace(/\s+/g, ' ');
+        if (t.length > 28) continue;
+        const low = t.toLowerCase();
+        if (/^(yarın|yarin|bugün|bugun|obür gün|obur gun)$/i.test(low)) parts.push(t);
+        else if (/^\d{1,2}\.\d{1,2}(\.\d{2,4})?$/.test(t)) parts.push(t);
+        else if (/^\d{1,2}\s*(de|da|te|ta)\.?$/i.test(low)) parts.push(t);
+        else if (/^\d{1,2}:\d{2}$/.test(t)) parts.push(t);
+    }
+    return parts.join('\n');
+}
+
+function floovonStripUrunNotMetaPrefix(text) {
+    if (text == null || typeof text !== 'string') return text;
+    let t = text.trim();
+    const patterns = [
+        /^not\s+bu\s+olacak[ağ]?\s*[,:]?\s*/i,
+        /^not\s+olarak\s*[,:]?\s*/i,
+        /^notum\s*[,:]?\s*/i,
+        /^ürün\s+notu[mda]?[sz]?a?\s*[,:]?\s*/i,
+        /^urun\s+notu[mda]?[sz]?a?\s*[,:]?\s*/i,
+        /^ürün\s+not[ıi]\s*[,:]?\s*/i,
+        /^not\s*[,:]\s*/i,
+        /^not\s+/i,
+    ];
+    for (let i = 0; i < 8; i++) {
+        const before = t;
+        for (const re of patterns) t = t.replace(re, '').trim();
+        if (t === before) break;
+    }
+    return t;
+}
+
+function floovonStripUrunNotInstructionTail(text) {
+    if (text == null || typeof text !== 'string') return text;
+    let t = text.trim().replace(/\s+/g, ' ');
+    const tailRes = [
+        /\s+lütfen\s+(yazalım|yazın|yazsın|ekleyin)\.?$/i,
+        /\s+(yazalım|yazalim|yazın|yazin|yazsın|yazsin|ekleyin|ekleyelim|koyalım|koyalim)\.?$/i,
+        /\s+bu\s+şekilde(\s+olsun)?\.?$/i,
+        /\s+bu\s+sekilde(\s+olsun)?\.?$/i,
+        /\s+böyle(\s+olsun)?\.?$/i,
+        /\s+boyle(\s+olsun)?\.?$/i,
+        /\s+şöyle(\s+olsun)?\.?$/i,
+        /\s+soyle(\s+olsun)?\.?$/i,
+        /\s+bu\s+gibi(\s+bir\s+şey|\s+bir\s+sey)?\.?$/i,
+        /\s+gibi\.?$/i,
+        /\s+olsun\s+lütfen\.?$/i,
+        /\s+yazdırın\.?$/i,
+        /\s+yazdirin\.?$/i,
+    ];
+    for (let i = 0; i < 14; i++) {
+        const before = t;
+        for (const re of tailRes) t = t.replace(re, '').trim();
+        if (t === before) break;
+    }
+    return t;
+}
+
+function floovonLooksLikeTrPhoneInAddressField(s) {
+    const t = String(s || '').trim();
+    if (!t) return false;
+    const d = t.replace(/\D/g, '');
+    if (d.length < 10) return false;
+    if (/^5\d{9}$/.test(d)) return true;
+    if (/^05\d{9}$/.test(d)) return true;
+    if (/^905\d{9}$/.test(d)) return true;
+    if (d.length === 12 && d.startsWith('90') && d[2] === '5') return true;
+    const letters = t.replace(/[\d\s+().\-/]/g, '');
+    return d.length >= 10 && letters.length <= 4;
+}
+
+function floovonStripPhoneFromAddressFields(obj) {
+    if (!obj || typeof obj !== 'object') return;
+    for (const k of ['teslim_il', 'teslim_ilce', 'teslim_mahalle']) {
+        const v = String(obj[k] || '').trim();
+        if (v && floovonLooksLikeTrPhoneInAddressField(v)) obj[k] = '';
+    }
+}
+
+const FLOOVON_NOT_TESLIM_SOYAD = new Set([
+    'için', 'icin', 'adına', 'adina', 'örneğin', 'orneğin', 'düğünü', 'dugunu', 'düğün', 'dugun',
+    'nişan', 'nisan', 'telefon', 'tel', 'numara', 'adres', 'yarın', 'yarin', 'bugün', 'bugun',
+    'kardeşim', 'kardeş', 'abim', 'ablası', 'ablasi', 'anneme', 'babama', 'eşime', 'esime', 'oğluma', 'ogluma',
+    'kızıma', 'kizima', 'gelin', 'damat', 'gonder', 'gönder', 'siparis', 'sipariş', 'mah', 'mahalle',
+    'sokak', 'cadde', 'no', 'daire', 'kat', 'içeri', 'iceri', 'çumra', 'cumra', 'merkez', 'diye', 'gibi',
+    'var', 'yok', 'olan', 've', 'ile', 'icin', 'için',
+].map((x) => String(x).toLowerCase()));
+
+function floovonWordLooksLikeTeslimSoyadToken(w) {
+    const t = String(w || '').trim();
+    if (t.length < 2 || t.length > 28) return false;
+    const low = t.toLocaleLowerCase('tr-TR');
+    if (FLOOVON_NOT_TESLIM_SOYAD.has(low)) return false;
+    if (/^\d+$/.test(t)) return false;
+    return /^[\p{L}][\p{L}'.-]*$/u.test(t);
+}
+
+/** Model yalnızca adı yazdıysa müşteri metninde aynı/sonraki kelime gerçek soyad olabilir → birleştir */
+function floovonEnrichTeslimKisisiFromCustomerBlob(fields, custBlob) {
+    if (!fields || typeof fields !== 'object') return;
+    const k = String(fields.teslim_kisisi || '').trim();
+    if (!k || k.split(/\s+/).filter(Boolean).length >= 2) return;
+    if (/[0-9@]/.test(k)) return;
+    if (/\b(a\.?ş\.?|ltd|şti|sti|şirket|vakfı|vakfi|derneği|dernegi|hastane|otel|hotel|restoran|kafe|cafe|holding|bank|üniversite|universite|okulu|koleji)\b/i.test(k)) return;
+    const esc = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const blob = String(custBlob || '');
+    const re = new RegExp(`\\b${esc}\\s+([\\p{L}][\\p{L}'.-]{1,28})\\b`, 'giu');
+    let m;
+    let best = '';
+    while ((m = re.exec(blob)) !== null) {
+        const cand = m[1];
+        if (floovonWordLooksLikeTeslimSoyadToken(cand)) {
+            best = cand;
+            break;
+        }
+    }
+    if (best) {
+        fields.teslim_kisisi = `${k} ${best}`.replace(/\s+/g, ' ').trim();
+    }
+}
+
+/** Müşteri metninden teslim tarihi/saati (göreli gün + doğal dil saat)
+ * @param {string} fullBlob — tarih/saat için tam metin (müşteri + isteğe bağlı çiçekçi kısa satırlar)
+ * @param {string} baseYmd — Türkiye (İstanbul) bugünü YYYY-MM-DD
+ * @param {string} [customerOnlyBlob] — "yarın/bugün" teslim günü yalnızca müşteri satırlarından (yanlış tarih önleme)
+ */
+function floovonParseTeslimTarihSaatFromCustomerText(fullBlob, baseYmd, customerOnlyBlob) {
+    const custRel = String(customerOnlyBlob != null ? customerOnlyBlob : fullBlob);
+    const pad2 = (n) => String(Math.min(59, Math.max(0, n))).padStart(2, '0');
+    const padH = (n) => String(Math.min(23, Math.max(0, n))).padStart(2, '0');
+    const ymdAddDays = (base, delta) => {
+        const [y, mo, d] = String(base).split('-').map(Number);
+        if (!y || !mo || !d) return '';
+        const u = Date.UTC(y, mo - 1, d + delta);
+        const dt = new Date(u);
+        return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`;
+    };
+    const s = String(fullBlob).toLowerCase()
+        .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
+    let dateOut = '';
+    const rawDmFirst = String(fullBlob).match(/\b(\d{1,2})\.(\d{1,2})(?:\.(20\d{2}|\d{2}))?\b/);
+    if (rawDmFirst) {
+        const d = parseInt(rawDmFirst[1], 10);
+        const mo = parseInt(rawDmFirst[2], 10);
+        let y = rawDmFirst[3] ? parseInt(rawDmFirst[3].length === 2 ? '20' + rawDmFirst[3] : rawDmFirst[3], 10) : null;
+        if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) {
+            const [by, bm, bd] = String(baseYmd).split('-').map(Number);
+            if (!y) {
+                y = by;
+                const cand = Date.UTC(y, mo - 1, d);
+                const baseMs = Date.UTC(by, bm - 1, bd);
+                if (cand < baseMs) y += 1;
+            }
+            dateOut = `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+    }
+    if (!dateOut) {
+        const rel = floovonRelativeDeliveryYmdFromCustomerOnly(custRel, baseYmd);
+        if (rel) dateOut = rel;
+    }
+    if (!dateOut && /\bobur\s*gun|obur\s*gun|ertesi\s*gun\b/.test(s)) dateOut = ymdAddDays(baseYmd, 2);
+    else if (!dateOut) {
+        const mN = s.match(/\b(\d{1,2})\s*gun\s*sonra\b/);
+        if (mN) {
+            const n = parseInt(mN[1], 10);
+            if (n >= 0 && n <= 30) dateOut = ymdAddDays(baseYmd, n);
+        } else if (/\biki\s*gun\s*sonra\b/.test(s)) dateOut = ymdAddDays(baseYmd, 2);
+        else if (/\buc\s*gun\s*sonra\b|3\s*gun\s*sonra\b/.test(s)) dateOut = ymdAddDays(baseYmd, 3);
+    }
+    let timeOut = '';
+    let m = s.match(/ogleden\s+sonra\s*(\d{1,2})(?:[.:](\d{2}))?/);
+    if (m) {
+        let h = parseInt(m[1], 10);
+        const min = parseInt(m[2] || '0', 10) || 0;
+        if (h >= 1 && h <= 11) h += 12;
+        timeOut = `${padH(h)}:${pad2(min)}`;
+    }
+    if (!timeOut) {
+        m = s.match(/(aksam|akşam|gece)\s*[,:]?\s*(\d{1,2})(?:[.:](\d{2}))?(?:\s*(?:de|da|te|ta))?/);
+        if (m) {
+            let h = parseInt(m[2], 10);
+            const min = parseInt(m[3] || '0', 10) || 0;
+            if (h >= 1 && h <= 11) h += 12;
+            timeOut = `${padH(h)}:${pad2(min)}`;
+        }
+    }
+    if (!timeOut) {
+        m = s.match(/\b(ogle|oglen)\s*[,:]?\s*(\d{1,2})(?:[.:](\d{2}))?/);
+        if (m) {
+            let h = parseInt(m[2], 10);
+            const min = parseInt(m[3] || '0', 10) || 0;
+            if (h >= 1 && h <= 11) h += 12;
+            timeOut = `${padH(h)}:${pad2(min)}`;
+        }
+    }
+    if (!timeOut) {
+        m = s.match(/\bsabah\s*[,:]?\s*(\d{1,2})(?:[.:](\d{2}))?/);
+        if (m) {
+            let h = parseInt(m[1], 10);
+            const min = parseInt(m[2] || '0', 10) || 0;
+            if (h === 12) h = 0;
+            timeOut = `${padH(h)}:${pad2(min)}`;
+        }
+    }
+    if (!timeOut) {
+        m = s.match(/\bsaat\s*[.:]?\s*(\d{1,2})(?:[.:](\d{2}))?\b/);
+        if (m) timeOut = `${padH(parseInt(m[1], 10))}:${pad2(parseInt(m[2] || '0', 10) || 0)}`;
+    }
+    if (!timeOut) {
+        m = s.match(/\b([01]?\d|2[0-3]):(\d{2})\b/);
+        if (m) {
+            const h = parseInt(m[1], 10);
+            const min = parseInt(m[2], 10);
+            if (h <= 23 && min <= 59) timeOut = `${padH(h)}:${pad2(min)}`;
+        }
+    }
+    if (!timeOut) {
+        m = s.match(/\b(\d{1,2})\.(\d{2})\b/);
+        if (m) {
+            const h = parseInt(m[1], 10);
+            const min = parseInt(m[2], 10);
+            const looksLikeDayMonth = h > 12 && min >= 1 && min <= 12;
+            if (!looksLikeDayMonth && h <= 23 && min <= 59) timeOut = `${padH(h)}:${pad2(min)}`;
+        }
+    }
+    if (!timeOut && /\b(yarin|yarın)\b/.test(s)) {
+        const mDe = s.match(/\b([1-9]|1[0-2])\s*(de|da|te|ta)\b/);
+        if (mDe) {
+            let h = parseInt(mDe[1], 10);
+            if (h >= 1 && h <= 11) h += 12;
+            timeOut = `${padH(h)}:00`;
+        }
+    }
+    if (!timeOut) {
+        const mDe2 = s.match(/^\s*([1-9]|1[0-2])\s*(de|da)\s*$/im);
+        if (mDe2 && (/\b(yarin|yarın)\b/.test(s) || /\d{1,2}\.\d{1,2}/.test(s))) {
+            let h = parseInt(mDe2[1], 10);
+            if (h >= 1 && h <= 11) h += 12;
+            timeOut = `${padH(h)}:00`;
+        }
+    }
+    return { date: dateOut, time: timeOut };
+}
+
+/**
+ * Müşteri sohbetinden teslim GÜNÜ YYYY-MM-DD (yarın/DD.MM + ay adı + hafta günü + DD/MM)
+ */
+function floovonExtractDeliveryDateYmdFromCustomerBlob(custBlob, baseYmd) {
+    const p = floovonParseTeslimTarihSaatFromCustomerText(custBlob, baseYmd);
+    if (p.date) return p.date;
+    const raw = String(custBlob || '');
+    const s = raw.toLowerCase()
+        .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
+    const [by, bm, bd] = String(baseYmd).split('-').map(Number);
+    const pad = (n) => String(Math.min(31, Math.max(1, n))).padStart(2, '0');
+    const padM = (n) => String(Math.min(12, Math.max(1, n))).padStart(2, '0');
+    const ymdOut = (y, mo, d) => `${y}-${padM(mo)}-${pad(d)}`;
+
+    const months = {
+        ocak: 1, subat: 2, mart: 3, nisan: 4, mayis: 5, haziran: 6,
+        temmuz: 7, agustos: 8, eylul: 9, ekim: 10, kasim: 11, aralik: 12,
+    };
+    for (const [name, mo] of Object.entries(months)) {
+        const rx = new RegExp('\\b(\\d{1,2})\\s*' + name + '(?:\\s*(20\\d{2}))?\\b');
+        const m = s.match(rx);
+        if (m) {
+            const d = parseInt(m[1], 10);
+            let y = m[2] ? parseInt(m[2], 10) : by;
+            if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12) {
+                const cand = Date.UTC(y, mo - 1, d);
+                const baseMs = Date.UTC(by, bm - 1, bd);
+                if (!m[2] && cand < baseMs) y += 1;
+                return ymdOut(y, mo, d);
+            }
+        }
+    }
+
+    const dm2 = raw.match(/\b(\d{1,2})\s*[/.\-]\s*(\d{1,2})(?:\s*[/.\-]\s*(20\d{2}|\d{2}))?\b/);
+    if (dm2) {
+        const a = parseInt(dm2[1], 10);
+        const b = parseInt(dm2[2], 10);
+        let y = dm2[3] ? (String(dm2[3]).length === 2 ? 2000 + parseInt(dm2[3], 10) : parseInt(dm2[3], 10)) : by;
+        let d;
+        let mo;
+        if (a > 12) {
+            d = a;
+            mo = b;
+        } else if (b > 12) {
+            mo = a;
+            d = b;
+        } else {
+            d = a;
+            mo = b;
+        }
+        if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) {
+            if (!dm2[3]) {
+                const cand = Date.UTC(y, mo - 1, d);
+                if (cand < Date.UTC(by, bm - 1, bd)) y += 1;
+            }
+            return ymdOut(y, mo, d);
+        }
+    }
+
+    const days = [
+        ['pazartesi', 1], ['carsamba', 3], ['persembe', 4], ['cumartesi', 6],
+        ['pazar', 0], ['sali', 2], ['cuma', 5],
+    ];
+    const lines = custBlob.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    let lastDow = null;
+    for (const line of lines) {
+        const sl = line.toLowerCase()
+            .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
+        for (const [name, dow] of days) {
+            if (new RegExp('\\b' + name + '(?:ya|ye)?\\b').test(sl)) lastDow = dow;
+        }
+    }
+    if (lastDow !== null) {
+        const curDow = new Date(Date.UTC(by, bm - 1, bd)).getUTCDay();
+        let add = (lastDow - curDow + 7) % 7;
+        const t = Date.UTC(by, bm - 1, bd + add);
+        const dt = new Date(t);
+        return `${dt.getUTCFullYear()}-${padM(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}`;
+    }
+
+    return '';
+}
+
+// Sohbetten sipariş analizi (OpenAI ile mesajlardan sipariş alanları çıkarır)
+app.post('/api/whatsapp/sohbetten-siparis-analiz', async (req, res) => {
+    if (!getWhatsAppService) {
+        return res.status(503).json({ success: false, error: 'WhatsApp servisi kurulu değil.' });
+    }
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        const { chatId, limit: limitParam } = req.body || {};
+        if (!chatId || typeof chatId !== 'string' || !chatId.trim()) {
+            return res.status(400).json({ success: false, error: 'chatId gerekli.' });
+        }
+        const limit = Math.min(parseInt(limitParam, 10) || 90, 120);
+        const whatsappService = getWhatsAppService(tenantId);
+        if (!whatsappService.isReady || !whatsappService.client) {
+            return res.status(400).json({ success: false, error: 'WhatsApp bağlı değil.' });
+        }
+        const rows = await query(`SELECT openai_api_key, model FROM ${YAPAY_ZEKA_TABLE} WHERE tenant_id = ? LIMIT 1`, [tenantId]);
+        const apiKey = (rows && rows[0] && rows[0].openai_api_key) ? String(rows[0].openai_api_key).trim() : '';
+        const model = (rows && rows[0] && rows[0].model) ? String(rows[0].model) : 'gpt-4o-mini';
+        if (!apiKey) {
+            return res.status(400).json({ success: false, error: 'Yapay Zeka ayarlarında OpenAI API anahtarı tanımlı değil. Ayarlar > Yapay Zeka Ayarları bölümünden ekleyin.' });
+        }
+        const messages = await whatsappService.getChatMessages(chatId.trim(), limit);
+        if (!messages.length) {
+            return res.json({ success: true, fields: {}, message: 'Sohbette metin mesajı bulunamadı.' });
+        }
+        const floovonIstanbulYmdFromTs = (ts) => {
+            if (!ts) return '';
+            try {
+                return new Date(ts * 1000).toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+            } catch (_) {
+                return '';
+            }
+        };
+        const floovonCalendarDaysDiff = (ymdLater, ymdEarlier) => {
+            const a = String(ymdLater || '').split('-').map(Number);
+            const b = String(ymdEarlier || '').split('-').map(Number);
+            if (a.length < 3 || b.length < 3) return 999;
+            const t1 = Date.UTC(a[0], a[1] - 1, a[2]);
+            const t2 = Date.UTC(b[0], b[1] - 1, b[2]);
+            return Math.round((t1 - t2) / 86400000);
+        };
+        const arrAll = (messages || []).filter(m => m && typeof m.body === 'string' && m.body.trim());
+        arrAll.sort((a, b) => {
+            if (a.timestamp && b.timestamp) return a.timestamp - b.timestamp;
+            return 0;
+        });
+        const recentMessages = (() => {
+            if (!arrAll.length) return [];
+            const lastTs = (arrAll[arrAll.length - 1].timestamp || 0) * 1000;
+            const MAX_GAP_MS = 2 * 60 * 60 * 1000;
+            let start = 0;
+            for (let i = arrAll.length - 2; i >= 0; i--) {
+                const ts = (arrAll[i].timestamp || 0) * 1000;
+                if (lastTs - ts > MAX_GAP_MS) {
+                    start = i + 1;
+                    break;
+                }
+            }
+            const slice = arrAll.slice(start);
+            const maxWindow = 70;
+            return slice.length > maxWindow ? slice.slice(slice.length - maxWindow) : slice;
+        })();
+
+        const conversationOrdered = (recentMessages.length ? recentMessages : arrAll)
+            .filter(m => m && typeof m.body === 'string' && m.body.trim())
+            .sort((a, b) => {
+                if (a.timestamp && b.timestamp) return b.timestamp - a.timestamp;
+                return 0;
+            });
+        const conversationText = conversationOrdered
+            .map((m) => (m.fromMe ? '[Ben] ' : '[Müşteri] ') + m.body)
+            .join('\n');
+
+        const todayYmdTr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+        const seenInBlock1 = new Set(
+            conversationOrdered.map((m) => `${m.timestamp}|${String(m.body || '').slice(0, 240)}`)
+        );
+        const prevCustomerMsgs = [];
+        for (const m of arrAll) {
+            if (!m || m.fromMe || !String(m.body || '').trim()) continue;
+            const ymd = floovonIstanbulYmdFromTs(m.timestamp);
+            if (!ymd || ymd >= todayYmdTr) continue;
+            const diff = floovonCalendarDaysDiff(todayYmdTr, ymd);
+            if (diff < 1 || diff > 7) continue;
+            const k = `${m.timestamp}|${String(m.body || '').slice(0, 240)}`;
+            if (seenInBlock1.has(k)) continue;
+            prevCustomerMsgs.push(m);
+        }
+        prevCustomerMsgs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        const previousDaysCustomerText = prevCustomerMsgs
+            .slice(0, 100)
+            .map((m) => '[Müşteri] ' + String(m.body).trim())
+            .join('\n');
+
+        const urunlerRows = await query(`SELECT urun_adi FROM urunler WHERE tenant_id = ? AND is_active = 1 ORDER BY urun_adi`, [tenantId]);
+        const urunListesi = (urunlerRows || []).map(r => (r.urun_adi || '').trim()).filter(Boolean);
+        const urunListesiMetin = urunListesi.length ? urunListesi.join(', ') : '';
+        const systemPrompt = sohbettenSiparisPrompts.buildSohbettenSiparisAnalizSystemPrompt(urunListesiMetin);
+        const todayTr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+        const userPrompt = sohbettenSiparisPrompts.buildSohbettenSiparisAnalizUserPrompt(
+            todayTr,
+            conversationText,
+            previousDaysCustomerText
+        );
+        const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model: model || 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt },
+                ],
+                temperature: 0.2,
+            }),
+        });
+        if (!openaiRes.ok) {
+            const errBody = await openaiRes.text();
+            console.error('❌ OpenAI API hatası:', openaiRes.status, errBody);
+            return res.status(502).json({
+                success: false,
+                error: 'Yapay Zeka analizi başarısız. API anahtarınızı ve kotanızı kontrol edin.',
+                detail: openaiRes.status === 401 ? 'Geçersiz API anahtarı.' : errBody.substring(0, 200),
+            });
+        }
+        const data = await openaiRes.json();
+        const content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
+        let fields = {};
+        try {
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) fields = JSON.parse(jsonMatch[0]);
+        } catch (_) {
+            console.warn('⚠️ Sohbetten sipariş analiz JSON parse hatası:', content.substring(0, 300));
+        }
+        if (!fields || typeof fields !== 'object') fields = {};
+        floovonStripPhoneFromAddressFields(fields);
+
+        const baseYmd = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+        const messagesChrono = conversationOrdered.slice().reverse();
+        const custOnlyLines = conversationOrdered.filter((m) => m && !m.fromMe && m.body).map((m) => String(m.body));
+        const custBlobToday = custOnlyLines.slice().reverse().join('\n');
+        const custBlobPrev = prevCustomerMsgs
+            .slice()
+            .reverse()
+            .map((m) => String(m.body || '').trim())
+            .filter(Boolean)
+            .join('\n');
+        const custBlob = [custBlobToday, custBlobPrev].filter(Boolean).join('\n');
+        floovonEnrichTeslimKisisiFromCustomerBlob(fields, custBlob);
+        const shopSchedBlob = floovonShopSchedulingTextFromMessages(messagesChrono);
+        const schedBlob = custBlob + (shopSchedBlob ? `\n${shopSchedBlob}` : '');
+        const { date: hDate, time: hTime } = floovonParseTeslimTarihSaatFromCustomerText(schedBlob, baseYmd, custBlob);
+
+        const hasRelDatePhraseCust = /\b(yarin|yarın|\d{1,2}\s*gün\s*sonra|\d{1,2}\s*gun\s*sonra|iki\s*gün\s*sonra|iki\s*gun\s*sonra|obur\s*gün|obur\s*gun)\b/i.test(custBlob);
+        if (hDate && (!String(fields.teslim_tarih || '').trim() || hasRelDatePhraseCust)) fields.teslim_tarih = hDate;
+        if (floovonCustomerBugunTeslimWins(custBlob)) fields.teslim_tarih = baseYmd;
+
+        if (hTime) {
+            const aiSaat = String(fields.teslim_saat || '').trim();
+            const aiOk = /^\d{1,2}:\d{2}$/.test(aiSaat) && !/^00:00$/.test(aiSaat);
+            const natural = /ogleden|öğleden|aksam|akşam|oglen|öğlen|sabah|saat\s*\d|yarin|yarın|\d\s*de\b/i.test(schedBlob);
+            if (!aiOk || natural) fields.teslim_saat = hTime;
+        }
+
+        if (String(fields.teslim_tarih || '').trim() && !floovonCustomerHasExplicitDeliveryDate(schedBlob)) {
+            fields.teslim_tarih = '';
+        }
+
+        if (typeof fields.urun_yazisi === 'string' && fields.urun_yazisi.trim()) {
+            fields.urun_yazisi = floovonStripUrunNotInstructionTail(floovonStripUrunNotMetaPrefix(fields.urun_yazisi));
+        }
+
+        if (fields && typeof fields.teslim_saat === 'string' && fields.teslim_saat.trim()) {
+            const raw = String(fields.teslim_saat).toLowerCase().replace(/[^\p{L}\p{N}\s:.,]/gu, ' ');
+            const hasAksam = /akşam|aksam|gece/.test(raw);
+            const hasOglen = /öğlen|oglen/.test(raw);
+            const hasSabah = /sabah/.test(raw);
+            const mm = raw.match(/(\b\d{1,2})(?:[.:](\d{1,2}))?\b/);
+            if (mm) {
+                let h = parseInt(mm[1], 10);
+                let min = mm[2] != null ? parseInt(mm[2], 10) : 0;
+                if (!isNaN(h) && h >= 0 && h <= 23) {
+                    if (min < 0 || min > 59) min = 0;
+                    if ((hasAksam || hasOglen) && h >= 1 && h <= 11) h += 12;
+                    if (hasSabah && h === 12) h = 0;
+                    fields.teslim_saat = String(h).padStart(2, '0') + ':' + String(min).padStart(2, '0');
+                }
+            }
+        }
+        return res.json({ success: true, fields, chatId: chatId.trim() });
+    } catch (error) {
+        console.error('❌ POST /api/whatsapp/sohbetten-siparis-analiz hatası:', error?.message || error);
+        return res.status(500).json({
+            success: false,
+            error: error?.message || 'Analiz yapılamadı.',
+        });
+    }
+});
+
+// Sohbet mesajlarını getir (frontend onay akışı için)
+app.post('/api/whatsapp/chat-messages', async (req, res) => {
+    if (!getWhatsAppService) {
+        return res.status(503).json({ success: false, error: 'WhatsApp servisi kurulu değil.' });
+    }
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        const { chatId, limit: limitParam } = req.body || {};
+        if (!chatId || typeof chatId !== 'string' || !chatId.trim()) {
+            return res.status(400).json({ success: false, error: 'chatId gerekli.' });
+        }
+        const limit = Math.min(parseInt(limitParam, 10) || 20, 50);
+        const whatsappService = getWhatsAppService(tenantId);
+        if (!whatsappService.isReady || !whatsappService.client) {
+            return res.status(400).json({ success: false, error: 'WhatsApp bağlı değil.' });
+        }
+        const messages = await whatsappService.getChatMessages(chatId.trim(), limit);
+        // sadece gerekli alanları dön
+        const data = (messages || []).map(m => ({
+            id: m.id || null,
+            body: m.body || '',
+            fromMe: !!m.fromMe,
+            timestamp: m.timestamp || null,
+            type: m.type || null,
+        }));
+        return res.json({ success: true, data });
+    } catch (error) {
+        console.error('❌ POST /api/whatsapp/chat-messages hatası:', error?.message || error);
+        return res.status(500).json({ success: false, error: error?.message || 'Mesajlar alınamadı.' });
+    }
+});
+
+// Müşteri cevabını AI ile analiz et: onay/ret/eksik bilgileri tespit et
+app.post('/api/whatsapp/siparis-onay-analiz', async (req, res) => {
+    if (!getWhatsAppService) {
+        return res.status(503).json({ success: false, error: 'WhatsApp servisi kurulu değil.' });
+    }
+    try {
+        const tenantId = req.tenantId || await getTenantId(req);
+        if (!tenantId) return res.status(400).json({ success: false, error: 'Tenant ID bulunamadı.' });
+        const { chatId, limit: limitParam, currentFields, phase } = req.body || {};
+        if (!chatId || typeof chatId !== 'string' || !chatId.trim()) {
+            return res.status(400).json({ success: false, error: 'chatId gerekli.' });
+        }
+        const limit = Math.min(parseInt(limitParam, 10) || 20, 40);
+
+        const whatsappService = getWhatsAppService(tenantId);
+        if (!whatsappService.isReady || !whatsappService.client) {
+            return res.status(400).json({ success: false, error: 'WhatsApp bağlı değil.' });
+        }
+
+        const rows = await query(`SELECT openai_api_key, model FROM ${YAPAY_ZEKA_TABLE} WHERE tenant_id = ? LIMIT 1`, [tenantId]);
+        const apiKey = (rows && rows[0] && rows[0].openai_api_key) ? String(rows[0].openai_api_key).trim() : '';
+        const model = (rows && rows[0] && rows[0].model) ? String(rows[0].model) : 'gpt-4o-mini';
+        if (!apiKey) {
+            return res.status(400).json({ success: false, error: 'Yapay Zeka ayarlarında OpenAI API anahtarı tanımlı değil.' });
+        }
+
+        const messages = await whatsappService.getChatMessages(chatId.trim(), limit);
+        // Eski sipariş döngüleriyle karışmaması için: sadece son konuşma bloğunu al.
+        const recentForApproval = (() => {
+            const arr = (messages || []).filter(m => m && typeof m.body === 'string' && m.body.trim());
+            if (!arr.length) return [];
+            arr.sort((a, b) => {
+                if (a.timestamp && b.timestamp) return a.timestamp - b.timestamp;
+                return 0;
+            });
+            const lastTs = (arr[arr.length - 1].timestamp || 0) * 1000;
+            const MAX_GAP_MS = 2 * 60 * 60 * 1000; // Son konuşma: 2 saatten eski blokları hariç tut
+            let start = 0;
+            for (let i = arr.length - 2; i >= 0; i--) {
+                const ts = (arr[i].timestamp || 0) * 1000;
+                if (lastTs - ts > MAX_GAP_MS) {
+                    start = i + 1;
+                    break;
+                }
+            }
+            const slice = arr.slice(start);
+            const maxWindow = 40;
+            return slice.length > maxWindow ? slice.slice(slice.length - maxWindow) : slice;
+        })();
+
+        const ordered = (recentForApproval.length ? recentForApproval : messages)
+            .filter(m => (m && typeof m.body === 'string' && m.body.trim()))
+            // En yeni mesaj en üstte
+            .sort((a, b) => {
+                if (a.timestamp && b.timestamp) return b.timestamp - a.timestamp;
+                return 0;
+            });
+        const convo = ordered
+            .map((m) => (m.fromMe ? '[Biz] ' : '[Müşteri] ') + m.body)
+            .join('\n');
+
+        const requiredKeys = sohbettenSiparisPrompts.SIPARIS_ONAY_REQUIRED_FIELD_KEYS.slice();
+        const skipCustomerMissing = new Set(['siparis_tutari', 'siparis_veren_telefon']);
+
+        function normalizeTimeToHHMM(text) {
+            if (!text) return '';
+            const raw = String(text).toLowerCase().replace(/[^\p{L}\p{N}\s:.,]/gu, ' ');
+            const hasAksam = /akşam|aksam|gece/.test(raw);
+            const hasOglen = /öğlen|oglen/.test(raw);
+            const hasSabah = /sabah/.test(raw);
+            const m = raw.match(/(\b\d{1,2})(?:[.:](\d{1,2}))?\b/);
+            if (!m) return '';
+            let h = parseInt(m[1], 10);
+            let min = m[2] != null ? parseInt(m[2], 10) : 0;
+            if (isNaN(h) || isNaN(min)) return '';
+            if (min < 0 || min > 59) min = 0;
+            // "14" => 14:00
+            if (h < 0 || h > 23) return '';
+            // AM/PM heuristics for Turkish natural language
+            if ((hasAksam || hasOglen) && h >= 1 && h <= 11) h += 12;
+            if (hasSabah && h === 12) h = 0;
+            const hh = String(h).padStart(2, '0');
+            const mm = String(min).padStart(2, '0');
+            return `${hh}:${mm}`;
+        }
+
+        const systemPrompt = sohbettenSiparisPrompts.buildSiparisOnayAnalizSystemPrompt(phase);
+        const userPrompt = sohbettenSiparisPrompts.buildSiparisOnayAnalizUserPrompt(currentFields, convo, requiredKeys);
+
+        const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model: model || 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt },
+                ],
+                temperature: 0.2,
+            }),
+        });
+
+        if (!openaiRes.ok) {
+            const errBody = await openaiRes.text();
+            console.error('❌ OpenAI siparis-onay-analiz hatası:', openaiRes.status, errBody);
+            return res.status(502).json({ success: false, error: 'Yapay Zeka analizi başarısız.' });
+        }
+
+        const data = await openaiRes.json();
+        const content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
+        let parsed = null;
+        try {
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+        } catch (_) {
+            parsed = null;
+        }
+
+        if (!parsed || typeof parsed !== 'object') {
+            return res.json({ success: true, status: 'unclear', customer_message: '', fields_patch: {}, missing_fields: requiredKeys, reason: 'AI JSON okunamadı' });
+        }
+
+        // Server-side normalize: teslim_saat (AI serbest döndüyse toparla)
+        if (parsed.fields_patch && typeof parsed.fields_patch === 'object') {
+            const ts = parsed.fields_patch.teslim_saat;
+            if (typeof ts === 'string') {
+                const norm = normalizeTimeToHHMM(ts);
+                if (norm) parsed.fields_patch.teslim_saat = norm;
+            }
+        }
+
+        // Server-side heuristics: müşteri sadece ilçe/mahalle satır satır yazarsa AI bazen kaçırabiliyor.
+        // Örn: "çumra\nmeydan mah." => teslim_ilce="Çumra", teslim_mahalle="Meydan Mah."
+        const cf0 = currentFields && typeof currentFields === 'object' ? currentFields : {};
+        const patch0 = (parsed.fields_patch && typeof parsed.fields_patch === 'object') ? parsed.fields_patch : {};
+        const needIlce = !String(cf0.teslim_ilce || '').trim() && !String(patch0.teslim_ilce || '').trim();
+        const needMah = !String(cf0.teslim_mahalle || '').trim() && !String(patch0.teslim_mahalle || '').trim();
+        if (needIlce || needMah) {
+            // son müşteri mesajını al
+            const lastCustomerMsg = (() => {
+                const arr = (messages || []).filter(m => m && !m.fromMe && typeof m.body === 'string' && m.body.trim());
+                const last = arr.length ? arr[arr.length - 1].body : '';
+                return String(last || '').trim();
+            })();
+            if (lastCustomerMsg) {
+                const rawLines = lastCustomerMsg
+                    .split(/\r?\n+/)
+                    .map(s => s.trim())
+                    .filter(Boolean)
+                    .map(s => s.replace(/\s+/g, ' '));
+
+                const cleanLine = (s) => String(s || '')
+                    .replace(/[.,;:!?()\[\]{}"'“”’]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+                const toTitleTR = (s) => {
+                    const str = cleanLine(s);
+                    if (!str) return '';
+                    return str
+                        .split(' ')
+                        .map(w => {
+                            const lw = w.toLocaleLowerCase('tr-TR');
+                            return lw.charAt(0).toLocaleUpperCase('tr-TR') + lw.slice(1);
+                        })
+                        .join(' ');
+                };
+
+                // Heuristik: 2+ satır varsa ilk ilçe, ikinci mahalle gibi kullan
+                if (rawLines.length >= 2) {
+                    const ilceGuess = toTitleTR(rawLines[0]);
+                    const mahGuess = toTitleTR(rawLines[1]);
+                    if (needIlce && ilceGuess) patch0.teslim_ilce = ilceGuess;
+                    if (needMah && mahGuess) patch0.teslim_mahalle = mahGuess;
+                } else if (rawLines.length === 1) {
+                    const one = cleanLine(rawLines[0]);
+                    const oneLower = one.toLocaleLowerCase('tr-TR');
+                    const looksMah = /\bmah\b|\bmah\.\b|mahalle/.test(oneLower);
+                    if (needMah && looksMah) patch0.teslim_mahalle = toTitleTR(one);
+                    else if (needIlce) patch0.teslim_ilce = toTitleTR(one);
+                }
+
+                parsed.fields_patch = patch0;
+            }
+        }
+
+        // Son N müşteri mesajından saat + teslim telefonu çıkar (AI kaçırınca)
+        const patch1 = (parsed.fields_patch && typeof parsed.fields_patch === 'object') ? parsed.fields_patch : {};
+        const cf1 = currentFields && typeof currentFields === 'object' ? currentFields : {};
+        const custBodies = (ordered || []).filter(m => m && !m.fromMe && m.body).map(m => String(m.body)).reverse();
+        const custBlob = custBodies.join('\n');
+        const baseYmdOnay = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+        const floovonDT = floovonParseTeslimTarihSaatFromCustomerText(custBlob, baseYmdOnay);
+        const hasRelDatePhraseOnay = /\b(yarin|yarın|\d{1,2}\s*gün\s*sonra|\d{1,2}\s*gun\s*sonra|iki\s*gün\s*sonra|iki\s*gun\s*sonra|obur\s*gün|obur\s*gun)\b/i.test(custBlob);
+
+        function extractTimeFromBlob(text) {
+            if (!text) return '';
+            const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
+            for (let i = lines.length - 1; i >= 0; i--) {
+                const t = normalizeTimeToHHMM(lines[i]);
+                if (t) return t;
+            }
+            return normalizeTimeToHHMM(text) || '';
+        }
+        function extractPhoneFromBlob(text) {
+            if (!text) return '';
+            const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
+            for (let i = lines.length - 1; i >= 0; i--) {
+                const d = lines[i].replace(/\D/g, '');
+                if (/^5\d{9}$/.test(d)) return '90' + d;
+                if (/^05\d{9}$/.test(d)) return '90' + d.slice(1);
+                if (/^905\d{9}$/.test(d)) return d.slice(0, 12);
+            }
+            const all = text.replace(/\D/g, '');
+            const m = all.match(/(90)?(5\d{9})/g);
+            if (m && m.length) {
+                const last = m[m.length - 1].replace(/\D/g, '');
+                if (last.length === 10) return '90' + last;
+                if (last.length === 12) return last;
+            }
+            return '';
+        }
+
+        const hasSaat = String(cf1.teslim_saat || patch1.teslim_saat || '').trim();
+        const naturalTimeInBlob = /ogleden|öğleden|aksam|akşam|oglen|öğlen|sabah|saat\s*\d/i.test(custBlob);
+        const extractedTeslimYmd = floovonExtractDeliveryDateYmdFromCustomerBlob(custBlob, baseYmdOnay);
+        if (extractedTeslimYmd) {
+            patch1.teslim_tarih = extractedTeslimYmd;
+        } else if (floovonDT.date) {
+            const curD = String(cf1.teslim_tarih || patch1.teslim_tarih || '').trim();
+            if (!curD || hasRelDatePhraseOnay) patch1.teslim_tarih = floovonDT.date;
+        }
+        if (floovonDT.time) {
+            const patchSaat = String(patch1.teslim_saat || '').trim();
+            const aiOk = /^\d{1,2}:\d{2}$/.test(patchSaat) && !/^00:00$/.test(patchSaat);
+            if (!hasSaat || naturalTimeInBlob || !aiOk) patch1.teslim_saat = floovonDT.time;
+        } else if (!hasSaat) {
+            const te = extractTimeFromBlob(custBlob);
+            if (te) patch1.teslim_saat = te;
+        }
+        const hasDelTel = String(cf1.teslim_kisisi_telefon || patch1.teslim_kisisi_telefon || '').replace(/\D/g, '');
+        if (!hasDelTel || hasDelTel.length < 12) {
+            const ph = extractPhoneFromBlob(custBlob);
+            if (ph && ph.length === 12) patch1.teslim_kisisi_telefon = ph;
+        }
+
+        let forcedClearTeslimTarih = false;
+        const musteriGunBeyani =
+            !!extractedTeslimYmd ||
+            floovonCustomerHasExplicitDeliveryDate(custBlob);
+        if (!musteriGunBeyani && naturalTimeInBlob) {
+            if (String(cf1.teslim_tarih || patch1.teslim_tarih || '').trim()) {
+                patch1.teslim_tarih = '';
+                forcedClearTeslimTarih = true;
+            }
+        }
+
+        const ilceN = String(cf1.teslim_ilce || patch1.teslim_ilce || '').trim().toLocaleLowerCase('tr-TR').replace(/\s+/g, '');
+        const badKisi = String(patch1.teslim_kisisi || '').trim();
+        if (badKisi && ilceN) {
+            const bk = badKisi.toLocaleLowerCase('tr-TR').replace(/\s+/g, '');
+            const inner = /^iç\s|^ic\s/i.test(badKisi) && badKisi.toLocaleLowerCase('tr-TR').replace(/^iç\s+|^ic\s+/i, '').replace(/\s+/g, '') === ilceN;
+            if (bk === ilceN || inner || /\bmah\.?\b|\bmahalle\b|\bmeydan\b/i.test(badKisi)) {
+                if (!String(patch1.teslim_mahalle || cf1.teslim_mahalle || '').trim()) {
+                    const ilAd = String(cf1.teslim_ilce || patch1.teslim_ilce || '').trim();
+                    if (inner && ilAd) patch1.teslim_mahalle = 'İç ' + ilAd + ' Mah.';
+                    else if (bk === ilceN && ilAd) patch1.teslim_mahalle = ilAd + ' Mah.';
+                    else patch1.teslim_mahalle = badKisi;
+                }
+                patch1.teslim_kisisi = '';
+            }
+        }
+        if (typeof patch1.urun_yazisi === 'string' && patch1.urun_yazisi.trim()) {
+            patch1.urun_yazisi = floovonStripUrunNotInstructionTail(floovonStripUrunNotMetaPrefix(patch1.urun_yazisi));
+        }
+        floovonStripPhoneFromAddressFields(patch1);
+        parsed.fields_patch = patch1;
+
+        // Server-side safety: missing_fields boş gelirse, currentFields'ten tamamla
+        const cf = currentFields && typeof currentFields === 'object' ? currentFields : {};
+        const missing = Array.isArray(parsed.missing_fields) ? parsed.missing_fields : [];
+        let normalizedMissing = (missing.length ? missing : requiredKeys.filter(k => !(cf && String(cf[k] || '').trim())))
+            .filter((k) => !skipCustomerMissing.has(k));
+        if (forcedClearTeslimTarih && !normalizedMissing.includes('teslim_tarih')) {
+            normalizedMissing = [...normalizedMissing, 'teslim_tarih'];
+        }
+
+        /** Son onay: açık ret yoksa ve form eksiksizse AI 'unclear' dese bile onaylı say (müşteri evet/onaylıyorum/teşekkürler vb.) */
+        function customerExplicitlyRejectsApproval(text) {
+            const s = String(text || '').trim();
+            if (!s) return false;
+            const t = s.toLocaleLowerCase('tr-TR');
+            if (/\b(hayır|hayir)\b/.test(t)) return true;
+            if (/\b(yanlış|yanlis)\b/.test(t)) return true;
+            if (/onaylamıyorum|onaylamiyorum/.test(t)) return true;
+            if (/\biptal\b/.test(t)) return true;
+            if (/\bvazgeç\b|\bvazgec\b/.test(t)) return true;
+            if (/\bistemiyorum\b/.test(t) && (/\biptal\b/.test(t) || /\bvazgeç|vazgec\b/.test(t))) return true;
+            if (/\breddediyorum\b/.test(t)) return true;
+            if (/\bgerek yok\b/.test(t)) return true;
+            if (/\b(olmaz|ret)\b/.test(t) && !/\bolur\b/.test(t)) return true;
+            if (/\b(değiştir|degistir|düzelt|duzelt)(in|ün|elim)?\b/i.test(t)) return true;
+            if (/\b(hatalı|hatali)\b/.test(t) && /\b(adres|saat|tarih|isim|sipariş|siparis|bilgi)\b/i.test(t)) return true;
+            return false;
+        }
+
+        let finalStatus = parsed.status || 'unclear';
+        const phaseOnay = String(phase || '') === 'final_approval';
+        if (phaseOnay && normalizedMissing.length === 0) {
+            let latestCustomerReply = '';
+            for (let i = 0; i < ordered.length; i++) {
+                const m = ordered[i];
+                if (m && !m.fromMe && typeof m.body === 'string' && m.body.trim()) {
+                    latestCustomerReply = m.body.trim();
+                    break;
+                }
+            }
+            if (latestCustomerReply && !customerExplicitlyRejectsApproval(latestCustomerReply)) {
+                finalStatus = 'approved';
+            }
+        }
+
+        return res.json({
+            success: true,
+            status: finalStatus,
+            customer_message: parsed.customer_message || '',
+            fields_patch: parsed.fields_patch && typeof parsed.fields_patch === 'object' ? parsed.fields_patch : {},
+            missing_fields: normalizedMissing,
+            reason: parsed.reason || '',
+        });
+    } catch (error) {
+        console.error('❌ POST /api/whatsapp/siparis-onay-analiz hatası:', error?.message || error);
+        return res.status(500).json({ success: false, error: error?.message || 'Analiz yapılamadı.' });
     }
 });
 

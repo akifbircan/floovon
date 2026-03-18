@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     notifications.className = "notifications";
     notifications.style.setProperty('display', 'block', 'important');
     notifications.style.setProperty('position', 'fixed', 'important');
-    notifications.style.setProperty('z-index', '999999', 'important');
+    notifications.style.setProperty('z-index', '2147483647', 'important');
     notifications.style.setProperty('list-style', 'none', 'important');
     notifications.style.setProperty('padding', '0', 'important');
     notifications.style.setProperty('margin', '0', 'important');
@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener('resize', function applyToastContainerPosition() {
     var ul = document.querySelector(".notifications");
     if (!ul) return;
+    ul.style.setProperty('z-index', '2147483647', 'important');
     if (window.innerWidth <= 767) {
       ul.style.setProperty('top', '80px', 'important');
       ul.style.setProperty('left', 'auto', 'important');
@@ -530,9 +531,13 @@ function createToast(id, customMessage = null) {
   notifications.style.setProperty('visibility', 'visible', 'important');
   notifications.style.setProperty('opacity', '1', 'important');
   
-  // Z-index ve position'ı da garanti et (mobilde kenarlardan boşluk)
+  /* WhatsApp / sipariş modalları 2147483647 kullanır; toast her zaman en üstte: aynı z-index + body sonuna taşı */
+  var FLOOVON_TOAST_Z = '2147483647';
   notifications.style.setProperty('position', 'fixed', 'important');
-  notifications.style.setProperty('z-index', '999999', 'important');
+  notifications.style.setProperty('z-index', FLOOVON_TOAST_Z, 'important');
+  try {
+    document.body.appendChild(notifications);
+  } catch (e) {}
   if (window.innerWidth <= 767) {
     notifications.style.setProperty('top', '80px', 'important');
     notifications.style.setProperty('left', 'auto', 'important');

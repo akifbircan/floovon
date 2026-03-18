@@ -132,7 +132,7 @@ export const WhatsAppPhoneSelectorModal: React.FC<WhatsAppPhoneSelectorModalProp
             ))}
           </div>
         )}
-        <button type="button" className="modal-react-whatsapp-phone-close" onClick={onClose}>
+        <button type="button" className="secondary-button btn-vazgec" onClick={onClose}>
           VAZGEÇ
         </button>
       </div>

@@ -354,16 +354,19 @@ class WhatsAppService {
             this.firstQrStoredAt = null;
             if (this.lastDisconnectReason === 'LOGOUT') {
                 this.lastDisconnectReason = null;
-            }
-            // Session klasörünü temizle (LOGOUT veya client yok – yeni oturum için)
-            if (this.sessionPath && fs.existsSync(this.sessionPath)) {
-                try {
-                    fs.rmSync(this.sessionPath, { recursive: true, force: true });
-                    fs.mkdirSync(this.sessionPath, { recursive: true, mode: 0o755 });
-                    console.log('✅ Session klasörü temizlendi – yeni QR için hazır');
-                } catch (e) {
-                    console.log('⚠️ Session temizleme hatası:', e?.message);
+                // Session klasörünü SADECE LOGOUT sonrası temizle – sunucu yeniden başladığında SİLME (bağlantı kopyalanmasın)
+                if (this.sessionPath && fs.existsSync(this.sessionPath)) {
+                    try {
+                        fs.rmSync(this.sessionPath, { recursive: true, force: true });
+                        fs.mkdirSync(this.sessionPath, { recursive: true, mode: 0o755 });
+                        console.log('✅ Session klasörü temizlendi – LOGOUT sonrası yeni QR için hazır');
+                    } catch (e) {
+                        console.log('⚠️ Session temizleme hatası:', e?.message);
+                    }
                 }
+            } else {
+                // Sunucu restart: session diskte kalsın, LocalAuth ile tekrar bağlansın – QR isteme
+                console.log('🔄 Client yok ama LOGOUT değil – mevcut session ile yeniden bağlanılacak');
             }
             console.log('✅ Temizlik tamamlandı - Yeni client oluşturulabilir');
         }
@@ -371,55 +374,12 @@ class WhatsAppService {
         console.log(`🚀 WhatsApp initialize başlatılıyor - Tenant ID: ${tenantId || this.currentTenantId || 'YOK'}`);
         console.log(`📁 Session path: ${this.sessionPath || 'YOK'}`);
         
-        // LOGOUT sonrası session dosyasının tamamen temiz olduğundan emin ol
-        // Eğer session path varsa ve içinde dosyalar varsa, LOGOUT sonrası temizlenmiş olmalı
+        // Session dosyaları varsa sadece bilgi logla – SİLME (sunucu restart sonrası tekrar bağlansın)
         if (this.sessionPath && fs.existsSync(this.sessionPath)) {
             try {
-                const sessionFiles = fs.readdirSync(this.sessionPath);
+                const sessionFiles = fs.readdirSync(this.sessionPath).filter((f) => !f.startsWith('.'));
                 if (sessionFiles.length > 0) {
-                    console.log(`⚠️ UYARI: Session klasöründe ${sessionFiles.length} dosya var! LOGOUT sonrası temizlenmemiş olabilir.`);
-                    console.log(`📄 Session dosyaları: ${sessionFiles.join(', ')}`);
-                    // Eğer LOGOUT sonrası ise, session dosyalarını temizle
-                    if (this.lastDisconnectReason === null || !this.isAuthenticated) {
-                        console.log('🗑️ Session dosyaları temizleniyor (LOGOUT sonrası veya authenticated değil)...');
-                        // EBUSY hatası için retry mekanizması (async olmadığı için try-catch ile)
-                        let retryCount = 0;
-                        const maxRetries = 3;
-                        let sessionCleared = false;
-                        while (retryCount < maxRetries && !sessionCleared) {
-                            try {
-                                fs.rmSync(this.sessionPath, { recursive: true, force: true });
-                                sessionCleared = true;
-                            } catch (e) {
-                                retryCount++;
-                                if (e.code === 'EBUSY' && retryCount < maxRetries) {
-                                    console.log(`⚠️ Session dosyası kilitli, tekrar denenecek... (${retryCount}/${maxRetries})`);
-                                    // Sync bekleme (kısa süre)
-                                    const start = Date.now();
-                                    while (Date.now() - start < retryCount * 500) {
-                                        // Busy wait
-                                    }
-                                } else {
-                                    // EBUSY hatası olsa bile devam et
-                                    if (e.code === 'EBUSY') {
-                                        console.log('⚠️ Session dosyası kilitli (chrome_debug.log), atlanıyor...');
-                                    } else {
-                                        console.log('⚠️ Session silme hatası:', e?.message);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                        // Klasörü yeniden oluştur
-                        try {
-                            if (!fs.existsSync(this.sessionPath)) {
-                                fs.mkdirSync(this.sessionPath, { recursive: true, mode: 0o755 });
-                            }
-                            console.log('✅ Session klasörü temizlendi ve yeniden oluşturuldu');
-                        } catch (e) {
-                            console.log('⚠️ Session klasörü oluşturma hatası:', e?.message);
-                        }
-                    }
+                    console.log(`📁 Session mevcut (${sessionFiles.length} dosya) – diskten yüklenecek, QR gerekmez`);
                 }
             } catch (e) {
                 console.log('⚠️ Session klasörü kontrolü hatası:', e?.message);
@@ -1153,6 +1113,110 @@ class WhatsAppService {
             timestamp: result?.timestamp || Math.floor(Date.now() / 1000),
             phoneNumber: phoneNumber
         };
+    }
+
+    /**
+     * Sohbet geçmişi listesi (panel popup için)
+     * @param {number} limit - Maksimum sohbet sayısı (varsayılan 50)
+     * @returns {Promise<Array<{id:string, name:string, phoneNumber:string, lastMessage:string|null, lastMessageTime:number|null}>>}
+     */
+    async getRecentChats(limit = 50) {
+        if (!this.client || !this.isReady || !this.isAuthenticated) {
+            throw new Error('WhatsApp servisi hazır değil. Lütfen önce bağlantıyı kurun.');
+        }
+        const isGetChatModelError = (e) => {
+            const msg = (e && e.message) ? String(e.message) : '';
+            return /getChatModel|reading 'update'|Evaluation failed|WWebJS/i.test(msg);
+        };
+        let lastErr;
+        for (let attempt = 1; attempt <= 2; attempt++) {
+            try {
+                const raw = await this.client.getChats();
+                const chats = Array.isArray(raw) ? raw.slice(0, limit) : [];
+                const list = [];
+                for (const c of chats) {
+                if (!c || !c.id) continue;
+                let serialized = '';
+                try {
+                    serialized = c.id._serialized || c.id.serialized || (typeof c.id === 'string' ? c.id : '');
+                } catch (_) {
+                    continue;
+                }
+                if (!serialized) continue;
+                const isContact = serialized.endsWith('@c.us');
+                const name = (c.name || c.pushname || '').toString().trim() || (isContact ? serialized.replace('@c.us', '') : serialized);
+                let phoneNumber = '';
+                if (isContact && serialized) {
+                    const num = serialized.replace('@c.us', '').trim();
+                    phoneNumber = num.startsWith('90') ? '0' + num.slice(2) : num;
+                } else {
+                    phoneNumber = serialized.replace('@c.us', '').replace('@g.us', '');
+                }
+                let lastMessage = null;
+                let lastMessageTime = null;
+                try {
+                    if (c.lastMessage && typeof c.lastMessage === 'object') {
+                        lastMessage = (c.lastMessage.body || c.lastMessage.content || '').toString().trim().substring(0, 120);
+                        if (c.lastMessage.timestamp) lastMessageTime = c.lastMessage.timestamp;
+                    }
+                } catch (_) {}
+                if (!lastMessageTime && c.timestamp) lastMessageTime = c.timestamp;
+                list.push({
+                    id: serialized,
+                    name: name || phoneNumber || serialized,
+                    phoneNumber: phoneNumber || serialized.replace('@c.us', '').replace('@g.us', ''),
+                    lastMessage: lastMessage || null,
+                    lastMessageTime: lastMessageTime || null,
+                });
+                }
+                return list;
+            } catch (err) {
+                lastErr = err;
+                console.error(`❌ [getRecentChats] Deneme ${attempt}/2 hata:`, err?.message || err);
+                if (attempt === 1 && isGetChatModelError(err)) {
+                    await new Promise((r) => setTimeout(r, 2500));
+                    continue;
+                }
+                throw err;
+            }
+        }
+        throw lastErr;
+    }
+
+    /**
+     * Bir sohbetin son N mesajını getirir (sohbetten sipariş analizi için).
+     * @param {string} chatId - Sohbet id (_serialized, örn. 905xxxxxxxxx@c.us)
+     * @param {number} limit - Maksimum mesaj sayısı (varsayılan 50)
+     * @returns {Promise<Array<{body:string, timestamp:number, fromMe:boolean}>>}
+     */
+    async getChatMessages(chatId, limit = 50) {
+        if (!this.client || !this.isReady || !this.isAuthenticated) {
+            throw new Error('WhatsApp servisi hazır değil. Lütfen önce bağlantıyı kurun.');
+        }
+        if (!chatId || typeof chatId !== 'string' || !chatId.trim()) {
+            throw new Error('Geçersiz sohbet id.');
+        }
+        const id = chatId.trim();
+        try {
+            const chat = await this.client.getChatById(id);
+            if (!chat) throw new Error('Sohbet bulunamadı.');
+            const raw = await chat.fetchMessages({ limit: Math.min(limit, 100) });
+            const messages = Array.isArray(raw) ? raw : [];
+            return messages.map((m) => {
+                let body = '';
+                try {
+                    body = (m.body || m.content || '').toString().trim();
+                } catch (_) {}
+                return {
+                    body,
+                    timestamp: m.timestamp || 0,
+                    fromMe: !!m.fromMe,
+                };
+            }).filter((m) => m.body.length > 0);
+        } catch (err) {
+            console.error('❌ [getChatMessages] Hata:', err?.message || err);
+            throw err;
+        }
     }
 
     /**

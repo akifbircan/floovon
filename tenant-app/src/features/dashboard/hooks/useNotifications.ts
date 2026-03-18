@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { getApiBaseUrl } from '../../../lib/runtime';
 import { showToast } from '../../../shared/utils/toastUtils';
@@ -26,6 +26,7 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Bildirim[]>([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const org404SkipRef = useRef<Set<number>>(new Set());
 
   const loadNotifications = useCallback(async () => {
     if (!user) return;
@@ -147,14 +148,16 @@ export const useNotifications = () => {
               }
             }
 
-            // Organizasyon detaylarını çek
-            if (bildirim.organizasyon_id && !bildirim.organizasyon_alt_tur) {
+            // Organizasyon detaylarını çek (404 veren kartları bir kez deneyip sonra atla – silinmiş kart spam’i önler)
+            const orgId = bildirim.organizasyon_id;
+            if (orgId && !bildirim.organizasyon_alt_tur && !org404SkipRef.current.has(orgId)) {
               try {
-                const orgResponse = await fetch(`${apiBase}/organizasyon-kartlar/${bildirim.organizasyon_id}`, {
+                const orgResponse = await fetch(`${apiBase}/organizasyon-kartlar/${orgId}`, {
                   credentials: 'include',
                 });
-
-                if (orgResponse.ok) {
+                if (orgResponse.status === 404) {
+                  org404SkipRef.current.add(orgId);
+                } else if (orgResponse.ok) {
                   const orgResult = await orgResponse.json();
                   if (orgResult.success && orgResult.data) {
                     const org = orgResult.data;

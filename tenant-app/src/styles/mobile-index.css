@@ -199,6 +199,39 @@
     color: var(--success-green);
   }
 
+  /* Mobil header WhatsApp – masaüstü ikon davranışıyla uyumlu renkler */
+  .mobile-header-right-actions .mobile-header-whatsapp-btn-wrapper {
+    display: flex;
+  }
+  .mobile-header-right-actions .mobile-header-whatsapp-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--header-icon-border);
+    color: var(--ana-renk);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .mobile-header-right-actions .mobile-header-whatsapp-btn:hover {
+    background: var(--header-icon-bg-hover);
+  }
+  .mobile-header-right-actions .mobile-header-whatsapp-btn .fa-whatsapp {
+    font-size: 20px;
+    color: var(--gray-400);
+  }
+  .mobile-header-right-actions .mobile-header-whatsapp-btn.mobile-header-whatsapp-btn--connected .fa-whatsapp {
+    color: var(--whatsapp-green);
+  }
+  .mobile-header-right-actions .mobile-header-whatsapp-btn.mobile-header-whatsapp-btn--reconnecting .fa-whatsapp {
+    color: var(--warning-amber);
+  }
+
   /* Mobil header tema butonu - genel ikon zemin/kenarlık */
   .mobile-header-right-actions .theme-mode .btn-theme-mode {
     width: 40px;
@@ -865,7 +898,7 @@
 
   .hizli-islemler-menu-item:hover,
   .hizli-islemler-menu-item:focus {
-    background: var(--gray-light-f2, #f2f2f2);
+    background: var(--gray-light-f2);
     outline: none;
   }
 
@@ -876,7 +909,7 @@
     width: 36px;
     height: 36px;
     border-radius: 8px;
-    background: var(--gray-light-f2, #f2f2f2);
+    background: var(--gray-light-f2);
     color: var(--mor-primary-text);
     flex-shrink: 0;
   }

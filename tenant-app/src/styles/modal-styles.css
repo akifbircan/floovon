@@ -20,7 +20,9 @@
 .btn-close-form,
 .customers-close-detail,
 .partners-close-detail,
-.campaigns-close-detail {
+.campaigns-close-detail,
+.modal-react-whatsapp-son-konusmalar-close-btn,
+.modal-react-whatsapp-info-close-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -39,7 +41,9 @@
 .btn-close-form:hover,
 .customers-close-detail:hover,
 .partners-close-detail:hover,
-.campaigns-close-detail:hover {
+.campaigns-close-detail:hover,
+.modal-react-whatsapp-son-konusmalar-close-btn:hover,
+.modal-react-whatsapp-info-close-btn:hover {
     background-color: var(--light-gray) !important;
     color: var(--ana-renk) !important;
 }
@@ -149,7 +153,6 @@
 .modal-react-whatsapp-qr-btn,
 .modal-react-whatsapp-info-close-btn,
 .modal-react-whatsapp-info-disconnect-btn,
-.modal-react-whatsapp-info-close-btn-footer,
 .modal-react-arsiv-sebep-btn,
 .modal-react-order-action-btn {
     font-size: 12px !important;
@@ -1548,7 +1551,7 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
     gap: 10px !important;
     height: 100% !important;
     width: 100% !important;
-    min-width: 0 !important;
+    min-width: 360px;
 }
 
 .yeni-siparis-container .siparis-form-alan .kisi-bilgi-alanlar {
@@ -1567,7 +1570,7 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
     padding: 20px !important;
     width: 100% !important;
     height: 100% !important;
-    min-width: 0 !important;
+    min-width: 360px !important;
 }
 
 .yeni-siparis-container .alan-baslik {
@@ -3160,14 +3163,6 @@ html.dark-mode .modal-react-arsiv-sebep-option.selected .modal-react-arsiv-sebep
     color: var(--ana-renk) !important;
 }
 
-.modal-react-arac-takip-close {
-    color: var(--gri70) !important;
-}
-
-.modal-react-arac-takip-close:hover {
-    color: var(--gri90) !important;
-}
-
 .modal-react-arac-takip-body {
     margin-bottom: 16px !important;
 }
@@ -3407,18 +3402,18 @@ color: var(--ana-renk) !important;
     gap: 12px !important;
     margin-bottom: 20px !important;
     padding: 16px !important;
-    background: linear-gradient(135deg, var(--notif-whatsapp-connected-bg, #e8f5e9) 0%, var(--gray-light-ee, #eee) 100%) !important;
-    border: 1px solid var(--whatsapp-green, #25d366) !important;
+    background: linear-gradient(135deg, var(--notif-whatsapp-connected-bg) 0%, var(--gray-light-ee) 100%) !important;
+    border: 1px solid var(--whatsapp-green) !important;
     border-radius: 10px !important;
     font-size: 14px !important;
     line-height: 1.5 !important;
-    color: var(--ana-renk, #333) !important;
+    color: var(--ana-renk) !important;
     text-align: left !important;
 }
 .modal-react-whatsapp-qr-mobile-notice i {
     flex-shrink: 0 !important;
     margin-top: 2px !important;
-    color: var(--whatsapp-green, #25d366) !important;
+    color: var(--whatsapp-green) !important;
     font-size: 20px !important;
 }
 .modal-react-whatsapp-qr-mobile-notice p {
@@ -3504,6 +3499,8 @@ color: var(--ana-renk) !important;
     visibility: hidden !important;
     opacity: 0 !important;
     pointer-events: none !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
 }
 
 .modal-react-whatsapp-info-overlay.show {
@@ -3518,15 +3515,21 @@ color: var(--ana-renk) !important;
     background: var(--white) !important;
     position: relative !important;
     margin: 0 auto !important;
-    padding: 30px !important;
+    padding: 24px !important;
     transition: 250ms ease 0s !important;
-    border-radius: 10px !important;
+    border-radius: 12px !important;
     color: var(--ana-renk) !important;
-    width: 400px !important;
-    max-width: 400px !important;
-    min-width: 400px !important;
+    width: 100% !important;
+    max-width: min(512px, calc(100vw - 32px)) !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
     z-index: 9999 !important;
     box-shadow: var(--modal-shadow) !important;
+}
+
+body.dark-mode .modal-react-whatsapp-info-content,
+html.dark-mode .modal-react-whatsapp-info-content {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
 }
 
 .modal-react-whatsapp-info-header {
@@ -3546,45 +3549,24 @@ color: var(--ana-renk) !important;
     margin: 0 !important;
 }
 
-.modal-react-whatsapp-info-title i.fa-brands.fa-whatsapp {
+.modal-react-whatsapp-info-title-wa {
     color: var(--whatsapp-green) !important;
-    font-size: 20px !important;
-    display: inline-block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    font-family: "Font Awesome 6 Brands" !important;
-    font-weight: 400 !important;
-    font-style: normal !important;
-    font-variant: normal !important;
-    text-rendering: auto !important;
-    line-height: 1 !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
+    flex-shrink: 0 !important;
 }
 
-.modal-react-whatsapp-info-title .fa-brands {
-    font-family: "Font Awesome 6 Brands" !important;
-    font-weight: 400 !important;
+@keyframes modal-react-whatsapp-info-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-.modal-react-whatsapp-info-close-btn {
-    background: none !important;
-    border: none !important;
-    font-size: 24px !important;
-    cursor: pointer !important;
+.modal-react-whatsapp-info-icon-spin {
+    animation: modal-react-whatsapp-info-spin 0.75s linear infinite !important;
+}
+
+.modal-react-whatsapp-info-close-btn svg {
+    display: block !important;
     color: var(--ana-renk) !important;
-    padding: 0 !important;
-    width: 32px !important;
-    height: 32px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 4px !important;
-    transition: background-color 0.2s ease !important;
-}
-
-.modal-react-whatsapp-info-close-btn:hover {
-    background-color: var(--light-bg) !important;
 }
 
 .modal-react-whatsapp-info-loading {
@@ -3592,9 +3574,10 @@ color: var(--ana-renk) !important;
     padding: 40px 20px !important;
 }
 
-.modal-react-whatsapp-info-loading i {
-    font-size: 24px !important;
+.modal-react-whatsapp-info-loading .modal-react-whatsapp-info-icon-spin {
     color: var(--mor-primary-text) !important;
+    margin: 0 auto 8px !important;
+    display: block !important;
 }
 
 .modal-react-whatsapp-info-content-wrapper {
@@ -3636,9 +3619,8 @@ color: var(--ana-renk) !important;
     color: var(--ana-renk) !important;
 }
 
-.modal-react-whatsapp-info-row i {
-    font-size: 16px !important;
-    color: var(--mor-primary-text) !important;
+.modal-react-whatsapp-info-row-icon {
+    color: var(--whatsapp-green) !important;
     flex-shrink: 0 !important;
 }
 
@@ -3648,10 +3630,10 @@ color: var(--ana-renk) !important;
     color: var(--gri70) !important;
 }
 
-.modal-react-whatsapp-info-error-state i {
-    font-size: 48px !important;
+.modal-react-whatsapp-info-error-icon {
     color: var(--gri70) !important;
-    margin-bottom: 10px !important;
+    margin: 0 auto 10px !important;
+    display: block !important;
 }
 
 .modal-react-whatsapp-info-error-state p {
@@ -3661,15 +3643,62 @@ color: var(--ana-renk) !important;
 
 .modal-react-whatsapp-info-footer {
     display: flex !important;
-    gap: 10px !important;
-    justify-content: flex-end !important;
+    flex-direction: column !important;
+    gap: 12px !important;
     margin-top: 20px !important;
     padding-top: 20px !important;
     border-top: 1px solid var(--border-renk) !important;
 }
 
-.modal-react-whatsapp-info-disconnect-btn,
-.modal-react-whatsapp-info-close-btn-footer {
+.modal-react-whatsapp-info-son-konusmalar-btn {
+    width: 100% !important;
+    padding: 10px 20px !important;
+    border: none !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background-color: var(--whatsapp-green) !important;
+    color: var(--white) !important;
+    height: 48px;
+}
+.modal-react-whatsapp-info-son-konusmalar-btn:hover {
+    opacity: 0.9 !important;
+}
+
+/* Sohbetten sipariş: aktifken tıklanabilir; disabled / kart seçilmeden gri */
+.modal-sohbetten-siparis .sohbetten-siparis-gonder-btn:not(:disabled) {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+.modal-sohbetten-siparis .sohbetten-siparis-gonder-btn:disabled,
+.modal-sohbetten-siparis .sohbetten-siparis-gonder-btn.sohbetten-siparis-gonder-btn--need-org:disabled {
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    opacity: 0.55 !important;
+    background: var(--button-disabled-bg) !important;
+    color: var(--button-disabled-text) !important;
+    box-shadow: none !important;
+}
+body.dark-mode .modal-sohbetten-siparis .sohbetten-siparis-gonder-btn:disabled,
+html.dark-mode .modal-sohbetten-siparis .sohbetten-siparis-gonder-btn:disabled {
+    opacity: 0.85 !important;
+}
+
+.modal-react-whatsapp-info-footer-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 10px !important;
+    justify-content: flex-end !important;
+    width: 100% !important;
+}
+
+.modal-react-whatsapp-info-disconnect-btn {
     padding: 10px 20px !important;
     border: none !important;
     border-radius: 5px !important;
@@ -3682,9 +3711,6 @@ color: var(--ana-renk) !important;
     justify-content: center !important;
     gap: 8px !important;
     width: 100% !important;
-}
-
-.modal-react-whatsapp-info-disconnect-btn {
     background-color: var(--kirmizi-canli) !important;
     color: white !important;
 }
@@ -3698,13 +3724,588 @@ color: var(--ana-renk) !important;
     cursor: not-allowed !important;
 }
 
-.modal-react-whatsapp-info-close-btn-footer {
-    background-color: var(--gri70) !important;
-    color: var(--white) !important;
+/* ========== WHATSAPP SOHBET GEÇMİŞİ MODAL ========== */
+.modal-react-whatsapp-son-konusmalar-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    background: var(--overlay-bg-black) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 2147483647 !important; /* Bağlantı bilgisi (2147483646) üstünde açılsın */
+}
+.modal-react-whatsapp-son-konusmalar-overlay.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+.modal-react-whatsapp-son-konusmalar-content {
+    background: var(--white) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+    overflow: hidden !important;
+}
+.modal-react-whatsapp-son-konusmalar-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    /* padding: 0 0 16px 0 !important; */
+    border-bottom: 1px solid var(--border-renk) !important;
+    padding-bottom: 10px;
+}
+.modal-react-whatsapp-son-konusmalar-title {
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+.modal-react-whatsapp-son-konusmalar-body {
+    padding: 20px 5px 0 0 !important;
+    overflow-y: auto !important;
+    flex: 1 !important;
+    min-height: 120px !important;
+}
+.modal-react-whatsapp-son-konusmalar-search {
+    margin: 0 0 10px 0 !important;
+}
+.modal-react-whatsapp-son-konusmalar-search-input {
+    width: 100% !important;
+    padding: 6px 10px !important;
+    border-radius: 6px !important;
+    border: 1px solid var(--input-border-gray, var(--border-renk)) !important;
+    font-size: 0.875rem !important;
+    background: var(--white) !important;
+    color: var(--ana-renk) !important;
+    box-sizing: border-box !important;
+}
+.modal-react-whatsapp-son-konusmalar-search-input::placeholder {
+    color: var(--placeholder) !important;
+}
+.modal-react-whatsapp-son-konusmalar-placeholder {
+    margin: 0 0 8px !important;
+    font-size: 14px !important;
+    color: var(--text-secondary) !important;
+    line-height: 1.5 !important;
+}
+.modal-react-whatsapp-son-konusmalar-placeholder-sub {
+    margin: 0 !important;
+    font-size: 13px !important;
+    color: var(--gri70) !important;
+}
+.modal-react-whatsapp-son-konusmalar-loading,
+.modal-react-whatsapp-son-konusmalar-error {
+    text-align: center !important;
+    padding: 24px 16px !important;
+    color: var(--text-secondary) !important;
+}
+.modal-react-whatsapp-son-konusmalar-loading i,
+.modal-react-whatsapp-son-konusmalar-loading svg,
+.modal-react-whatsapp-son-konusmalar-error i,
+.modal-react-whatsapp-son-konusmalar-error svg {
+    display: block !important;
+    margin: 0 auto 8px !important;
+    font-size: 24px !important;
+    color: var(--whatsapp-green) !important;
+}
+.modal-react-whatsapp-son-konusmalar-error i,
+.modal-react-whatsapp-son-konusmalar-error svg {
+    color: var(--kirmizi-canli) !important;
+}
+.modal-react-whatsapp-son-konusmalar-close-btn svg {
+    flex-shrink: 0;
+}
+.modal-react-whatsapp-son-konusmalar-list {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.modal-react-whatsapp-son-konusmalar-item {
+    position: relative !important;
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    border-radius: 8px !important;
+    margin-bottom: 10px !important;
 }
 
-.modal-react-whatsapp-info-close-btn-footer:hover {
+.modal-react-whatsapp-son-konusmalar-item:hover {
+    background-color: var(--border-renk) !important;
+}
+
+.modal-react-whatsapp-son-konusmalar-item::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 16px !important;
+    right: 16px !important;
+    bottom: -5px !important; /* hover arka planından ayrı dursun */
+    height: 1px !important;
+    background: var(--border-renk) !important;
     opacity: 0.9 !important;
+}
+
+.modal-react-whatsapp-son-konusmalar-item:last-child {
+    margin-bottom: 0 !important;
+}
+.modal-react-whatsapp-son-konusmalar-item:last-child::after {
+    display: none !important;
+}
+.modal-react-whatsapp-son-konusmalar-item-info {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: baseline !important;
+    gap: 8px 12px !important;
+}
+.modal-react-whatsapp-son-konusmalar-item-name {
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    color: var(--text-primary) !important;
+}
+.modal-react-whatsapp-son-konusmalar-item-phone {
+    font-size: 13px !important;
+    color: var(--gri70) !important;
+}
+.modal-react-whatsapp-son-konusmalar-item-preview {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+    font-size: 12px !important;
+    color: var(--text-secondary) !important;
+    min-width: 0 !important;
+}
+.modal-react-whatsapp-son-konusmalar-item-preview-icon {
+    flex-shrink: 0 !important;
+    color: var(--gri70) !important;
+}
+body.dark-mode .modal-react-whatsapp-son-konusmalar-item-preview-icon,
+html.dark-mode .modal-react-whatsapp-son-konusmalar-item-preview-icon {
+    color: var(--gray-400) !important;
+}
+.modal-react-whatsapp-son-konusmalar-item-preview-text {
+    min-width: 0 !important;
+    flex: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+.modal-react-whatsapp-son-konusmalar-item-time {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: var(--gri70) !important;
+    margin-left: auto !important;
+}
+.modal-react-whatsapp-son-konusmalar-item-btn {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    background: var(--whatsapp-green) !important;
+    color: var(--white) !important;
+    align-self: flex-start !important;
+    transition: opacity 0.2s !important;
+}
+.modal-react-whatsapp-son-konusmalar-item-btn:hover {
+    opacity: 0.9 !important;
+}
+.modal-react-whatsapp-son-konusmalar-footer {
+    padding: 12px 0 0  0 !important;
+    border-top: 1px solid var(--border-renk) !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+}
+
+/* Sohbetten sipariş modalı form alanları */
+.modal-sohbetten-siparis .modal-sohbetten-siparis-input,
+.modal-sohbetten-siparis-input {
+    width: 100% !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    color: var(--ana-renk) !important;
+    background-color: transparent !important; /* istek: transparent */
+    border: 1px solid var(--input-border-gray, var(--border-renk)) !important;
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease !important;
+}
+.modal-sohbetten-siparis .modal-sohbetten-siparis-input:focus,
+.modal-sohbetten-siparis-input:focus {
+    outline: none !important;
+    border-color: var(--mor-primary) !important;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12) !important;
+}
+.modal-sohbetten-siparis .modal-sohbetten-siparis-input:hover:not(:focus),
+.modal-sohbetten-siparis-input:hover:not(:focus) {
+    border-color: rgba(139, 92, 246, 0.55) !important;
+}
+.modal-sohbetten-siparis .modal-sohbetten-siparis-input::placeholder,
+.modal-sohbetten-siparis-input::placeholder {
+    color: var(--placeholder) !important;
+}
+
+/* Dark tema: native select dropdown (option listesi) */
+body.dark-mode .modal-sohbetten-siparis select,
+html.dark-mode .modal-sohbetten-siparis select {
+    color-scheme: dark;
+}
+body.dark-mode .modal-sohbetten-siparis select option,
+html.dark-mode .modal-sohbetten-siparis select option,
+body.dark-mode .modal-sohbetten-siparis select optgroup,
+html.dark-mode .modal-sohbetten-siparis select optgroup {
+    background-color: var(--white);
+    color: var(--ana-renk);
+}
+.modal-sohbetten-siparis textarea.modal-sohbetten-siparis-input {
+    resize: vertical !important;
+    min-height: 60px !important;
+    background: transparent !important;
+}
+
+/* Sohbetten sipariş: diğer formlarla aynı custom takvim oku */
+.modal-sohbetten-siparis .input-tarih-saat.siparis-tarih-wrap {
+    position: relative !important;
+    display: block !important;
+    flex: 1 1 140px !important;
+    min-width: 0 !important;
+}
+.modal-sohbetten-siparis .input-tarih-saat .siparis-tarih {
+    position: relative !important;
+    display: block !important;
+}
+.modal-sohbetten-siparis .sohbetten-siparis-date-input {
+    width: 100% !important;
+    height: 40px !important;
+    font-size: 14px !important;
+    border: 1px solid var(--gray-light-cc) !important;
+    border-radius: 6px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background-color: var(--white) !important;
+    color: var(--ana-renk) !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+    padding-right: 2.25rem !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.5rem center !important;
+    background-size: 1rem 1rem !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+}
+.modal-sohbetten-siparis .sohbetten-siparis-date-input::-webkit-calendar-picker-indicator {
+    opacity: 0 !important;
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+}
+body.dark-mode .modal-sohbetten-siparis .sohbetten-siparis-date-input,
+html.dark-mode .modal-sohbetten-siparis .sohbetten-siparis-date-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+}
+.sohbetten-siparis-reanalyze-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    margin-bottom: 4px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid var(--gray-200) !important;
+}
+.sohbetten-siparis-reanalyze-row--actions {
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
+    padding-top: 12px !important;
+    padding-bottom: 0 !important;
+    border-top: 1px solid var(--gray-200) !important;
+    border-bottom: none !important;
+}
+.sohbetten-siparis-reanalyze-btn {
+    width: 100% !important;
+}
+.sohbetten-siparis-reanalyze-hint {
+    font-size: 11px !important;
+    color: var(--gray-popup-secondary) !important;
+    line-height: 1.35 !important;
+    text-align: center !important;
+}
+body.dark-mode .sohbetten-siparis-reanalyze-hint,
+html.dark-mode .sohbetten-siparis-reanalyze-hint {
+    color: var(--gray-400) !important;
+}
+.sohbetten-siparis-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-top: 10px !important;
+    width: 100% !important;
+}
+.sohbetten-siparis-action-btn {
+    width: 100% !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
+    font-weight: 600 !important;
+}
+
+/* Sohbetten sipariş: ONAY CEVABINI KONTROL ET — mor zemin, beyaz yazı */
+.modal-sohbetten-siparis .sohbetten-siparis-kontrol-btn.secondary-button {
+    background: var(--mor-primary) !important;
+    border-color: var(--mor-primary) !important;
+    color: var(--white-only) !important;
+}
+.modal-sohbetten-siparis .sohbetten-siparis-kontrol-btn.secondary-button:hover:not(:disabled) {
+    filter: brightness(0.94) !important;
+    border-color: var(--mor-primary) !important;
+    color: var(--white-only) !important;
+}
+.modal-sohbetten-siparis .sohbetten-siparis-kontrol-btn.secondary-button:disabled {
+    opacity: 0.65 !important;
+    color: var(--white-only) !important;
+}
+body.dark-mode .modal-sohbetten-siparis .sohbetten-siparis-kontrol-btn.secondary-button,
+html.dark-mode .modal-sohbetten-siparis .sohbetten-siparis-kontrol-btn.secondary-button {
+    color: var(--white-only) !important;
+}
+.modal-sohbetten-siparis .sohbetten-siparis-input-readonly {
+    opacity: 0.92 !important;
+    cursor: default !important;
+}
+.sohbetten-siparis-form .sohbetten-siparis-tarih-saat-inner {
+    align-items: stretch !important;
+}
+
+/* Dark tema: onaylı müşteri cevabı kutusu görünür olsun */
+body.dark-mode .modal-sohbetten-siparis .sohbetten-siparis-customer-note.is-approved,
+html.dark-mode .modal-sohbetten-siparis .sohbetten-siparis-customer-note.is-approved {
+    background: rgba(37, 211, 102, 0.14) !important;
+    border-color: var(--whatsapp-green) !important;
+    color: var(--ana-renk-only) !important;
+}
+
+/* Sohbetten sipariş form grupları ve yan yana alanlar */
+.sohbetten-siparis-form .sohbetten-siparis-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.sohbetten-siparis-form .sohbetten-siparis-group-bordered {
+    border: 1px solid var(--mor-primary-text);
+    border-radius: 10px;
+    padding: 12px;
+    background: var(--white);
+}
+
+/* Sohbetten sipariş: Organizasyon kutusu (mor zemin) */
+.sohbetten-siparis-form .sohbetten-siparis-group-org {
+    background: var(--mor-primary) !important;
+    border-color: var(--mor-primary) !important;
+}
+.sohbetten-siparis-form .sohbetten-siparis-group-org .sohbetten-siparis-group-title,
+.sohbetten-siparis-form .sohbetten-siparis-group-org .sohbetten-siparis-label {
+    color: var(--white-only) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.25) !important;
+}
+.sohbetten-siparis-form .sohbetten-siparis-group-org .modal-sohbetten-siparis-input {
+    background-color: var(--white) !important;
+    color: var(--ana-renk) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Organizasyon seçildikten sonra: analiz satırı (tam genişlik, popup değil) */
+.sohbetten-siparis-form .sohbetten-siparis-analiz-inline {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-top: 4px !important;
+    padding: 14px 16px !important;
+    border-radius: 10px !important;
+    background: var(--gray-50) !important;
+    border: 1px solid var(--gray-200) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--ana-renk) !important;
+}
+.sohbetten-siparis-form .sohbetten-siparis-analiz-inline .modal-react-whatsapp-info-icon-spin {
+    flex-shrink: 0 !important;
+    color: var(--mor-primary) !important;
+}
+body.dark-mode .sohbetten-siparis-form .sohbetten-siparis-analiz-inline,
+html.dark-mode .sohbetten-siparis-form .sohbetten-siparis-analiz-inline {
+    background: var(--gray-50) !important;
+    border-color: var(--gray-200) !important;
+    color: var(--toast-text) !important;
+}
+.sohbetten-siparis-form .sohbetten-siparis-analiz-error {
+    margin-top: 8px !important;
+    padding: 14px 16px !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.sohbetten-siparis-form .sohbetten-siparis-group-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--mor-primary-text);
+    margin: 0 0 4px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-renk);
+}
+.sohbetten-siparis-form .sohbetten-siparis-org-mode-hint {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--gray-popup-secondary);
+    margin: 0 0 12px 0;
+    padding: 8px 10px;
+    background: var(--gray-light-f2);
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+}
+.sohbetten-siparis-form .sohbetten-siparis-step-hint {
+    margin-top: 4px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.sohbetten-siparis-form .sohbetten-siparis-step-hint strong:first-of-type {
+    color: var(--sohbetten-step-strong);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+body.dark-mode .sohbetten-siparis-form .sohbetten-siparis-step-hint strong:first-of-type,
+html.dark-mode .sohbetten-siparis-form .sohbetten-siparis-step-hint strong:first-of-type {
+    color: var(--sohbetten-step-strong);
+}
+body.dark-mode .sohbetten-siparis-form .sohbetten-siparis-org-mode-hint,
+html.dark-mode .sohbetten-siparis-form .sohbetten-siparis-org-mode-hint {
+    color: var(--gray-300) !important;
+    background: var(--gray-50) !important;
+    border-color: var(--border-renk) !important;
+}
+.sohbetten-siparis-form .sohbetten-siparis-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.sohbetten-siparis-form .sohbetten-siparis-row > .sohbetten-siparis-field {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+.sohbetten-siparis-form .sohbetten-siparis-row-3 > .sohbetten-siparis-field {
+    flex: 1 1 120px;
+}
+.sohbetten-siparis-form .sohbetten-siparis-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--ana-renk);
+}
+/* Eksik zorunlu alan (gönder denemesinden sonra) */
+.sohbetten-siparis-form .sohbetten-siparis-field--missing .modal-sohbetten-siparis-input,
+.sohbetten-siparis-form .sohbetten-siparis-field--missing select.modal-sohbetten-siparis-input,
+.sohbetten-siparis-form .sohbetten-siparis-group-org.sohbetten-siparis-field--missing select.modal-sohbetten-siparis-input {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.28);
+}
+.sohbetten-siparis-form .sohbetten-siparis-tarih-saat-kutu.sohbetten-siparis-field--missing .sohbetten-siparis-datetime-pair {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.28);
+}
+body.dark-mode .sohbetten-siparis-form .sohbetten-siparis-field--missing .modal-sohbetten-siparis-input,
+html.dark-mode .sohbetten-siparis-form .sohbetten-siparis-field--missing .modal-sohbetten-siparis-input,
+body.dark-mode .sohbetten-siparis-form .sohbetten-siparis-field--missing select.modal-sohbetten-siparis-input,
+html.dark-mode .sohbetten-siparis-form .sohbetten-siparis-field--missing select.modal-sohbetten-siparis-input,
+body.dark-mode .sohbetten-siparis-form .sohbetten-siparis-group-org.sohbetten-siparis-field--missing select,
+html.dark-mode .sohbetten-siparis-form .sohbetten-siparis-group-org.sohbetten-siparis-field--missing select,
+body.dark-mode .sohbetten-siparis-form .sohbetten-siparis-tarih-saat-kutu.sohbetten-siparis-field--missing .sohbetten-siparis-datetime-pair,
+html.dark-mode .sohbetten-siparis-form .sohbetten-siparis-tarih-saat-kutu.sohbetten-siparis-field--missing .sohbetten-siparis-datetime-pair {
+    border-color: #f87171 !important;
+    box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.35);
+}
+.sohbetten-siparis-form .sohbetten-siparis-tarih-saat-kutu {
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+.sohbetten-siparis-form .sohbetten-siparis-tarih-saat-kutu .sohbetten-siparis-row {
+    margin-top: 6px;
+}
+.sohbetten-siparis-form .sohbetten-siparis-tarih-saat-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+}
+.sohbetten-siparis-form .sohbetten-siparis-tarih-time-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+}
+/* Tarih + saat kutusu aynı yükseklik (Chrome/Edge uyumu) */
+.sohbetten-siparis-form .sohbetten-siparis-datetime-pair {
+    box-sizing: border-box !important;
+    min-height: 42px !important;
+    height: 42px !important;
+    max-height: 42px !important;
+    line-height: normal !important;
+    padding: 0 10px !important;
+    margin: 0 !important;
+    font-size: 14px !important;
+    background-color: var(--white) !important;
+    border: 1px solid var(--gray-300) !important;
+    border-radius: 6px !important;
+}
+.sohbetten-siparis-form input[type="date"].sohbetten-siparis-datetime-pair {
+    flex: 1 1 0;
+    min-width: 0;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.sohbetten-siparis-form .sohbetten-siparis-time-input.sohbetten-siparis-datetime-pair {
+    flex: 0 0 5.75rem;
+    width: 5.75rem;
+    min-width: 5.75rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+.sohbetten-siparis-form .sohbetten-siparis-tarih-gun-label {
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 0;
+    padding-left: 2px;
+}
+.sohbetten-siparis-form .sohbetten-siparis-tarih-gun-prefix {
+    font-weight: 400;
+    color: var(--sohbetten-tarih-prefix);
+}
+.sohbetten-siparis-form .sohbetten-siparis-tarih-gun-value {
+    font-weight: 600;
+    color: var(--sohbetten-tarih-value);
+}
+body.dark-mode .sohbetten-siparis-form .sohbetten-siparis-tarih-gun-prefix,
+html.dark-mode .sohbetten-siparis-form .sohbetten-siparis-tarih-gun-prefix {
+    color: var(--gray-400) !important;
+}
+body.dark-mode .sohbetten-siparis-form .sohbetten-siparis-tarih-gun-value,
+html.dark-mode .sohbetten-siparis-form .sohbetten-siparis-tarih-gun-value {
+    color: var(--white-only) !important;
+}
+
+/* Sohbetten Sipariş başlık altında kişi + telefon kutusu */
+.modal-sohbetten-siparis .sohbetten-siparis-header-chat {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 /* ========== WHATSAPP PHONE SELECTOR MODAL ========== */
@@ -3810,22 +4411,6 @@ color: var(--ana-renk) !important;
     font-weight: 400 !important;
 }
 
-.modal-react-whatsapp-phone-close {
-    background-color: var(--neutral-gray-b1) !important;
-    padding: 10px 24px !important;
-    border-radius: 5px !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    width: fit-content !important;
-    color: var(--white) !important;
-    border: none !important;
-}
-
-.modal-react-whatsapp-phone-close:hover {
-    background-color: var(--gri70) !important;
-}
-
 /* ========== QR SCANNER MODAL ========== */
 .modal-react-qr-scanner-overlay {
     position: fixed !important;
@@ -3904,14 +4489,6 @@ color: var(--ana-renk) !important;
     color: var(--ana-renk) !important;
 }
 
-.modal-react-qr-scanner-close {
-    color: var(--placeholder) !important;
-}
-
-.modal-react-qr-scanner-close:hover {
-    color: var(--gri70) !important;
-}
-
 .modal-react-qr-scanner-viewport {
     width: 100% !important;
     height: 256px !important;
@@ -3931,8 +4508,8 @@ color: var(--ana-renk) !important;
     border-radius: 50% !important;
     height: 32px !important;
     width: 32px !important;
-    border: 3px solid var(--gray-light-ee, #eee) !important;
-    border-top-color: var(--mavi-renk, #2563eb) !important;
+    border: 3px solid var(--gray-light-ee) !important;
+    border-top-color: var(--mavi-renk) !important;
 }
 
 .modal-react-qr-scanner-loading-text {
@@ -4146,14 +4723,6 @@ color: var(--ana-renk) !important;
     color: var(--ana-renk) !important;
 }
 
-.modal-react-order-action-close {
-    color: var(--gray-soft-dark) !important;
-}
-
-.modal-react-order-action-close:hover {
-    color: var(--gray-text-base) !important;
-}
-
 .modal-react-order-action-order-info {
     margin-bottom: 16px !important;
     padding: 12px !important;
@@ -4252,24 +4821,6 @@ color: var(--ana-renk) !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 6px !important;
-}
-
-.modal-react-teknik-destek-close {
-    background: none !important;
-    border: none !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    color: var(--ana-renk) !important;
-    font-size: 16px !important;
-    border-radius: 4px !important;
-    transition: background-color 0.2s ease !important;
-    padding: 8px !important;
-}
-
-.modal-react-teknik-destek-close:hover {
-    background-color: var(--light-bg) !important;
 }
 
 .modal-react-teknik-destek-content {
@@ -4675,6 +5226,21 @@ color: var(--ana-renk) !important;
     animation: modal-mobile-open 0.25s ease-out;
     box-shadow: 0 8px 32px var(--shadow-gray-soft);
   }
+
+  /* WhatsApp bağlantı bilgisi: araç takip modalı ile aynı kenar boşluğu (20px) ve kart ölçüsü */
+  .modal-react-whatsapp-info-overlay.show {
+    padding: 20px !important;
+  }
+  .modal-react-whatsapp-info-overlay > .modal-react-whatsapp-info-content {
+    max-width: min(440px, calc(100vw - 40px)) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25) !important;
+  }
+  body.dark-mode .modal-react-whatsapp-info-overlay > .modal-react-whatsapp-info-content,
+  html.dark-mode .modal-react-whatsapp-info-overlay > .modal-react-whatsapp-info-content {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+  }
+
   @keyframes modal-mobile-open {
     from { opacity: 0; transform: scale(0.96); }
     to { opacity: 1; transform: scale(1); }
@@ -5445,6 +6011,7 @@ color: var(--ana-renk) !important;
 div.yeni-kart-container,
 div.yeni-musteri-container {
     /* Eski CSS'teki display: none tanımını override et - bizim kontrolümüzde */
+    display: block !important;
 }
 
 div.yeni-kart-container.show {
@@ -5909,7 +6476,7 @@ html.dark-mode .overlay-yeni-kart-container .yeni-kart-container .input-tarih-sa
     max-width: 400px !important;
     min-width: 400px !important;
     z-index: 9999 !important;
-    box-shadow: var(--modal-shadow, 0 4px 6px rgba(0, 0, 0, 0.1)) !important;
+    box-shadow: var(--modal-shadow) !important;
 }
 
 .whatsapp-info-modal-title {
@@ -6089,11 +6656,20 @@ body select.modal-react-arac-takip-select {
     .overlay-yeni-siparis-container .yeni-siparis-container .siparis-form-alan {
         flex-direction: column !important;
     }
+
+    .yeni-siparis-container .siparis-form-alan .siparis-veren-musteri, .yeni-siparis-container .siparis-form-alan .partner-siparisi-isaretle {
+    min-width: auto !important;
+}
     .overlay-yeni-siparis-container .yeni-siparis-container .siparis-form-alan .sol-alan,
     .overlay-yeni-siparis-container .yeni-siparis-container .siparis-form-alan .sag-alan {
         width: 100% !important;
         max-width: 100% !important;
+        min-width: auto !important;
     }
+
+
+
+    
 }
 
 /* ========== MODAL/OVERLAY AÇIKKEN HEADER VE SIDEBAR OVERLAY ALTINDA (header-custom + layout-custom’tan buraya taşındı) ========== */

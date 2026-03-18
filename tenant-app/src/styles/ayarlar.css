@@ -57,6 +57,12 @@ main[data-main-content]:has(.ayarlar-page) {
   .ayarlar-ciceksepeti-bildirim-butonlar {
     flex-direction: column;
   }
+
+  /* Yapay Zeka sekmesi: başlık + aç/kapa satırı mobilde alt alta */
+  .ayarlar-yapay-zeka-toggle-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
 }
 
 /* Ayarlar: dış sayfada scroll yok, scroll sadece iç panellerde (.ayarlar-panel) – wrapper'da scrollbar titremesin */
@@ -435,6 +441,27 @@ main[data-main-content]:has(.ayarlar-page) {
   flex-direction: column;
   gap: 0.3rem;
 }
+
+/* Label + sağda küçük rozet satırı (örn. OpenAI key durumu) */
+.ayarlar-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.ayarlar-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.ayarlar-badge-success {
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.45);
+  color: var(--success-green);
+}
 .ayarlar-form-grid-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -778,18 +805,18 @@ main[data-main-content]:has(.ayarlar-page) {
 }
 .ayarlar-ciceksepeti-bildirim-butonlar .ayarlar-btn:first-child {
   background-color: var(--mor-primary);
-  color: var(--white-only, #fff) !important;
+  color: var(--white-only) !important;
   border-color: var(--mor-primary);
 }
 .ayarlar-ciceksepeti-bildirim-butonlar .ayarlar-btn:first-child:hover:not(:disabled) {
   background-color: var(--mor-primary-hover);
   border-color: var(--mor-primary-hover);
-  color: var(--white-only, #fff) !important;
+  color: var(--white-only) !important;
 }
 .ayarlar-ciceksepeti-bildirim-butonlar .ayarlar-btn:last-child {
-  background-color: var(--yesil-destek, #19ba39);
+  background-color: var(--yesil-destek);
   color: #fff !important;
-  border-color: var(--yesil-destek, #19ba39);
+  border-color: var(--yesil-destek);
 }
 .ayarlar-ciceksepeti-bildirim-butonlar .ayarlar-btn:last-child:hover:not(:disabled) {
   filter: brightness(0.92);
@@ -855,6 +882,74 @@ main[data-main-content]:has(.ayarlar-page) {
   margin: 0;
   cursor: pointer;
   accent-color: var(--mor-primary);
+}
+
+/* Yapay Zeka: Hizmet durumu kutusu (belirgin) */
+.ayarlar-yapay-zeka-toggle-kutu {
+  border: 1px solid var(--border-renk);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(139, 92, 246, 0.06);
+}
+.ayarlar-yapay-zeka-toggle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ayarlar-yapay-zeka-toggle-desc {
+  font-size: 12px;
+  color: var(--gri70);
+}
+.ayarlar-yapay-zeka-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-renk);
+  border-radius: 999px;
+  padding: 8px 10px;
+  background: var(--white);
+  cursor: pointer;
+  user-select: none;
+}
+.ayarlar-yapay-zeka-toggle.is-on {
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.08);
+}
+.ayarlar-yapay-zeka-toggle.is-off {
+  border-color: rgba(220, 38, 38, 0.45);
+  background: rgba(220, 38, 38, 0.06);
+}
+.ayarlar-yapay-zeka-toggle-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--gri70);
+}
+.ayarlar-yapay-zeka-toggle.is-on .ayarlar-yapay-zeka-toggle-dot {
+  background: #10b981;
+}
+.ayarlar-yapay-zeka-toggle.is-off .ayarlar-yapay-zeka-toggle-dot {
+  background: #dc2626;
+}
+.ayarlar-yapay-zeka-toggle-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ana-renk);
+}
+
+/* Form yardımcı metin (API anahtarı ipucu vb.) */
+.ayarlar-form-hint {
+  display: block;
+  /* margin-top: 0.5rem; */
+  max-width: 42rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--gri70);
+}
+body.dark-mode .ayarlar-form-hint,
+html.dark-mode .ayarlar-form-hint {
+  color: var(--gray-popup-secondary);
 }
 
 /* Banka hesap tabloları: Faturada göster / Mesajda kullan başlık ve checkbox sütunu dikey-yatay ortada */
@@ -1166,7 +1261,7 @@ main[data-main-content]:has(.ayarlar-page) {
   padding: 1rem;
   border: 1px solid var(--border-renk);
   border-radius: 10px;
-  background: var(--form-dark-bg, #fafafa);
+  background: var(--form-dark-bg);
 }
 .ayarlar-fatura-isletme-kutu--no-bg {
   background: transparent;

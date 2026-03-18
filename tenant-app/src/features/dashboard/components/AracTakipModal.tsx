@@ -33,8 +33,21 @@ export const AracTakipModal: React.FC<AracTakipModalProps> = ({
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+  const overlayCloseReadyRef = useRef(false);
   const { user } = useAuth();
   useModalOpenAnimation(isOpen, overlayRef, panelRef);
+
+  useEffect(() => {
+    if (!isOpen) {
+      overlayCloseReadyRef.current = false;
+      return;
+    }
+    overlayCloseReadyRef.current = false;
+    const t = window.setTimeout(() => {
+      overlayCloseReadyRef.current = true;
+    }, 400);
+    return () => window.clearTimeout(t);
+  }, [isOpen]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -221,6 +234,7 @@ export const AracTakipModal: React.FC<AracTakipModalProps> = ({
         padding: 16,
       }}
       onClick={(e) => {
+        if (!overlayCloseReadyRef.current) return;
         if (e.target === e.currentTarget) onClose();
       }}
     >
@@ -242,23 +256,12 @@ export const AracTakipModal: React.FC<AracTakipModalProps> = ({
                 Araç Takip
               </h3>
               <button
+                type="button"
                 onClick={onClose}
-                className="modal-react-arac-takip-close text-gray-400 hover:text-gray-500"
+                className="btn-close-modal"
+                aria-label="Kapat"
               >
-                <span className="sr-only">Kapat</span>
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <i className="icon-btn-kapat" aria-hidden />
               </button>
             </div>
 

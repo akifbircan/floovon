@@ -1,9 +1,16 @@
 /* Toast override: mor primary, beyaz yazı, büyük harf butonlar, daha belirgin tasarım */
 
+/* createToast: ul.notifications — WhatsApp/Sohbetten modalları ile aynı katmanda; son gösterilen üstte kalsın diye JS body sonuna taşır */
+body > ul.notifications,
+ul.notifications {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+}
+
 /* Toast: konteyner react-hot-toast’ın div[data-rht-toaster] + containerClassName; kenarlarda boşluk burada */
 /* Portal wrapper (MainLayout): sunucuda overlay en üstte görünsün; inline z-index + burada pointer-events */
 .app-toast-portal-wrapper {
-  z-index: 2147483647 !important;
+  z-index: 2147485000 !important;
   position: fixed !important;
   inset: 0 !important;
   pointer-events: none !important;
@@ -29,7 +36,7 @@ div[data-rht-toaster].app-toast-container,
 .app-toast-container,
 body > div[class*="toast"]:not(.ciceksepeti-toast-container),
 body > div[class*="Toast"]:not(.ciceksepeti-toast-container) {
-  z-index: 2147483647 !important;
+  z-index: 2147485000 !important;
 }
 /* İç wrapper: toast listesi ortada, max genişlik (toast arası boşluk Toaster gutter prop ile) */
 div[data-rht-toaster] > div,
@@ -230,6 +237,7 @@ body .toast.info .column .toast-icon svg,
 }
 
 /* Interaktif toast (Müşteri Sil vb.) overlay’in üstünde; wrapper + overlay + kutu */
+/* Etkileşimli onay: modal portal’larından sonra eklenirse üstte kalır; z-index max */
 [data-floovon-interactive-toast],
 [data-floovon-interactive-toast] .toast-overlay,
 [data-floovon-interactive-toast] .toast.interactive {

@@ -93,7 +93,7 @@ ul.notifications {
 
 .toast.success:not(.interactive) .column .toast-icon,
 .toast.success:not(.interactive) .column .toast-icon svg {
-  color: var(--toast-mor-primary, #6D28D9) !important;
+  color: var(--toast-mor-primary) !important;
 }
 
 .toast .toast-icon {
@@ -177,7 +177,7 @@ ul.notifications {
 
 /* Success Toast – mor primary sol çizgi ve ikon */
 .toast.success:not(.interactive) {
-  border-left-color: var(--toast-mor-primary, #6D28D9);
+  border-left-color: var(--toast-mor-primary);
 }
 
 /* Warning Toast Stilleri */
@@ -339,15 +339,15 @@ body:has(.toast-overlay) {
 /* Onay butonu */
 .toast-btn-confirm,
 .toast-btn-danger {
-  background-color: var(--toast-mor-primary, #6D28D9) !important;
-  color: #ffffff !important;
+  background-color: var(--toast-mor-primary) !important;
+  color: var(--toast-text-white) !important;
   font-weight: 600;
 }
 
 .toast-btn-confirm:hover,
 .toast-btn-danger:hover {
   filter: brightness(1.1);
-  color: #ffffff !important;
+  color: var(--toast-text-white) !important;
   opacity: 1;
 }
 
@@ -394,7 +394,7 @@ body:has(.toast-overlay) {
 body .toast.interactive .toast-interactive-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--ana-renk, var(--toast-text, #111827));
+  color: var(--toast-interactive-title);
   text-align: left !important;
   display: block;
   width: 100%;
@@ -403,7 +403,7 @@ body .toast.interactive .toast-interactive-title {
 .toast.interactive .toast-message {
   font-size: 15px;
   line-height: 1.5;
-  color: var(--gri70, var(--toast-text, #6b7280));
+  color: var(--toast-interactive-message);
   text-align: left !important;
 }
 
@@ -436,6 +436,9 @@ body .toast.interactive .toast-interactive-title {
   --toast-mor-primary: #6D28D9;
   --toast-button-cancel: #e2e8f0;
   --overlay-bg-black: rgba(0, 0, 0, 0.5);
+  --toast-interactive-title: #111827;
+  --toast-interactive-message: #6b7280;
+  --toast-copy-subtitle: #475569;
 }
 
 /* #endregion */
@@ -447,10 +450,10 @@ body .toast.interactive .toast-interactive-title {
   bottom: 36px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--white, #fff);
-  color: var(--ana-renk, #1e293b);
+  background-color: var(--toast-bg);
+  color: var(--toast-text-dark);
   padding: 15px 20px;
-  border: 1px solid var(--border-renk, #e2e8f0);
+  border: 1px solid var(--toast-button-cancel);
   border-radius: 8px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
   max-width: 320px;
@@ -467,7 +470,7 @@ body .toast.interactive .toast-interactive-title {
   padding: 8px;
   border-radius: 50%;
   margin-right: 10px;
-  color: var(--toast-success, #10b981);
+  color: var(--toast-success);
 }
 
 .urunyazisi-alert .alert-message {
@@ -475,7 +478,7 @@ body .toast.interactive .toast-interactive-title {
   margin-bottom: 8px;
   font-weight: 600;
   font-size: 13px;
-  color: var(--toast-text, #475569);
+  color: var(--toast-copy-subtitle);
 }
 
 .urunyazisi-alert .copied-text-wrapper {
@@ -489,7 +492,7 @@ body .toast.interactive .toast-interactive-title {
   font-size: 13px;
   font-weight: 400;
   word-wrap: break-word;
-  color: var(--ana-renk, #1e293b);
+  color: var(--toast-text-dark);
   max-height: 80px;
   overflow-y: auto;
 }

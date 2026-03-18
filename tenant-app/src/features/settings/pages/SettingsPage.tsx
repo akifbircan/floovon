@@ -15,7 +15,7 @@ import { formatPhoneNumber, cleanPhoneForDatabase, formatTutarInputLive, formatT
 import { usePhoneInput } from '../../../shared/hooks/usePhoneInput';
 import { useAddressSelect } from '../../dashboard/hooks/useAddressSelect';
 import { getKonumAyarlari } from '../../dashboard/api/formActions';
-import { Trash2, FileSearch, Package, Settings, Truck, Send, Pencil, Upload, Info, Wrench, Clock, ShoppingCart, Plug, RefreshCw, Bell, FileText, HelpCircle } from 'lucide-react';
+import { Trash2, FileSearch, Package, Settings, Truck, Send, Pencil, Upload, Info, Wrench, Clock, ShoppingCart, Plug, RefreshCw, Bell, FileText, HelpCircle, Sparkles } from 'lucide-react';
 import { WhatsAppQRModal } from '../../dashboard/components/WhatsAppQRModal';
 import { FaturaTab } from './FaturaTab';
 
@@ -1273,14 +1273,15 @@ export const SettingsPage: React.FC = () => {
   const { isBaslangicPlan } = usePlan();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<'veri' | 'genel' | 'arac' | 'gonderim' | 'fatura' | 'ciceksepeti'>('veri');
+  const [activeTab, setActiveTab] = useState<'veri' | 'genel' | 'arac' | 'gonderim' | 'fatura' | 'ciceksepeti' | 'yapayzeka'>('veri');
   const [activeSubTab, setActiveSubTab] = useState<'urunler' | 'urun-gruplari' | 'organizasyon-turleri' | 'organizasyon-etiketleri'>('urunler');
   const [genelSubTab, setGenelSubTab] = useState<'isletme' | 'konum' | 'teslimat' | 'yazdirma' | 'banka' | 'ciceksepeti'>('isletme');
   const [ciceksepetiDirty, setCiceksepetiDirty] = useState(false);
   const ciceksepetiSubmitRef = React.useRef<(() => void) | null>(null);
-  const pendingTabRef = React.useRef<'veri' | 'genel' | 'arac' | 'gonderim' | 'fatura' | 'ciceksepeti' | null>(null);
+  const pendingTabRef = React.useRef<'veri' | 'genel' | 'arac' | 'gonderim' | 'fatura' | 'ciceksepeti' | 'yapayzeka' | null>(null);
+  const prevMainTabRef = React.useRef<typeof activeTab>('veri');
 
-  const handleTabChange = (tab: 'veri' | 'genel' | 'arac' | 'gonderim' | 'fatura' | 'ciceksepeti') => {
+  const handleTabChange = (tab: 'veri' | 'genel' | 'arac' | 'gonderim' | 'fatura' | 'ciceksepeti' | 'yapayzeka') => {
     if (activeTab === 'ciceksepeti' && ciceksepetiDirty) {
       showToastInteractive({
         title: 'Değişiklikleri Kaydet',
@@ -1295,6 +1296,9 @@ export const SettingsPage: React.FC = () => {
       });
       return;
     }
+    /* Ana sekmeden çıkarken alt sekmeyi hemen başa al (aynı tıklamada, tek boyama) */
+    if (activeTab === 'genel' && tab !== 'genel') setGenelSubTab('isletme');
+    if (activeTab === 'veri' && tab !== 'veri') setActiveSubTab('urunler');
     setActiveTab(tab);
   };
 
@@ -1335,8 +1339,18 @@ export const SettingsPage: React.FC = () => {
       setActiveTab('fatura');
     } else if (tabParam === 'ciceksepeti' && isBaslangicPlan === false) {
       setActiveTab('ciceksepeti');
+    } else if (tabParam === 'yapayzeka' && isBaslangicPlan === false) {
+      setActiveTab('yapayzeka');
     }
   }, [searchParams, isBaslangicPlan]);
+
+  /** URL / programatik sekme değişiminde: ana sekmeden çıkınca alt sekmeyi sıfırla */
+  useEffect(() => {
+    const prev = prevMainTabRef.current;
+    if (prev === 'genel' && activeTab !== 'genel') setGenelSubTab('isletme');
+    if (prev === 'veri' && activeTab !== 'veri') setActiveSubTab('urunler');
+    prevMainTabRef.current = activeTab;
+  }, [activeTab]);
 
   // Başlangıç planında (plan_id=1) Araç Takip ve Çiçek Sepeti gizli; açıksa başka sekmeye al
   useEffect(() => {
@@ -1702,6 +1716,53 @@ export const SettingsPage: React.FC = () => {
   React.useEffect(() => {
     if (Array.isArray(faturadaGosterilenBankaIdsRaw)) setFaturadaSecilenBankaIds(faturadaGosterilenBankaIdsRaw);
   }, [faturadaGosterilenBankaIdsRaw]);
+
+  // Yapay Zeka Ayarları (OpenAI API key, model)
+  const { data: yapayZekaData } = useQuery({
+    queryKey: ['ayarlar', 'yapay-zeka'],
+    queryFn: async () => {
+      try {
+        const res = await apiClient.get<{ success: boolean; enabled?: boolean; apiKeyMasked?: string; model?: string }>('/ayarlar/yapay-zeka');
+        return res.data;
+      } catch (e: any) {
+        if (e?.response?.status === 404) return { success: true, enabled: true, apiKeyMasked: '', model: 'gpt-4o-mini' };
+        throw e;
+      }
+    },
+    enabled: activeTab === 'yapayzeka',
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+  });
+  const [yapayZekaApiKey, setYapayZekaApiKey] = useState('');
+  const [yapayZekaModel, setYapayZekaModel] = useState('gpt-4o-mini');
+  const [yapayZekaEnabled, setYapayZekaEnabled] = useState(true);
+  const [yapayZekaSaving, setYapayZekaSaving] = useState(false);
+
+  const broadcastAiServiceEnabled = React.useCallback((enabled: boolean) => {
+    try {
+      window.dispatchEvent(new CustomEvent('floovon:ai-service', { detail: { enabled } }));
+    } catch (_) { }
+  }, []);
+  React.useEffect(() => {
+    if (activeTab !== 'yapayzeka' || !yapayZekaData) return;
+    setYapayZekaModel((yapayZekaData as any)?.model || 'gpt-4o-mini');
+    setYapayZekaEnabled(Boolean((yapayZekaData as any)?.enabled ?? true));
+  }, [activeTab, yapayZekaData]);
+  const handleYapayZekaSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setYapayZekaSaving(true);
+    try {
+      await apiClient.post('/ayarlar/yapay-zeka', { enabled: yapayZekaEnabled, apiKey: yapayZekaApiKey.trim() || undefined, model: yapayZekaModel });
+      showToast('success', 'Yapay Zeka ayarları kaydedildi.');
+      broadcastAiServiceEnabled(!!yapayZekaEnabled);
+      setYapayZekaApiKey('');
+      queryClient.invalidateQueries({ queryKey: ['ayarlar', 'yapay-zeka'] });
+    } catch (err: any) {
+      showToast('error', err?.response?.data?.error || err?.message || 'Kaydedilemedi.');
+    } finally {
+      setYapayZekaSaving(false);
+    }
+  };
   const handleFaturaAyarlariSave = async () => {
     setFaturaSaving(true);
     try {
@@ -1933,7 +1994,7 @@ export const SettingsPage: React.FC = () => {
   const sortedTeslimatKonumlari = React.useMemo(() => {
     const list = [...teslimatKonumlari];
     if (!teslimatSortField) return list;
-    list.sort((a: { konum_adi?: string; il?: string; ilce?: string; mahalle?: string }, b: { konum_adi?: string; il?: string; ilce?: string; mahalle?: string }) => {
+    list.sort((a: { konum_adi?: string; il?: string; ilce?: string; mahalle?: string; acik_adres?: string }, b: { konum_adi?: string; il?: string; ilce?: string; mahalle?: string; acik_adres?: string }) => {
       let av: string = (a as Record<string, unknown>)[teslimatSortField] as string ?? '';
       let bv: string = (b as Record<string, unknown>)[teslimatSortField] as string ?? '';
       if (typeof av === 'string') av = av.toLocaleLowerCase('tr-TR');
@@ -2565,6 +2626,17 @@ export const SettingsPage: React.FC = () => {
             >
               <ShoppingCart size={18} />
               Çiçek Sepeti Ayarları
+            </button>
+          )}
+          {isBaslangicPlan === false && (
+            <button
+              type="button"
+              data-tab="yapayzeka"
+              onClick={() => handleTabChange('yapayzeka')}
+              className={`ayarlar-tab-btn ${activeTab === 'yapayzeka' ? 'active' : ''}`}
+            >
+              <Sparkles size={18} />
+              Yapay Zeka Ayarları
             </button>
           )}
         </div>
@@ -3530,15 +3602,17 @@ export const SettingsPage: React.FC = () => {
                               <TableSortHeader field="konum_adi" label="Konum Adı" currentSort={teslimatSortField} sortDirection={teslimatSortDir} onSort={handleTeslimatSort} className="px-4 py-3 text-xs font-medium text-gray-500 uppercase" />
                               <TableSortHeader field="il" label="İl / İlçe" currentSort={teslimatSortField} sortDirection={teslimatSortDir} onSort={handleTeslimatSort} className="px-4 py-3 text-xs font-medium text-gray-500 uppercase" />
                               <TableSortHeader field="mahalle" label="Mahalle" currentSort={teslimatSortField} sortDirection={teslimatSortDir} onSort={handleTeslimatSort} className="px-4 py-3 text-xs font-medium text-gray-500 uppercase" />
+                              <TableSortHeader field="acik_adres" label="Açık Adres" currentSort={teslimatSortField} sortDirection={teslimatSortDir} onSort={handleTeslimatSort} className="px-4 py-3 text-xs font-medium text-gray-500 uppercase min-w-[12rem] max-w-[28rem]" />
                               <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase table-col-islem">İŞLEMLER</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {sortedTeslimatKonumlari.map((k: { id: number; konum_adi: string; il?: string; ilce?: string; mahalle?: string }) => (
+                            {sortedTeslimatKonumlari.map((k: { id: number; konum_adi: string; il?: string; ilce?: string; mahalle?: string; acik_adres?: string }) => (
                               <tr key={k.id} className="hover:bg-gray-50 ayarlar-table-row">
                                 <td data-label="" className="td-no-mobile-label px-4 py-3 text-sm font-medium text-gray-900">{k.konum_adi}</td>
                                 <td data-label="İl/İlçe" className="px-4 py-3 text-sm text-gray-600">{(k.il || '') + (k.ilce ? ' / ' + k.ilce : '') || '—'}</td>
                                 <td data-label="Mahalle" className="px-4 py-3 text-sm text-gray-600">{k.mahalle || '—'}</td>
+                                <td data-label="Açık Adres" className="px-4 py-3 text-sm text-gray-600 max-w-[28rem] align-top break-words whitespace-pre-wrap">{k.acik_adres?.trim() || '—'}</td>
                                 <td data-label="İşlemler" className="px-4 py-3 text-sm font-medium table-col-islem">
                                   <div className="islem-ikonlar">
                                     <button type="button" className="islem-ikon duzenle-ikon" data-tooltip="Düzenle" aria-label="Düzenle" onClick={() => { const row = k as { id: number; konum_adi: string; il?: string; ilce?: string; mahalle?: string; acik_adres?: string }; setEditingTeslimatId(row.id); setTeslimatFormData({ konum_adi: row.konum_adi, il: row.il || '', ilce: row.ilce || '', mahalle: row.mahalle || '', acik_adres: row.acik_adres || '' }); addressSelectTeslimat.setIl(row.il || '', { skipClear: true }); addressSelectTeslimat.setIlce(row.ilce || '', { skipClear: true }); addressSelectTeslimat.setMahalle(row.mahalle || ''); }}><Pencil size={16} aria-hidden /></button>
@@ -3700,6 +3774,89 @@ export const SettingsPage: React.FC = () => {
                 </p>
               </div>
               <CiceksepetiAyarlariForm onDirtyChange={setCiceksepetiDirty} submitFormRef={ciceksepetiSubmitRef} onAfterSave={handleCiceksepetiAfterSave} />
+            </div>
+          </div>
+        )}
+
+        {/* Yapay Zeka Ayarları Tab – OpenAI API key, model (sadece premium) */}
+        {isBaslangicPlan === false && activeTab === 'yapayzeka' && (
+          <div className="ayarlar-tab-icerik">
+            <div className="ayarlar-subtab-nav ayarlar-subtab-nav--single">
+              <button type="button" className="ayarlar-subtab-btn active" aria-current="true">
+                Yapay Zeka Ayarları
+              </button>
+            </div>
+            <div className="ayarlar-panel">
+              <div className="ayarlar-panel-header">
+                <h2 className="ayarlar-panel-title">OpenAI (ChatGPT) Ayarları</h2>
+                <p className="ayarlar-panel-desc">
+                  <Info size={18} className="ayarlar-help-icon ayarlar-panel-desc-icon" aria-hidden />
+                  WhatsApp konuşmalarından sipariş bilgisi çıkarmak için OpenAI API anahtarınızı girin. Hesap ve kullanım bilgisi platform.openai.com üzerinden yönetilir.
+                </p>
+              </div>
+              <form className="ayarlar-form" onSubmit={handleYapayZekaSave}>
+                <div className="ayarlar-form-group ayarlar-yapay-zeka-toggle-kutu">
+                  <div className="ayarlar-yapay-zeka-toggle-header">
+                    <div>
+                      <label className="ayarlar-label" style={{ marginBottom: 2 }}>Hizmet Durumu</label>
+                      <div className="ayarlar-yapay-zeka-toggle-desc">
+                        Pasif yaparsanız WhatsApp “Sohbet Geçmişi / Sohbetten Sipariş” özelliği gizlenir.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className={`ayarlar-yapay-zeka-toggle ${yapayZekaEnabled ? 'is-on' : 'is-off'}`}
+                      onClick={() => {
+                        setYapayZekaEnabled((v) => {
+                          const next = !v;
+                          broadcastAiServiceEnabled(next);
+                          return next;
+                        });
+                      }}
+                      aria-pressed={yapayZekaEnabled}
+                    >
+                      <span className="ayarlar-yapay-zeka-toggle-dot" />
+                      <span className="ayarlar-yapay-zeka-toggle-text">{yapayZekaEnabled ? 'Aktif' : 'Pasif'}</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="ayarlar-form-group">
+                  <div className="ayarlar-label-row">
+                    <label className="ayarlar-label">OpenAI API Key</label>
+                    {(yapayZekaData as any)?.apiKeyMasked && (
+                      <span className="ayarlar-badge ayarlar-badge-success">Kayıtlı anahtar var</span>
+                    )}
+                  </div>
+                  <input
+                    type="password"
+                    className="ayarlar-input"
+                    placeholder={(yapayZekaData as any)?.apiKeyMasked ? '••••••••••••' : 'sk-...'}
+                    value={yapayZekaApiKey}
+                    onChange={(e) => setYapayZekaApiKey(e.target.value)}
+                    autoComplete="off"
+                  />
+                  {(yapayZekaData as any)?.apiKeyMasked && (
+                    <span className="ayarlar-form-hint">Kayıtlı anahtar var. Yeni girmek için üst alanı doldurun.</span>
+                  )}
+                </div>
+                <div className="ayarlar-form-group">
+                  <label className="ayarlar-label">Model</label>
+                  <select
+                    className="ayarlar-input ayarlar-select"
+                    value={yapayZekaModel}
+                    onChange={(e) => setYapayZekaModel(e.target.value)}
+                  >
+                    <option value="gpt-4o-mini">gpt-4o-mini (hızlı, uygun maliyet)</option>
+                    <option value="gpt-4o">gpt-4o</option>
+                    <option value="gpt-4-turbo">gpt-4-turbo</option>
+                  </select>
+                </div>
+                <div className="ayarlar-form-actions">
+                  <button type="submit" className="ayarlar-btn ayarlar-btn-primary" disabled={yapayZekaSaving}>
+                    {yapayZekaSaving ? 'Kaydediliyor...' : 'Kaydet'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

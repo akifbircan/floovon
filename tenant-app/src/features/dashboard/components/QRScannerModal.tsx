@@ -376,23 +376,12 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
                 Sipariş Künyesi Karekod
               </h3>
               <button
+                type="button"
                 onClick={onClose}
-                className="modal-react-qr-scanner-close"
+                className="btn-close-modal"
+                aria-label="Kapat"
               >
-                <span className="sr-only">Kapat</span>
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <i className="icon-btn-kapat" aria-hidden />
               </button>
             </div>
 

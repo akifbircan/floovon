@@ -1,15 +1,28 @@
 import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { apiClient } from '@/lib/api';
+import {
+  AlertTriangle,
+  Clock,
+  Link2Off,
+  Loader2,
+  MessageCircle,
+  MessageSquareText,
+  Smartphone,
+  X,
+} from 'lucide-react';
 import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
 import { showToast, showToastInteractive } from '../../../shared/utils/toastUtils';
 import { formatPhoneNumber } from '../../../shared/utils/formatUtils';
 import { broadcastWhatsAppDisconnected } from '../hooks/useWhatsAppStatus';
+import { WhatsAppSonKonusmalarModal } from './WhatsAppSonKonusmalarModal';
 
 interface WhatsAppConnectionInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDisconnected?: () => void; // Bağlantı kesildikten sonra çağrılacak callback
+  /** true: sadece durum satırları + kapat; Sohbet Geçmişi / Bağlantıyı Kes yok (mobil header) */
+  connectionInfoOnly?: boolean;
 }
 
 interface WhatsAppStatus {
@@ -25,10 +38,13 @@ export const WhatsAppConnectionInfoModal: React.FC<WhatsAppConnectionInfoModalPr
   isOpen,
   onClose,
   onDisconnected,
+  connectionInfoOnly = false,
 }) => {
   const [status, setStatus] = React.useState<WhatsAppStatus | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [disconnecting, setDisconnecting] = React.useState(false);
+  const [showSonKonusmalar, setShowSonKonusmalar] = React.useState(false);
+  const [aiEnabled, setAiEnabled] = React.useState(true);
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   useModalOpenAnimation(isOpen, overlayRef, panelRef);
@@ -76,6 +92,39 @@ export const WhatsAppConnectionInfoModal: React.FC<WhatsAppConnectionInfoModalPr
     };
 
     fetchStatus();
+  }, [isOpen]);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    apiClient
+      .get<{ success: boolean; enabled?: boolean }>('/ayarlar/yapay-zeka')
+      .then((res) => {
+        if (cancelled) return;
+        const enabled = Boolean(res.data?.enabled ?? true);
+        setAiEnabled(enabled);
+        if (!enabled) setShowSonKonusmalar(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAiEnabled(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
+
+  // Ayarlardan "hizmet durumu" pasife çekilince anında kapat
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handler = (ev: Event) => {
+      const e = ev as CustomEvent<{ enabled?: boolean }>;
+      const enabled = Boolean(e?.detail?.enabled ?? true);
+      setAiEnabled(enabled);
+      if (!enabled) setShowSonKonusmalar(false);
+    };
+    window.addEventListener('floovon:ai-service', handler as EventListener);
+    return () => window.removeEventListener('floovon:ai-service', handler as EventListener);
   }, [isOpen]);
 
   const handleDisconnect = () => {
@@ -238,30 +287,30 @@ export const WhatsAppConnectionInfoModal: React.FC<WhatsAppConnectionInfoModalPr
         ref={panelRef}
         className="modal-react-whatsapp-info-content"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: 'var(--white)',
-          padding: '30px',
-          borderRadius: '10px',
-          maxWidth: '500px',
-          width: '90%',
-        }}
       >
         <div className="modal-react-whatsapp-info-header">
           <h2 id="whatsapp-info-title" className="modal-react-whatsapp-info-title">
-            <i className="fa-brands fa-whatsapp"></i>
+            <MessageCircle
+              className="modal-react-whatsapp-info-title-wa"
+              size={22}
+              strokeWidth={2}
+              aria-hidden
+            />
             WhatsApp Bağlantı Bilgileri
           </h2>
           <button
-            className="modal-react-whatsapp-info-close-btn"
+            type="button"
+            className="btn-close-modal modal-react-whatsapp-info-close-btn"
             onClick={onClose}
+            aria-label="Kapat"
           >
-            ×
+            <X size={20} strokeWidth={2} aria-hidden />
           </button>
         </div>
 
         {loading ? (
           <div className="modal-react-whatsapp-info-loading">
-            <i className="fa-solid fa-spinner fa-spin"></i>
+            <Loader2 className="modal-react-whatsapp-info-icon-spin" size={24} aria-hidden />
             <p>Yükleniyor...</p>
           </div>
         ) : status && status.isReady && status.isAuthenticated ? (
@@ -273,13 +322,13 @@ export const WhatsAppConnectionInfoModal: React.FC<WhatsAppConnectionInfoModalPr
               </span>
             </div>
             <div className="modal-react-whatsapp-info-row">
-              <i className="fa-solid fa-mobile-screen-button"></i>
+              <Smartphone className="modal-react-whatsapp-info-row-icon" size={18} strokeWidth={2} aria-hidden />
               <span>
                 {status.userName || 'Bilinmiyor'} {status.phoneNumber ? formatPhoneNumber(status.phoneNumber) : ''}
               </span>
             </div>
             <div className="modal-react-whatsapp-info-row">
-              <i className="fa-solid fa-clock"></i>
+              <Clock className="modal-react-whatsapp-info-row-icon" size={18} strokeWidth={2} aria-hidden />
               <span>
                 {formatDate(status.connectedAt)} ({getConnectionDuration(status.connectedAt)})
               </span>
@@ -287,38 +336,68 @@ export const WhatsAppConnectionInfoModal: React.FC<WhatsAppConnectionInfoModalPr
           </div>
         ) : (
           <div className="modal-react-whatsapp-info-error-state">
-            <i className="fa-solid fa-exclamation-triangle"></i>
+            <AlertTriangle className="modal-react-whatsapp-info-error-icon" size={48} strokeWidth={1.5} aria-hidden />
             <p>WhatsApp bağlantısı bulunamadı.</p>
           </div>
         )}
 
-        <div className="modal-react-whatsapp-info-footer">
-          {status && status.isReady && status.isAuthenticated && (
-            <button
-              className="modal-react-whatsapp-info-disconnect-btn"
-              onClick={handleDisconnect}
-              disabled={disconnecting}
-            >
-              {disconnecting ? (
-                <>
-                  <i className="fa-solid fa-spinner fa-spin"></i>
-                  Kesiliyor...
-                </>
-              ) : (
-                <>
-                  <i className="fa-solid fa-link-slash"></i>
-                  Bağlantıyı Kes
-                </>
+        {!connectionInfoOnly && (
+          <div className="modal-react-whatsapp-info-footer">
+            {aiEnabled && status && status.isReady && status.isAuthenticated && (
+              <button
+                type="button"
+                className="modal-react-whatsapp-info-son-konusmalar-btn"
+                onClick={() => setShowSonKonusmalar(true)}
+              >
+                <MessageSquareText size={16} />
+                Sohbet Geçmişi
+              </button>
+            )}
+            <div className="modal-react-whatsapp-info-footer-actions">
+              {status && status.isReady && status.isAuthenticated && (
+                <button
+                  className="modal-react-whatsapp-info-disconnect-btn"
+                  onClick={handleDisconnect}
+                  disabled={disconnecting}
+                >
+                  {disconnecting ? (
+                    <>
+                      <Loader2 className="modal-react-whatsapp-info-icon-spin" size={16} aria-hidden />
+                      Kesiliyor...
+                    </>
+                  ) : (
+                    <>
+                      <Link2Off size={16} strokeWidth={2} aria-hidden />
+                      Bağlantıyı Kes
+                    </>
+                  )}
+                </button>
               )}
-            </button>
-          )}
-          <button
-            className="modal-react-whatsapp-info-close-btn-footer"
-            onClick={onClose}
-          >
-            Kapat
-          </button>
-        </div>
+              <button
+                type="button"
+                className="secondary-button btn-vazgec"
+                onClick={onClose}
+              >
+                Kapat
+              </button>
+            </div>
+          </div>
+        )}
+        {!connectionInfoOnly && (
+          <WhatsAppSonKonusmalarModal
+            isOpen={showSonKonusmalar}
+            onClose={() => setShowSonKonusmalar(false)}
+            onSiparisKaydedildi={(organizasyonKartId) => {
+              setShowSonKonusmalar(false);
+              onClose();
+              window.dispatchEvent(
+                new CustomEvent('floovon:sohbetten-siparis-kaydedildi', {
+                  detail: { organizasyonKartId },
+                })
+              );
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -4,14 +4,126 @@
  * Canlı harita: Leaflet ile OpenStreetMap (eski yapıdaki gibi)
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useModalOpenAnimation } from '../../../shared/hooks/useModalOpenAnimation';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { apiRequest } from '../../../lib/api';
-import { Van } from 'lucide-react';
+import { Van, Maximize2, Minimize2 } from 'lucide-react';
+
+/** Zoom (+/−) ile aynı hizada tam ekran; API yoksa sabit tam ekran yedeği */
+function VehicleDetailMapFullscreenButton({
+  mapShellRef,
+}: {
+  mapShellRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const map = useMap();
+  const [pseudoFs, setPseudoFs] = useState(false);
+  const [, bump] = useState(0);
+
+  const invalidate = useCallback(() => {
+    requestAnimationFrame(() => map.invalidateSize());
+    setTimeout(() => map.invalidateSize(), 200);
+    setTimeout(() => map.invalidateSize(), 450);
+  }, [map]);
+
+  useEffect(() => {
+    const onFs = () => {
+      bump((n) => n + 1);
+      invalidate();
+    };
+    document.addEventListener('fullscreenchange', onFs);
+    document.addEventListener('webkitfullscreenchange', onFs as EventListener);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFs);
+      document.removeEventListener('webkitfullscreenchange', onFs as EventListener);
+    };
+  }, [invalidate]);
+
+  useEffect(() => {
+    const el = mapShellRef.current;
+    if (!el) return;
+    if (pseudoFs) el.classList.add('vehicle-detail-map-pseudo-fullscreen');
+    else el.classList.remove('vehicle-detail-map-pseudo-fullscreen');
+    invalidate();
+  }, [pseudoFs, mapShellRef, invalidate]);
+
+  useEffect(() => {
+    if (!pseudoFs) return;
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      (e as KeyboardEvent & { stopImmediatePropagation?: () => void }).stopImmediatePropagation?.();
+      setPseudoFs(false);
+    };
+    document.addEventListener('keydown', onEsc, true);
+    return () => document.removeEventListener('keydown', onEsc, true);
+  }, [pseudoFs]);
+
+  const shell = mapShellRef.current;
+  const doc = document as Document & { webkitFullscreenElement?: Element | null };
+  const browserFs = !!(
+    shell &&
+    (document.fullscreenElement === shell || doc.webkitFullscreenElement === shell)
+  );
+  const expanded = browserFs || pseudoFs;
+
+  const toggle = () => {
+    const el = mapShellRef.current;
+    if (!el) return;
+    if (document.fullscreenElement === el) {
+      void document.exitFullscreen?.();
+      return;
+    }
+    if ((document as Document & { webkitFullscreenElement?: Element }).webkitFullscreenElement === el) {
+      (document as Document & { webkitExitFullscreen?: () => void }).webkitExitFullscreen?.();
+      return;
+    }
+    if (pseudoFs) {
+      setPseudoFs(false);
+      return;
+    }
+    if (typeof el.requestFullscreen === 'function') {
+      void el.requestFullscreen().then(invalidate).catch(() => setPseudoFs(true));
+    } else {
+      const wk = (el as HTMLDivElement & { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen;
+      if (typeof wk === 'function') {
+        try {
+          wk.call(el);
+          invalidate();
+        } catch {
+          setPseudoFs(true);
+        }
+      } else {
+        setPseudoFs(true);
+      }
+    }
+  };
+
+  return (
+    <div
+      className="leaflet-top leaflet-left vehicle-detail-map-fs-wrap"
+      style={{ marginTop: 58, pointerEvents: 'auto' }}
+    >
+      <div className="leaflet-control leaflet-bar">
+        <button
+          type="button"
+          className="vehicle-detail-map-fs-btn leaflet-bar-part"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggle();
+          }}
+          aria-label={expanded ? 'Tam ekrandan çık' : 'Haritayı tam ekran göster'}
+          title={expanded ? 'Tam ekrandan çık' : 'Tam ekran'}
+        >
+          {expanded ? <Minimize2 size={16} strokeWidth={2.5} /> : <Maximize2 size={16} strokeWidth={2.5} />}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /** Araç detay modalında kullanılan minimal araç tipi (useVehicleTracking ile döngüyü önlemek için yerel) */
 interface VehicleDetailVehicle {
@@ -90,15 +202,20 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
   const [detail, setDetail] = useState<VehicleDetailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  useModalOpenAnimation(open, overlayRef, panelRef);
+  const mapShellRef = useRef<HTMLDivElement>(null);
+
+  const portalRoot = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    let el = document.getElementById('floovon-vehicle-detail-portal');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'floovon-vehicle-detail-portal';
+      document.body.appendChild(el);
+    }
+    return el;
+  }, []);
 
   const vehicleId = vehicle ? String(vehicle.id ?? vehicle.arac_id ?? '') : '';
-  const isActive =
-    vehicle &&
-    (vehicle.durum || vehicle.arac_durum || '').toString().toLowerCase().trim() === 'teslimatta' &&
-    (vehicle.is_active === 1 || vehicle.is_active === true || vehicle.is_active === '1' || vehicle.is_active == null);
 
   const fetchDetail = useCallback(async (v: VehicleDetailVehicle): Promise<VehicleDetailData> => {
     const id = String(v.id ?? v.arac_id ?? '');
@@ -216,20 +333,62 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
     };
   }, []);
 
+  // isActive ile erken çıkma YOK: liste ile modal arasında durum/uuid uyumsuzluğu olunca içerik silinip "hemen kapandı" hissi oluşuyordu
   useEffect(() => {
-    if (!open || !vehicle || !isActive) {
+    if (!open || !vehicle || !vehicleId) {
       setDetail(null);
       setError(null);
+      setLoading(false);
       return;
     }
     setError(null);
     setLoading(true);
     setDetail(null);
+    let cancelled = false;
     fetchDetail(vehicle)
-      .then(setDetail)
-      .catch(() => setError('Detay yüklenemedi.'))
-      .finally(() => setLoading(false));
-  }, [open, vehicleId, isActive, fetchDetail, vehicle]);
+      .then((d) => {
+        if (!cancelled) setDetail(d);
+      })
+      .catch(() => {
+        if (!cancelled) setError('Detay yüklenemedi.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, vehicleId, fetchDetail, vehicle]);
+
+  /** Boya öncesi: overlay/toggle tıklaması popup’ı “anında kapatıyor” gibi göstermesin */
+  useLayoutEffect(() => {
+    if (!open) return;
+    document.body.setAttribute('data-vehicle-detail-modal-open', 'true');
+    const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const swallowPanelChrome = (e: Event) => {
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (now - t0 > 900) return;
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      if (t.closest('.vehicle-detail-overlay')) return;
+      if (
+        t.closest('.sag-panel-overlay') ||
+        t.closest('#sagPanelToggleBtn') ||
+        t.closest('.sag-panel-toggle-btn')
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        (e as Event).stopImmediatePropagation();
+      }
+    };
+    document.addEventListener('pointerdown', swallowPanelChrome, true);
+    document.addEventListener('click', swallowPanelChrome, true);
+    return () => {
+      document.removeEventListener('pointerdown', swallowPanelChrome, true);
+      document.removeEventListener('click', swallowPanelChrome, true);
+      document.body.removeAttribute('data-vehicle-detail-modal-open');
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -243,10 +402,6 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
       document.body.style.overflow = '';
     };
   }, [open, onClose]);
-
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onClose();
-  };
 
   const hasValidCoords =
     detail?.lat != null && detail?.lng != null && !isNaN(detail.lat) && !isNaN(detail.lng);
@@ -263,14 +418,41 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
 
   const modalContent = (
     <div
-      ref={overlayRef}
       className="vehicle-detail-overlay overlay-arac-takip-detay active"
       role="dialog"
       aria-modal="true"
       aria-labelledby="vehicle-detail-title"
-      onClick={handleOverlayClick}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        /* Tablet sağ panel overlay z-index ~2³¹; popup 10000 iken altta kalıp tıklama paneli kapatıyordu */
+        zIndex: 2147483647,
+        isolation: 'isolate',
+        opacity: 1,
+      }}
     >
-      <div ref={panelRef} className="vehicle-detail-modal detail-modal" onClick={(e) => e.stopPropagation()}>
+      {/* Karartmaya tıklayınca kapat (panel kutusu üstte; tıklama kutuya giderse kapanmaz) */}
+      <div
+        className="vehicle-detail-backdrop-hit"
+        aria-hidden
+        role="presentation"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 0,
+          cursor: 'pointer',
+        }}
+        onClick={onClose}
+      />
+      <div
+        className="vehicle-detail-modal detail-modal"
+        style={{ position: 'relative', zIndex: 1 }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="vehicle-detail-modal-header modal-header">
           <div className="vehicle-detail-modal-title modal-title">
             <div className="vehicle-icon vehicle-icon-lucide">
@@ -290,7 +472,7 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
           </div>
           <button
             type="button"
-            className="close-btn"
+            className="vehicle-detail-header-close"
             onClick={onClose}
             aria-label="Kapat"
           >
@@ -315,7 +497,7 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
             <>
               <div className="vehicle-detail-map-section map-section">
                 <div className="vehicle-detail-map-label">Canlı Konum Takibi</div>
-                <div className="vehicle-detail-map-container map-container">
+                <div ref={mapShellRef} className="vehicle-detail-map-container map-container">
                   {hasValidCoords ? (
                     <MapContainer
                       center={mapCenter}
@@ -324,6 +506,7 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
                       zoomControl={true}
                       attributionControl={false}
                     >
+                      <VehicleDetailMapFullscreenButton mapShellRef={mapShellRef} />
                       <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         maxZoom={19}
@@ -388,7 +571,7 @@ export const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({
     </div>
   );
 
-  return createPortal(modalContent, document.body);
+  return createPortal(modalContent, portalRoot ?? document.body);
 };
 
 

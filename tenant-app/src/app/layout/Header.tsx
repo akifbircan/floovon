@@ -70,6 +70,13 @@ interface AracTakipInfoPopupProps {
 
 function AracTakipInfoPopup({ durum, loading, onSonlandir, onKapat }: AracTakipInfoPopupProps) {
   const [gecenSure, setGecenSure] = useState(() => gecenSureMetin(durum?.baslangic_zamani));
+  /** Header’daki kamyon tıklamasının aynı olayla overlay’i kapatmasını önle (mobil ghost click) */
+  const [overlayCloseReady, setOverlayCloseReady] = useState(false);
+  useEffect(() => {
+    setOverlayCloseReady(false);
+    const t = window.setTimeout(() => setOverlayCloseReady(true), 400);
+    return () => window.clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!durum?.baslangic_zamani) return;
@@ -87,7 +94,7 @@ function AracTakipInfoPopup({ durum, loading, onSonlandir, onKapat }: AracTakipI
     <div
       className="modal-react-arac-takip-overlay"
       style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--toast-overlay-bg)' }}
-      onClick={onKapat}
+      onClick={() => overlayCloseReady && onKapat()}
       role="dialog"
       aria-modal="true"
     >
@@ -237,6 +244,8 @@ export const Header: React.FC = () => {
   const { status: whatsAppStatus, isConnected: whatsAppConnected, isReconnecting: whatsAppReconnecting, checkStatus: checkWhatsAppConnection } = useWhatsAppStatus();
   const [showWhatsAppQRModal, setShowWhatsAppQRModal] = useState(false);
   const [showWhatsAppConnectionInfoModal, setShowWhatsAppConnectionInfoModal] = useState(false);
+  /** Mobil header: sadece bağlantı bilgisi; Sohbet Geçmişi / Bağlantıyı Kes gösterme */
+  const [whatsAppConnectionInfoOnly, setWhatsAppConnectionInfoOnly] = useState(false);
   
   // Teknik destek modal
   const [showTeknikDestekModal, setShowTeknikDestekModal] = useState(false);
@@ -739,6 +748,24 @@ export const Header: React.FC = () => {
                     </button>
                   </div>
                 )}
+                {/* WhatsApp: yalnızca bağlantı bilgisi modalı (QR / ek buton yok) */}
+                {isBaslangicPlan === false && (
+                  <div className="mobile-header-whatsapp-btn-wrapper">
+                    <button
+                      type="button"
+                      className={`mobile-header-whatsapp-btn ${whatsAppConnected ? 'mobile-header-whatsapp-btn--connected' : whatsAppReconnecting ? 'mobile-header-whatsapp-btn--reconnecting' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setWhatsAppConnectionInfoOnly(true);
+                        setShowWhatsAppConnectionInfoModal(true);
+                      }}
+                      aria-label="WhatsApp bağlantı bilgileri"
+                    >
+                      <i className="fa-brands fa-whatsapp" aria-hidden />
+                    </button>
+                  </div>
+                )}
                 {/* 4. Bildirimler */}
                 <div className="ikon-bildirimler ikon-bildirimler-mobil clickdropdown">
                   <button
@@ -939,8 +966,10 @@ export const Header: React.FC = () => {
               e.preventDefault();
               e.stopPropagation();
               if (!whatsAppConnected && !whatsAppReconnecting) {
+                setWhatsAppConnectionInfoOnly(false);
                 setShowWhatsAppQRModal(true);
               } else {
+                setWhatsAppConnectionInfoOnly(false);
                 setShowWhatsAppConnectionInfoModal(true);
               }
             }}
@@ -1194,7 +1223,11 @@ export const Header: React.FC = () => {
           />
           <WhatsAppConnectionInfoModal
             isOpen={showWhatsAppConnectionInfoModal}
-            onClose={() => setShowWhatsAppConnectionInfoModal(false)}
+            connectionInfoOnly={whatsAppConnectionInfoOnly}
+            onClose={() => {
+              setShowWhatsAppConnectionInfoModal(false);
+              setWhatsAppConnectionInfoOnly(false);
+            }}
             onDisconnected={() => checkWhatsAppConnection()}
           />
         </>

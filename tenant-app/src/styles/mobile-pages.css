@@ -522,7 +522,7 @@ ul.notifications {
   }
 
   /* Kart görünümündeki tablolarda son satırın altındaki boşluğu kaldır (navbar ile çift boşluk olmasın) */
-  .customers-table tbody tr:last-child,
+  /* .customers-table tbody tr:last-child,
   .partners-table tbody tr:last-child,
   .campaigns-table tbody tr:last-child,
   .profil-table tbody tr:last-child,
@@ -536,7 +536,7 @@ ul.notifications {
   .ayarlar-page .ayarlar-tablosu tbody tr[data-table-row]:last-child,
   .ayarlar-page table.ayarlar-tablosu tbody tr:last-child {
     margin-bottom: 0 !important;
-  }
+  } */
 
   /* Detay paneli kapat butonu: ortak .btn-close-modal stili (müşteri ekle ile aynı), sadece mobilde görünsün */
   .customers-close-detail.md\:hidden,
@@ -740,7 +740,7 @@ ul.notifications {
     align-items: center !important;
     justify-content: center !important;
     padding: 16px !important;
-    background-color: var(--popup-overlay-bg, rgba(0, 0, 0, 0.5)) !important;
+    background-color: var(--popup-overlay-bg) !important;
     opacity: 1 !important;
     visibility: visible !important;
     pointer-events: auto !important;
@@ -1673,6 +1673,7 @@ ul.notifications {
     font-size: 12px;
     min-width: 0;
     display: block;
+    padding-bottom: 20px !important;
   }
   .cari-table thead {
     display: none;
@@ -2278,7 +2279,9 @@ ul.notifications {
     max-width: 16px !important;
   }
   .overlay-yeni-siparis-container .yeni-siparis-container .partner-siparisi-isaretle .cbox-alan {
-    align-items: flex-start !important;
+    display: flex !important;
+    align-items: center !important;
+    height: 24px !important;
   }
 
   /* Müşteri Ekle/Düzenle – radyo butonları mobilde width 100% ile yayılmasın, yan yana kalsın */

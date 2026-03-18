@@ -1110,7 +1110,7 @@ html.dark-mode .kart-detay-container .sol-detay-alan .organizasyon-kutu .kart-he
 }
 
 .siparis-detay-siparis-no-kopyala:hover {
-  background: var(--extra-light-bg, #f5f5f5);
+  background: var(--extra-light-bg);
   color: var(--ana-renk);
 }
 

@@ -1261,15 +1261,17 @@ export const SiparisEditModal: React.FC<SiparisEditModalProps> = ({
                     />
                     <input
                       type="text"
+                      inputMode="decimal"
                       className="tl-input"
                       name="urunfiyat"
                       id="urunfiyat"
                       value={siparisTutari}
-                      readOnly
-                      disabled
+                      onChange={(e) => { setSiparisTutari(formatTutarInputLive(e.target.value)); markDirty(); }}
+                      onKeyDown={(e) => formatTutarInputKeyDown(e, siparisTutari)}
+                      onBlur={() => setSiparisTutari(formatTLDisplayValue(parseTL(siparisTutari)))}
                       placeholder="0,00 TL"
                       aria-label="Sipariş tutarı (TL)"
-              />
+                    />
             </div>
               </div>
               </div>

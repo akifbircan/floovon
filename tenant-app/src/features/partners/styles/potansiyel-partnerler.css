@@ -114,7 +114,7 @@
   width: 60px;
   height: 60px;
   border-radius: 8px;
-  background-color: var(--mor-primary-light, rgba(109, 40, 217, 0.12));
+  background-color: var(--mor-primary-light);
   color: var(--mor-primary);
 }
 
@@ -172,7 +172,7 @@
 }
 
 .potansiyel-tablosu .potansiyel-table-row:hover {
-  background-color: var(--tablo-satir-hover, rgba(109, 40, 217, 0.06));
+  background-color: var(--tablo-satir-hover);
 }
 
 .potansiyel-td-logo {

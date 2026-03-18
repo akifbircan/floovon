@@ -9,7 +9,7 @@ body:has(.phone-landscape-warning) .sag-panel-toggle-btn {
   position: fixed;
   inset: 0;
   z-index: 2147483647;
-  background: var(--toast-bg, #fff);
+  background: var(--toast-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,9 +17,16 @@ body:has(.phone-landscape-warning) .sag-panel-toggle-btn {
   box-sizing: border-box;
 }
 
+/* Modal açıkken uyarı overlay'i tıklamaları engellemesin */
+body:has(.modal-react-whatsapp-son-konusmalar-overlay.show) .phone-landscape-warning {
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
 body.dark-mode .phone-landscape-warning,
 html.dark-mode .phone-landscape-warning {
-  background: var(--toast-bg, #252340);
+  background: var(--toast-bg);
 }
 
 .phone-landscape-warning-inner {
@@ -33,7 +40,7 @@ html.dark-mode .phone-landscape-warning {
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
-  color: var(--mor-primary-text, #8b5cf6);
+  color: var(--mor-primary-text);
 }
 
 .phone-landscape-warning-icon .phone-landscape-warning-phone {
@@ -55,24 +62,24 @@ html.dark-mode .phone-landscape-warning {
 .phone-landscape-warning-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--toast-text, #111827);
+  color: var(--toast-text);
   margin: 0 0 10px;
   line-height: 1.4;
 }
 
 .phone-landscape-warning-desc {
   font-size: 0.9375rem;
-  color: var(--gri70, #6b7280);
+  color: var(--gray-popup-secondary);
   margin: 0;
   line-height: 1.5;
 }
 
 body.dark-mode .phone-landscape-warning-title,
 html.dark-mode .phone-landscape-warning-title {
-  color: var(--toast-text, #e5e7eb);
+  color: var(--toast-text);
 }
 
 body.dark-mode .phone-landscape-warning-desc,
 html.dark-mode .phone-landscape-warning-desc {
-  color: var(--gri70, #9ca3af);
+  color: var(--gray-400);
 }

@@ -8,11 +8,11 @@
   width: 100%;
   padding: 10px 12px;
   text-align: left;
-  border: 1px solid var(--input-border-gray, #d1d5db);
+  border: 1px solid var(--input-border-gray);
   border-radius: 6px;
-  background: var(--white, #fff);
+  background: var(--white);
   cursor: pointer;
-  color: var(--gri70, #6b7280);
+  color: var(--gray-popup-secondary);
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -23,7 +23,7 @@
 }
 
 .searchable-select-trigger.has-value {
-  color: var(--ana-renk, #111);
+  color: var(--ana-renk);
 }
 
 .searchable-select-trigger:disabled {
@@ -58,10 +58,10 @@
   left: 0;
   right: 0;
   margin-top: 4px;
-  background: var(--white, #fff);
-  border: 1px solid var(--input-border-gray, #d1d5db);
+  background: var(--white);
+  border: 1px solid var(--input-border-gray);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--searchable-select-dropdown-shadow);
   z-index: 1000;
   max-height: 280px;
   overflow: hidden;
@@ -71,13 +71,13 @@
 
 .searchable-select-dropdown .searchable-select-search-wrap {
   padding: 8px;
-  border-bottom: 1px solid var(--overlay-gray-light, #e5e7eb);
+  border-bottom: 1px solid var(--gray-200);
 }
 
 .searchable-select-dropdown .searchable-select-search {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid var(--input-border-gray, #d1d5db);
+  border: 1px solid var(--input-border-gray);
   border-radius: 4px;
   font-size: 14px;
   box-sizing: border-box;
@@ -93,7 +93,7 @@
 
 .searchable-select-dropdown .searchable-select-empty {
   padding: 12px;
-  color: var(--gri70, #6b7280);
+  color: var(--gray-popup-secondary);
   font-size: 14px;
 }
 
@@ -108,11 +108,11 @@
 }
 
 .searchable-select-dropdown .searchable-select-option:hover {
-  background: var(--gray-light-f2, #f3f4f6);
+  background: var(--gray-light-f2);
 }
 
 .searchable-select-dropdown .searchable-select-option[aria-selected="true"] {
-  background: var(--bg-blue-pale, #eff6ff);
+  background: var(--bg-blue-pale);
 }
 
 .searchable-select-dropdown .searchable-select-option img,

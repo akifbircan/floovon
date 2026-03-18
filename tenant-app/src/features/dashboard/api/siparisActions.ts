@@ -304,6 +304,35 @@ export async function updateSiparis(
   return response;
 }
 
+/** Aktif siparişlerde aynı müşteri veya aynı teslim kişisi (isim + telefon) var mı */
+export async function checkDuplicateSiparisBeforeCreate(body: {
+  musteri_isim_soyisim?: string;
+  musteri_unvan?: string;
+  siparis_veren_telefon: string;
+  teslim_kisisi?: string;
+  teslim_kisisi_telefon?: string;
+}): Promise<{ duplicateMusteri: boolean; duplicateTeslim: boolean }> {
+  try {
+    const raw = await apiRequest<{
+      success?: boolean;
+      duplicateMusteri?: boolean;
+      duplicateTeslim?: boolean;
+    }>('/siparis-kartlar/check-duplicate', {
+      method: 'POST',
+      data: body,
+    });
+    if (!raw || raw.success === false) {
+      return { duplicateMusteri: false, duplicateTeslim: false };
+    }
+    return {
+      duplicateMusteri: !!raw.duplicateMusteri,
+      duplicateTeslim: !!raw.duplicateTeslim,
+    };
+  } catch {
+    return { duplicateMusteri: false, duplicateTeslim: false };
+  }
+}
+
 /**
  * Yeni sipariş oluştur
  */

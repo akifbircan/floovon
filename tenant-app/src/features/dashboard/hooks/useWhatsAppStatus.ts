@@ -98,18 +98,19 @@ export function useWhatsAppStatus() {
         } catch (_) {}
       }
 
-      // "connecting" = DB'de bağlı, backend session'ı diskten yüklüyor (restart sonrası) – initialize zaten status'ta tetikleniyor, tekrar çağırma
-      const isReconnecting = statusData.status === 'connecting' || (!!statusData.installed && !!statusData.initializing && !!(statusData.phoneNumber || statusData.phone_number));
-      if (isReconnecting) {
-        preInitDoneRef.current = true; // QR isteme, bekle
-      }
-      // Bağlı değilse ve "reconnecting" değilse, bir kez initialize tetikle
-      const needConnect = statusData.installed && !statusData.isReady && !isReconnecting;
-      if (needConnect && !preInitDoneRef.current) {
+      // Servis yüklü değilse (backend'de modül yok) initialize çağırma
+      if (statusData.installed === false) {
         preInitDoneRef.current = true;
-        apiClient.post('/whatsapp/initialize').catch(() => {});
+      } else {
+        const isReconnecting = statusData.status === 'connecting' || (!!statusData.installed && !!statusData.initializing && !!(statusData.phoneNumber || statusData.phone_number));
+        if (isReconnecting) preInitDoneRef.current = true;
+        const needConnect = statusData.installed && !statusData.isReady && !isReconnecting;
+        if (needConnect && !preInitDoneRef.current) {
+          preInitDoneRef.current = true;
+          apiClient.post('/whatsapp/initialize').catch(() => {});
+        }
+        if (statusData.isReady) preInitDoneRef.current = false;
       }
-      if (statusData.isReady) preInitDoneRef.current = false;
     } catch (error: unknown) {
       const isNetworkError = error && typeof error === 'object' && 'message' in error &&
         (String((error as { message?: string }).message).includes('Network Error') ||

@@ -192,10 +192,17 @@ class AdminPanel {
         body.style.touchAction = '';
         body.style.webkitOverflowScrolling = '';
 
-        // Mobilde açıkça doğal sayfa scroll'una zorla.
+        // Mobilde doğal sayfa scroll'u body'de olsun.
         if (isMobile) {
             body.style.overflowY = 'auto';
             body.style.overflowX = 'hidden';
+            const main = document.querySelector('.console-panel-main');
+            if (main && main.style) {
+                main.style.overflowY = '';
+                main.style.overflowX = '';
+                main.style.webkitOverflowScrolling = '';
+                main.style.touchAction = '';
+            }
         }
     }
     

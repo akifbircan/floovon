@@ -4197,7 +4197,7 @@ select.form-input:focus {
 
 /* Mobile - max-width: 640px */
 @media (max-width: 640px) {
-  /* Mobilde tek dokunuşta dikey kaydırma garanti */
+  /* Mobilde sayfa scroll'u body uzerinden */
   html,
   body,
   body.console-panel-body {
@@ -4210,16 +4210,10 @@ select.form-input:focus {
     touch-action: pan-y !important;
   }
 
-  #admin-dashboard-root,
-  .console-panel-main {
-    touch-action: pan-y !important;
-  }
-
-  /* Body - Mobilde sayfa scroll olacak */
-  .console-panel-body {
-    overflow-y: auto !important;
+  #admin-dashboard-root {
     height: auto !important;
-    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
   }
   
   /* Header Container - Mobilde esnek yükseklik */
@@ -4242,16 +4236,42 @@ select.form-input:focus {
    font-size: 14px;
    font-weight: 500;
    white-space: nowrap;
-   background-color: yellow;
+  }
+
+  /* Header right - manage ile birebir mobil ayarlar */
+  .notification-btn {
+    width: 2rem !important;
+    height: 2rem !important;
+    padding: 0 !important;
+  }
+
+  .user-menu-btn {
+    padding: 0.25rem !important;
+  }
+
+  .user-avatar {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  .header-divider {
+    display: none !important;
+  }
+
+  /* Console'da mobilde tema butonu gorunsun */
+  .theme-toggle-btn,
+  #header-theme-toggle {
+    display: inline-flex !important;
   }
   
 
 
-  /* Main - Mobilde sayfa scroll olacak */
+  /* Main - mobilde icerik normal aksin */
   .console-panel-main {
     height: auto !important;
     min-height: calc(100vh - 3.5rem) !important;
     overflow-y: visible !important;
+    overflow-x: hidden !important;
     padding: 1rem !important;
     margin-top: 0 !important;
     padding-top: calc(5.5rem + 1rem) !important; /* Header yüksekliği + padding */
@@ -4295,7 +4315,7 @@ select.form-input:focus {
     width: 90% !important;
   }
   
-  /* Table Container - Mobilde scroll yok, sayfa scroll olacak */
+  /* Table Container - Mobilde ana scroll main'de */
   .console-tenant-table-container {
     overflow-y: visible !important;
     overflow-x: auto !important; /* Yatay scroll gerekirse */

@@ -619,7 +619,7 @@
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    padding: 0 12px 1px 24px;
+    padding: 0 12px 1px 32px;
     font-size: 13px;
     color: var(--ana-renk);
     background-color: var(--white);

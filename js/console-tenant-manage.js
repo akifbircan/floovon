@@ -2953,7 +2953,7 @@ class TenantManage {
         if (typeof createToastInteractive === 'function') {
             createToastInteractive({
                 title: "Tenant'ı Sil",
-                message: `"${tenantName}" tenant'ı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm kullanıcılar erişimini kaybedecek.`,
+                message: `"${tenantName}" tenant'ı silmek istediğinize emin misiniz? Tenantı sildiğinizde tüm kullanıcılar erişimini kaybedecektir.<br><strong>Tenantı tamamen sildiğinizde tekrar aktif etmek isterseniz bu işlemi veritabanından yapmanız gerekir.</strong>`,
                 confirmText: 'Sil',
                 cancelText: 'İptal',
                 isWarning: true,
@@ -2967,7 +2967,7 @@ class TenantManage {
         }
         
         // Fallback: eğer createToastInteractive yoksa confirm kullan
-        if (!confirm(`"${tenantName}" tenant'ı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm kullanıcılar erişimini kaybedecek.`)) {
+        if (!confirm(`"${tenantName}" tenant'ı silmek istediğinize emin misiniz? Tenantı sildiğinizde tüm kullanıcılar erişimini kaybedecektir.\n\nNOT: Tenantı tamamen sildiğinizde tekrar aktif etmek isterseniz bu işlemi veritabanından yapmanız gerekir.`)) {
             return;
         }
         await this.deleteTenant();
@@ -2982,7 +2982,8 @@ class TenantManage {
         }
         
         try {
-            const response = await fetch(`${this.apiBase}/admin/tenants/${this.tenantId}`, {
+            // Tenant silme: sadece is_active=0 gönder (status alanına dokunma).
+            let response = await fetch(`${this.apiBase}/admin/tenants/${this.tenantId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${this.adminToken}`,
@@ -2993,6 +2994,30 @@ class TenantManage {
                     is_active: 0
                 })
             });
+
+            // Eski backend uyumluluğu: bazı ortamlarda yalnızca status desteklenebilir.
+            if (!response.ok && response.status === 400) {
+                let firstError = null;
+                try {
+                    const firstErrorData = await response.json();
+                    firstError = (firstErrorData && firstErrorData.error) ? String(firstErrorData.error) : '';
+                } catch (_) {
+                    firstError = '';
+                }
+                if (firstError.includes('Güncellenecek alan bulunamadı')) {
+                    response = await fetch(`${this.apiBase}/admin/tenants/${this.tenantId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${this.adminToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            status: 'pasif'
+                        })
+                    });
+                }
+            }
             
             if (!response.ok) {
                 if (response.status === 401 || response.status === 403) {
@@ -8508,6 +8533,7 @@ if (document.readyState !== 'loading') {
 // Unified Tooltip System for console-tenant-manage page
 function initUnifiedTooltipSystem() {
     let tooltipEl = null, currentTarget = null;
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
     const POS = { TOP: "top", BOTTOM: "bottom", LEFT: "left", RIGHT: "right" };
 
@@ -8523,6 +8549,16 @@ function initUnifiedTooltipSystem() {
     function clearTooltip() {
         if (tooltipEl?.parentNode) tooltipEl.remove();
         tooltipEl = null; currentTarget = null;
+    }
+
+    let clearScheduled = false;
+    function clearTooltipOptimized() {
+        if (clearScheduled) return;
+        clearScheduled = true;
+        requestAnimationFrame(() => {
+            clearScheduled = false;
+            clearTooltip();
+        });
     }
 
     function getPreferredPosForTarget(target) {
@@ -8608,22 +8644,24 @@ function initUnifiedTooltipSystem() {
         tooltipEl.style.visibility = 'visible';
     }
 
-    // Mouse hover için (web görünümü)
-    document.addEventListener('mouseover', (e) => {
-        const tgt = findTooltipTarget(e.target);
-        if (!tgt) return;
-        const txt = tgt.getAttribute('data-tooltip');
-        if (!txt || txt === '-') return;
-        showTooltip(tgt, txt);
-    }, true);
+    // Mouse hover sadece dokunmatik olmayan cihazlarda aktif olsun
+    if (!isTouchDevice) {
+        document.addEventListener('mouseover', (e) => {
+            const tgt = findTooltipTarget(e.target);
+            if (!tgt) return;
+            const txt = tgt.getAttribute('data-tooltip');
+            if (!txt || txt === '-') return;
+            showTooltip(tgt, txt);
+        }, true);
 
-    document.addEventListener('mouseout', (e) => {
-        const tgt = findTooltipTarget(e.target);
-        if (!tgt) return;
-        const rel = findTooltipTarget(e.relatedTarget);
-        if (rel === tgt) return;
-        clearTooltip();
-    }, true);
+        document.addEventListener('mouseout', (e) => {
+            const tgt = findTooltipTarget(e.target);
+            if (!tgt) return;
+            const rel = findTooltipTarget(e.relatedTarget);
+            if (rel === tgt) return;
+            clearTooltip();
+        }, true);
+    }
 
     // Touch için (mobil görünüm)
     let touchTimeout = null;
@@ -8633,7 +8671,7 @@ function initUnifiedTooltipSystem() {
     document.addEventListener('touchstart', (e) => {
         const tgt = findTooltipTarget(e.target);
         if (!tgt) {
-            clearTooltip();
+            clearTooltipOptimized();
             touchTarget = null;
             return;
         }
@@ -8653,7 +8691,7 @@ function initUnifiedTooltipSystem() {
                 showTooltip(tgt, txt);
             }
         }, 200);
-    }, true);
+    }, { capture: true, passive: true });
 
     document.addEventListener('touchend', (e) => {
         const touchDuration = touchStartTime ? Date.now() - touchStartTime : 0;
@@ -8670,17 +8708,17 @@ function initUnifiedTooltipSystem() {
                 showTooltip(touchTarget, txt);
                 // 3 saniye sonra kapat
                 setTimeout(() => {
-                    clearTooltip();
+                    clearTooltipOptimized();
                 }, 3000);
             }
         } else {
             // Uzun dokunma veya kaydırma ise tooltip'i kapat
-            clearTooltip();
+            clearTooltipOptimized();
         }
         
         touchTarget = null;
         touchStartTime = null;
-    }, true);
+    }, { capture: true, passive: true });
 
     document.addEventListener('touchmove', () => {
         if (touchTimeout) {
@@ -8688,13 +8726,13 @@ function initUnifiedTooltipSystem() {
             touchTimeout = null;
         }
         // Kaydırma yapıldığında tooltip'i kapat
-        clearTooltip();
+        clearTooltipOptimized();
         touchTarget = null;
         touchStartTime = null;
-    }, true);
+    }, { capture: true, passive: true });
 
-    document.addEventListener('scroll', clearTooltip, true);
-    window.addEventListener('resize', clearTooltip);
+    document.addEventListener('scroll', clearTooltipOptimized, { capture: true, passive: true });
+    window.addEventListener('resize', clearTooltipOptimized, { passive: true });
 }
 
 // ✅ REVIZE-9: Tema geçiş butonu setup - Retry mekanizması ile

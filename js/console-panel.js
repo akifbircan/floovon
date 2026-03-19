@@ -597,7 +597,7 @@ class AdminPanel {
         
         const filteredTenants = this.tenants.filter(t => {
             // Sadece silinmemiş (is_active = 1) tenantları göster - pasif tenantlar da gösterilecek
-            if (!(t.is_active === 1 || t.is_active === true)) {
+            if (!(t.is_active === 1 || t.is_active === true || t.is_active === '1')) {
                 return false; // Silinmiş tenantları gösterme
             }
             // Pasif tenantlar da listede gösterilecek, sadece durumları "Pasif" olarak görünecek

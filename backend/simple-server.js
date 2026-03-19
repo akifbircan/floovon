@@ -9874,7 +9874,7 @@ app.put('/api/admin/tenants/:id', requireAdmin, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Geçersiz tenant ID' });
         }
 
-        const { status, name, email, phone, city, state } = req.body || {};
+        const { status, is_active, name, email, phone, city, state } = req.body || {};
 
         // tenants tablosunda sadece 'phone' kullan (telefon kolonu kullanma - yoksa SQLITE_ERROR)
         const tenantCols = await query('PRAGMA table_info(tenants)', [], null);
@@ -9891,6 +9891,15 @@ app.put('/api/admin/tenants/:id', requireAdmin, async (req, res) => {
             }
             fields.push('status = ?');
             params.push(newStatus);
+        }
+
+        if (typeof is_active !== 'undefined') {
+            const newIsActive = Number(is_active);
+            if (newIsActive !== 0 && newIsActive !== 1) {
+                return res.status(400).json({ success: false, error: 'is_active: 0 veya 1 olmalı' });
+            }
+            fields.push('is_active = ?');
+            params.push(newIsActive);
         }
 
         if (typeof name !== 'undefined') {
@@ -9930,7 +9939,7 @@ app.put('/api/admin/tenants/:id', requireAdmin, async (req, res) => {
         await run(sql, params);
 
         const selectPhone = hasPhone ? 'phone as phone' : 'NULL as phone';
-        const updated = await query(`SELECT id, name, tenants_no, status, email, ${selectPhone}, city, state FROM tenants WHERE id = ?`, [id], null);
+        const updated = await query(`SELECT id, name, tenants_no, status, is_active, email, ${selectPhone}, city, state FROM tenants WHERE id = ?`, [id], null);
         const tenant = updated?.[0] || {};
         const tenantName = tenant.name || tenant.tenants_no || `Tenant #${id}`;
         await addAdminNotification(req.adminUserId, {

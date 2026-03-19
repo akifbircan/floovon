@@ -1577,7 +1577,7 @@ body.css-loaded .admin-tenant-users-table tbody {
     padding-right: calc(1rem + env(safe-area-inset-right, 0px));
     scroll-padding-inline: 1rem;
     background-color: var(--console-bg-secondary);
-    border: 1px solid var(--console-border-tertiary);
+    border: 1px solid var(--console-primary);
     border-radius: 0.75rem;
     box-shadow: var(--console-shadow-sm);
     margin: 0 0 10px 0 !important;

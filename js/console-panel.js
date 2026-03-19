@@ -94,6 +94,7 @@ class AdminPanel {
             }
         });
         this.bindFirstInteractionScrollRecovery();
+        this.cleanupStaleOverlays();
         
         this.setupEventListeners();
         this.setupSyncListeners();
@@ -115,6 +116,20 @@ class AdminPanel {
         // Ilk etkileşimden hemen once lock temizlenirse "ilk swipe boşa gitme" sorunu kalkar.
         document.addEventListener('touchstart', recoverOnce, { passive: true, capture: true });
         document.addEventListener('pointerdown', recoverOnce, { passive: true, capture: true });
+    }
+
+    cleanupStaleOverlays() {
+        // Bazi mobil tarayicilarda gorunmez popup katmani ilk dokunusu yutabiliyor.
+        const adminUsersPopup = document.getElementById('admin-users-fullscreen-popup');
+        if (adminUsersPopup && !adminUsersPopup.classList.contains('active')) {
+            adminUsersPopup.classList.add('hidden');
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach((overlay) => {
+            if (!overlay.classList.contains('active')) {
+                overlay.classList.remove('active');
+            }
+        });
     }
 
     enforceMobileScrollState() {

@@ -3726,6 +3726,7 @@ select.form-input:focus {
   justify-content: center;
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
@@ -3736,6 +3737,7 @@ select.form-input:focus {
 .admin-users-fullscreen-popup.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .admin-users-fullscreen-popup-overlay {

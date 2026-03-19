@@ -78,14 +78,22 @@ class AdminPanel {
         this.adminToken = adminToken;
 
         // Mobilde geri dönüşlerde kalabilen scroll kilidini temizle.
+        // Bazi cihazlarda lock stili pageshow sonrasinda tekrar yazilabildigi icin
+        // birkac fazda zorlayarak temizliyoruz.
         this.enforceMobileScrollState();
-        window.addEventListener('pageshow', () => this.enforceMobileScrollState());
+        window.addEventListener('pageshow', () => {
+            this.enforceMobileScrollState();
+            requestAnimationFrame(() => this.enforceMobileScrollState());
+            setTimeout(() => this.enforceMobileScrollState(), 0);
+            setTimeout(() => this.enforceMobileScrollState(), 120);
+        });
         window.addEventListener('resize', () => this.enforceMobileScrollState(), { passive: true });
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
                 this.enforceMobileScrollState();
             }
         });
+        this.bindFirstInteractionScrollRecovery();
         
         this.setupEventListeners();
         this.setupSyncListeners();
@@ -95,6 +103,18 @@ class AdminPanel {
         this.loadAdminUser();
         // ✅ REVIZE-8: Superadmin kullanıcılarını yükle
         this.loadAdminUsers();
+    }
+
+    bindFirstInteractionScrollRecovery() {
+        const recoverOnce = () => {
+            this.enforceMobileScrollState();
+            document.removeEventListener('touchstart', recoverOnce, true);
+            document.removeEventListener('pointerdown', recoverOnce, true);
+        };
+
+        // Ilk etkileşimden hemen once lock temizlenirse "ilk swipe boşa gitme" sorunu kalkar.
+        document.addEventListener('touchstart', recoverOnce, { passive: true, capture: true });
+        document.addEventListener('pointerdown', recoverOnce, { passive: true, capture: true });
     }
 
     enforceMobileScrollState() {
@@ -110,11 +130,14 @@ class AdminPanel {
         }
 
         // Modal kapalıyken kalmış lock stillerini her durumda temizle.
+        html.classList.remove('modal-open');
         html.classList.remove('console-modal-open');
+        body.classList.remove('modal-open');
         body.classList.remove('console-modal-open');
         html.style.overflow = '';
         html.style.overflowX = '';
         html.style.overflowY = '';
+        html.style.touchAction = '';
         body.style.position = '';
         body.style.left = '';
         body.style.right = '';
@@ -123,6 +146,8 @@ class AdminPanel {
         body.style.overflow = '';
         body.style.overflowX = '';
         body.style.overflowY = '';
+        body.style.touchAction = '';
+        body.style.webkitOverflowScrolling = '';
 
         // Mobilde açıkça doğal sayfa scroll'una zorla.
         if (isMobile) {

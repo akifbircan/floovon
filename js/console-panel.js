@@ -82,6 +82,7 @@ class AdminPanel {
         // birkac fazda zorlayarak temizliyoruz.
         this.enforceMobileScrollState();
         window.addEventListener('pageshow', () => {
+            this.cleanupStaleOverlays();
             this.enforceMobileScrollState();
             requestAnimationFrame(() => this.enforceMobileScrollState());
             setTimeout(() => this.enforceMobileScrollState(), 0);
@@ -90,6 +91,7 @@ class AdminPanel {
         window.addEventListener('resize', () => this.enforceMobileScrollState(), { passive: true });
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
+                this.cleanupStaleOverlays();
                 this.enforceMobileScrollState();
             }
         });
@@ -134,6 +136,14 @@ class AdminPanel {
         if (adminUsersPopup && !adminUsersPopup.classList.contains('active')) {
             adminUsersPopup.classList.add('hidden');
         }
+
+        // Sayfa gecisinden kalmis interaktif toast overlay'i ilk dokunusu yutabiliyor.
+        // Console acilisinda stale overlay/toast'lari temizle.
+        document.querySelectorAll('.toast-overlay, .toast.interactive').forEach((el) => {
+            if (el && el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
+        });
 
         document.querySelectorAll('.console-sheet-overlay').forEach((overlay) => {
             const isOpen = overlay.getAttribute('data-state') === 'open';

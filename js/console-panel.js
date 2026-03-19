@@ -125,6 +125,14 @@ class AdminPanel {
             adminUsersPopup.classList.add('hidden');
         }
 
+        document.querySelectorAll('.console-sheet-overlay').forEach((overlay) => {
+            const isOpen = overlay.getAttribute('data-state') === 'open';
+            if (!isOpen) {
+                overlay.setAttribute('data-state', 'closed');
+                overlay.classList.add('console-sheet-overlay-closed');
+            }
+        });
+
         document.querySelectorAll('.modal-overlay').forEach((overlay) => {
             if (!overlay.classList.contains('active')) {
                 overlay.classList.remove('active');

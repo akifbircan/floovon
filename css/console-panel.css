@@ -3438,7 +3438,8 @@ html.dark-mode .console-tenant-manage-btn:hover {
   z-index: 50;
   background-color: var(--console-bg-overlay);
   transition: opacity 0.3s ease;
-  pointer-events: auto;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .console-sheet-overlay[data-state="closed"],
@@ -3449,6 +3450,7 @@ html.dark-mode .console-tenant-manage-btn:hover {
 
 .console-sheet-overlay[data-state="open"] {
   opacity: 1;
+  pointer-events: auto;
 }
 
 /* Sheet Content Base */

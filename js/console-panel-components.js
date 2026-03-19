@@ -6,6 +6,20 @@ function cn(...inputs) {
   return inputs.filter(Boolean).join(' ');
 }
 
+// Sayfadan geri dönüldüğünde (bfcache vb.) kalmış olabilecek scroll kilidini temizler.
+function syncConsoleBodyScrollLock() {
+  const hasActiveModal = !!document.querySelector('.modal-overlay.active');
+  if (hasActiveModal) return;
+  if (document?.documentElement?.style) {
+    document.documentElement.style.overflowX = '';
+  }
+  if (document?.body?.style) {
+    document.body.style.overflow = '';
+    document.body.style.overflowX = '';
+    document.body.style.overflowY = '';
+  }
+}
+
 // Button Component
 function createButton(options = {}) {
   const {
@@ -261,10 +275,7 @@ function createSheet(options = {}) {
       // Eğer başka aktif modal yoksa
       const hasActiveModal = document.querySelector('.modal-overlay.active');
       if (!hasActiveModal) {
-        document.documentElement.style.overflowX = '';
-        document.body.style.overflow = '';
-        document.body.style.overflowX = '';
-        document.body.style.overflowY = '';
+        syncConsoleBodyScrollLock();
       }
     }
   };
@@ -612,6 +623,16 @@ const AdminUserHelpers = {
 
 // Export AdminComponents to window
 if (typeof window !== 'undefined') {
+  // bfcache/back-forward sonrası modal açık değilse scroll kilidini temizle
+  window.addEventListener('pageshow', () => {
+    syncConsoleBodyScrollLock();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      syncConsoleBodyScrollLock();
+    }
+  });
+
   window.AdminComponents = {
     createSheet,
     createSheetHeader,

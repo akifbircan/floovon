@@ -11,18 +11,36 @@ function syncConsoleBodyScrollLock() {
   const hasActiveModal = !!document.querySelector('.modal-overlay.active');
   if (document?.documentElement?.classList) {
     document.documentElement.classList.toggle('console-modal-open', hasActiveModal);
+    document.documentElement.classList.toggle('modal-open', hasActiveModal);
   }
   if (document?.body?.classList) {
     document.body.classList.toggle('console-modal-open', hasActiveModal);
+    document.body.classList.toggle('modal-open', hasActiveModal);
   }
   if (hasActiveModal) return;
   if (document?.documentElement?.style) {
+    document.documentElement.style.overflow = '';
     document.documentElement.style.overflowX = '';
+    document.documentElement.style.overflowY = '';
+    document.documentElement.style.touchAction = '';
   }
   if (document?.body?.style) {
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.height = '';
     document.body.style.overflow = '';
     document.body.style.overflowX = '';
     document.body.style.overflowY = '';
+    document.body.style.touchAction = '';
+    document.body.style.webkitOverflowScrolling = '';
+  }
+
+  // Console sayfasinda modal kapandiysa mobil scroll'u aninda geri zorla.
+  if (window.adminPanel && typeof window.adminPanel.enforceMobileScrollState === 'function') {
+    window.adminPanel.enforceMobileScrollState();
   }
 }
 
@@ -271,7 +289,9 @@ function createSheet(options = {}) {
     if (isOpen) {
       overlay.classList.add('active');
       // Modal açılırken html ve body overflow'u hemen engelle (yatay scroll çıkmasın)
+      document.documentElement.classList.add('modal-open');
       document.documentElement.style.overflowX = 'hidden';
+      document.body.classList.add('modal-open');
       document.body.style.overflow = 'hidden';
       document.body.style.overflowX = 'hidden';
       document.body.style.overflowY = 'hidden';

@@ -4229,6 +4229,11 @@ select.form-input:focus {
    width: 100% !important;
   }
 
+  /* Mobilde manage ile aynı: avatar yanında isim alanını gizle */
+  .user-info {
+    display: none !important;
+  }
+
   .console-panel-header-title {
    font-size: 14px;
    font-weight: 500;

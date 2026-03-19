@@ -125,13 +125,7 @@ class AdminPanel {
         if (!body || !html) return;
 
         // Modal açıksa lock korunmalı.
-        if (
-            hasActiveModal ||
-            body.classList.contains('console-modal-open') ||
-            html.classList.contains('console-modal-open') ||
-            body.classList.contains('modal-open') ||
-            html.classList.contains('modal-open')
-        ) {
+        if (hasActiveModal) {
             return;
         }
 

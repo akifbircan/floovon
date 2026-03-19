@@ -76,6 +76,16 @@ class AdminPanel {
         
         this.adminUserId = adminUserId;
         this.adminToken = adminToken;
+
+        // Mobilde geri dönüşlerde kalabilen scroll kilidini temizle.
+        this.enforceMobileScrollState();
+        window.addEventListener('pageshow', () => this.enforceMobileScrollState());
+        window.addEventListener('resize', () => this.enforceMobileScrollState(), { passive: true });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                this.enforceMobileScrollState();
+            }
+        });
         
         this.setupEventListeners();
         this.setupSyncListeners();
@@ -85,6 +95,40 @@ class AdminPanel {
         this.loadAdminUser();
         // ✅ REVIZE-8: Superadmin kullanıcılarını yükle
         this.loadAdminUsers();
+    }
+
+    enforceMobileScrollState() {
+        const isMobile = window.innerWidth <= 640;
+        const hasActiveModal = !!document.querySelector('.modal-overlay.active');
+        const body = document.body;
+        const html = document.documentElement;
+        if (!body || !html) return;
+
+        // Modal açıksa lock korunmalı.
+        if (hasActiveModal || body.classList.contains('console-modal-open') || html.classList.contains('console-modal-open')) {
+            return;
+        }
+
+        // Modal kapalıyken kalmış lock stillerini her durumda temizle.
+        html.classList.remove('console-modal-open');
+        body.classList.remove('console-modal-open');
+        html.style.overflow = '';
+        html.style.overflowX = '';
+        html.style.overflowY = '';
+        body.style.position = '';
+        body.style.left = '';
+        body.style.right = '';
+        body.style.width = '';
+        body.style.height = '';
+        body.style.overflow = '';
+        body.style.overflowX = '';
+        body.style.overflowY = '';
+
+        // Mobilde açıkça doğal sayfa scroll'una zorla.
+        if (isMobile) {
+            body.style.overflowY = 'auto';
+            body.style.overflowX = 'hidden';
+        }
     }
     
     setupSyncListeners() {

@@ -44,11 +44,13 @@ class TenantManage {
     }
     
     switchTab(tabName) {
+        let activeTabElement = null;
         // Update tab buttons
         document.querySelectorAll('.admin-tenant-tab').forEach(tab => {
             tab.classList.remove('active');
             if (tab.dataset.tab === tabName) {
                 tab.classList.add('active');
+                activeTabElement = tab;
             }
         });
         
@@ -81,6 +83,22 @@ class TenantManage {
         if (tabName === 'settings') {
             this.loadSettingsData();
         }
+
+        this.scrollTabIntoView(activeTabElement);
+    }
+
+    scrollTabIntoView(tabElement) {
+        if (!tabElement || window.innerWidth > 640) return;
+        const tabsWrapper = document.querySelector('.admin-tenant-tabs-wrapper');
+        if (!tabsWrapper) return;
+
+        requestAnimationFrame(() => {
+            tabElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
+        });
     }
     
     init() {

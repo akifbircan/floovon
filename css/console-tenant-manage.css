@@ -1570,19 +1570,51 @@ body.css-loaded .admin-tenant-users-table tbody {
   .admin-tenant-tabs-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0 1rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+    padding: 0.25rem 1rem;
+    padding-right: calc(1rem + env(safe-area-inset-right, 0px));
+    scroll-padding-inline: 1rem;
+    background-color: var(--console-bg-secondary);
+    border: 1px solid var(--console-border-tertiary);
+    border-radius: 0.75rem;
+    box-shadow: var(--console-shadow-sm);
     margin: 0 0 10px 0 !important;
+  }
+
+  .admin-tenant-tabs-wrapper::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
   
   .admin-tenant-tabs {
+    width: max-content !important;
     min-width: max-content;
+    justify-content: flex-start !important;
     gap: 0.5rem;
+    padding-right: 0.5rem;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
   }
   
   .admin-tenant-tab {
     font-size: 0.8125rem;
     padding: 0.625rem 1rem;
     white-space: nowrap;
+    height: auto !important;
+    min-height: 2.375rem !important;
+    line-height: 1.2 !important;
+    box-shadow: none !important;
+  }
+
+  .admin-tenant-tab.active {
+    box-shadow: none !important;
   }
   
   /* Card Scrollable - Mobilde min-height kaldır */

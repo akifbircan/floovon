@@ -121,13 +121,50 @@ class AdminPanel {
 
         // Android Chrome/Opera'da gec gelen class/style lock'lar icin surekli guvence:
         // modal yokken her dokunma/kaydirma baslangicinda lock'u temizle.
-        const recoverOnTouch = () => {
+        const recoverOnTouch = (event) => {
+            this.releaseTouchBlockers(event);
             if (!document.querySelector('.modal-overlay.active')) {
                 this.enforceMobileScrollState();
             }
         };
         document.addEventListener('touchstart', recoverOnTouch, { passive: true, capture: true });
         document.addEventListener('touchmove', recoverOnTouch, { passive: true, capture: true });
+    }
+
+    releaseTouchBlockers(event) {
+        const touch = event && event.touches && event.touches[0];
+        if (!touch || typeof document.elementFromPoint !== 'function') return;
+
+        const targetAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (!targetAtPoint) return;
+
+        let node = targetAtPoint;
+        while (node && node !== document.body) {
+            const classList = node.classList;
+            if (classList) {
+                // Aktif modal disinda kalan overlay'ler dokunusu yutmasin.
+                if (classList.contains('toast-overlay')) {
+                    node.style.pointerEvents = 'none';
+                }
+                if (classList.contains('console-sheet-overlay')) {
+                    const isOpen = node.getAttribute('data-state') === 'open';
+                    if (!isOpen) {
+                        node.style.pointerEvents = 'none';
+                        node.classList.add('console-sheet-overlay-closed');
+                        node.setAttribute('data-state', 'closed');
+                    }
+                }
+                if (classList.contains('admin-users-fullscreen-popup') && !classList.contains('active')) {
+                    node.style.pointerEvents = 'none';
+                    node.classList.add('hidden');
+                }
+                if (classList.contains('modal-overlay') && !classList.contains('active')) {
+                    node.style.pointerEvents = 'none';
+                    node.classList.remove('active');
+                }
+            }
+            node = node.parentElement;
+        }
     }
 
     cleanupStaleOverlays() {

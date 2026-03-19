@@ -839,16 +839,16 @@ body:not(.dark-mode) .theme-toggle-icon.theme-icon-moon {
 }
 
 /* Modal açıkken html ve body scroll engelle - Yatay scroll önleme */
-html:has(.modal-overlay.active),
-body:has(.modal-overlay.active),
-body.console-tenant-manage-body:has(.modal-overlay.active) {
+html.console-modal-open,
+body.console-modal-open,
+body.console-tenant-manage-body.console-modal-open {
   overflow: hidden !important;
   overflow-x: hidden !important;
   overflow-y: hidden !important;
 }
 
-body:has(.modal-overlay.active),
-body.console-tenant-manage-body:has(.modal-overlay.active) {
+body.console-modal-open,
+body.console-tenant-manage-body.console-modal-open {
   position: fixed !important;
   width: 100% !important;
   height: 100% !important;

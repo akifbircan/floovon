@@ -20,8 +20,8 @@
 }
 
 /* Modal açıkken tooltip'leri gizle - SADECE MODAL DIŞINDAKİ TOOLTIP'LER İÇİN */
-body:has(.modal-overlay.active) .input-error-tooltip:not(.modal-overlay .input-error-tooltip),
-body.console-panel-body:has(.modal-overlay.active) .input-error-tooltip:not(.modal-overlay .input-error-tooltip) {
+body.console-modal-open .input-error-tooltip:not(.modal-overlay .input-error-tooltip),
+body.console-panel-body.console-modal-open .input-error-tooltip:not(.modal-overlay .input-error-tooltip) {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;

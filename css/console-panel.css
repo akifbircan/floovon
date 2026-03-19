@@ -4302,16 +4302,16 @@ select.form-input:focus {
   }
   
   /* Modal açıkken html ve body scroll engelle - Yatay scroll önleme */
-  html:has(.modal-overlay.active),
-  body:has(.modal-overlay.active),
-  body.console-panel-body:has(.modal-overlay.active) {
+  html.console-modal-open,
+  body.console-modal-open,
+  body.console-panel-body.console-modal-open {
     overflow: hidden !important;
     overflow-x: hidden !important;
     overflow-y: hidden !important;
   }
   
-  body:has(.modal-overlay.active),
-  body.console-panel-body:has(.modal-overlay.active) {
+  body.console-modal-open,
+  body.console-panel-body.console-modal-open {
     position: fixed !important;
     width: 100% !important;
     height: 100% !important;
@@ -4320,9 +4320,9 @@ select.form-input:focus {
   }
   
   /* Modal açıkken tooltip'leri gizle - SADECE MODAL DIŞINDAKİ TOOLTIP'LER İÇİN */
-  body:has(.modal-overlay.active) .input-error-tooltip:not(.modal-overlay .input-error-tooltip),
-  body:has(.modal-overlay.active) .input-error-tooltip-text:not(.modal-overlay .input-error-tooltip-text),
-  body:has(.modal-overlay.active) .tooltip:not(.modal-overlay .tooltip) {
+  body.console-modal-open .input-error-tooltip:not(.modal-overlay .input-error-tooltip),
+  body.console-modal-open .input-error-tooltip-text:not(.modal-overlay .input-error-tooltip-text),
+  body.console-modal-open .tooltip:not(.modal-overlay .tooltip) {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;

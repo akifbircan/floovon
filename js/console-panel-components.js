@@ -9,6 +9,12 @@ function cn(...inputs) {
 // Sayfadan geri dönüldüğünde (bfcache vb.) kalmış olabilecek scroll kilidini temizler.
 function syncConsoleBodyScrollLock() {
   const hasActiveModal = !!document.querySelector('.modal-overlay.active');
+  if (document?.documentElement?.classList) {
+    document.documentElement.classList.toggle('console-modal-open', hasActiveModal);
+  }
+  if (document?.body?.classList) {
+    document.body.classList.toggle('console-modal-open', hasActiveModal);
+  }
   if (hasActiveModal) return;
   if (document?.documentElement?.style) {
     document.documentElement.style.overflowX = '';
@@ -269,14 +275,12 @@ function createSheet(options = {}) {
       document.body.style.overflow = 'hidden';
       document.body.style.overflowX = 'hidden';
       document.body.style.overflowY = 'hidden';
+      syncConsoleBodyScrollLock();
     } else {
       overlay.classList.remove('active');
       // Modal kapandığında html ve body overflow'u geri yükle
       // Eğer başka aktif modal yoksa
-      const hasActiveModal = document.querySelector('.modal-overlay.active');
-      if (!hasActiveModal) {
-        syncConsoleBodyScrollLock();
-      }
+      syncConsoleBodyScrollLock();
     }
   };
 

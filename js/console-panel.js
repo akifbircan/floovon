@@ -116,6 +116,16 @@ class AdminPanel {
         // Ilk etkileşimden hemen once lock temizlenirse "ilk swipe boşa gitme" sorunu kalkar.
         document.addEventListener('touchstart', recoverOnce, { passive: true, capture: true });
         document.addEventListener('pointerdown', recoverOnce, { passive: true, capture: true });
+
+        // Android Chrome/Opera'da gec gelen class/style lock'lar icin surekli guvence:
+        // modal yokken her dokunma/kaydirma baslangicinda lock'u temizle.
+        const recoverOnTouch = () => {
+            if (!document.querySelector('.modal-overlay.active')) {
+                this.enforceMobileScrollState();
+            }
+        };
+        document.addEventListener('touchstart', recoverOnTouch, { passive: true, capture: true });
+        document.addEventListener('touchmove', recoverOnTouch, { passive: true, capture: true });
     }
 
     cleanupStaleOverlays() {
